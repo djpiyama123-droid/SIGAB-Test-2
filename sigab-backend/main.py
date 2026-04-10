@@ -1,0 +1,64 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
+import os
+import uvicorn
+
+from config import UPLOAD_DIR, CORS_EXTRA
+from routes import (
+    equipos, ordenes, trazabilidad, reservas,
+    alertas, preventivos, dashboard, openclaw, reportes,
+    tecnovigilancia, copilot,
+    auth as auth_routes,
+)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    os.makedirs("static/uploads", exist_ok=True)
+    print("SIGAB Backend iniciado — 100% Local")
+    yield
+    print("SIGAB Backend detenido")
+
+
+app = FastAPI(
+    title="SIGAB API",
+    description="Sistema Integral de Gestión de Activos Biomédicos — HGR No.1 IMSS",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+_origins = ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000", *CORS_EXTRA]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+app.include_router(auth_routes.router, prefix="/api/auth", tags=["Autenticación"])
+app.include_router(equipos.router, prefix="/api/equipos", tags=["Equipos"])
+app.include_router(ordenes.router, prefix="/api/ordenes", tags=["Órdenes de Servicio"])
+app.include_router(trazabilidad.router, prefix="/api/trazabilidad", tags=["Trazabilidad"])
+app.include_router(reservas.router, prefix="/api/reservas", tags=["Reservas"])
+app.include_router(alertas.router, prefix="/api/alertas", tags=["Alertas"])
+app.include_router(preventivos.router, prefix="/api/preventivos", tags=["Preventivos"])
+app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
+app.include_router(openclaw.router, prefix="/api/openclaw", tags=["OpenClaw"])
+app.include_router(reportes.router, prefix="/api/reportes", tags=["Reportes"])
+app.include_router(tecnovigilancia.router, prefix="/api/tecnovigilancia", tags=["Tecnovigilancia NOM-240"])
+app.include_router(copilot.router, prefix="/api/copilot", tags=["SIGAB Copilot (IA Local)"])
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "sistema": "SIGAB", "modo": "on-premise"}
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

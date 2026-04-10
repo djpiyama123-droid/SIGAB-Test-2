@@ -1,0 +1,341 @@
+Centro de Estudios Universitarios Xochicalco
+Campus Tijuana
+Escuela de Bioingeniería en Procesos de Manufactura
+SIGAB
+Sistema Integral de Gestión de Activos Biomédicos
+Reporte: Evaluación Integral del Proyecto
+Materia: Integración Empresarial
+Docente: Raúl
+Presenta:
+Domínguez Fernando · Soltero Salvador · López Carballo Gustavo
+Tijuana, Baja California, México — Abril 2026
+I. Resumen Ejecutivo
+El proyecto SIGAB (Sistema Integral de Gestión de Activos Biomédicos) nace de una crisis operativa en el sector salud público mexicano, donde los hospitales enfrentan serias deficiencias en la gestión de sus equipos críticos. Los procesos manuales basados en formatos de papel generan alta ineficiencia, pérdida de tiempo y falta de trazabilidad. El 85% del personal de enfermería pierde tiempo productivo buscando equipos vitales, el 90% de los mantenimientos preventivos se retrasa por falta de localización rápida del activo, y la transcripción manual de órdenes de servicio consume de 45 a 90 minutos por tarea.
+SIGAB es una plataforma digital 100% On-Premise que automatiza la creación de órdenes de servicio y proporciona trazabilidad en tiempo real de los activos biomédicos. Su ventaja competitiva clave es la automatización mediante un Agente de Inteligencia Artificial (OpenClaw con Google Gemini 2.5 Flash) que lee órdenes de servicio físicas (audio o foto por WhatsApp) y actualiza la base de datos automáticamente mediante OCR, eliminando el error humano y la ineficiencia del papel.
+El prototipo ha sido validado en entorno real en el Hospital General Regional No. 1 del IMSS en Tijuana, obteniendo una calificación de viabilidad de 8.25/10. El sistema gestiona historiales técnicos inalterables bajo estándares ISO 8601 e ISO 13485.
+II. Problemática Identificada
+El análisis fáctico realizado directamente en el HGR No. 1 del IMSS, validado con el Jefe de Conservación Carlos Oswaldo Ramírez González y el equipo de técnicos biomédicos en sitio, revela una brecha crítica que compromete la seguridad del paciente, la salud financiera de la institución y la responsabilidad legal de sus directivos.
+II.1 Cuantificación de la Ineficiencia
+Problema
+Dato de Campo
+Consecuencia
+Pérdida de tiempo en búsqueda
+85% del personal de enfermería reporta tiempo productivo perdido
+Retraso en atención clínica; riesgo vital
+Retraso en mantenimiento preventivo
+90% de los preventivos se postergan por imposibilidad de localizar el activo
+Gestión reactiva de emergencia (bomberazo)
+Caos documental
+Bitácoras de papel sin trazabilidad; >1,200 OS anuales en papel
+Imposibilidad de cumplir auditorías NOM-016-SSA3-2012
+Falta de dashboard directivo
+100% de directivos carecen de visibilidad en tiempo real
+Dificultad para justificar presupuestos de refacciones
+III. Estudio de Mercado
+III.1 Demanda Potencial Insatisfecha
+El problema central es que los sistemas existentes están basados en la nube o son extremadamente costosos, lo que choca con las estrictas políticas de privacidad de datos del sector salud público mexicano (cero nube permitida). Solo en el IMSS hay más de 250 Hospitales Generales Regionales/Zonas a nivel nacional. Si se suman clínicas del ISSSTE y hospitales privados de nivel 2 y 3, el mercado direccionable supera las 3,000 unidades médicas en México que operan sin gestión digital de activos biomédicos.
+III.2 Segmentación del Mercado (TAM / SAM / SOM)
+Segmento
+Descripción
+Tamaño Estimado (MXN/año)
+TAM — Nacional
+Todas las unidades médicas con >50 camas (IMSS + ISSSTE + Estatales + Privados)
+$3,600 M MXN
+SAM — IMSS Nacional
+250+ HGR/HGZ del IMSS con necesidad de trazabilidad On-Premise
+$360 M MXN
+Seg. Talleres Externos
+Empresas de mantenimiento subrogado que requieren transparencia
+$120 M MXN
+SOM — BC + Sonora (Año 1-2)
+8-12 hospitales piloto bajo adjudicación directa
+$14.4 M MXN
+III.3 Análisis de la Competencia
+Criterio
+Excel / Manual
+CMMS Comercial (SaaS)
+SIGAB
+Costo Total de Propiedad
+Bajo aparente / Alto oculto
+Muy alto (licencias USD)
+Bajo-moderado (MXN)
+Soberanía de datos
+Vulnerable
+Nula (nube externa)
+Total (On-Premise)
+Normativa mexicana
+Incumplimiento
+Requiere adaptación costosa
+Nativo NOM-016/NOM-240
+Ingesta vía WhatsApp + OCR
+No
+No
+Sí (Gemini 2.5 Flash)
+RFID médico + Manufactura 3D
+No
+No
+Sí (diferenciador único)
+III.4 Análisis de Precios y Comercialización
+Modelo de negocio: Hardware as a Service (HaaS) + Licenciamiento Anual (SaaS On-Premise). El costo de implementación inicial (Setup) es de aproximadamente $45,000 a $60,000 MXN por hospital, incluyendo servidor Lenovo ThinkCentre M720q, impresoras térmicas Zebra, escáneres QR e instalación de red local. El licenciamiento y soporte anual es de $80,000 a $120,000 MXN anuales por unidad hospitalaria.
+Estrategia de venta: Venta directa B2B e Institucional (B2G) a través de adjudicaciones directas (contratos menores a $900,000 MXN bajo LAASSP) y licitaciones públicas. El HGR No. 1 IMSS de Tijuana funciona como Prueba de Concepto (PoC) validada y showroom en vivo. Sistema llave en mano: entrega en <72 horas con personal capacitado.
+IV. Estudio Técnico
+IV.1 Descripción del Proceso Productivo (Flujo con IA)
+El proceso productivo de SIGAB se centra en el desarrollo, implementación y operación de la plataforma digital, con un flujo operativo automatizado en cuatro etapas:
+1. Reporte (Input): El usuario envía un mensaje (audio o foto de la orden de servicio) al agente SIGAB por WhatsApp.
+2. Ingesta y Procesamiento: El Agente de IA (OpenClaw) utiliza Google Gemini 2.5 Flash para realizar OCR, extrayendo datos clave del formato en papel (número de serie, falla reportada, técnico asignado, refacciones utilizadas).
+3. Validación y Almacenamiento: Los datos estructurados se insertan automáticamente en la base de datos MySQL local, generando un folio inmutable bajo estándar ISO 8601 (formato SIGAB-HGR1-YYYYMMDD-HHMM-NNNN).
+4. Visualización: El Dashboard web en React se actualiza en tiempo real mediante Server-Sent Events (SSE), cambiando el estado visual del equipo (verde/rojo).
+IV.2 Tamaño Óptimo y Capacidad Instalada
+Capacidad de Procesamiento: El sistema puede procesar hasta 10,000 peticiones diarias, excediendo ampliamente el volumen promedio de 350 activos de la clínica piloto, con latencia cero en la red LAN. La capacidad operativa de implementación es de 2 a 3 hospitales por mes. El cuello de botella no es el software (que se clona rápidamente) sino la instalación física de red, pruebas de estrés On-Premise y capacitación del personal en sitio.
+IV.3 Localización Óptima
+Macrolocalización: Tijuana, Baja California. Estratégico por el ecosistema médico-industrial y la cercanía a proveedores de hardware de importación (Zebra, Lenovo).
+Microlocalización: Taller de Integración en zona céntrica de Tijuana y sitio piloto en el Departamento de Conservación e Ingeniería Biomédica del HGR No. 1 IMSS.
+IV.4 Maquinaria y Equipo (Hardware On-Premise)
+Componente
+Descripción
+Justificación
+Costo (MXN)
+Servidor Local
+Lenovo ThinkCentre M720q Tiny (i5, 16GB RAM, WSL2 Ubuntu 24.04)
+Ejecución 24/7 de MySQL, FastAPI y Agente IA. Consumo ultra-bajo: 15W
+$8,000
+Monitoreo
+Pantalla LED 55" para Señalización Digital
+Visualización ininterrumpida del Dashboard en jefatura de biomédica
+$28,000
+Respaldo de Energía
+UPS APC Back-UPS Pro 1500VA
+Protección contra cortes eléctricos; apagado seguro
+$7,989
+Impresora de Etiquetas
+Zebra ZD220/ZD411 (Transferencia Térmica)
+Emisión de etiquetas QR duraderas para inventario físico
+$5,790
+Escáner QR 2D
+Escáner inalámbrico industrial USB
+Lectura rápida de códigos en piso clínico
+$2,000
+Consumibles
+Rollos de etiquetas térmicas 58mm x 43mm
+Recambio de etiquetas degradadas por agentes de limpieza
+$1,500
+IV.5 Stack Tecnológico
+Capa
+Tecnología
+Especificación
+Frontend
+React 19 + Vite 5 + Tailwind CSS
+Dashboard industrial con SSE en tiempo real
+Backend
+FastAPI (Python 3.12)
+9 módulos de rutas, Uvicorn, SSE nativo
+Base de Datos
+MySQL 8.0
+15 tablas, 2 vistas, triggers, eventos programados
+OCR / Visión
+Google Gemini 2.5 Flash
+Extracción asíncrona de campos desde imágenes
+Generación QR
+Librería Segno
+Nivel H (recuperación ante 30% de daño)
+Agente IA
+OpenClaw 2026.3.24
+Canal WhatsApp; orquestación con Claude Sonnet 4.6
+Servidor
+Lenovo ThinkCentre M720q
+Intel i5, 16 GB RAM, WSL2 Ubuntu 24.04
+IV.6 Ingeniería del Proyecto (Proceso de Producción)
+El diagrama de flujo de producción consiste en la preparación e instalación del sistema SIGAB en cada hospital:
+Paso 1 — Recepción de Hardware: Compra de servidor Lenovo M720q, escáneres, impresoras Zebra.
+Paso 2 — Configuración Base: Instalación de SO (Ubuntu Server / WSL2).
+Paso 3 — Despliegue de Entorno: Clonación del repositorio SIGAB (React, FastAPI, MySQL).
+Paso 4 — Pruebas QA: Simulación de lectura QR y test de impresión térmica en red local.
+Paso 5 — Instalación en Sitio: Enracado, conexión a intranet hospitalaria (On-Premise) y alta de usuarios.
+IV.7 Módulo Poka-Yoke: Triple Validación
+SIGAB implementa un módulo de validación inspirado en el principio de manufactura esbelta Poka-Yoke (a prueba de errores). Cada registro de equipo requiere la coincidencia obligatoria de tres identificadores: Código QR (escaneo físico), Número de Inventario institucional y Número de Serie del fabricante. El sistema bloquea el registro si los datos no coinciden, garantizando cero error humano en la trazabilidad y asegurando integridad documental para auditorías.
+V. Estudio Económico
+V.1 Inversión Total Inicial (CapEx): $153,000 MXN
+Clasificación
+Concepto
+Monto (MXN)
+Inversión Fija (Tangibles)
+Servidor, Pantalla LED, Periféricos, UPS
+$58,000.00
+Inversión Diferida (Intangibles)
+Desarrollo de Software e Instalación de Red
+$60,000.00
+Capital de Trabajo
+Fondo de reserva (2 meses de OpEx)
+$35,000.00
+GRAN TOTAL
+$153,000.00
+V.2 Costos Operativos Mensuales (OpEx): $34,049.82 MXN
+Categoría
+Concepto
+Monto Mensual (MXN)
+Mano de obra directa
+Sueldos del equipo (3 integrantes)
+$26,400.00
+Producción / API
+Consumo de tokens de IA (Google Gemini)
+$1,500.00
+Insumos y Servicios
+Internet, mantenimiento, consumibles
+$1,449.82
+Publicidad y difusión
+Presentaciones, documentación, congresos
+$1,700.00
+Depreciación y amortización
+Hardware y software (registro contable)
+$3,000.00
+TOTAL OpEx MENSUAL
+$34,049.82
+V.3 Punto de Equilibrio
+El Punto de Equilibrio se calcula con el modelo de contribución marginal:
+Precio de Venta por Hospital: $180,000 MXN (Setup $60,000 + Licencia Anual $120,000).
+Costo Variable por Hospital (Kit Hardware): $30,000 MXN.
+Margen de Contribución: $150,000 MXN por hospital.
+Costos Fijos Mensuales: $120,000 MXN (escala comercial).
+Punto de Equilibrio: 0.8 hospitales por mes. Vendiendo a 1 hospital por mes, el proyecto genera utilidades.
+V.4 Estado de Resultados Pro-Forma (Año 1)
+Concepto
+Monto Anual (MXN)
+Ventas (Objetivo: 10 hospitales)
+$1,800,000
+Costo de Ventas (Hardware)
+-$300,000
+Utilidad Bruta
+$1,500,000
+Gastos Operativos Anuales
+-$1,440,000
+Utilidad de Operación (antes de impuestos)
+$60,000
+VI. Evaluación Financiera
+VI.1 Inversión Requerida y Métricas
+Parámetro
+Valor
+Inversión total solicitada
+$1,020,000 MXN
+Punto de equilibrio
+0.8 hospitales / mes
+Retorno sobre la inversión (ROI)
+< 12 meses
+TMAR objetivo
+20% – 25% anual
+Calificación de viabilidad (campo)
+8.25 / 10
+VI.2 Proyección de Flujo de Caja — 30 Meses
+Mes
+Ventas (MXN)
+Costos Totales (MXN)
+Flujo Neto (MXN)
+0 (Arranque)
+$0
+$34,049
+($78,000) — Inversión
+3
+$15,000
+$36,899
+$3,630
+9
+$45,000
+$42,599
+$27,930
+15
+$75,000
+$48,299
+$52,230
+21
+$105,000
+$53,999
+$76,530
+30
+$150,000
+$62,549
+$112,980
+VI.3 Proyección de Ingresos (Años 1–3)
+Concepto
+Año 1 (2026)
+Año 2 (2027)
+Año 3 (2028)
+Hospitales activos
+1 piloto
+3 hospitales
+8 hospitales
+Licencias anuales
+$120,000
+$480,000
+$1,440,000
+Implementación (HaaS)
+$52,500
+$105,000
+$210,000
+Soporte premium
+—
+$48,000
+$192,000
+TOTAL INGRESOS
+$172,500
+$633,000
+$1,842,000
+VI.4 Financiamiento
+La inversión inicial total requerida (Fija + Diferida + Capital de Trabajo) es de $1,020,000 MXN (~$60,000 USD). Estructura accionaria propuesta: 30% capital aportado por los socios fundadores (bootstrapping y valor del código/algoritmo) y 70% inversión semilla (Venture Capital en HealthTech o inversionista ángel) a cambio de participación accionaria (equity). Se contempla iniciar como S.A. de C.V. con transformación a S.A.P.I. de C.V. previa al levantamiento de capital.
+VII. Marco Legal y Normativo
+Norma / Marco Legal
+Relevancia para SIGAB
+NOM-016-SSA3-2012
+Funcionamiento de hospitales. SIGAB provee registro y trazabilidad de equipos exigidos.
+NOM-240-SSA1-2012 (Tecnovigilancia)
+Registro de incidentes adversos con equipo médico. SIGAB genera historial forense.
+ISO 13485
+Sistemas de gestión de calidad para dispositivos médicos. Protocolo IQ/OQ/PQ implementado.
+COFEPRIS (no-SaMD)
+SIGAB confirmado como no-Software as Medical Device: sin registro sanitario requerido.
+LFPDPPP
+Cumplimiento estricto de privacidad. Al ser On-Premise, los datos no salen del hospital.
+LAASSP
+Ley de Adquisiciones del Sector Público. Marco de adjudicación directa con IMSS (<$900K MXN).
+INDAUTOR / IMPI
+Registro del código fuente y marca SIGAB como propiedad intelectual.
+Plan México 2025
+Decreto de estímulo a tecnología de manufactura nacional. Reducción fiscal 25-30%.
+VIII. Estado Actual del Desarrollo
+Hito
+Estado
+Fecha
+Diagnóstico en campo — HGR No. 1 (Gemba Walk + mapeo BPMN)
+✓ Completado
+Sep 2025
+Diseño de arquitectura On-Premise (MySQL + FastAPI + React)
+✓ Completado
+Oct 2025
+Pipeline OCR: WhatsApp → Gemini 2.5 Flash → MySQL funcional
+✓ Completado
+Ene 2026
+Digitalización de los 4 formatos de documento hospitalario del IMSS
+✓ Completado
+Feb 2026
+Dashboard React con actualizaciones SSE en tiempo real
+✓ Completado
+Mar 2026
+Validación con equipos reales: GE CARESCAPE B650, Vyaire Bellavista 1000, GE OEC 9800
+✓ Completado
+Mar-Abr 2026
+Prototipo calificado con 8.25 de viabilidad en entorno real
+✓ Completado
+Abr 2026
+Confirmación de no-SaMD (sin registro COFEPRIS requerido)
+✓ Completado
+Mar 2026
+IX. Conclusiones
+SIGAB es un proyecto técnicamente viable, financieramente atractivo y altamente escalable. La validación en campo con una calificación de 8.25/10 demuestra que la solución atiende una necesidad real y crítica del sector salud público mexicano.
+El enfoque 100% On-Premise no es una limitación sino una ventaja competitiva estratégica: la restricción de “no nube” en hospitales públicos es la mayor barrera de entrada para los competidores transnacionales y el núcleo arquitectónico de SIGAB. Al basar el sistema en tecnologías de código abierto maduras (React, FastAPI, MySQL, Ubuntu) montadas sobre hardware comercial de fácil reposición (Lenovo, Zebra), el riesgo tecnológico es mínimo y el margen operativo es alto.
+La implementación exitosa de SIGAB en el HGR No. 1 transmutará la cultura del mantenimiento institucional, transitando de un modelo de “bomberazo” hacia un modelo cimentado en el análisis de datos y el mantenimiento predictivo. SIGAB salvaguarda la vida de los pacientes al asegurar la disponibilidad de la tecnología médica crítica, alineándose con la Manufactura 4.0 aplicada a la salud.
+X. Bibliografía
+Baca Urbina, G. (2016). Evaluación de Proyectos. 8a Edición. McGraw-Hill.
+NOM-016-SSA3-2012. Características mínimas de infraestructura y equipamiento de hospitales. DOF.
+NOM-240-SSA1-2012. Instalación y operación de la tecnovigilancia. DOF.
+ISO 13485:2016. Sistemas de gestión de calidad para dispositivos médicos.
+ISO 8601. Representación de fechas y horas.
+CONASAMI (2026). Salarios Mínimos 2026. Zona Libre de la Frontera Norte: $440.87 MXN/día.
+Ley de Adquisiciones, Arrendamientos y Servicios del Sector Público (LAASSP). Cámara de Diputados.

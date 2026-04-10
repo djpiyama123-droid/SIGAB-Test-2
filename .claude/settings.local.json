@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find . -path */sigab-frontend/src* -name *.jsx)",
+      "Bash(find . -path */sigab-backend* -name *.py)",
+      "Bash(mysql -u sigab_user -psigab_pass_2026 sigab -e \"SHOW TABLES; DESCRIBE equipos;\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(netstat -ano)",
+      "Bash(wsl -d Ubuntu-24.04 bash -c \"source /mnt/c/Users/djpiy/Desktop/Bioingeneria/SIGAB/sigab-backend/venv/bin/activate && nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload --app-dir /mnt/c/Users/djpiy/Desktop/Bioingeneria/SIGAB/sigab-backend > /tmp/sigab_backend.log 2>&1 &\")",
+      "Bash(curl -s http://localhost:8000/api/dashboard/mapa)",
+      "Bash(curl -s http://localhost:8000/api/dashboard/mapa -v)",
+      "Bash(curl -s http://localhost:8000/api/dashboard/resumen)",
+      "Bash(wsl -d Ubuntu-24.04 bash -c \"ss -tlnp | grep 3306; mysql -u sigab_user -psigab_pass_2026 -e ''SELECT 1'' 2>&1 || echo ''MySQL not running''\")"
+    ]
+  }
+}

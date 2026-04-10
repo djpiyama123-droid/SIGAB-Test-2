@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "SIGAB Frontend (Vite)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5173,
+      "cwd": "sigab-frontend"
+    },
+    {
+      "name": "SIGAB Backend (FastAPI)",
+      "runtimeExecutable": "wsl",
+      "runtimeArgs": ["-d", "Ubuntu-24.04", "-e", "bash", "-c", "cd /mnt/c/Users/djpiy/Desktop/Bioingeneria/SIGAB/sigab-backend && source venv/bin/activate && python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload"],
+      "port": 8000
+    }
+  ]
+}
