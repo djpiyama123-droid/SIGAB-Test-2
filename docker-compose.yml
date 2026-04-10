@@ -1,0 +1,83 @@
+version: '3.8'
+
+# ================================================================
+# SIGAB — Docker Compose (100% On-Premise)
+# HGR No.1 IMSS Tijuana
+# ================================================================
+
+services:
+  # ── MySQL 8.0 ─────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: sigab-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-sigab_root_2026}
+      MYSQL_DATABASE:      ${DB_NAME:-sigab}
+      MYSQL_USER:          ${DB_USER:-sigab_user}
+      MYSQL_PASSWORD:      ${DB_PASS:-sigab_pass_2026}
+    ports:
+      - "3306:3306"
+    volumes:
+      - sigab_mysql_data:/var/lib/mysql
+      - ./sigab_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./seed_data.sql:/docker-entrypoint-initdb.d/02_seed.sql
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --event-scheduler=ON
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1",
+             "-u", "${DB_USER:-sigab_user}", "-p${DB_PASS:-sigab_pass_2026}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ── FastAPI Backend ────────────────────────────────────────
+  backend:
+    build:
+      context: ./sigab-backend
+      dockerfile: Dockerfile
+    container_name: sigab-backend
+    restart: always
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      SIGAB_DB_HOST: mysql
+      SIGAB_DB_PORT: 3306
+      SIGAB_DB_USER: ${DB_USER:-sigab_user}
+      SIGAB_DB_PASS: ${DB_PASS:-sigab_pass_2026}
+      SIGAB_DB_NAME: ${DB_NAME:-sigab}
+      SIGAB_UPLOAD_DIR: /app/static/uploads
+    volumes:
+      - sigab_uploads:/app/static/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── React Frontend ─────────────────────────────────────────
+  frontend:
+    build:
+      context: ./sigab-frontend
+      dockerfile: Dockerfile
+    container_name: sigab-frontend
+    restart: always
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    environment:
+      VITE_API_URL: http://localhost:${BACKEND_PORT:-8000}
+    depends_on:
+      - backend
+
+volumes:
+  sigab_mysql_data:
+    name: sigab_mysql_data
+  sigab_uploads:
+    name: sigab_uploads

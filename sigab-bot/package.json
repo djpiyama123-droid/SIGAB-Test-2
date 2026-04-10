@@ -1,0 +1,17 @@
+{
+  "name": "sigab-bot",
+  "version": "1.0.0",
+  "description": "SIGAB WhatsApp Bot — Baileys (100% local, sin APIs de paga)",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.16",
+    "node-cron": "^3.0.3",
+    "pino": "^9.6.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
