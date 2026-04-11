@@ -357,3 +357,18 @@ def prompt_vision_etiqueta(tipo_doc: str) -> str:
         ),
     }
     return prompts.get(tipo_doc, prompts["general"])
+
+
+def prompt_prediccion_insumos(inventario: list, historial_os: list) -> str:
+    return f"""Analiza el historial de mantenimiento y el inventario actual para predecir necesidades de refacciones.
+
+Inventario actual (stock): {json.dumps(inventario)}
+Historial de fallas/materiales (últimas 20 OS): {json.dumps(historial_os)}
+
+Basado en la frecuencia de fallas y el stock actual:
+1. ¿Qué refacciones corren riesgo de agotarse en los próximos 30 días?
+2. ¿Qué equipos requieren compra preventiva de kits de mantenimiento?
+3. Sugiere cantidades de reabastecimiento para mantener la operatividad al 98% en el HGR No. 1.
+
+Responde de forma concisa y técnica.
+"""

@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGAB — Diagramas de Flujo Profesionales</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  :root {
+    --cobalt: #1B3A5C;
+    --cobalt-light: #2A5A8C;
+    --teal: #0D9488;
+    --teal-light: #14B8A6;
+    --teal-pale: #CCFBF1;
+    --amber: #F59E0B;
+    --red: #EF4444;
+    --green: #10B981;
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-300: #D1D5DB;
+    --gray-500: #6B7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-900);
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, var(--cobalt) 0%, var(--cobalt-light) 100%);
+    color: white;
+    padding: 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    top: -50%; right: -10%;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(13,148,136,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.12);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .header h1 span { color: var(--teal-light); }
+  .header p {
+    font-size: 16px;
+    opacity: 0.85;
+    font-weight: 300;
+    max-width: 600px;
+  }
+
+  /* MAIN */
+  .main { max-width: 1200px; margin: 0 auto; padding: 40px 60px 80px; }
+
+  /* SECTION TITLE */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    margin-top: 48px;
+  }
+  .section-title:first-child { margin-top: 0; }
+  .section-num {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-light));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .section-title h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--cobalt);
+  }
+  .section-title h2 small {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gray-500);
+    margin-top: 2px;
+  }
+
+  /* FLOW DIAGRAM 1: 4 ETAPAS OPERATIVAS */
+  .flow-container {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+    border: 1px solid var(--gray-200);
+  }
+
+  .flow-4stages {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    position: relative;
+  }
+
+  .stage-card {
+    flex: 1;
+    position: relative;
+    padding: 0 12px;
+  }
+
+  .stage-header {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .stage-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 16px;
+    color: white;
+    margin-bottom: 8px;
+  }
+  .stage-card:nth-child(1) .stage-number { background: var(--cobalt); }
+  .stage-card:nth-child(2) .stage-number { background: var(--cobalt-light); }
+  .stage-card:nth-child(3) .stage-number { background: var(--teal); }
+  .stage-card:nth-child(4) .stage-number { background: var(--green); }
+
+  .stage-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--cobalt);
+    margin-bottom: 4px;
+  }
+  .stage-subtitle {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray-500);
+  }
+
+  .stage-body {
+    border-radius: 12px;
+    padding: 20px 16px;
+    min-height: 200px;
+    position: relative;
+  }
+  .stage-card:nth-child(1) .stage-body { background: #EFF6FF; border: 1px solid #BFDBFE; }
+  .stage-card:nth-child(2) .stage-body { background: #EFF6FF; border: 1px solid #93C5FD; }
+  .stage-card:nth-child(3) .stage-body { background: var(--teal-pale); border: 1px solid #99F6E4; }
+  .stage-card:nth-child(4) .stage-body { background: #ECFDF5; border: 1px solid #A7F3D0; }
+
+  .stage-icon {
+    font-size: 28px;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .stage-items {
+    list-style: none;
+    font-size: 12.5px;
+    color: var(--gray-700);
+  }
+  .stage-items li {
+    padding: 4px 0;
+    padding-left: 18px;
+    position: relative;
+  }
+  .stage-items li::before {
+    content: '›';
+    position: absolute;
+    left: 4px;
+    font-weight: 700;
+    color: var(--teal);
+  }
+
+  .stage-tech {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(0,0,0,0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .tech-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(13,148,136,0.1);
+    color: var(--teal);
+  }
+
+  /* Arrows between stages */
+  .arrow-connector {
+    position: absolute;
+    top: 50%;
+    right: -18px;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .arrow-connector svg {
+    width: 28px;
+    height: 28px;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+  }
+
+  /* TIME SAVED BANNER */
+  .time-banner {
+    margin-top: 24px;
+    background: linear-gradient(90deg, var(--cobalt) 0%, var(--teal) 100%);
+    border-radius: 12px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .time-banner-item {
+    text-align: center;
+    color: white;
+  }
+  .time-banner-item .val {
+    font-size: 22px;
+    font-weight: 800;
+  }
+  .time-banner-item .label {
+    font-size: 11px;
+    opacity: 0.8;
+    font-weight: 400;
+  }
+  .time-banner-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255,255,255,0.2);
+  }
+
+  /* STATUS LEGEND */
+  .status-legend {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    justify-content: center;
+  }
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .status-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+  }
+  .status-dot.green { background: var(--green); }
+  .status-dot.yellow { background: var(--amber); }
+  .status-dot.red { background: var(--red); }
+
+  /* FLOW DIAGRAM 2: 5 PASOS IMPLEMENTACIÓN */
+  .impl-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .impl-step {
+    display: flex;
+    align-items: stretch;
+    gap: 24px;
+    position: relative;
+  }
+
+  .impl-timeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 60px;
+    flex-shrink: 0;
+  }
+
+  .impl-num {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    color: white;
+    z-index: 2;
+    flex-shrink: 0;
+  }
+  .impl-step:nth-child(1) .impl-num { background: var(--cobalt); }
+  .impl-step:nth-child(2) .impl-num { background: var(--cobalt-light); }
+  .impl-step:nth-child(3) .impl-num { background: #4F7CAC; }
+  .impl-step:nth-child(4) .impl-num { background: var(--teal); }
+  .impl-step:nth-child(5) .impl-num { background: var(--green); }
+
+  .impl-line {
+    width: 3px;
+    flex: 1;
+    min-height: 20px;
+  }
+  .impl-step:nth-child(1) .impl-line { background: linear-gradient(var(--cobalt), var(--cobalt-light)); }
+  .impl-step:nth-child(2) .impl-line { background: linear-gradient(var(--cobalt-light), #4F7CAC); }
+  .impl-step:nth-child(3) .impl-line { background: linear-gradient(#4F7CAC, var(--teal)); }
+  .impl-step:nth-child(4) .impl-line { background: linear-gradient(var(--teal), var(--green)); }
+  .impl-step:last-child .impl-line { display: none; }
+
+  .impl-content {
+    flex: 1;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    transition: box-shadow 0.2s;
+  }
+  .impl-content:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+
+  .impl-content h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--cobalt);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .impl-content p {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-bottom: 10px;
+  }
+  .impl-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .impl-tag {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: var(--gray-100);
+    color: var(--gray-700);
+  }
+
+  .impl-duration {
+    margin-top: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--teal);
+    background: var(--teal-pale);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  /* TOTAL TIME */
+  .total-time {
+    text-align: center;
+    margin-top: 24px;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--teal-pale), #ECFDF5);
+    border-radius: 12px;
+    border: 1px solid #99F6E4;
+  }
+  .total-time .big {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--teal);
+  }
+  .total-time .sub {
+    font-size: 14px;
+    color: var(--gray-500);
+    font-weight: 400;
+  }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 48px;
+    text-align: center;
+    padding: 24px;
+    border-top: 1px solid var(--gray-200);
+    color: var(--gray-500);
+    font-size: 12px;
+  }
+  .footer strong { color: var(--cobalt); }
+
+  /* PRINT */
+  @media print {
+    body { background: white; }
+    .header { break-after: avoid; }
+    .flow-container { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+    .section-title { break-after: avoid; }
+  }
+
+  @media (max-width: 900px) {
+    .flow-4stages { flex-direction: column; gap: 16px; }
+    .arrow-connector { display: none; }
+    .header { padding: 24px 20px; }
+    .main { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    EVALUACIÓN III — ESTUDIO TÉCNICO
+  </div>
+  <h1><span>SIGAB</span> — Diagramas de Proceso</h1>
+  <p>Sistema Integral de Gestión de Activos Biomédicos · Flujo Operativo Automatizado y Proceso de Implementación por Hospital</p>
+</div>
+
+<div class="main">
+
+  <!-- DIAGRAMA 1: FLUJO OPERATIVO -->
+  <div class="section-title">
+    <div class="section-num">A</div>
+    <h2>Flujo Operativo Automatizado — 4 Etapas
+      <small>Del formato en papel a la visualización en tiempo real</small>
+    </h2>
+  </div>
+
+  <div class="flow-container">
+    <div class="flow-4stages">
+
+      <!-- ETAPA 1 -->
+      <div class="stage-card">
+        <div class="stage-header">
+          <div class="stage-number">1</div>
+          <div class="stage-title">Reporte</div>
+          <div class="stage-subtitle">Input</div>
+        </div>
+        <div class="stage-body">
+          <div class="stage-icon">📱</div>
+          <ul class="stage-items">
+            <li>Técnico biomédico toma <strong>foto de la Orden de Servicio</strong> en papel</li>
+            <li>O envía <strong>mensaje de audio</strong> por WhatsApp</li>
+            <li>Captura en campo — elimina transcripción manual</li>
+          </ul>
+          <div class="stage-tech">
+            <span class="tech-tag">WhatsApp</span>
+            <span class="tech-tag">Cámara</span>
+            <span class="tech-tag">Audio</span>
+          </div>
+        </div>
+        <div class="arrow-connector">
+          <svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="white" stroke="#CBD5E1" stroke-width="1.5"/><path d="M11 9l5 5-5 5" fill="none" stroke="#1B3A5C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <!-- ETAPA 2 -->
+      <div class="stage-card">
+        <div class="stage-header">
+          <div class="stage-number">2</div>
+          <div class="stage-title">Ingesta + IA</div>
+          <div class="stage-subtitle">Procesamiento</div>
+        </div>
+        <div class="stage-body">
+          <div class="stage-icon">🤖</div>
+          <ul class="stage-items">
+            <li>Agente de IA <strong>OpenClaw</strong> recibe el mensaje</li>
+            <li><strong>Google Gemini 2.5 Flash</strong> ejecuta OCR sobre la imagen</li>
+            <li>Extrae: N° Serie, falla, técnico, refacciones, área</li>
+          </ul>
+          <div class="stage-tech">
+            <span class="tech-tag">OpenClaw</span>
+            <span class="tech-tag">Gemini 2.5</span>
+            <span class="tech-tag">OCR</span>
+          </div>
+        </div>
+        <div class="arrow-connector">
+          <svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="white" stroke="#CBD5E1" stroke-width="1.5"/><path d="M11 9l5 5-5 5" fill="none" stroke="#2A5A8C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <!-- ETAPA 3 -->
+      <div class="stage-card">
+        <div class="stage-header">
+          <div class="stage-number">3</div>
+          <div class="stage-title">Validación</div>
+          <div class="stage-subtitle">Poka-Yoke</div>
+        </div>
+        <div class="stage-body">
+          <div class="stage-icon">🔒</div>
+          <ul class="stage-items">
+            <li><strong>Triple validación</strong>: QR + N° Inventario + N° Serie</li>
+            <li>Solo si coinciden: genera <strong>folio inmutable</strong> ISO 8601</li>
+            <li>Formato: <code style="font-size:10px;background:rgba(0,0,0,0.06);padding:2px 4px;border-radius:3px;">SIGAB-HGR1-YYYYMMDD-HHMM-NNNN</code></li>
+            <li>Inserción en <strong>MySQL</strong> local</li>
+          </ul>
+          <div class="stage-tech">
+            <span class="tech-tag">Poka-Yoke</span>
+            <span class="tech-tag">MySQL</span>
+            <span class="tech-tag">ISO 8601</span>
+          </div>
+        </div>
+        <div class="arrow-connector">
+          <svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="white" stroke="#CBD5E1" stroke-width="1.5"/><path d="M11 9l5 5-5 5" fill="none" stroke="#0D9488" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <!-- ETAPA 4 -->
+      <div class="stage-card">
+        <div class="stage-header">
+          <div class="stage-number">4</div>
+          <div class="stage-title">Visualización</div>
+          <div class="stage-subtitle">Dashboard</div>
+        </div>
+        <div class="stage-body">
+          <div class="stage-icon">📊</div>
+          <ul class="stage-items">
+            <li><strong>Dashboard React</strong> se actualiza en tiempo real</li>
+            <li>Eventos vía <strong>Server-Sent Events</strong> (SSE)</li>
+            <li>Semáforo visual del equipo:</li>
+          </ul>
+          <div style="display:flex;gap:8px;margin-top:10px;justify-content:center;">
+            <span style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;">
+              <span style="width:12px;height:12px;border-radius:50%;background:#10B981;display:inline-block;"></span> Operativo
+            </span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;">
+              <span style="width:12px;height:12px;border-radius:50%;background:#F59E0B;display:inline-block;"></span> Mantto.
+            </span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;">
+              <span style="width:12px;height:12px;border-radius:50%;background:#EF4444;display:inline-block;"></span> Fuera
+            </span>
+          </div>
+          <div class="stage-tech">
+            <span class="tech-tag">React</span>
+            <span class="tech-tag">SSE</span>
+            <span class="tech-tag">FastAPI</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TIME SAVED BANNER -->
+    <div class="time-banner">
+      <div class="time-banner-item">
+        <div class="val">45-90 min</div>
+        <div class="label">Tiempo manual por OS (antes)</div>
+      </div>
+      <div class="time-banner-divider"></div>
+      <div class="time-banner-item">
+        <div class="val" style="color:#14B8A6;">&lt; 2 min</div>
+        <div class="label">Tiempo con SIGAB (ahora)</div>
+      </div>
+      <div class="time-banner-divider"></div>
+      <div class="time-banner-item">
+        <div class="val">85%</div>
+        <div class="label">Personal pierde tiempo buscando equipos</div>
+      </div>
+      <div class="time-banner-divider"></div>
+      <div class="time-banner-item">
+        <div class="val">90%</div>
+        <div class="label">Preventivos retrasados (antes)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIAGRAMA 2: IMPLEMENTACIÓN POR HOSPITAL -->
+  <div class="section-title" style="margin-top:56px;">
+    <div class="section-num">B</div>
+    <h2>Proceso de Implementación por Hospital — 5 Pasos
+      <small>Producción e instalación estandarizada del sistema SIGAB</small>
+    </h2>
+  </div>
+
+  <div class="flow-container">
+    <div class="impl-flow">
+
+      <!-- PASO 1 -->
+      <div class="impl-step">
+        <div class="impl-timeline">
+          <div class="impl-num">1</div>
+          <div class="impl-line"></div>
+        </div>
+        <div class="impl-content">
+          <h3>📦 Recepción de Hardware</h3>
+          <p>Compra y verificación de componentes de infraestructura IT de grado corporativo ligero.</p>
+          <div class="impl-details">
+            <span class="impl-tag">Lenovo ThinkCentre M720q</span>
+            <span class="impl-tag">Zebra ZD411</span>
+            <span class="impl-tag">Escáner QR USB</span>
+            <span class="impl-tag">Monitor 24" LED</span>
+            <span class="impl-tag">UPS 1.5 kVA</span>
+            <span class="impl-tag">Switch Gigabit + Cat 6</span>
+          </div>
+          <div class="impl-duration">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            8 horas — Recepción y verificación de inventario
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 2 -->
+      <div class="impl-step">
+        <div class="impl-timeline">
+          <div class="impl-num">2</div>
+          <div class="impl-line"></div>
+        </div>
+        <div class="impl-content">
+          <h3>⚙️ Configuración Base</h3>
+          <p>Instalación del sistema operativo y preparación del entorno de servidor.</p>
+          <div class="impl-details">
+            <span class="impl-tag">Ubuntu Server 24.04 / WSL2</span>
+            <span class="impl-tag">Hardening de seguridad</span>
+            <span class="impl-tag">Configuración de red LAN</span>
+            <span class="impl-tag">Sin salida a internet</span>
+          </div>
+          <div class="impl-duration">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            4 horas — Instalación y configuración OS
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 3 -->
+      <div class="impl-step">
+        <div class="impl-timeline">
+          <div class="impl-num">3</div>
+          <div class="impl-line"></div>
+        </div>
+        <div class="impl-content">
+          <h3>🚀 Despliegue de Entorno SIGAB</h3>
+          <p>Clonación del repositorio y levantamiento de todos los servicios del sistema.</p>
+          <div class="impl-details">
+            <span class="impl-tag">React (Frontend)</span>
+            <span class="impl-tag">FastAPI (Backend)</span>
+            <span class="impl-tag">MySQL (Base de datos)</span>
+            <span class="impl-tag">Agente OpenClaw (IA)</span>
+            <span class="impl-tag">Docker Compose</span>
+          </div>
+          <div class="impl-duration">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            6 horas — Despliegue y configuración de servicios
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 4 -->
+      <div class="impl-step">
+        <div class="impl-timeline">
+          <div class="impl-num">4</div>
+          <div class="impl-line"></div>
+        </div>
+        <div class="impl-content">
+          <h3>🧪 Pruebas de Integración QA</h3>
+          <p>Verificación completa del sistema antes del envío al hospital.</p>
+          <div class="impl-details">
+            <span class="impl-tag">Simulación lectura QR</span>
+            <span class="impl-tag">Test impresión térmica</span>
+            <span class="impl-tag">Validación Poka-Yoke</span>
+            <span class="impl-tag">Prueba SSE en red local</span>
+            <span class="impl-tag">Protocolo IQ/OQ/PQ</span>
+          </div>
+          <div class="impl-duration">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            16 horas — Testing completo con protocolo IQ/OQ/PQ
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 5 -->
+      <div class="impl-step">
+        <div class="impl-timeline">
+          <div class="impl-num">5</div>
+          <div class="impl-line"></div>
+        </div>
+        <div class="impl-content">
+          <h3>🏥 Instalación en Sitio + Capacitación</h3>
+          <p>Despliegue físico en el hospital y entrenamiento al personal biomédico.</p>
+          <div class="impl-details">
+            <span class="impl-tag">Enracado del servidor</span>
+            <span class="impl-tag">Conexión a intranet hospitalaria</span>
+            <span class="impl-tag">Alta de usuarios</span>
+            <span class="impl-tag">Capacitación a técnicos</span>
+            <span class="impl-tag">Entrega de documentación</span>
+          </div>
+          <div class="impl-duration">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            24 horas — Instalación física + capacitación de personal
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TOTAL TIME -->
+    <div class="total-time">
+      <div class="big">&lt; 72 horas</div>
+      <div class="sub">Tiempo total de despliegue por hospital — incluyendo capacitación</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <strong>SIGAB</strong> · Sistema Integral de Gestión de Activos Biomédicos · Evaluación III — Estudio Técnico · Abril 2026<br>
+  López Carballo Gustavo · Domínguez Fernando · Soltero Salvador · Universidad Xochicalco, Campus Tijuana
+</div>
+
+</body>
+</html>

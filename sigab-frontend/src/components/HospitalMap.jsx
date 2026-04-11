@@ -470,7 +470,11 @@ export default function HospitalMap() {
 
   const fetchMapa = useCallback(async () => {
     try {
-      const res = await fetch('/api/dashboard/mapa');
+      const res = await fetch('/api/dashboard/mapa', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setZonas(data.zonas || []);
@@ -611,7 +615,7 @@ export default function HospitalMap() {
 
         {/* Grid de zonas hospitalarias agrupadas por piso */}
         <div className="space-y-6">
-          {['Segundo', 'Primero', 'Tercero', null].map(pisoKey => {
+          {['2do Piso', '1er Piso', '3er Piso', 'Sótano', null].map(pisoKey => {
             const zonasPiso = zonas.filter(z => z.piso === pisoKey || (pisoKey === null && !z.piso));
             if (zonasPiso.length === 0) return null;
 

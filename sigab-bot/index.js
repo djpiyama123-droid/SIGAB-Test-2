@@ -124,8 +124,17 @@ async function startBot() {
         const response = await handleCommand(text, senderName);
 
         if (response) {
-          await sock.sendMessage(msg.key.remoteJid, { text: response });
-          console.log(`📤 Respuesta enviada (${response.length} chars)`);
+          if (typeof response === 'string') {
+            await sock.sendMessage(msg.key.remoteJid, { text: response });
+          } else if (response.type === 'document') {
+            await sock.sendMessage(msg.key.remoteJid, {
+              document: response.document,
+              fileName: response.fileName,
+              mimetype: response.mimetype,
+              caption: response.caption
+            });
+          }
+          console.log(`📤 Respuesta enviada (${typeof response === 'string' ? response.length : 'documento'})`);
         }
       } catch (err) {
         console.error('❌ Error procesando comando:', err.message);

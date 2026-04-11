@@ -38,6 +38,15 @@ function cmdAyuda() {
 📊 */reporte*
    Reporte del día
 
+📄 */pdf* _[serie]_
+   Generar PDF IMSS del equipo
+
+📧 */email* _[serie]_ _[correo]_
+   Mandar reporte por Gmail
+
+☎️ */proveedor* _[serie]_
+   Info de contrato y empresa externa
+
 ❓ */ayuda*
    Mostrar este menú`;
 }
@@ -260,6 +269,94 @@ async function cmdReporte() {
   }
 }
 
+// ── Generar PDF del Equipo ─────────────────────────────────
+async function cmdPdf(serie) {
+  if (!serie) return '❌ Uso: */pdf* _serie_';
+
+  try {
+    const url = `${API}/equipo-pdf/${encodeURIComponent(serie)}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+       const json = await res.json();
+       return `❌ Error: ${json.mensaje || 'No se pudo generar el PDF'}`;
+    }
+
+    const buffer = await res.arrayBuffer();
+    return {
+      type: 'document',
+      document: Buffer.from(buffer),
+      fileName: `Reporte_${serie}.pdf`,
+      mimetype: 'application/pdf',
+      caption: `📄 Reporte Técnico: *${serie}*`
+    };
+  } catch (err) {
+    return `❌ Error generando PDF: ${err.message}`;
+  }
+}
+
+// ── Enviar Reporte por Correo ──────────────────────────────
+async function cmdEmail(args) {
+  const parts = args?.trim().split(/\s+/) || [];
+  if (parts.length < 2) return '❌ Uso: */email* _serie_ _correo_';
+
+  const serie = parts[0];
+  const email = parts[1];
+
+  try {
+    const res = await fetch(`${API}/enviar-reporte`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ serie, email }).toString(),
+    });
+    const json = await res.json();
+    return json.ok ? `📧 *Envío Exitoso*\n${json.mensaje}` : `❌ ${json.mensaje}`;
+  } catch (err) {
+    return `❌ Error enviando email: ${err.message}`;
+  }
+}
+
+// ── Procesar Lenguaje Natural (IA Copilot) ─────────────────
+async function cmdAI(mensaje) {
+  if (!mensaje || mensaje.length < 3) return null;
+
+  try {
+    const res = await fetch(`${API}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mensaje }),
+    });
+    const json = await res.json();
+    if (json.ok) return `🤖 *SIGAB Copilot:*\n\n${json.respuesta}`;
+    return null;
+  } catch (err) {
+    console.error('Error AI Bot:', err);
+    return null;
+  }
+}
+
+// ── Info de Proveedor/Contrato ─────────────────────────────
+async function cmdProveedor(serie) {
+  if (!serie) return '❌ Uso: */proveedor* _serie_';
+
+  try {
+    const res = await fetch(`${API}/estado-equipo/${encodeURIComponent(serie)}`);
+    const json = await res.json();
+
+    if (!json.ok || !json.equipo) return `❌ Equipo "${serie}" no encontrado`;
+
+    const eq = json.equipo;
+    let msg = `☎️ *Servicio Externo — ${eq.nombre}*\n`;
+    msg += `Empresa: *${eq.proveedor_servicio || 'No asignada'}*\n`;
+    msg += `Contrato: \`${eq.numero_contrato || 'Sin contrato'}\`\n`;
+    msg += `Serie: \`${eq.serie}\`\n`;
+    msg += `\n📞 *Acción Sugerida:* Llamar a la empresa para reporte de falla bajo contrato.`;
+    
+    return msg;
+  } catch (err) {
+    return `❌ Error: ${err.message}`;
+  }
+}
+
 // ── Router Principal ───────────────────────────────────────
 export async function handleCommand(text, senderName) {
   const trimmed = (text || '').trim();
@@ -271,7 +368,12 @@ export async function handleCommand(text, senderName) {
     cmd = spaceIdx > 0 ? trimmed.slice(1, spaceIdx).toLowerCase() : trimmed.slice(1).toLowerCase();
     args = spaceIdx > 0 ? trimmed.slice(spaceIdx + 1).trim() : '';
   } else {
-    return null; // No es un comando, ignorar
+    // Si no es comando pero el bot es mencionado o el mensaje es relevante
+    // Por ahora, procesar todo lo que no sea comando con IA si tiene más de 5 palabras
+    if (trimmed.split(' ').length >= 3) {
+      return cmdAI(trimmed);
+    }
+    return null;
   }
 
   switch (cmd) {
@@ -305,6 +407,22 @@ export async function handleCommand(text, senderName) {
     case 'reporte':
     case 'resumen':
       return cmdReporte();
+
+    case 'pdf':
+    case 'descargar':
+    case 'formato':
+      return cmdPdf(args);
+
+    case 'email':
+    case 'correo':
+    case 'gmail':
+      return cmdEmail(args);
+
+    case 'proveedor':
+    case 'contrato':
+    case 'empresa':
+    case 'servicio':
+      return cmdProveedor(args);
 
     default:
       return null; // Comando no reconocido, no responder
