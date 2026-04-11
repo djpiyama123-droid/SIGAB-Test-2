@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse
 import aiomysql
 import asyncio
 import json
+import logging
 from datetime import datetime
 from config import get_db, DB_CONFIG
 from auth.dependencies import get_current_user, require_roles
@@ -64,21 +65,26 @@ async def get_mapa_equipos(conn=Depends(get_db)):
         for campo in ['total_equipos', 'operativos', 'en_mantenimiento', 'fuera_servicio']:
             zona[campo] = int(zona[campo] or 0)
 
-    # Agrupar equipos por zona
-    equipos_por_zona = {}
-    for eq in equipos:
-        zid = eq['zona_id']
-        if zid not in equipos_por_zona:
-            equipos_por_zona[zid] = []
-        equipos_por_zona[zid].append(eq)
+    try:
+        # Agrupar equipos por zona
+        equipos_por_zona = {}
+        for eq in equipos:
+            zid = eq['zona_id']
+            if zid not in equipos_por_zona:
+                equipos_por_zona[zid] = []
+            equipos_por_zona[zid].append(eq)
 
-    resultado = []
-    for zona in zonas:
-        zona_data = dict(zona)
-        zona_data['equipos'] = equipos_por_zona.get(zona['id'], [])
-        resultado.append(zona_data)
+        resultado = []
+        for zona in zonas:
+            zona_data = dict(zona)
+            zona_data['equipos'] = equipos_por_zona.get(zona['id'], [])
+            resultado.append(zona_data)
 
-    return {"zonas": resultado, "timestamp": datetime.now().isoformat()}
+        return {"zonas": resultado, "timestamp": datetime.now().isoformat()}
+
+    except Exception as e:
+        logging.error(f"Error en get_mapa_equipos: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/resumen")

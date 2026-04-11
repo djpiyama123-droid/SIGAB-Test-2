@@ -8,6 +8,7 @@ from datetime import datetime
 from config import get_db, UPLOAD_DIR
 from auth.dependencies import get_current_user
 from services.tecnovigilancia_pdf_service import generar_pdf_nom240
+from services.alerta_service import AlertaService
 
 router = APIRouter()
 
@@ -189,6 +190,27 @@ async def crear_evento(
         )
         evento_id = cur.lastrowid
 
+        # ── 1. Alerta Crítica Automática para Severidad Alta ────────────────
+        if data["severidad"] in ("critica", "grave"):
+            # Poner equipo fuera de servicio automáticamente
+            await cur.execute("UPDATE equipos SET estado = 'fuera_servicio' WHERE id = %s", (equipo_id,))
+            
+            # Crear Alerta
+            mensaje_alerta = f"EVENTO ADVERSO {data['severidad'].upper()}: {equipo['nombre']} - {data['descripcion_evento'][:100]}... [{numero_reporte}]"
+            # Buscamos al jefe de conservación para la alerta
+            await cur.execute("SELECT id FROM usuarios WHERE rol = 'jefe_conservacion' AND activo = TRUE LIMIT 1")
+            j_row = await cur.fetchone()
+            jefe_id = j_row["id"] if j_row else user["id"]
+            
+            await AlertaService.crear_alerta(
+                cur,
+                tipo="evento_adverso",
+                equipo_id=equipo_id,
+                mensaje=mensaje_alerta,
+                prioridad="critica",
+                usuario_destino_id=jefe_id
+            )
+
         await _log_actividad(
             cur, "tecnovigilancia_eventos", evento_id, "INSERT",
             user["id"], None,
@@ -315,6 +337,21 @@ async def escalar_cofepris(
             user["id"],
             {"estado": "documentado"},
             {"estado": "escalado_cofepris", "folio_cofepris": folio},
+        )
+        
+        # ── 2. Alerta de Escalado a COFEPRIS ────────────────────────────────
+        mensaje_escalado = f"ESCALADO A COFEPRIS: {evento['numero_reporte']} - Folio: {folio or 'pendiente'}"
+        await cur.execute("SELECT id FROM usuarios WHERE rol = 'jefe_conservacion' AND activo = TRUE LIMIT 1")
+        jefe = await cur.fetchone()
+        jefe_id = jefe["id"] if jefe else user["id"]
+        
+        await AlertaService.crear_alerta(
+            cur,
+            tipo="evento_adverso",
+            equipo_id=evento.get("equipo_id"),
+            mensaje=mensaje_escalado,
+            prioridad="critica",
+            usuario_destino_id=jefe_id
         )
 
     return {"ok": True, "estado": "escalado_cofepris", "folio_cofepris": folio}

@@ -18,6 +18,7 @@ from auth.permissions import (
     CAMPOS_EDITABLES_TODOS,
 )
 from services.qr_service import generate_qr_png, generate_qr_label_a6_pdf
+from services.audit_service import AuditService
 
 router = APIRouter()
 
@@ -145,6 +146,15 @@ async def crear_equipo(
                 list(valores.values()),
             )
             equipo_id = cur.lastrowid
+            
+            # Auditoría NOM-016
+            await AuditService.log_event(
+                usuario_id=user["id"],
+                accion="CREATE_EQUIPO",
+                entidad="equipos",
+                entidad_id=equipo_id,
+                datos=valores
+            )
         except aiomysql.IntegrityError as e:
             raise HTTPException(status_code=409, detail=f"Conflicto al crear: {e}")
 
@@ -168,6 +178,15 @@ async def eliminar_equipo(
         # Liberar referencias en órdenes para no romper FK
         await cur.execute("UPDATE ordenes_servicio SET equipo_id = NULL WHERE equipo_id = %s", (equipo_id,))
         await cur.execute("DELETE FROM equipos WHERE id = %s", (equipo_id,))
+
+        # Auditoría NOM-016
+        await AuditService.log_event(
+            usuario_id=user["id"],
+            accion="DELETE_EQUIPO",
+            entidad="equipos",
+            entidad_id=equipo_id,
+            datos={"nombre": equipo["nombre"]}
+        )
 
     # Borrar imagen física si existía
     if equipo.get("imagen_url"):
@@ -410,6 +429,15 @@ async def actualizar_equipo(
 
     async with conn.cursor() as cur:
         await cur.execute(f"UPDATE equipos SET {set_clause} WHERE id = %s", values)
+        
+        # Auditoría NOM-016
+        await AuditService.log_event(
+            usuario_id=user["id"],
+            accion="UPDATE_EQUIPO",
+            entidad="equipos",
+            entidad_id=equipo_id,
+            datos=updates
+        )
 
     return {"ok": True, "mensaje": f"Equipo {equipo_id} actualizado"}
 
@@ -479,3 +507,71 @@ async def generar_etiqueta_qr(
         media_type="application/pdf",
         headers={"Content-Disposition": f"inline; filename=etiqueta_equipo_{equipo_id}.pdf"},
     )
+
+
+@router.post("/validar")
+async def validar_poka_yoke(
+    data: dict,
+    user: dict = Depends(get_current_user),
+    conn=Depends(get_db),
+):
+    """Implementa Triple Validación (Poka-Yoke): QR + Inventario + Serie."""
+    qr_token = data.get("qr_token")
+    inventario = (data.get("inventario") or "").strip()
+    serie = (data.get("serie") or "").strip()
+
+    if not qr_token or not inventario or not serie:
+        raise HTTPException(status_code=400, detail="Faltan datos para la triple validación")
+
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        # Buscar equipo que coincida con el QR
+        await cur.execute(
+            "SELECT id, nombre, inventario, serie FROM equipos WHERE qr_token = %s",
+            (qr_token,)
+        )
+        equipo = await cur.fetchone()
+
+        es_valido = False
+        match_inventario = False
+        match_serie = False
+        error_msg = ""
+
+        if equipo:
+            match_inventario = (equipo["inventario"] == inventario)
+            match_serie = (equipo["serie"] == serie)
+            es_valido = match_inventario and match_serie
+            
+            if not es_valido:
+                error_msg = f"Inconsistencia: Invenario={match_inventario}, Serie={match_serie}"
+        else:
+            error_msg = "Token QR no reconocido"
+
+        # Registrar el intento (Log Poka-Yoke)
+        await cur.execute(
+            """INSERT INTO validaciones_pokayoke 
+               (equipo_id, usuario_id, qr_escaneado, inventario_leido, serie_leida, es_valido, observaciones)
+               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            (
+                equipo["id"] if equipo else None,
+                user["id"],
+                qr_token,
+                inventario,
+                serie,
+                es_valido,
+                error_msg
+            )
+        )
+        
+        # Integración con Auditoría NOM-016 (Habilidad 4)
+        # Se registrará el log en la tabla de auditoría mediante un trigger o llamada directa.
+        # Por ahora lo dejamos como el log dedicado de validación.
+
+    return {
+        "ok": es_valido,
+        "equipo": equipo if es_valido else None,
+        "detail": error_msg if not es_valido else "Validación triple exitosa",
+        "matches": {
+            "inventario": match_inventario,
+            "serie": match_serie
+        }
+    }

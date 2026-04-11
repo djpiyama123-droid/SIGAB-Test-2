@@ -6,6 +6,11 @@ import os
 import shutil
 from datetime import datetime
 from config import get_db, UPLOAD_DIR
+from services.pdf_service import generar_pdf_orden
+from services.reporte_pdf_service import generar_pdf_reporte_diario
+from services.mail_service import enviar_reporte_email
+from services import gemma_service
+from fastapi.responses import Response, JSONResponse
 
 router = APIRouter()
 
@@ -273,4 +278,102 @@ async def cambiar_estado_equipo(
         "ok": True,
         "mensaje": f"Equipo {equipo['nombre']} ({equipo_serie}): {estado_anterior} → {nuevo_estado}",
     }
+
+
+@router.get("/equipo-pdf/{serie}")
+async def get_equipo_pdf(serie: str, conn=Depends(get_db)):
+    """Genera un reporte PDF rápido de un equipo para envío por WhatsApp/Correo."""
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        await cur.execute("SELECT id, nombre, serie, marca, modelo, area, piso FROM equipos WHERE serie = %s", (serie,))
+        equipo = await cur.fetchone()
+        if not equipo:
+            return {"ok": False, "mensaje": "Equipo no encontrado"}
+
+        # Obtenemos la última orden de servicio para este equipo
+        await cur.execute("SELECT * FROM ordenes_servicio WHERE equipo_id = %s ORDER BY fecha DESC LIMIT 1", (equipo["id"],))
+        orden = await cur.fetchone()
+        
+        if not orden:
+             # Formato básico si no hay orden
+             orden = {
+                 "numero_orden": "CONSULTA-RAPIDA",
+                 "equipo_nombre": equipo["nombre"],
+                 "equipo_serie": equipo["serie"],
+                 "equipo_marca": equipo["marca"],
+                 "equipo_modelo": equipo["modelo"],
+                 "area": equipo["area"],
+                 "piso": equipo["piso"],
+                 "tipo_mantenimiento": "CONSULTA",
+                 "falla_reportada": "Consulta de estatus vía WhatsApp Bot",
+                 "descripcion_servicio": "Reporte generado automáticamente por SIGAB Copilot.",
+                 "tecnico_nombre": "SIGAB Bot",
+                 "fecha": datetime.now().strftime("%Y-%m-%d")
+             }
+             materiales = []
+        else:
+             await cur.execute("SELECT * FROM os_materiales WHERE orden_id = %s", (orden["id"],))
+             materiales = await cur.fetchall()
+        
+        pdf_bytes = generar_pdf_orden(orden, materiales, [])
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"inline; filename=Reporte_{serie}.pdf"}
+        )
+
+
+@router.post("/enviar-reporte")
+async def api_enviar_reporte(
+    serie: str = Form(...),
+    email: str = Form(...),
+    conn=Depends(get_db)
+):
+    """Genera y envía por correo el reporte de un equipo."""
+    # Reutilizamos la lógica del PDF
+    res = await get_equipo_pdf(serie, conn)
+    if isinstance(res, dict) and not res.get("ok"):
+        return res
+    
+    pdf_bytes = res.body
+    
+    asunto = f"Reporte Técnico SIGAB - Equipo {serie}"
+    cuerpo = f"Se adjunta el reporte técnico solicitado del equipo con serie {serie}.\nGenerado automáticamente por SIGAB."
+    
+    exito = enviar_reporte_email(email, asunto, cuerpo, f"Reporte_{serie}.pdf", pdf_bytes)
+    
+    if exito:
+        return {"ok": True, "mensaje": f"Reporte enviado a {email}"}
+    else:
+        return {"ok": False, "mensaje": "Error al enviar el correo"}
+
+
+@router.post("/chat")
+async def ai_chat_bot(data: dict):
+    """Interfaz de chat para el Bot (no streaming, respuesta rápida)."""
+    mensaje = data.get("mensaje")
+    if not mensaje:
+        return {"ok": False, "mensaje": "Falta mensaje"}
+    
+    # Prompt simplificado para el bot
+    prompt = f"Actúa como SIGAB Assistant, un experto en bioingeniería en el IMSS. Responde de forma concisa al siguiente mensaje: {mensaje}"
+    
+    try:
+        respuesta = await gemma_service.consultar_gemma_no_streaming(prompt)
+        return {"ok": True, "respuesta": respuesta}
+    except Exception as e:
+        return {"ok": False, "mensaje": str(e)}
+
+
+@router.get("/check-calibraciones")
+async def check_calibraciones(conn=Depends(get_db)):
+    """Resumen de calibraciones próximas a vencer para el Bot."""
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        await cur.execute("""
+            SELECT m.*, e.nombre, e.serie 
+            FROM metrologia_calibracion m 
+            JOIN equipos e ON m.equipo_id = e.id 
+            WHERE m.proxima_calibracion <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+        """)
+        vencidas = await cur.fetchall()
+        return {"ok": True, "vencidas": vencidas}
 

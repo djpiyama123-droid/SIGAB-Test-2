@@ -17,3 +17,311 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #64748b;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   QR LABEL STYLES — On-screen and Print
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Carta Label (on-screen preview & print) ── */
+.qr-label-carta {
+  width: 180px;
+  background: #fff;
+  color: #000;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  overflow: hidden;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+.qr-label-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  background: linear-gradient(135deg, #065F46, #047857);
+  color: #fff;
+}
+.qr-label-imss-icon {
+  flex-shrink: 0;
+}
+.qr-label-institution {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.qr-label-qr-container {
+  display: flex;
+  justify-content: center;
+  padding: 10px 8px 6px;
+}
+.qr-label-info {
+  padding: 0 10px 6px;
+  text-align: center;
+}
+.qr-label-nombre {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 1.2;
+  margin-bottom: 2px;
+  color: #111;
+}
+.qr-label-serie {
+  font-size: 11px;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  color: #000;
+  letter-spacing: 0.5px;
+}
+.qr-label-ubicacion {
+  font-size: 7px;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.qr-label-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: #f3f4f6;
+  border-top: 1px solid #e5e7eb;
+  font-size: 6px;
+  color: #9ca3af;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ── Zebra Label (horizontal sticker 2"×1") ── */
+.qr-label-zebra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 192px;   /* ~2 inches at 96dpi */
+  height: 96px;   /* ~1 inch at 96dpi */
+  background: #fff;
+  color: #000;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 6px;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  overflow: hidden;
+}
+.qr-zebra-qr {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qr-zebra-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.qr-zebra-header-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: 1px;
+}
+.qr-zebra-imss {
+  flex-shrink: 0;
+}
+.qr-zebra-inst {
+  font-size: 5.5px;
+  font-weight: 700;
+  color: #065F46;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.qr-zebra-nombre {
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 1.15;
+  color: #000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.qr-zebra-serie {
+  font-size: 8px;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  color: #000;
+  letter-spacing: 0.3px;
+}
+.qr-zebra-ubicacion {
+  font-size: 5.5px;
+  color: #6b7280;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.qr-zebra-sigab {
+  font-size: 5px;
+  color: #9ca3af;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* ── Print-only zones hidden on screen ── */
+.qr-print-carta,
+.qr-print-zebra {
+  display: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   PRINT MEDIA — Hide app chrome, show labels
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  /* ── Hide ALL app chrome ── */
+  body {
+    background: white !important;
+    color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide sidebar, header, toolbar, and screen-only UI */
+  aside,
+  header,
+  nav,
+  .print\\:hidden,
+  .qr-batch-screen > .print\\:hidden,
+  .qr-batch-screen > div:not(.qr-print-carta):not(.qr-print-zebra) {
+    display: none !important;
+  }
+
+  /* Ensure the outermost layout wrapper doesn't constrain */
+  .qr-batch-screen {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     CARTA MODE — Letter paper 3×4 grid
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  html[data-print-mode="carta"] .qr-print-zebra {
+    display: none !important;
+  }
+
+  html[data-print-mode="carta"] .qr-print-carta {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+  }
+
+  html[data-print-mode="carta"] .qr-label-carta {
+    width: auto;
+    border-radius: 0;
+    border: 1px dashed #ccc;
+    padding: 6px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  html[data-print-mode="carta"] .qr-label-carta .qr-label-header {
+    border-radius: 0;
+  }
+
+  html[data-print-mode="carta"] .qr-label-carta .qr-label-qr-container {
+    padding: 12px 8px 8px;
+  }
+
+  html[data-print-mode="carta"] .qr-label-carta .qr-label-qr-container svg {
+    width: 120px !important;
+    height: 120px !important;
+  }
+
+  html[data-print-mode="carta"] .qr-label-carta .qr-label-nombre {
+    font-size: 10px;
+  }
+
+  html[data-print-mode="carta"] .qr-label-carta .qr-label-serie {
+    font-size: 12px;
+  }
+
+  html[data-print-mode="carta"] .qr-label-carta .qr-label-ubicacion {
+    font-size: 8px;
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     ZEBRA MODE — Single sticker per page
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  html[data-print-mode="zebra"] .qr-print-carta {
+    display: none !important;
+  }
+
+  html[data-print-mode="zebra"] .qr-print-zebra {
+    display: block !important;
+  }
+
+  html[data-print-mode="zebra"] .qr-zebra-page {
+    page-break-after: always;
+    break-after: page;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 51mm;
+    height: 25mm;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  html[data-print-mode="zebra"] .qr-label-zebra {
+    width: 51mm;
+    height: 25mm;
+    border: none;
+    border-radius: 0;
+    padding: 1mm 2mm;
+    gap: 2mm;
+  }
+
+  html[data-print-mode="zebra"] .qr-zebra-qr svg {
+    width: 20mm !important;
+    height: 20mm !important;
+  }
+
+  html[data-print-mode="zebra"] .qr-zebra-inst {
+    color: #000 !important;
+  }
+
+  html[data-print-mode="zebra"] .qr-zebra-nombre {
+    font-size: 7pt;
+  }
+
+  html[data-print-mode="zebra"] .qr-zebra-serie {
+    font-size: 8pt;
+  }
+
+  html[data-print-mode="zebra"] .qr-zebra-ubicacion {
+    font-size: 5pt;
+    color: #000 !important;
+  }
+
+  html[data-print-mode="zebra"] .qr-zebra-sigab {
+    color: #666 !important;
+  }
+}
+
+/* @page rules — default Carta format.
+   For Zebra, we dynamically inject a <style> from JS to override. */
+@page {
+  size: letter portrait;
+  margin: 10mm;
+}
