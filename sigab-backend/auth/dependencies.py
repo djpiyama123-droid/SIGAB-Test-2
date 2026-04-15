@@ -1,26 +1,27 @@
 """FastAPI dependencies para extraer y validar el usuario actual."""
 from typing import Optional
-import aiomysql
 from fastapi import Depends, Header, HTTPException, status
 from jose import JWTError
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-from config import get_db
+from database import get_async_session
 from auth.jwt_handler import decode_token
+from models.usuario import Usuario
 
-
-async def _read_user(conn, user_id: int) -> Optional[dict]:
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute(
-            "SELECT id, nombre, matricula, rol, email, activo "
-            "FROM usuarios WHERE id = %s",
-            (user_id,),
-        )
-        return await cur.fetchone()
+async def _read_user(session: AsyncSession, user_id: int) -> Optional[dict]:
+    stmt = select(Usuario).where(Usuario.id == user_id)
+    result = await session.execute(stmt)
+    user = result.scalar_one_or_none()
+    if user:
+        # Devolvemos un dict para mantener compatibilidad con el resto del código que espera dicts
+        return user.model_dump()
+    return None
 
 
 async def get_current_user_optional(
     authorization: Optional[str] = Header(default=None),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ) -> Optional[dict]:
     """Devuelve el user si hay token válido, None si no hay header.
 
@@ -38,7 +39,8 @@ async def get_current_user_optional(
         uid = int(payload["sub"])
     except (KeyError, ValueError, TypeError):
         return None
-    user = await _read_user(conn, uid)
+    
+    user = await _read_user(session, uid)
     if not user or not user.get("activo"):
         return None
     return user
@@ -46,10 +48,10 @@ async def get_current_user_optional(
 
 async def get_current_user(
     authorization: Optional[str] = Header(default=None),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ) -> dict:
     """Igual que el optional pero lanza 401 si no hay user válido."""
-    user = await get_current_user_optional(authorization=authorization, conn=conn)
+    user = await get_current_user_optional(authorization=authorization, session=session)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

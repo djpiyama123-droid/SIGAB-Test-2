@@ -334,6 +334,117 @@ async function cmdAI(mensaje) {
   }
 }
 
+// ── Casillas CENEVAL desde foto ────────────────────────────────────────────────
+/**
+ * Handler para fotos enviadas con caption "/casillas [serie]"
+ * O mensajes de texto "/casillas [orden_id]"
+ * Sube la imagen a POST /api/casillas/ocr/{orden_id} y responde con resumen.
+ */
+async function cmdCasillasOCR(mediaBuffer, mimeType, args) {
+  const CASILLAS_API = 'http://localhost:8000/api/casillas';
+
+  // Si se mandó sin imagen o sin orden_id, dar instrucciones
+  if (!args && !mediaBuffer) {
+    return `📋 *Casillas CENEVAL — Instrucciones*
+
+Para registrar desde foto del formato físico:
+1. Toma foto clara del formato SIGAB relleno
+2. Envía la foto con caption: */casillas [número_orden]*
+   Ej: _/casillas 123_
+
+O si no sabes el número de orden:
+   */casillas serie [no_serie]*
+   Ej: _/casillas serie 82-0751_
+
+El sistema usará IA para leer las casillas automáticamente. ✅`;
+  }
+
+  try {
+    let ordenId = null;
+    const argsTrimmed = (args || '').trim();
+
+    // Modo: /casillas serie [serie] → buscar orden abierta del equipo
+    if (argsTrimmed.toLowerCase().startsWith('serie ')) {
+      const serie = argsTrimmed.slice(6).trim();
+      const searchRes = await fetch(`http://localhost:8000/api/openclaw/buscar-equipo?q=${encodeURIComponent(serie)}`);
+      const searchJson = await searchRes.json();
+      if (!searchJson.ok || !searchJson.resultados?.length) {
+        return `❌ Equipo con serie "${serie}" no encontrado en SIGAB`;
+      }
+      const equipoId = searchJson.resultados[0].id;
+
+      // Crear OS automática para el equipo
+      const osParams = new URLSearchParams({
+        equipo_serie: serie,
+        tipo_mantenimiento: 'correctivo',
+        falla_reportada: 'Reportado vía WhatsApp foto-casillas',
+        origen: 'whatsapp_foto',
+        prioridad: 'media',
+      });
+      const osRes = await fetch('http://localhost:8000/api/openclaw/ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: osParams.toString(),
+      });
+      const osJson = await osRes.json();
+      if (!osJson.ok) return `❌ No se pudo crear la OS: ${osJson.mensaje}`;
+      ordenId = osJson.orden_id;
+    } else if (/^\d+$/.test(argsTrimmed)) {
+      ordenId = parseInt(argsTrimmed, 10);
+    } else {
+      return `❌ Formato incorrecto.\nUso: */casillas [número_orden]* o */casillas serie [no_serie]*`;
+    }
+
+    // Si hay imagen, enviar a OCR
+    if (mediaBuffer) {
+      const FormData = (await import('formdata-node')).FormData;
+      const { Blob } = await import('buffer');
+
+      const fd = new FormData();
+      fd.set('foto', new Blob([mediaBuffer], { type: mimeType || 'image/jpeg' }), 'foto.jpg');
+
+      const ocrRes = await fetch(`${CASILLAS_API}/ocr/${ordenId}`, {
+        method: 'POST',
+        body: fd,
+      });
+
+      if (!ocrRes.ok) {
+        const err = await ocrRes.json();
+        return `❌ Error en OCR: ${err.detail || 'Intenta de nuevo'}`;
+      }
+
+      const casillas = await ocrRes.json();
+
+      const DOMINIO_LABEL = { medico: '⚕ Médico', polivalente: '🛏 Polivalente', ac_infra: '❄ A/C' };
+      const ESTADO_EMOJI  = { operativo: '🟢', operativo_obs: '🟡', fuera_servicio: '🔴', en_taller: '🔵' };
+      const RESOLUCION_LABEL = { sitio: '✅ Sitio', refaccion: '🔩 Refacción', taller: '🏭 Taller', externo: '🤝 Externo', baja: '🗑 Baja' };
+
+      // Contar fallas marcadas
+      const fallasMarcadas = Object.entries(casillas)
+        .filter(([k, v]) => k.startsWith('falla_') && v === 1)
+        .map(([k]) => k.replace('falla_', '').replace(/_/g, ' '));
+
+      let reply = `📋 *OS #${ordenId} — Casillas leídas* ✅\n\n`;
+      reply += `${DOMINIO_LABEL[casillas.dominio] || casillas.dominio} · ${casillas.tipo_servicio}\n`;
+      reply += `Fallas detectadas: ${fallasMarcadas.length > 0 ? fallasMarcadas.join(', ') : 'ninguna'}\n`;
+      reply += `Resolución: ${RESOLUCION_LABEL[casillas.resolucion] || casillas.resolucion}\n`;
+      reply += `Estado final: ${ESTADO_EMOJI[casillas.estado_final] || ''} ${casillas.estado_final.replace('_', ' ')}\n`;
+      if (casillas.observaciones_breves) reply += `Obs: _${casillas.observaciones_breves}_\n`;
+      if (casillas.ocr_confianza) reply += `\n🎯 Confianza OCR: ${Math.round(casillas.ocr_confianza * 100)}%`;
+      reply += `\n\n_Datos guardados en SIGAB. Dashboard actualizado._`;
+
+      return reply;
+    }
+
+    // Sin imagen → instrucciones
+    return `📋 OS #${ordenId} encontrada.\nAhora envía la *foto del formato físico* con caption: */casillas ${ordenId}*`;
+
+  } catch (err) {
+    console.error('cmdCasillasOCR error:', err);
+    return `❌ Error procesando casillas: ${err.message}`;
+  }
+}
+
 // ── Info de Proveedor/Contrato ─────────────────────────────
 async function cmdProveedor(serie) {
   if (!serie) return '❌ Uso: */proveedor* _serie_';
@@ -424,9 +535,30 @@ export async function handleCommand(text, senderName) {
     case 'servicio':
       return cmdProveedor(args);
 
+    case 'casillas':
+    case 'ceneval':
+    case 'conservacion':
+    case 'formato':
+      // mediaBuffer y mimeType se pasan desde index.js cuando hay imagen adjunta
+      return cmdCasillasOCR(null, null, args);
+
     default:
       return null; // Comando no reconocido, no responder
   }
+}
+
+/**
+ * Llamada especial desde index.js cuando llega una IMAGEN con caption /casillas
+ * Debe invocarse ANTES de handleCommand si el mensaje es de tipo imagen.
+ */
+export async function handleImageCommand(text, mediaBuffer, mimeType) {
+  const trimmed = (text || '').trim();
+  if (trimmed.toLowerCase().startsWith('/casillas') || trimmed.toLowerCase().startsWith('/ceneval')) {
+    const spaceIdx = trimmed.indexOf(' ');
+    const args = spaceIdx > 0 ? trimmed.slice(spaceIdx + 1).trim() : '';
+    return cmdCasillasOCR(mediaBuffer, mimeType, args);
+  }
+  return null; // No es un comando de casillas
 }
 
 // Exportar reporte para el scheduler

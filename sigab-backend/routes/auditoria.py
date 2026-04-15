@@ -6,34 +6,47 @@ from services.audit_service import AuditService
 
 router = APIRouter()
 
+from sqlmodel import select, desc
+from sqlmodel.ext.asyncio.session import AsyncSession
+from database import get_async_session
+from auth.dependencies import get_current_user, require_roles
+from services.audit_service import AuditService
+from models.soporte import AuditLog
+from models.usuario import Usuario
+
+router = APIRouter()
+
 @router.get("/")
 async def get_audit_log(
     limit: int = 100,
     offset: int = 0,
     user: dict = Depends(require_roles(["admin", "supervisor"])),
-    conn=Depends(get_db)
+    session: AsyncSession = Depends(get_async_session)
 ):
     """Obtiene el log de auditoría NOM-016."""
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute(
-            """SELECT a.*, u.nombre as usuario_nombre 
-               FROM log_auditoria_nom016 a
-               LEFT JOIN usuarios u ON a.usuario_id = u.id
-               ORDER BY a.id DESC LIMIT %s OFFSET %s""",
-            (limit, offset)
-        )
-        logs = await cur.fetchall()
-        
-    for log in logs:
-        if hasattr(log["timestamp"], "isoformat"):
-            log["timestamp"] = log["timestamp"].isoformat()
+    stmt = select(AuditLog, Usuario.nombre.label("usuario_nombre"))\
+           .outerjoin(Usuario, AuditLog.usuario_id == Usuario.id)\
+           .order_by(desc(AuditLog.id))\
+           .limit(limit).offset(offset)
+    
+    result = await session.execute(stmt)
+    rows = result.all()
+    
+    logs_list = []
+    for log, u_nombre in rows:
+        d = log.model_dump()
+        d["usuario_nombre"] = u_nombre
+        logs_list.append(d)
             
-    return {"logs": logs}
+    return {"logs": logs_list}
 
 @router.get("/verificar")
-async def verify_audit_chain(user: dict = Depends(require_roles(["admin"]))):
+async def verify_audit_chain(
+    user: dict = Depends(require_roles(["admin"])),
+    session: AsyncSession = Depends(get_async_session)
+):
     """Verifica la integridad de la cadena de bloques del log de auditoría."""
-    results = await AuditService.verify_chain()
+    results = await AuditService.verify_chain(session=session)
     broken = [r for r in results if not r["valido"]]
     
     return {

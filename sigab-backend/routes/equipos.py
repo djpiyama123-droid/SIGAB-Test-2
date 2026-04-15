@@ -20,61 +20,41 @@ from auth.permissions import (
 from services.qr_service import generate_qr_png, generate_qr_label_a6_pdf
 from services.audit_service import AuditService
 
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+from database import get_async_session
+from models.equipo import Equipo
+from models.orden_servicio import OrdenServicio
+from models.preventivo import PreventivoProgramado
+
 router = APIRouter()
 
-
-# IMPORTANTE: rutas estáticas ANTES de /{equipo_id} para evitar colisión
+# ... rutas ...
 
 @router.get("/public/{qr_token}")
-async def equipo_por_qr(qr_token: str, conn=Depends(get_db)):
+async def equipo_por_qr(qr_token: str, session: AsyncSession = Depends(get_async_session)):
     """Endpoint PÚBLICO (sin auth) para escaneo QR.
     Devuelve datos básicos del equipo identificado por su qr_token opaco."""
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute(
-            """SELECT id, nombre, marca, modelo, serie, estado, criticidad,
-                      area, piso, imagen_url, tipo_equipo, clase_cofepris,
-                      fecha_proximo_mantenimiento, fecha_ultimo_mantenimiento,
-                      fecha_compra, proveedor_servicio, numero_contrato_servicio,
-                      manual_url, video_url
-               FROM equipos WHERE qr_token = %s""",
-            (qr_token,),
-        )
-        equipo = await cur.fetchone()
+    
+    # Buscar equipo por token
+    statement = select(Equipo).where(Equipo.qr_token == qr_token)
+    result = await session.execute(statement)
+    equipo = result.scalar_one_or_none()
 
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado o QR inválido")
 
-    # Serializar fechas
-    for campo in ['fecha_proximo_mantenimiento', 'fecha_ultimo_mantenimiento', 'fecha_compra']:
-        if equipo.get(campo) and hasattr(equipo[campo], 'isoformat'):
-            equipo[campo] = equipo[campo].isoformat()
-
     # Historial resumido (últimas 5 órdenes, público)
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute(
-            """SELECT numero_orden, tipo_mantenimiento, estado, fecha, tecnico_nombre
-               FROM ordenes_servicio WHERE equipo_id = %s
-               ORDER BY fecha DESC LIMIT 5""",
-            (equipo["id"],),
-        )
-        ordenes = await cur.fetchall()
-        for o in ordenes:
-            for k, v in list(o.items()):
-                if hasattr(v, 'isoformat'):
-                    o[k] = v.isoformat()
+    stmt_ordenes = select(OrdenServicio).where(OrdenServicio.equipo_id == equipo.id).order_by(OrdenServicio.fecha.desc()).limit(5)
+    res_ordenes = await session.execute(stmt_ordenes)
+    ordenes = res_ordenes.scalars().all()
 
-        await cur.execute(
-            """SELECT tipo_preventivo, proxima_ejecucion, ultima_ejecucion, frecuencia_dias
-               FROM preventivos_programados
-               WHERE equipo_id = %s AND activo = TRUE
-               ORDER BY proxima_ejecucion ASC LIMIT 3""",
-            (equipo["id"],),
-        )
-        preventivos = await cur.fetchall()
-        for p in preventivos:
-            for k, v in list(p.items()):
-                if hasattr(v, 'isoformat'):
-                    p[k] = v.isoformat()
+    stmt_prev = select(PreventivoProgramado).where(
+        PreventivoProgramado.equipo_id == equipo.id, 
+        PreventivoProgramado.activo == True
+    ).order_by(PreventivoProgramado.proxima_ejecucion.asc()).limit(3)
+    res_prev = await session.execute(stmt_prev)
+    preventivos = res_prev.scalars().all()
 
     return {
         "equipo": equipo,
@@ -83,24 +63,28 @@ async def equipo_por_qr(qr_token: str, conn=Depends(get_db)):
     }
 
 
+from models.mapa import ZonasMapa
+from sqlmodel import func
+
 @router.get("/areas/catalogo")
-async def catalogo_areas(conn=Depends(get_db)):
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT DISTINCT area FROM equipos WHERE area IS NOT NULL ORDER BY area")
-        areas = await cur.fetchall()
-        await cur.execute("SELECT DISTINCT piso FROM equipos WHERE piso IS NOT NULL ORDER BY piso")
-        pisos = await cur.fetchall()
-    return {"areas": [a["area"] for a in areas], "pisos": [p["piso"] for p in pisos]}
+async def catalogo_areas(session: AsyncSession = Depends(get_async_session)):
+    stmt_areas = select(Equipo.area).where(Equipo.area != None).distinct().order_by(Equipo.area)
+    res_areas = await session.execute(stmt_areas)
+    areas = res_areas.scalars().all()
+
+    stmt_pisos = select(Equipo.piso).where(Equipo.piso != None).distinct().order_by(Equipo.piso)
+    res_pisos = await session.execute(stmt_pisos)
+    pisos = res_pisos.scalars().all()
+    
+    return {"areas": areas, "pisos": pisos}
 
 
 @router.get("/zonas/catalogo")
-async def catalogo_zonas(conn=Depends(get_db)):
+async def catalogo_zonas(session: AsyncSession = Depends(get_async_session)):
     """Lista las zonas del mapa para el formulario de alta/edición de equipos."""
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute(
-            "SELECT id, nombre, codigo, piso FROM zonas_mapa WHERE activa = TRUE ORDER BY orden, nombre"
-        )
-        zonas = await cur.fetchall()
+    stmt = select(ZonasMapa).where(ZonasMapa.activa == True).order_by(ZonasMapa.orden, ZonasMapa.nombre)
+    res = await session.execute(stmt)
+    zonas = res.scalars().all()
     return {"zonas": zonas}
 
 
@@ -108,76 +92,73 @@ async def catalogo_zonas(conn=Depends(get_db)):
 async def crear_equipo(
     data: dict,
     user: dict = Depends(require_action("create_equipo")),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Crea un nuevo equipo biomédico en el inventario."""
     if not data.get("nombre") or not data.get("serie"):
         raise HTTPException(status_code=400, detail="Nombre y serie son obligatorios")
 
-    campos = [
-        "serie", "inventario", "nombre", "marca", "modelo", "ubicacion", "piso", "area",
-        "estado", "criticidad", "fecha_instalacion", "fecha_ultimo_mantenimiento",
-        "fecha_proximo_mantenimiento", "vida_util_anios", "numero_contrato",
-        "proveedor_servicio", "tipo_equipo", "clase_cofepris", "fecha_compra",
-        "numero_contrato_servicio", "zona_id", "pos_x", "pos_y", "imagen_url",
-        "manual_url", "video_url",
-    ]
-    valores = {k: data.get(k) for k in campos if data.get(k) is not None and data.get(k) != ""}
+    # Crear instancia del modelo
+    nuevo_equipo = Equipo(**data)
+    
+    # Valores por defecto y token
+    if not nuevo_equipo.estado:
+        nuevo_equipo.estado = "operativo"
+    if not nuevo_equipo.criticidad:
+        nuevo_equipo.criticidad = "media"
+    if nuevo_equipo.pos_x is None:
+        nuevo_equipo.pos_x = 50.0
+    if nuevo_equipo.pos_y is None:
+        nuevo_equipo.pos_y = 50.0
+    
+    nuevo_equipo.qr_token = secrets.token_urlsafe(12)[:16]
 
-    if not valores.get("estado"):
-        valores["estado"] = "operativo"
-    if not valores.get("criticidad"):
-        valores["criticidad"] = "media"
-    if "pos_x" not in valores:
-        valores["pos_x"] = 50.0
-    if "pos_y" not in valores:
-        valores["pos_y"] = 50.0
+    try:
+        session.add(nuevo_equipo)
+        await session.commit()
+        await session.refresh(nuevo_equipo)
+        
+        # Auditoría NOM-016
+        await AuditService.log_event(
+            usuario_id=user["id"],
+            accion="CREATE_EQUIPO",
+            entidad="equipos",
+            entidad_id=nuevo_equipo.id,
+            datos=data
+        )
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=409, detail=f"Error al crear: {str(e)}")
 
-    # Generar token QR opaco al crear
-    valores["qr_token"] = secrets.token_urlsafe(12)[:16]
+    return {"ok": True, "id": nuevo_equipo.id, "qr_token": nuevo_equipo.qr_token, "mensaje": f"Equipo '{nuevo_equipo.nombre}' creado"}
 
-    cols = ", ".join(valores.keys())
-    placeholders = ", ".join(["%s"] * len(valores))
 
-    async with conn.cursor() as cur:
-        try:
-            await cur.execute(
-                f"INSERT INTO equipos ({cols}) VALUES ({placeholders})",
-                list(valores.values()),
-            )
-            equipo_id = cur.lastrowid
-            
-            # Auditoría NOM-016
-            await AuditService.log_event(
-                usuario_id=user["id"],
-                accion="CREATE_EQUIPO",
-                entidad="equipos",
-                entidad_id=equipo_id,
-                datos=valores
-            )
-        except aiomysql.IntegrityError as e:
-            raise HTTPException(status_code=409, detail=f"Conflicto al crear: {e}")
-
-    return {"ok": True, "id": equipo_id, "qr_token": valores["qr_token"], "mensaje": f"Equipo '{valores['nombre']}' creado"}
-
+from models.trazabilidad import Trazabilidad
 
 @router.delete("/{equipo_id}")
 async def eliminar_equipo(
     equipo_id: int,
     user: dict = Depends(require_action("delete_equipo")),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Elimina un equipo del inventario (cascade a trazabilidad)."""
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT id, nombre, imagen_url FROM equipos WHERE id = %s", (equipo_id,))
-        equipo = await cur.fetchone()
+    # Buscar equipo
+    equipo = await session.get(Equipo, equipo_id)
+    if not equipo:
+        raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
-        if not equipo:
-            raise HTTPException(status_code=404, detail="Equipo no encontrado")
+    nombre_equipo = equipo.nombre
+    imagen_url = equipo.imagen_url
 
-        # Liberar referencias en órdenes para no romper FK
-        await cur.execute("UPDATE ordenes_servicio SET equipo_id = NULL WHERE equipo_id = %s", (equipo_id,))
-        await cur.execute("DELETE FROM equipos WHERE id = %s", (equipo_id,))
+    try:
+        # Liberar referencias en órdenes para no romper FK (si no es ON DELETE CASCADE)
+        # Nota: En SQLAlchemy/SQLModel podemos configurar la relación, 
+        # pero aquí hacemos el update manual para replicar la lógica original.
+        stmt_cleanup = sa.update(OrdenServicio).where(OrdenServicio.equipo_id == equipo_id).values(equipo_id=None)
+        await session.execute(stmt_cleanup)
+        
+        await session.delete(equipo)
+        await session.commit()
 
         # Auditoría NOM-016
         await AuditService.log_event(
@@ -185,19 +166,22 @@ async def eliminar_equipo(
             accion="DELETE_EQUIPO",
             entidad="equipos",
             entidad_id=equipo_id,
-            datos={"nombre": equipo["nombre"]}
+            datos={"nombre": nombre_equipo}
         )
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al eliminar: {str(e)}")
 
     # Borrar imagen física si existía
-    if equipo.get("imagen_url"):
+    if imagen_url:
         try:
-            ruta = equipo["imagen_url"].lstrip("/")
+            ruta = imagen_url.lstrip("/")
             if os.path.isfile(ruta):
                 os.remove(ruta)
         except Exception:
             pass
 
-    return {"ok": True, "mensaje": f"Equipo '{equipo['nombre']}' eliminado"}
+    return {"ok": True, "mensaje": f"Equipo '{nombre_equipo}' eliminado"}
 
 
 @router.post("/{equipo_id}/imagen")
@@ -205,7 +189,7 @@ async def subir_imagen_equipo(
     equipo_id: int,
     file: UploadFile = File(...),
     user: dict = Depends(require_action("edit_equipo")),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Sube una imagen PNG/JPG y la asocia al equipo."""
     extensiones_validas = {".png", ".jpg", ".jpeg", ".webp"}
@@ -234,78 +218,51 @@ async def subir_imagen_equipo(
     # URL servida vía /static
     url_publica = f"/static/uploads/equipos/{nombre_archivo}"
 
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute(
-            "SELECT imagen_url FROM equipos WHERE id = %s", (equipo_id,)
-        )
-        existente = await cur.fetchone()
-        if not existente:
-            os.remove(ruta_disco)
-            raise HTTPException(status_code=404, detail="Equipo no encontrado")
+    # Buscar equipo
+    equipo = await session.get(Equipo, equipo_id)
+    if not equipo:
+        os.remove(ruta_disco)
+        raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
-        # Borrar imagen anterior
-        if existente.get("imagen_url"):
-            try:
-                anterior = existente["imagen_url"].lstrip("/")
-                if os.path.isfile(anterior):
-                    os.remove(anterior)
-            except Exception:
-                pass
+    # Borrar imagen anterior si existe
+    if equipo.imagen_url:
+        try:
+            anterior = equipo.imagen_url.lstrip("/")
+            if os.path.isfile(anterior):
+                os.remove(anterior)
+        except Exception:
+            pass
 
-        await cur.execute(
-            "UPDATE equipos SET imagen_url = %s WHERE id = %s",
-            (url_publica, equipo_id),
-        )
+    equipo.imagen_url = url_publica
+    await session.commit()
 
     return {"ok": True, "imagen_url": url_publica}
 
 
 @router.get("/{equipo_id}/historial")
-async def historial_equipo(equipo_id: int, conn=Depends(get_db)):
+async def historial_equipo(equipo_id: int, session: AsyncSession = Depends(get_async_session)):
     """Devuelve historial completo de órdenes y traslados para el panel de Ficha Técnica."""
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute(
-            """SELECT id, numero_orden, tipo_mantenimiento, estado, fecha,
-                      falla_reportada, tecnico_nombre, prioridad, descripcion_servicio
-               FROM ordenes_servicio
-               WHERE equipo_id = %s
-               ORDER BY fecha DESC, id DESC LIMIT 50""",
-            (equipo_id,),
-        )
-        ordenes = await cur.fetchall()
+    
+    stmt_ordenes = select(OrdenServicio).where(OrdenServicio.equipo_id == equipo_id).order_by(OrdenServicio.fecha.desc(), OrdenServicio.id.desc()).limit(50)
+    res_ordenes = await session.execute(stmt_ordenes)
+    ordenes = res_ordenes.scalars().all()
 
-        await cur.execute(
-            """SELECT id, area_origen, area_destino, piso_origen, piso_destino,
-                      motivo, fecha_movimiento
-               FROM trazabilidad
-               WHERE equipo_id = %s
-               ORDER BY fecha_movimiento DESC LIMIT 50""",
-            (equipo_id,),
-        )
-        traslados = await cur.fetchall()
+    stmt_traslados = select(Trazabilidad).where(Trazabilidad.equipo_id == equipo_id).order_by(Trazabilidad.fecha_movimiento.desc()).limit(50)
+    res_traslados = await session.execute(stmt_traslados)
+    traslados = res_traslados.scalars().all()
 
-        await cur.execute(
-            """SELECT pp.id, pp.tipo_preventivo, pp.proxima_ejecucion,
-                      pp.ultima_ejecucion, pp.frecuencia_dias
-               FROM preventivos_programados pp
-               WHERE pp.equipo_id = %s AND pp.activo = TRUE
-               ORDER BY pp.proxima_ejecucion ASC""",
-            (equipo_id,),
-        )
-        preventivos = await cur.fetchall()
-
-    # Serializar fechas
-    for col in (ordenes, traslados, preventivos):
-        for fila in col:
-            for k, v in list(fila.items()):
-                if hasattr(v, "isoformat"):
-                    fila[k] = v.isoformat()
+    stmt_preventivos = select(PreventivoProgramado).where(
+        PreventivoProgramado.equipo_id == equipo_id, 
+        PreventivoProgramado.activo == True
+    ).order_by(PreventivoProgramado.proxima_ejecucion.asc())
+    res_preventivos = await session.execute(stmt_preventivos)
+    preventivos = res_preventivos.scalars().all()
 
     return {
         "equipo_id": equipo_id,
-        "ordenes": ordenes,
-        "traslados": traslados,
-        "preventivos": preventivos,
+        "ordenes": [o.model_dump() for o in ordenes],
+        "traslados": [t.model_dump() for t in traslados],
+        "preventivos": [p.model_dump() for p in preventivos],
     }
 
 
@@ -318,76 +275,75 @@ async def listar_equipos(
     limit: int = 100,
     offset: int = 0,
     user: Optional[dict] = Depends(get_current_user_optional),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ):
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        query = "SELECT * FROM equipos WHERE 1=1"
-        params = []
+    query = select(Equipo)
+    
+    if estado:
+        query = query.where(Equipo.estado == estado)
+    if area:
+        query = query.where(Equipo.area.contains(area))
+    if piso:
+        query = query.where(Equipo.piso == piso)
+    if buscar:
+        query = query.where(
+            sa.or_(
+                Equipo.nombre.contains(buscar),
+                Equipo.serie.contains(buscar),
+                Equipo.marca.contains(buscar),
+                Equipo.modelo.contains(buscar)
+            )
+        )
 
-        if estado:
-            query += " AND estado = %s"
-            params.append(estado)
-        if area:
-            query += " AND area LIKE %s"
-            params.append(f"%{area}%")
-        if piso:
-            query += " AND piso = %s"
-            params.append(piso)
-        if buscar:
-            query += " AND (nombre LIKE %s OR serie LIKE %s OR marca LIKE %s OR modelo LIKE %s)"
-            b = f"%{buscar}%"
-            params.extend([b, b, b, b])
+    query = query.order_by(Equipo.nombre).limit(limit).offset(offset)
+    res = await session.execute(query)
+    equipos = res.scalars().all()
 
-        query += " ORDER BY nombre LIMIT %s OFFSET %s"
-        params.extend([limit, offset])
+    # Total count
+    count_stmt = select(func.count()).select_from(Equipo)
+    total = (await session.execute(count_stmt)).scalar()
 
-        await cur.execute(query, params)
-        equipos = await cur.fetchall()
-
-        await cur.execute("SELECT COUNT(*) as total FROM equipos")
-        total = (await cur.fetchone())["total"]
-
-    # Filtrar campos confidenciales si el rol no tiene view_confidential
+    # Convert to dict and filter confidential
+    equipos_list = [e.model_dump() for e in equipos]
     if not can(user, "view_confidential"):
-        equipos = [filter_equipo_publico(e) for e in equipos]
+        equipos_list = [filter_equipo_publico(e) for e in equipos_list]
 
-    return {"equipos": equipos, "total": total}
+    return {"equipos": equipos_list, "total": total}
 
 
 @router.get("/{equipo_id}")
 async def obtener_equipo(
     equipo_id: int,
     user: Optional[dict] = Depends(get_current_user_optional),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ):
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT * FROM v_dashboard_equipos WHERE id = %s", (equipo_id,))
-        equipo = await cur.fetchone()
+    # Nota: v_dashboard_equipos es una vista, SQLModel puede mapearla si definimos el modelo,
+    # pero por ahora usamos Equipo directamente o hacemos un join.
+    # Dado que es AG-01, priorizamos el uso de modelos.
+    equipo = await session.get(Equipo, equipo_id)
 
-        if not equipo:
-            raise HTTPException(status_code=404, detail="Equipo no encontrado")
+    if not equipo:
+        raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
-        await cur.execute(
-            """SELECT id, numero_orden, tipo_mantenimiento, estado, fecha, falla_reportada, tecnico_nombre
-               FROM ordenes_servicio WHERE equipo_id = %s ORDER BY fecha DESC LIMIT 10""",
-            (equipo_id,),
-        )
-        ordenes = await cur.fetchall()
+    stmt_ordenes = select(OrdenServicio).where(OrdenServicio.equipo_id == equipo_id).order_by(OrdenServicio.fecha.desc()).limit(10)
+    res_ordenes = await session.execute(stmt_ordenes)
+    ordenes = res_ordenes.scalars().all()
 
-        await cur.execute(
-            """SELECT area_origen, area_destino, piso_origen, piso_destino, fecha_movimiento, motivo
-               FROM trazabilidad WHERE equipo_id = %s ORDER BY fecha_movimiento DESC LIMIT 5""",
-            (equipo_id,),
-        )
-        traslados = await cur.fetchall()
+    stmt_traslados = select(Trazabilidad).where(Trazabilidad.equipo_id == equipo_id).order_by(Trazabilidad.fecha_movimiento.desc()).limit(5)
+    res_traslados = await session.execute(stmt_traslados)
+    traslados = res_traslados.scalars().all()
 
+    equipo_dict = equipo.model_dump()
     if not can(user, "view_confidential"):
-        equipo = filter_equipo_publico(equipo)
-        # Si no es confidencial, también ocultar historial sensible
+        equipo_dict = filter_equipo_publico(equipo_dict)
         ordenes = []
         traslados = []
 
-    return {"equipo": equipo, "ordenes": ordenes, "traslados": traslados}
+    return {
+        "equipo": equipo_dict, 
+        "ordenes": [o.model_dump() for o in ordenes], 
+        "traslados": [t.model_dump() for t in traslados]
+    }
 
 
 @router.patch("/{equipo_id}/posicion")
@@ -395,40 +351,45 @@ async def actualizar_posicion(
     equipo_id: int,
     body: dict,
     user: dict = Depends(require_action("edit_equipo")),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Guarda nueva posición X/Y después de drag & drop en el mapa."""
-    pos_x = float(body.get("pos_x", 50))
-    pos_y = float(body.get("pos_y", 50))
-    zona_id = body.get("zona_id")
+    equipo = await session.get(Equipo, equipo_id)
+    if not equipo:
+        raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
-    async with conn.cursor() as cur:
-        await cur.execute(
-            "UPDATE equipos SET pos_x = %s, pos_y = %s, zona_id = %s WHERE id = %s",
-            (pos_x, pos_y, zona_id, equipo_id),
-        )
+    equipo.pos_x = float(body.get("pos_x", 50))
+    equipo.pos_y = float(body.get("pos_y", 50))
+    equipo.zona_id = body.get("zona_id")
+
+    await session.commit()
     return {"ok": True}
 
+from models.modulos_extra import PokaYokeLog
 
 @router.put("/{equipo_id}")
 async def actualizar_equipo(
     equipo_id: int,
     data: dict,
     user: dict = Depends(require_action("edit_equipo")),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Actualiza campos del equipo. Los campos permitidos dependen del rol."""
+    equipo = await session.get(Equipo, equipo_id)
+    if not equipo:
+        raise HTTPException(status_code=404, detail="Equipo no encontrado")
+
     campos_permitidos = allowed_update_fields(user)
     updates = {k: v for k, v in data.items() if k in campos_permitidos}
 
     if not updates:
         raise HTTPException(status_code=400, detail="No hay campos válidos para actualizar con tu rol")
 
-    set_clause = ", ".join(f"{k} = %s" for k in updates)
-    values = list(updates.values()) + [equipo_id]
+    for k, v in updates.items():
+        setattr(equipo, k, v)
 
-    async with conn.cursor() as cur:
-        await cur.execute(f"UPDATE equipos SET {set_clause} WHERE id = %s", values)
+    try:
+        await session.commit()
         
         # Auditoría NOM-016
         await AuditService.log_event(
@@ -438,6 +399,9 @@ async def actualizar_equipo(
             entidad_id=equipo_id,
             datos=updates
         )
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al actualizar: {str(e)}")
 
     return {"ok": True, "mensaje": f"Equipo {equipo_id} actualizado"}
 
@@ -446,25 +410,18 @@ async def actualizar_equipo(
 async def generar_qr(
     equipo_id: int,
     user: dict = Depends(require_action("regenerar_qr")),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Genera un QR PNG para el equipo con token opaco."""
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute(
-            "SELECT id, nombre, qr_token FROM equipos WHERE id = %s", (equipo_id,)
-        )
-        equipo = await cur.fetchone()
-
+    equipo = await session.get(Equipo, equipo_id)
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
-    token = equipo.get("qr_token")
+    token = equipo.qr_token
     if not token:
         token = secrets.token_urlsafe(12)[:16]
-        async with conn.cursor() as cur:
-            await cur.execute(
-                "UPDATE equipos SET qr_token = %s WHERE id = %s", (token, equipo_id)
-            )
+        equipo.qr_token = token
+        await session.commit()
 
     url = f"{PUBLIC_BASE_URL}/equipo/{token}"
     png_bytes = generate_qr_png(url)
@@ -480,27 +437,21 @@ async def generar_qr(
 async def generar_etiqueta_qr(
     equipo_id: int,
     user: dict = Depends(require_action("regenerar_qr")),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Genera una etiqueta A6 imprimible (PDF) con QR + datos del equipo."""
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT * FROM equipos WHERE id = %s", (equipo_id,))
-        equipo = await cur.fetchone()
-
+    equipo = await session.get(Equipo, equipo_id)
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
-    token = equipo.get("qr_token")
+    token = equipo.qr_token
     if not token:
         token = secrets.token_urlsafe(12)[:16]
-        async with conn.cursor() as cur:
-            await cur.execute(
-                "UPDATE equipos SET qr_token = %s WHERE id = %s", (token, equipo_id)
-            )
-        equipo["qr_token"] = token
+        equipo.qr_token = token
+        await session.commit()
 
     url = f"{PUBLIC_BASE_URL}/equipo/{token}"
-    pdf_bytes = generate_qr_label_a6_pdf(equipo, url)
+    pdf_bytes = generate_qr_label_a6_pdf(equipo.model_dump(), url)
 
     return Response(
         content=pdf_bytes,
@@ -513,7 +464,7 @@ async def generar_etiqueta_qr(
 async def validar_poka_yoke(
     data: dict,
     user: dict = Depends(get_current_user),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Implementa Triple Validación (Poka-Yoke): QR + Inventario + Serie."""
     qr_token = data.get("qr_token")
@@ -523,48 +474,38 @@ async def validar_poka_yoke(
     if not qr_token or not inventario or not serie:
         raise HTTPException(status_code=400, detail="Faltan datos para la triple validación")
 
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        # Buscar equipo que coincida con el QR
-        await cur.execute(
-            "SELECT id, nombre, inventario, serie FROM equipos WHERE qr_token = %s",
-            (qr_token,)
-        )
-        equipo = await cur.fetchone()
+    # Buscar equipo por QR
+    stmt = select(Equipo).where(Equipo.qr_token == qr_token)
+    res = await session.execute(stmt)
+    equipo = res.scalar_one_or_none()
 
-        es_valido = False
-        match_inventario = False
-        match_serie = False
-        error_msg = ""
+    es_valido = False
+    match_inventario = False
+    match_serie = False
+    error_msg = ""
 
-        if equipo:
-            match_inventario = (equipo["inventario"] == inventario)
-            match_serie = (equipo["serie"] == serie)
-            es_valido = match_inventario and match_serie
-            
-            if not es_valido:
-                error_msg = f"Inconsistencia: Invenario={match_inventario}, Serie={match_serie}"
-        else:
-            error_msg = "Token QR no reconocido"
-
-        # Registrar el intento (Log Poka-Yoke)
-        await cur.execute(
-            """INSERT INTO validaciones_pokayoke 
-               (equipo_id, usuario_id, qr_escaneado, inventario_leido, serie_leida, es_valido, observaciones)
-               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-            (
-                equipo["id"] if equipo else None,
-                user["id"],
-                qr_token,
-                inventario,
-                serie,
-                es_valido,
-                error_msg
-            )
-        )
+    if equipo:
+        match_inventario = (equipo.inventario == inventario)
+        match_serie = (equipo.serie == serie)
+        es_valido = match_inventario and match_serie
         
-        # Integración con Auditoría NOM-016 (Habilidad 4)
-        # Se registrará el log en la tabla de auditoría mediante un trigger o llamada directa.
-        # Por ahora lo dejamos como el log dedicado de validación.
+        if not es_valido:
+            error_msg = f"Inconsistencia: Inventario={match_inventario}, Serie={match_serie}"
+    else:
+        error_msg = "Token QR no reconocido"
+
+    # Registrar el intento (Log Poka-Yoke)
+    log = PokaYokeLog(
+        equipo_id=equipo.id if equipo else None,
+        tecnico_id=user["id"],
+        qr_escaneado=qr_token,
+        inventario_leido=inventario,
+        serie_leida=serie,
+        es_valido=es_valido,
+        error_detalle=error_msg
+    )
+    session.add(log)
+    await session.commit()
 
     return {
         "ok": es_valido,
