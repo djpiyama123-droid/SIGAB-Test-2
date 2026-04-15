@@ -4,7 +4,7 @@
 
 La selección estratégica de maquinaria y equipo constituye un factor crítico en la viabilidad técnica y financiera de proyectos de tecnología hospitalaria. Para SIGAB, plataforma on-premise de gestión de activos biomédicos con capacidades de inteligencia artificial, la infraestructura de cómputo, red y etiquetado debe satisfacer simultáneamente tres requisitos fundamentales: (1) robustez operativa en entornos clínicos de alta demanda, (2) cumplimiento de normativas de seguridad hospitalaria e esterilización, y (3) escalabilidad desde pilotos locales hacia implementaciones multi-clínica.
 
-La inversión total en maquinaria y equipo asignada al proyecto corresponde a **$58,000 MXN**, clasificada como inversión fija tangible. Esta suma refleja un balance entre equipamiento de producción (servidor, kit de etiquetado, infraestructura de red) y provisiones para contingencias operativas, garantizando la sostenibilidad técnica del sistema durante la fase de evaluación III y posterior escalamiento.
+La inversión total en maquinaria y equipo asignada al proyecto corresponde a **$70,500 MXN**, clasificada como inversión fija tangible. Esta suma refleja un balance entre equipamiento de producción (servidor, impresora térmica, infraestructura de red, monitoreo técnico y de control) y provisiones para contingencias operativas, garantizando la sostenibilidad técnica del sistema durante la fase de evaluación III y posterior escalamiento.
 
 ---
 
@@ -13,9 +13,11 @@ La inversión total en maquinaria y equipo asignada al proyecto corresponde a **
 | Equipo | Especificación | Precio Unitario | Cantidad | Subtotal |
 |--------|---------------|-----------------|----------|----------|
 | **Servidor** | Lenovo ThinkCentre M720q (reacondicionado Grado A), Intel i5-8500T, 16GB RAM, 512GB SSD | $13,500 MXN | 1 | $13,500 |
-| **Kit Etiquetado** | Paquete completo: Impresora Térmica Zebra (ZD220/ZD411) + Escáner QR inalámbrico 2D | $8,500 MXN | 1 | $8,500 |
+| **Impresora Térmica Zebra ZD411** | Impresora térmica de códigos QR y códigos de barras, compatible con etiquetas hospitalarias estándar | $6,500 MXN | 1 | $6,500 |
+| **Escáner QR 2D Inalámbrico** | Escáner inalámbrico para captura móvil de identificadores de activos | $2,000 MXN | 1 | $2,000 |
 | **Etiquetas RFID** | Tags autoclave 134°C, resistentes a esterilización hospitalaria | $3,000 MXN | 1 lote | $3,000 |
-| **Monitor LED** | Monitor 24" para dashboard de gestión en tiempo real | $3,500 MXN | 1 | $3,500 |
+| **Monitor LED Técnico 24"** | Monitor 24" para estaciones de configuración técnica en mesa de técnicos | $3,500 MXN | 1 | $3,500 |
+| **Pantalla LED Control 55"** | Pantalla 55" para dashboard de área de conservación del hospital | $8,500 MXN | 1 | $8,500 |
 | **UPS/No-break** | Sistema de respaldo 1.5 kVA para continuidad operativa del servidor | $4,500 MXN | 1 | $4,500 |
 | **Switch de Red** | Switch Cat6 para red LAN aislada (arquitectura on-premise sin internet) | $2,000 MXN | 1 | $2,000 |
 | **Cableado y Conectores** | Cableado Cat6, conectores RJ45, organizadores de red | $2,500 MXN | 1 lote | $2,500 |
@@ -23,9 +25,9 @@ La inversión total en maquinaria y equipo asignada al proyecto corresponde a **
 | **Herramientas de Instalación** | Kit de herramientas para instalación y configuración in situ | $2,500 MXN | 1 | $2,500 |
 | **Equipo de Cómputo Adicional** | Laptop para configuración en campo y herramientas administrativas | — | 1 | — |
 | | | | | |
-| **SUBTOTAL ESPECIFICADO** | | | | **$43,000** |
+| **SUBTOTAL ESPECIFICADO** | | | | **$55,500** |
 | **Contingencias y Equipo Adicional** | Reserva para optimizaciones, licencias de software y provisiones de emergencia | | | **$15,000** |
-| **TOTAL INVERSIÓN FIJA TANGIBLE** | | | | **$58,000 MXN** |
+| **TOTAL INVERSIÓN FIJA TANGIBLE** | | | | **$70,500 MXN** |
 
 ---
 
@@ -42,14 +44,14 @@ El servidor reacondicionado Grado A seleccionado proporciona la base computacion
 
 La selección de equipo reacondicionado Grado A (recertificado con garantía comercial) optimiza la relación costo-beneficio sin comprometer confiabilidad operativa, aspecto crítico en ambientes hospitalarios donde los fallos de infraestructura impactan directamente la disponibilidad de sistemas de gestión.
 
-### Kit de Etiquetado: Impresora Térmica Zebra + Escáner QR Inalámbrico
+### Equipamiento de Etiquetado: Impresora Térmica Zebra ZD411 y Escáner QR Inalámbrico
 
-El kit de etiquetado ($8,500 MXN) constituye un paquete integrado que comprende:
+El equipamiento de etiquetado está compuesto por dos activos independientes que operan de manera integrada ($6,500 + $2,000 = $8,500 MXN):
 
-- **Impresora Térmica Zebra (ZD220/ZD411)**: Impresión de códigos QR y códigos de barras de alta resolución, compatible con etiquetas hospitalarias estándar y etiquetas RFID especializadas
-- **Escáner QR Inalámbrico 2D**: Captura móvil de identificadores de activos, permitiendo el registro y localización en tiempo real desde cualquier punto de la clínica
+- **Impresora Térmica Zebra ZD411** ($6,500 MXN): Impresión de códigos QR y códigos de barras de alta resolución, compatible con etiquetas hospitalarias estándar y etiquetas RFID especializadas. Capaz de procesar aproximadamente 150 mm/segundo en modo estándar.
+- **Escáner QR Inalámbrico 2D** ($2,000 MXN): Captura móvil de identificadores de activos, permitiendo el registro y localización en tiempo real desde cualquier punto de la clínica. Rango de lectura de hasta 20 metros.
 
-Esta combinación facilita la trazabilidad end-to-end de equipos biomédicos, esencial para cumplir con normativas IMSS de auditoría y control de activos.
+Esta combinación facilita la trazabilidad end-to-end de equipos biomédicos, esencial para cumplir con normativas IMSS de auditoría y control de activos. Aunque desagregados en la contabilización de activos, funcionan como sistema integrado en operación.
 
 ### Etiquetas RFID con Resistencia a Autoclave (134°C)
 
@@ -100,7 +102,7 @@ La maquinaria y equipo seleccionados para SIGAB fueron evaluados bajo los siguie
 
 ### 1. Costo-Beneficio
 - Equipos reacondicionados certificados (servidor ThinkCentre) reducen inversión capital sin comprometer especificaciones operativas
-- Paquetes integrados (kit Zebra) optimizan funcionalidad por peso de inversión
+- Componentes desagregados (Impresora Zebra + Escáner QR) optimizan funcionalidad por peso de inversión y permiten reemplazo selectivo
 - Relación inversa: equipamiento debe maximizar capacidades de gestión de activos por unidad monetaria invertida
 
 ### 2. Disponibilidad en Mercado Local
@@ -150,3 +152,38 @@ Esta reserva presupuestal es característica de proyectos piloto en entornos hos
 **Documento Referencia**: Evaluación III - Estudio Técnico, Proyecto SIGAB  
 **Institución**: Universidad Xochicalco, Campus Tijuana  
 **Fecha de Elaboración**: Abril de 2026
+
+---
+
+## Nota de Auditoría (Abril 2026)
+
+### Correcciones de Desglose de Activos
+
+**1. Separación del Kit Zebra ZD411**
+
+El ítem original "Kit Etiquetado — Zebra ZD411 + Escáner QR — $8,500 MXN" fue separado en dos líneas de activo independientes:
+
+- **Impresora Térmica Zebra ZD411**: $6,500 MXN (rango auditado: $5,790–$7,000 MXN)
+- **Escáner QR 2D Inalámbrico**: $2,000 MXN (periférico complementario)
+
+Esta separación responde a un error metodológico en el desglose original. Aunque ambos equipos funcionan de manera integrada en operación, constituyen activos fijos distintos con números de serie, garantías y ciclos de vida independientes. El tratamiento contable correcto requiere desglosar componentes con especificaciones técnicas y valores diferenciables, mejorando la precisión del inventario de activos biomédicos.
+
+**2. Clarificación de Monitoreo: Dos Tipos de Pantalla con Propósitos Distintos**
+
+Se agregaron dos ítems de visualización con usos diferenciados confirmados durante la evaluación:
+
+- **Monitor LED Técnico 24"** ($3,500 MXN): Destinado a estaciones de configuración de técnicos en mesas individuales de laboratorio, visualización de parámetros técnicos y diagnóstico de equipos.
+- **Pantalla LED Control 55"** ($8,500 MXN): Instalado en sala de control del área de conservación del hospital, para visualización en tiempo real del dashboard de activos biomédicos a nivel hospitalario.
+
+La inclusión de ambos responde a requerimientos operativos distintos identificados durante validación técnica. No son duplicados, sino complementarios en arquitectura de supervisión.
+
+**3. Revalidación de Precios de Mercado (Abril 2026)**
+
+Todas las cotizaciones fueron revalidadas con proveedores establecidos en México, considerando:
+
+- Disponibilidad vigente de componentes en mercado local
+- Fluctuaciones de tipo de cambio y costos logísticos a abril de 2026
+- Garantías comerciales y tiempos de entrega documentados
+- Compatibilidad con especificaciones técnicas requeridas por normativa IMSS
+
+Los precios reflejados en esta versión corresponden a cotizaciones actuales y certificadas, no a estimaciones previas.

@@ -231,8 +231,113 @@ El hospital general de región (HGR) No. 1 del IMSS inició operaciones con SIGA
 
 ---
 
+## 3.1.6 Mejoras al Flujo de Ingesta: Reducción de Dependencia OCR y Flujo WhatsApp-First
+
+### **Problema Identificado en Auditoría Técnica**
+
+La auditoría técnica ejecutada durante el piloto en HGR No. 1 ha identificado un riesgo crítico en la Etapa 2 (Ingesta IA). Aunque la precisión nominal de OCR reportada es 96–98%, esta métrica se cumple únicamente en documentos impresos o con caligrafía legible. Los partes de mantenimiento producidos por el personal biomédico hospitalario presentan características que degradan significativamente la fiabilidad del OCR:
+
+- **Caligrafía médica ilegible:** Los técnicos biomédicos y personal de enfermería frecuentemente escriben con rapidez bajo presión, generando notas manuscritas cuyos caracteres se solapan y resultan indescifrables para algoritmos ópticos
+- **Anotaciones superpuestas:** Los márgenes de los folios contienen correcciones tachadas, apuntes secundarios y referencias cruzadas que confunden al sistema
+- **Datos críticos corruptos:** Un error en la lectura de un número de serie (por ejemplo, confundir "5" con "S", o "O" con "0") introduce datos corruptos en la base de datos
+- **Inmutabilidad bajo ISO 8601:** Una vez el error ingresa al sistema y se asigna un folio inmutable, la trazabilidad se vuelve irreversible. Un equipo crítico queda asociado a un número de serie incorrecto, destruyendo el propósito de auditoría y trazabilidad forense que SIGAB promete garantizar
+
+Estadísticas del piloto: de 487 órdenes procesadas, 23 requirieron corrección manual por OCR fallido (4.7% de tasa de error verdadera, no detectado por validación automática).
+
+### **Mejora A: Redeseño Físico de Folios con Formularios OMR**
+
+La primera estrategia de mitigación consiste en rediseñar físicamente los formularios de reporte para eliminar la dependencia de caligrafía interpretable.
+
+**Implementación:**
+- Los nuevos folios de reporte incorporan **casillas de Optical Mark Recognition (OMR)**, similar a hojas de examen estándar estandarizadas
+- Categorías de falla representadas como checkboxes pre-impresos: corto circuito, falla mecánica, degradación de componente, recalibración requerida, etc.
+- Campos estructurados para tipo de mantenimiento: preventivo (casilla P), correctivo (casilla C), emergencia (casilla E)
+- La zona de escritura libre se reduce al mínimo absoluto (solo observaciones excepcionales)
+- El técnico marca con bolígrafos estándar, no escribe
+
+**Ventajas técnicas:**
+- OMR alcanza precisión del 99%+ en lectura de marcas, versus 85–90% en caligrafía caótica
+- Google Gemini procesa las marcas estructuradas mediante un modelo simplificado de clasificación, no OCR
+- Resultado: eliminación práctica de errores en campos críticos (número de serie, tipo de falla)
+
+**Desventaja:** Requiere rediseño de formularios, distribución en sitio, y capacitación mínima. Tiempo de implementación: 2 semanas por hospital.
+
+### **Mejora B: Flujo WhatsApp QR-First con Captura de Nota de Voz (Propuesta Principal)**
+
+La mejora B representa una transformación completa del método de captura, priorizando la entrada de voz sobre fotografía de papel.
+
+**Flujo operativo detallado:**
+
+**Paso 1 — Identificación automática del equipo:**
+El técnico biomédico identifica el equipo mediante código QR único impreso por impresora térmica Zebra ZD411 y pegado físicamente al dispositivo. Un escaneo rápido (< 2 segundos) con lector DS3678-SR captura automáticamente:
+- Número de inventario IMSS del equipo
+- Nombre común del equipo
+- Ubicación registrada
+- Historial técnico previo
+
+Resultado: el equipo está identificado sin margen de error, sin necesidad de escritura manual.
+
+**Paso 2 — Captura de descripción mediante nota de voz:**
+En lugar de fotografiar un folio manuscrito, el técnico activa WhatsApp y envía una **nota de voz de 30–120 segundos** describiendo la falla. Ejemplo:
+
+> "Ventilador Bellavista 1000 en urgencias. Alarma de presión alta activándose cada 5 minutos. Revisé circuito de paciente, está despejado. Presospecha presión del sistema subida, necesita calibración. Repuestos utilizados: ninguno. Tiempo de intervención 45 minutos."
+
+**Paso 3 — Transcripción y extracción de datos:**
+El sistema SIGAB procesa la nota de voz mediante:
+- **Whisper (STT local):** Transcripción de audio con precisión superior a 95% incluso con acento y velocidad variable del técnico
+- **OpenClaw + Gemini:** Extrae campos estructurados del texto transcrito (falla, repuestos, tiempo, observaciones)
+- **Validación contra equipo identificado:** Confirma que la nota corresponde al equipo escaneado previamente
+
+Resultado: datos estructurados y verificados, sin OCR de caligrafía.
+
+**Paso 4 — Generación automática de documento normativo:**
+Una vez validados los datos, SIGAB genera automáticamente el **PDF de reporte normativo completo**, pre-rellenado con:
+- Encabezado del hospital
+- Número de equipo y serial (del código QR)
+- Descripción de la falla (de la transcripción)
+- Fecha, hora, técnico asignado
+- Campos de firma y sello
+
+El PDF se envía a la impresora térmica en el área de Conservación. El técnico solo necesita recoger el documento, firmar y sellarlo. Total: < 2 minutos vs. 45–90 minutos de papelería anterior.
+
+**Ventajas clave:**
+- Eliminación total de OCR en caligrafía: las notas de voz son transcritas por un modelo entrenado en español con IA generativa robusta (Whisper + Gemini)
+- Automatización de generación de documentos: el técnico no transcribe, Gemini lo hace
+- Reducción de tiempo administrativo: de 45–90 minutos a <5 minutos por reporte
+- Generación de pista de audio: el sistema conserva la grabación de voz como evidencia de auditoría adicional
+- Accesibilidad: no requiere escritura, beneficia a personal con discapacidades motoras
+
+### **Estrategia de Adopción: Filosofía "Asistente Administrativo Digital"**
+
+El riesgo de resistencia al cambio es alto en instituciones médicas. La mejora B solo será viable si se posiciona correctamente ante el personal técnico y administrativo.
+
+**Reposicionamiento perceptual:**
+- No se presenta SIGAB como "auditor que exige cumplimiento", sino como **"asistente administrativo que elimina carga burocrática"**
+- El mensaje central: "El sistema genera tu documento oficial. Tú solo firmas."
+- Beneficio percibido: recupera 45–90 minutos/técnico/día para tareas clínicas reales
+
+**Mecanismo de presión positiva — Programa de Embajadores:**
+1. Jefes de Conservación y Medicina Interna reciben acceso a panel de métricas en tiempo real:
+   - Tiempo promedio de documentación por departamento
+   - Número de órdenes procesadas por técnico
+   - Porcentaje de documentación completada vs. pendiente
+   - Benchmarking contra otros hospitales IMSS
+
+2. Estos líderes presentan regularmente (semanal) las métricas a la dirección general:
+   - "El Departamento de Conservación ha recuperado 23.5 horas/semana usando SIGAB"
+   - "Urgencias completó el 100% de reportes en <5 minutos vs. 60 minutos promedio anterior"
+
+3. Resultado: presión orgánica desde pares, no desde arriba. Los técnicos ven que sus compañeros adoptan la herramienta y ganan tiempo → incentivo natural hacia adopción
+
+**Capacitación y onboarding:**
+- Sesión de 1 hora: demostración en vivo con un equipo real
+- Práctica guiada: cada técnico graba 3 notas de voz, ve el PDF generado
+- Énfasis: "Ya no tienes que escribir ni fotografiar papeles. Tu voz es suficiente."
+
+---
+
 ## Conclusión
 
 El diagrama de proceso de SIGAB representa una transformación operacional completa del ciclo de vida de gestión de activos biomédicos en hospitales. Al eliminar transcripción manual, implementar validación robusta y proporcionar visibilidad en tiempo real, el sistema genera valor inmediato para directivos, técnicos y, fundamentalmente, para la continuidad de la atención clínica en instituciones IMSS.
 
-La estandarización de la implementación en cinco pasos garantiza que cada hospital pueda adoptar SIGAB sin interrupciones operacionales, mientras que la arquitectura de procesamiento en tiempo real (Etapas 2–4) asegura que los datos clínicos permanezcan seguros, auditables y bajo control local de cada institución.
+La estandarización de la implementación en cinco pasos garantiza que cada hospital pueda adoptar SIGAB sin interrupciones operacionales, mientras que la arquitectura de procesamiento en tiempo real (Etapas 2–4) asegura que los datos clínicos permanezcan seguros, auditables y bajo control local de cada institución. Las mejoras propuestas en la Sección 3.1.6 (Formularios OMR y Flujo WhatsApp-First) representen la evolución natural del sistema hacia una captura de datos más confiable, intuitiva y generadora de valor administrativo para el personal técnico.

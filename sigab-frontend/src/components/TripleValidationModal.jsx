@@ -37,9 +37,13 @@ const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
       <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-emerald-500/30 bg-gray-900 shadow-2xl">
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-6 text-white">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-white/20 p-2">
-              <ShieldCheck className="h-6 w-6" />
+          <div className="flex items-center gap-4">
+            <div className="rounded-lg bg-white/10 p-2 backdrop-blur-md">
+              <img 
+                src="/imss_logo.png" 
+                alt="IMSS" 
+                className="h-10 w-auto brightness-200"
+              />
             </div>
             <div>
               <h2 className="text-xl font-bold tracking-tight">Poka-Yoke: Triple Validación</h2>

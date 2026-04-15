@@ -90,6 +90,23 @@ export const api = {
   finalizarOrden: (id, data) => client.put(`/ordenes/${id}/finalizar`, data),
   getPdfOrdenUrl: (id) => `${client.defaults.baseURL}/ordenes/${id}/pdf`,
 
+  // ── Casillas CENEVAL (Conservación) ──────────────────────
+  getCasillas: (ordenId) => client.get(`/casillas/${ordenId}`),
+  upsertCasillas: (ordenId, data) => client.post(`/casillas/${ordenId}`, data),
+  ocrCasillas: (ordenId, file) => {
+    const formData = new FormData();
+    formData.append('foto', file);
+    return client.post(`/casillas/ocr/${ordenId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 30000,
+    });
+  },
+  getResumenCasillas: () => client.get('/casillas/resumen/dominio'),
+  // Helper para uso directo por URL desde OrdenCasillasForm
+  post: (url, data) => client.post(url, data),
+  postForm: (url, formData) =>
+    client.post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 30000 }),
+
   // ── Alertas ───────────────────────────────────────────────
   getAlertas: (params = {}) => client.get('/alertas', { params }),
   getAlertasPendientes: () => client.get('/alertas/pendientes'),

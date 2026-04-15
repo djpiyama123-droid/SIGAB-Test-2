@@ -13,8 +13,19 @@ from auth.dependencies import get_current_user
 router = APIRouter()
 
 
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+from database import get_async_session
+from auth.password import hash_password, verify_password
+from auth.jwt_handler import create_access_token, create_refresh_token, decode_token
+from auth.dependencies import get_current_user
+from models.usuario import Usuario
+
+router = APIRouter()
+
+
 @router.post("/login")
-async def login(data: dict, conn=Depends(get_db)):
+async def login(data: dict, session: AsyncSession = Depends(get_async_session)):
     """Login con matrícula IMSS + contraseña."""
     matricula = (data.get("matricula") or "").strip()
     password = data.get("password") or ""
@@ -22,50 +33,48 @@ async def login(data: dict, conn=Depends(get_db)):
     if not matricula or not password:
         raise HTTPException(status_code=400, detail="Matrícula y contraseña son obligatorias")
 
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute(
-            "SELECT id, nombre, matricula, rol, email, activo, password_hash, must_change_password "
-            "FROM usuarios WHERE matricula = %s",
-            (matricula,),
-        )
-        user = await cur.fetchone()
+    stmt = select(Usuario).where(Usuario.matricula == matricula)
+    result = await session.execute(stmt)
+    user = result.scalar_one_or_none()
 
     if not user:
         raise HTTPException(status_code=401, detail="Matrícula o contraseña incorrecta")
-    if not user.get("activo"):
+    if not user.activo:
         raise HTTPException(status_code=403, detail="Usuario desactivado. Contacta al administrador.")
-    if not user.get("password_hash"):
+    if not user.password_hash:
         raise HTTPException(
             status_code=426,
             detail="El usuario no tiene contraseña configurada. Contacta al administrador.",
         )
-    if not verify_password(password, user["password_hash"]):
+    if not verify_password(password, user.password_hash):
         raise HTTPException(status_code=401, detail="Matrícula o contraseña incorrecta")
 
     # Update last_login
-    async with conn.cursor() as cur:
-        await cur.execute("UPDATE usuarios SET last_login = NOW() WHERE id = %s", (user["id"],))
+    user.last_login = datetime.utcnow()
+    await session.commit()
+    await session.refresh(user)
 
-    access = create_access_token(user)
-    refresh = create_refresh_token(user["id"])
+    user_data = user.model_dump()
+    access = create_access_token(user_data)
+    refresh = create_refresh_token(user.id)
 
     return {
         "access_token": access,
         "refresh_token": refresh,
         "token_type": "bearer",
         "user": {
-            "id": user["id"],
-            "nombre": user["nombre"],
-            "matricula": user["matricula"],
-            "rol": user["rol"],
-            "email": user["email"],
-            "must_change_password": bool(user.get("must_change_password")),
+            "id": user.id,
+            "nombre": user.nombre,
+            "matricula": user.matricula,
+            "rol": user.rol,
+            "email": user.email,
+            "must_change_password": bool(user.must_change_password),
         },
     }
 
 
 @router.post("/refresh")
-async def refresh_token(data: dict, conn=Depends(get_db)):
+async def refresh_token(data: dict, session: AsyncSession = Depends(get_async_session)):
     """Intercambia un refresh token por un nuevo access token."""
     token = data.get("refresh_token")
     if not token:
@@ -82,18 +91,15 @@ async def refresh_token(data: dict, conn=Depends(get_db)):
     except (KeyError, ValueError):
         raise HTTPException(status_code=401, detail="Payload inválido")
 
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute(
-            "SELECT id, nombre, matricula, rol, email, activo FROM usuarios WHERE id = %s",
-            (uid,),
-        )
-        user = await cur.fetchone()
+    stmt = select(Usuario).where(Usuario.id == uid)
+    result = await session.execute(stmt)
+    user = result.scalar_one_or_none()
 
-    if not user or not user.get("activo"):
+    if not user or not user.activo:
         raise HTTPException(status_code=401, detail="Usuario inválido o desactivado")
 
     return {
-        "access_token": create_access_token(user),
+        "access_token": create_access_token(user.model_dump()),
         "token_type": "bearer",
     }
 
@@ -114,7 +120,7 @@ async def me(user: dict = Depends(get_current_user)):
 async def change_password(
     data: dict,
     user: dict = Depends(get_current_user),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Cambia la contraseña del usuario actual (requiere contraseña actual)."""
     actual = data.get("password_actual") or ""
@@ -123,18 +129,17 @@ async def change_password(
     if not nueva or len(nueva) < 6:
         raise HTTPException(status_code=400, detail="La nueva contraseña debe tener al menos 6 caracteres")
 
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT password_hash FROM usuarios WHERE id = %s", (user["id"],))
-        row = await cur.fetchone()
+    stmt = select(Usuario).where(Usuario.id == user["id"])
+    result = await session.execute(stmt)
+    db_user = result.scalar_one_or_none()
 
-    if row and row.get("password_hash"):
-        if not verify_password(actual, row["password_hash"]):
+    if db_user and db_user.password_hash:
+        if not verify_password(actual, db_user.password_hash):
             raise HTTPException(status_code=401, detail="Contraseña actual incorrecta")
 
     nuevo_hash = hash_password(nueva)
-    async with conn.cursor() as cur:
-        await cur.execute(
-            "UPDATE usuarios SET password_hash = %s, must_change_password = FALSE WHERE id = %s",
-            (nuevo_hash, user["id"]),
-        )
+    db_user.password_hash = nuevo_hash
+    db_user.must_change_password = False
+    
+    await session.commit()
     return {"ok": True, "mensaje": "Contraseña actualizada"}

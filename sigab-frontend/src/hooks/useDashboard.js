@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api/sigab';
 import toast from 'react-hot-toast';
+import { useSSE } from './useSSE';
 
 export function useDashboard() {
   const [resumen, setResumen] = useState(null);
@@ -29,41 +30,43 @@ export function useDashboard() {
     }
   }, []);
 
-  useEffect(() => {
-    cargar(filtros);
-
-    // Setup SSE para el dashboard principal
-    const token = localStorage.getItem('token');
-    const url = token ? `/api/dashboard/stream?token=${token}` : '/api/dashboard/stream';
-    const sse = new EventSource(url);
-
-    sse.addEventListener('nueva_orden', (e) => {
-      try {
-        const payload = JSON.parse(e.data);
+  // Configure SSE via the custom hook
+  const { hasError, isConnected } = useSSE({
+    onEvent: (type, payload) => {
+      if (type === 'nueva_orden') {
         toast.success(`Nueva orden de servicio: OS-${payload.orden_id}`, {
           icon: '🛠️',
         });
         cargar(filtros);
-      } catch (err) {}
-    });
-
-    sse.addEventListener('nueva_alerta', (e) => {
-      try {
-        const payload = JSON.parse(e.data);
+      } else if (type === 'nueva_alerta') {
         const isCritico = payload.prioridad === 'critica';
         toast[isCritico ? 'error' : 'custom'](
           `Nueva Alerta: ${payload.mensaje}`, 
           { icon: isCritico ? '🚨' : '⚠️', duration: 5000 }
         );
         cargar(filtros);
-      } catch (err) {}
-    });
+      } else if (type === 'status_change') {
+        // generic refresh for state changes
+        cargar(filtros);
+      }
+    }
+  });
 
-    return () => {
-      sse.close();
-    };
+  useEffect(() => {
+    cargar(filtros);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(filtros)]);
+
+  // Fallback to polling if SSE disconnected/errors out
+  useEffect(() => {
+    if (hasError || !isConnected) {
+      console.warn('[Dashboard] SSE is disconnected. Falling back to polling every 10s.');
+      const intervalId = setInterval(() => {
+        cargar(filtros);
+      }, 10000);
+      return () => clearInterval(intervalId);
+    }
+  }, [hasError, isConnected, cargar, filtros]);
 
   return {
     resumen,
