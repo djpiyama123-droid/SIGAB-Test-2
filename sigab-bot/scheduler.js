@@ -95,4 +95,23 @@ export function initScheduler(sendFn) {
       }
     } catch (_) {}
   });
+
+  // ── Lunes 09:00 — Metrología check ──
+  cron.schedule('0 9 * * 1', async () => {
+    console.log('[CRON] 09:00 — Metrología check');
+    try {
+      const res = await fetch(`${API}/check-calibraciones`);
+      const json = await res.json();
+      if (json.ok && json.vencidas?.length > 0) {
+        let msg = `🛡️ *Estatus de Metrología (Semanal)*\n\n`;
+        msg += `Los siguientes instrumentos requieren calibración inmediata:\n\n`;
+        json.vencidas.forEach(m => {
+          msg += `• ${m.nombre} (${m.serie})\nVence: *${m.proxima_calibracion}*\n\n`;
+        });
+        await sendToGroup(msg);
+      }
+    } catch (err) {
+      console.error('[CRON] Error metrología:', err.message);
+    }
+  }, { timezone: 'America/Tijuana' });
 }

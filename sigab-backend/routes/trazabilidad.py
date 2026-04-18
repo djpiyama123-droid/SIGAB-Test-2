@@ -7,81 +7,96 @@ from auth.dependencies import get_current_user
 router = APIRouter()
 
 
+from sqlmodel import select, or_, func
+from sqlmodel.ext.asyncio.session import AsyncSession
+from database import get_async_session
+from models.trazabilidad import Trazabilidad
+from models.equipo import Equipo
+from models.usuario import Usuario
+
+router = APIRouter()
+
+
 @router.get("/")
 async def listar_trazabilidad(
     equipo_id: Optional[int] = None,
     limit: int = 50,
     user: dict = Depends(get_current_user),
-    conn=Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
 ):
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        query = """
-            SELECT t.*, e.nombre as equipo_nombre, e.serie as equipo_serie
-            FROM trazabilidad t
-            JOIN equipos e ON t.equipo_id = e.id
-        """
-        params = []
+    query = select(Trazabilidad, Equipo.nombre.label("equipo_nombre"), Equipo.serie.label("equipo_serie")).join(Equipo, Trazabilidad.equipo_id == Equipo.id)
+    
+    if equipo_id:
+        query = query.where(Trazabilidad.equipo_id == equipo_id)
 
-        if equipo_id:
-            query += " WHERE t.equipo_id = %s"
-            params.append(equipo_id)
+    query = query.order_by(Trazabilidad.fecha_movimiento.desc()).limit(limit)
+    
+    result = await session.execute(query)
+    rows = result.all()
+    
+    movimientos_list = []
+    for mov, eq_nombre, eq_serie in rows:
+        d = mov.model_dump()
+        d["equipo_nombre"] = eq_nombre
+        d["equipo_serie"] = eq_serie
+        movimientos_list.append(d)
 
-        query += " ORDER BY t.fecha_movimiento DESC LIMIT %s"
-        params.append(limit)
-
-        await cur.execute(query, params)
-        movimientos = await cur.fetchall()
-
-    return {"movimientos": movimientos, "total": len(movimientos)}
+    return {"movimientos": movimientos_list, "total": len(movimientos_list)}
 
 
 @router.get("/equipo/{equipo_id}")
-async def trazabilidad_equipo(equipo_id: int, user: dict = Depends(get_current_user), conn=Depends(get_db)):
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute(
-            """SELECT t.*, u.nombre as usuario_nombre
-               FROM trazabilidad t
-               LEFT JOIN usuarios u ON t.usuario_id = u.id
-               WHERE t.equipo_id = %s
-               ORDER BY t.fecha_movimiento DESC""",
-            (equipo_id,),
-        )
-        movimientos = await cur.fetchall()
-    return {"movimientos": movimientos}
+async def trazabilidad_equipo(
+    equipo_id: int, 
+    user: dict = Depends(get_current_user), 
+    session: AsyncSession = Depends(get_async_session)
+):
+    query = select(Trazabilidad, Usuario.nombre.label("usuario_nombre")).outerjoin(Usuario, Trazabilidad.usuario_id == Usuario.id).where(Trazabilidad.equipo_id == equipo_id).order_by(Trazabilidad.fecha_movimiento.desc())
+    
+    result = await session.execute(query)
+    rows = result.all()
+    
+    movimientos_list = []
+    for mov, user_nombre in rows:
+        d = mov.model_dump()
+        d["usuario_nombre"] = user_nombre
+        movimientos_list.append(d)
+        
+    return {"movimientos": movimientos_list}
 
 
 @router.post("/")
-async def registrar_movimiento(data: dict, user: dict = Depends(get_current_user), conn=Depends(get_db)):
-    async with conn.cursor(aiomysql.DictCursor) as cur:
-        # Obtener ubicación actual
-        await cur.execute(
-            "SELECT id, area, piso FROM equipos WHERE id = %s", (data["equipo_id"],)
-        )
-        equipo = await cur.fetchone()
+async def registrar_movimiento(
+    data: dict, 
+    user: dict = Depends(get_current_user), 
+    session: AsyncSession = Depends(get_async_session)
+):
+    # Obtener equipo
+    equipo = await session.get(Equipo, data["equipo_id"])
+    if not equipo:
+        return {"ok": False, "mensaje": "Equipo no encontrado"}
 
-        if not equipo:
-            return {"ok": False, "mensaje": "Equipo no encontrado"}
+    # Crear registro de trazabilidad
+    nuevo_mov = Trazabilidad(
+        equipo_id=data["equipo_id"],
+        area_origen=equipo.area,
+        piso_origen=equipo.piso,
+        area_destino=data.get("area_destino"),
+        piso_destino=data.get("piso_destino"),
+        motivo=data.get("motivo"),
+        usuario_id=data.get("usuario_id") or user["id"],
+        notas=data.get("notas")
+    )
+    
+    session.add(nuevo_mov)
 
-        await cur.execute(
-            """INSERT INTO trazabilidad
-            (equipo_id, area_origen, piso_origen, area_destino, piso_destino, motivo, usuario_id, notas)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-            (
-                data["equipo_id"],
-                equipo["area"],
-                equipo["piso"],
-                data.get("area_destino"),
-                data.get("piso_destino"),
-                data.get("motivo"),
-                data.get("usuario_id"),
-                data.get("notas"),
-            ),
-        )
-
-        # Actualizar ubicación del equipo
-        await cur.execute(
-            "UPDATE equipos SET area = %s, piso = %s WHERE id = %s",
-            (data.get("area_destino"), data.get("piso_destino", equipo["piso"]), data["equipo_id"]),
-        )
+    # Actualizar ubicación del equipo
+    equipo.area = data.get("area_destino")
+    equipo.piso = data.get("piso_destino") or equipo.piso
+    
+    try:
+        await session.commit()
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al registrar movimiento: {str(e)}")
 
     return {"ok": True, "mensaje": "Movimiento registrado"}

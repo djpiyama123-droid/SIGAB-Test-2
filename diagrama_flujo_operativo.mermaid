@@ -1,0 +1,44 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#1B3A5C', 'primaryTextColor': '#fff', 'primaryBorderColor': '#1B3A5C', 'lineColor': '#0D9488', 'secondaryColor': '#CCFBF1', 'tertiaryColor': '#EFF6FF', 'fontSize': '14px'}}}%%
+
+flowchart LR
+    subgraph E1["📱 ETAPA 1 — REPORTE (Input)"]
+        A1["Técnico biomédico\ntoma foto de\nOrden de Servicio"]
+        A2["O envía audio\npor WhatsApp"]
+        A1 --> A3["Captura en campo"]
+        A2 --> A3
+    end
+
+    subgraph E2["🤖 ETAPA 2 — INGESTA + IA"]
+        B1["Agente OpenClaw\nrecibe mensaje"]
+        B2["Gemini 2.5 Flash\nejecuta OCR"]
+        B3["Extrae:\n• N° Serie\n• Falla\n• Técnico\n• Refacciones\n• Área"]
+        B1 --> B2 --> B3
+    end
+
+    subgraph E3["🔒 ETAPA 3 — VALIDACIÓN"]
+        C1["Triple Validación\nPoka-Yoke"]
+        C2["QR ✓"]
+        C3["N° Inventario ✓"]
+        C4["N° Serie ✓"]
+        C5["Folio inmutable\nISO 8601\nSIGAB-HGR1-YYYYMMDD"]
+        C6[("MySQL\nLocal")]
+        C1 --> C2 & C3 & C4
+        C2 & C3 & C4 --> C5 --> C6
+    end
+
+    subgraph E4["📊 ETAPA 4 — VISUALIZACIÓN"]
+        D1["Dashboard React\nactualización\nen tiempo real"]
+        D2["🟢 Operativo"]
+        D3["🟡 En Mantto."]
+        D4["🔴 Fuera de Servicio"]
+        D1 --> D2 & D3 & D4
+    end
+
+    A3 ==>|"WhatsApp API"| B1
+    B3 ==>|"Datos estructurados"| C1
+    C6 ==>|"SSE (Server-Sent Events)"| D1
+
+    style E1 fill:#EFF6FF,stroke:#1B3A5C,stroke-width:2px
+    style E2 fill:#EFF6FF,stroke:#2A5A8C,stroke-width:2px
+    style E3 fill:#CCFBF1,stroke:#0D9488,stroke-width:2px
+    style E4 fill:#ECFDF5,stroke:#10B981,stroke-width:2px

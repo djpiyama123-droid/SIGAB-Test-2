@@ -1,5 +1,7 @@
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { NAV_ITEMS } from '../utils/constants';
+import * as Lucide from 'lucide-react';
 
 export default function Sidebar() {
   return (
@@ -25,9 +27,13 @@ export default function Sidebar() {
               }`
             }
           >
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-            </svg>
+            {item.icon_name && Lucide[item.icon_name] ? (
+              React.createElement(Lucide[item.icon_name], { className: "w-5 h-5 flex-shrink-0" })
+            ) : (
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+              </svg>
+            )}
             {item.label}
           </NavLink>
         ))}

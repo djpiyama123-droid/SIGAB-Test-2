@@ -9,8 +9,10 @@ from config import UPLOAD_DIR, CORS_EXTRA
 from routes import (
     equipos, ordenes, trazabilidad, reservas,
     alertas, preventivos, dashboard, openclaw, reportes,
-    tecnovigilancia, copilot,
+    tecnovigilancia, copilot, auditoria, checklists,
+    almacen, metrologia, capacitaciones,
     auth as auth_routes,
+    ocr, events, intake, casillas
 )
 
 
@@ -42,6 +44,7 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(auth_routes.router, prefix="/api/auth", tags=["Autenticación"])
+app.include_router(ocr.router, prefix="/api/ocr", tags=["OCR Inteligente (Local + Cloud)"])
 app.include_router(equipos.router, prefix="/api/equipos", tags=["Equipos"])
 app.include_router(ordenes.router, prefix="/api/ordenes", tags=["Órdenes de Servicio"])
 app.include_router(trazabilidad.router, prefix="/api/trazabilidad", tags=["Trazabilidad"])
@@ -51,8 +54,16 @@ app.include_router(preventivos.router, prefix="/api/preventivos", tags=["Prevent
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
 app.include_router(openclaw.router, prefix="/api/openclaw", tags=["OpenClaw"])
 app.include_router(reportes.router, prefix="/api/reportes", tags=["Reportes"])
+app.include_router(auditoria.router, prefix="/api/auditoria", tags=["Auditoría NOM-016"])
+app.include_router(checklists.router, prefix="/api/checklists", tags=["Checklists NOM-016"])
 app.include_router(tecnovigilancia.router, prefix="/api/tecnovigilancia", tags=["Tecnovigilancia NOM-240"])
 app.include_router(copilot.router, prefix="/api/copilot", tags=["SIGAB Copilot (IA Local)"])
+app.include_router(almacen.router, prefix="/api/almacen", tags=["Gestión de Almacén"])
+app.include_router(metrologia.router, prefix="/api/metrologia", tags=["Metrología y Calibración"])
+app.include_router(capacitaciones.router, prefix="/api/capacitaciones", tags=["Capacitación de Personal"])
+app.include_router(events.router, prefix="/api/v1/events", tags=["Eventos"])
+app.include_router(intake.router, prefix="/api/v1/intake", tags=["WhatsApp Intake"])
+app.include_router(casillas.router, tags=["Casillas CENEVAL (Conservación)"])
 
 
 @app.get("/health")
