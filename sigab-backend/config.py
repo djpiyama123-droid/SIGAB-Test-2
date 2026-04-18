@@ -30,12 +30,16 @@ PUBLIC_BASE_URL = os.getenv("SIGAB_PUBLIC_BASE_URL", "http://localhost:5173")
 # CORS extra (separados por coma) para permitir escaneo desde celulares LAN
 CORS_EXTRA = [o.strip() for o in os.getenv("SIGAB_CORS_EXTRA", "").split(",") if o.strip()]
 
-# ── IA Local (Gemma via Ollama) ───────────────────────────────────
+# ── IA Local (Qwen / Gemma via Ollama) ────────────────────────────
 # Ollama se instala en el mismo servidor (Lenovo ThinkCentre) y expone :11434
 OLLAMA_HOST = os.getenv("SIGAB_OLLAMA_HOST", "http://localhost:11434")
-# Modelo por defecto: gemma3:4b (4B params, ~3.3 GB RAM, ~10 tok/s en CPU)
-# Opciones: gemma3:4b | gemma3:12b | gemma3:27b | gemma4 (cuando esté en Ollama)
 GEMMA_MODEL = os.getenv("SIGAB_GEMMA_MODEL", "gemma3:4b")
+QWEN_MODEL = os.getenv("SIGAB_QWEN_MODEL", "qwen2.5:7b")
+
+# ── OCR Pipeline Config ──────────────────────────────────────────
+OCR_CONFIDENCE_THRESHOLD = float(os.getenv("SIGAB_OCR_CONFIDENCE", "0.85"))
+OCR_MIN_WORDS_THRESHOLD = int(os.getenv("SIGAB_OCR_MIN_WORDS", "5"))
+GEMINI_API_KEY = os.getenv("SIGAB_GEMINI_API_KEY", "")
 
 
 async def get_db():

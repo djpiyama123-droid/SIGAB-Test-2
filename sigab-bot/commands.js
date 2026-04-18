@@ -38,6 +38,15 @@ function cmdAyuda() {
 📊 */reporte*
    Reporte del día
 
+📄 */pdf* _[serie]_
+   Generar PDF IMSS del equipo
+
+📧 */email* _[serie]_ _[correo]_
+   Mandar reporte por Gmail
+
+☎️ */proveedor* _[serie]_
+   Info de contrato y empresa externa
+
 ❓ */ayuda*
    Mostrar este menú`;
 }
@@ -260,6 +269,205 @@ async function cmdReporte() {
   }
 }
 
+// ── Generar PDF del Equipo ─────────────────────────────────
+async function cmdPdf(serie) {
+  if (!serie) return '❌ Uso: */pdf* _serie_';
+
+  try {
+    const url = `${API}/equipo-pdf/${encodeURIComponent(serie)}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+       const json = await res.json();
+       return `❌ Error: ${json.mensaje || 'No se pudo generar el PDF'}`;
+    }
+
+    const buffer = await res.arrayBuffer();
+    return {
+      type: 'document',
+      document: Buffer.from(buffer),
+      fileName: `Reporte_${serie}.pdf`,
+      mimetype: 'application/pdf',
+      caption: `📄 Reporte Técnico: *${serie}*`
+    };
+  } catch (err) {
+    return `❌ Error generando PDF: ${err.message}`;
+  }
+}
+
+// ── Enviar Reporte por Correo ──────────────────────────────
+async function cmdEmail(args) {
+  const parts = args?.trim().split(/\s+/) || [];
+  if (parts.length < 2) return '❌ Uso: */email* _serie_ _correo_';
+
+  const serie = parts[0];
+  const email = parts[1];
+
+  try {
+    const res = await fetch(`${API}/enviar-reporte`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ serie, email }).toString(),
+    });
+    const json = await res.json();
+    return json.ok ? `📧 *Envío Exitoso*\n${json.mensaje}` : `❌ ${json.mensaje}`;
+  } catch (err) {
+    return `❌ Error enviando email: ${err.message}`;
+  }
+}
+
+// ── Procesar Lenguaje Natural (IA Copilot) ─────────────────
+async function cmdAI(mensaje) {
+  if (!mensaje || mensaje.length < 3) return null;
+
+  try {
+    const res = await fetch(`${API}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mensaje }),
+    });
+    const json = await res.json();
+    if (json.ok) return `🤖 *SIGAB Copilot:*\n\n${json.respuesta}`;
+    return null;
+  } catch (err) {
+    console.error('Error AI Bot:', err);
+    return null;
+  }
+}
+
+// ── Casillas CENEVAL desde foto ────────────────────────────────────────────────
+/**
+ * Handler para fotos enviadas con caption "/casillas [serie]"
+ * O mensajes de texto "/casillas [orden_id]"
+ * Sube la imagen a POST /api/casillas/ocr/{orden_id} y responde con resumen.
+ */
+async function cmdCasillasOCR(mediaBuffer, mimeType, args) {
+  const CASILLAS_API = 'http://localhost:8000/api/casillas';
+
+  // Si se mandó sin imagen o sin orden_id, dar instrucciones
+  if (!args && !mediaBuffer) {
+    return `📋 *Casillas CENEVAL — Instrucciones*
+
+Para registrar desde foto del formato físico:
+1. Toma foto clara del formato SIGAB relleno
+2. Envía la foto con caption: */casillas [número_orden]*
+   Ej: _/casillas 123_
+
+O si no sabes el número de orden:
+   */casillas serie [no_serie]*
+   Ej: _/casillas serie 82-0751_
+
+El sistema usará IA para leer las casillas automáticamente. ✅`;
+  }
+
+  try {
+    let ordenId = null;
+    const argsTrimmed = (args || '').trim();
+
+    // Modo: /casillas serie [serie] → buscar orden abierta del equipo
+    if (argsTrimmed.toLowerCase().startsWith('serie ')) {
+      const serie = argsTrimmed.slice(6).trim();
+      const searchRes = await fetch(`http://localhost:8000/api/openclaw/buscar-equipo?q=${encodeURIComponent(serie)}`);
+      const searchJson = await searchRes.json();
+      if (!searchJson.ok || !searchJson.resultados?.length) {
+        return `❌ Equipo con serie "${serie}" no encontrado en SIGAB`;
+      }
+      const equipoId = searchJson.resultados[0].id;
+
+      // Crear OS automática para el equipo
+      const osParams = new URLSearchParams({
+        equipo_serie: serie,
+        tipo_mantenimiento: 'correctivo',
+        falla_reportada: 'Reportado vía WhatsApp foto-casillas',
+        origen: 'whatsapp_foto',
+        prioridad: 'media',
+      });
+      const osRes = await fetch('http://localhost:8000/api/openclaw/ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: osParams.toString(),
+      });
+      const osJson = await osRes.json();
+      if (!osJson.ok) return `❌ No se pudo crear la OS: ${osJson.mensaje}`;
+      ordenId = osJson.orden_id;
+    } else if (/^\d+$/.test(argsTrimmed)) {
+      ordenId = parseInt(argsTrimmed, 10);
+    } else {
+      return `❌ Formato incorrecto.\nUso: */casillas [número_orden]* o */casillas serie [no_serie]*`;
+    }
+
+    // Si hay imagen, enviar a OCR
+    if (mediaBuffer) {
+      const FormData = (await import('formdata-node')).FormData;
+      const { Blob } = await import('buffer');
+
+      const fd = new FormData();
+      fd.set('foto', new Blob([mediaBuffer], { type: mimeType || 'image/jpeg' }), 'foto.jpg');
+
+      const ocrRes = await fetch(`${CASILLAS_API}/ocr/${ordenId}`, {
+        method: 'POST',
+        body: fd,
+      });
+
+      if (!ocrRes.ok) {
+        const err = await ocrRes.json();
+        return `❌ Error en OCR: ${err.detail || 'Intenta de nuevo'}`;
+      }
+
+      const casillas = await ocrRes.json();
+
+      const DOMINIO_LABEL = { medico: '⚕ Médico', polivalente: '🛏 Polivalente', ac_infra: '❄ A/C' };
+      const ESTADO_EMOJI  = { operativo: '🟢', operativo_obs: '🟡', fuera_servicio: '🔴', en_taller: '🔵' };
+      const RESOLUCION_LABEL = { sitio: '✅ Sitio', refaccion: '🔩 Refacción', taller: '🏭 Taller', externo: '🤝 Externo', baja: '🗑 Baja' };
+
+      // Contar fallas marcadas
+      const fallasMarcadas = Object.entries(casillas)
+        .filter(([k, v]) => k.startsWith('falla_') && v === 1)
+        .map(([k]) => k.replace('falla_', '').replace(/_/g, ' '));
+
+      let reply = `📋 *OS #${ordenId} — Casillas leídas* ✅\n\n`;
+      reply += `${DOMINIO_LABEL[casillas.dominio] || casillas.dominio} · ${casillas.tipo_servicio}\n`;
+      reply += `Fallas detectadas: ${fallasMarcadas.length > 0 ? fallasMarcadas.join(', ') : 'ninguna'}\n`;
+      reply += `Resolución: ${RESOLUCION_LABEL[casillas.resolucion] || casillas.resolucion}\n`;
+      reply += `Estado final: ${ESTADO_EMOJI[casillas.estado_final] || ''} ${casillas.estado_final.replace('_', ' ')}\n`;
+      if (casillas.observaciones_breves) reply += `Obs: _${casillas.observaciones_breves}_\n`;
+      if (casillas.ocr_confianza) reply += `\n🎯 Confianza OCR: ${Math.round(casillas.ocr_confianza * 100)}%`;
+      reply += `\n\n_Datos guardados en SIGAB. Dashboard actualizado._`;
+
+      return reply;
+    }
+
+    // Sin imagen → instrucciones
+    return `📋 OS #${ordenId} encontrada.\nAhora envía la *foto del formato físico* con caption: */casillas ${ordenId}*`;
+
+  } catch (err) {
+    console.error('cmdCasillasOCR error:', err);
+    return `❌ Error procesando casillas: ${err.message}`;
+  }
+}
+
+// ── Info de Proveedor/Contrato ─────────────────────────────
+async function cmdProveedor(serie) {
+  if (!serie) return '❌ Uso: */proveedor* _serie_';
+
+  try {
+    const res = await fetch(`${API}/estado-equipo/${encodeURIComponent(serie)}`);
+    const json = await res.json();
+
+    if (!json.ok || !json.equipo) return `❌ Equipo "${serie}" no encontrado`;
+
+    const eq = json.equipo;
+    let msg = `☎️ *Servicio Externo — ${eq.nombre}*\n`;
+    msg += `Empresa: *${eq.proveedor_servicio || 'No asignada'}*\n`;
+    msg += `Contrato: \`${eq.numero_contrato || 'Sin contrato'}\`\n`;
+    msg += `Serie: \`${eq.serie}\`\n`;
+    msg += `\n📞 *Acción Sugerida:* Llamar a la empresa para reporte de falla bajo contrato.`;
+    
+    return msg;
+  } catch (err) {
+    return `❌ Error: ${err.message}`;
+  }
+}
+
 // ── Router Principal ───────────────────────────────────────
 export async function handleCommand(text, senderName) {
   const trimmed = (text || '').trim();
@@ -271,7 +479,12 @@ export async function handleCommand(text, senderName) {
     cmd = spaceIdx > 0 ? trimmed.slice(1, spaceIdx).toLowerCase() : trimmed.slice(1).toLowerCase();
     args = spaceIdx > 0 ? trimmed.slice(spaceIdx + 1).trim() : '';
   } else {
-    return null; // No es un comando, ignorar
+    // Si no es comando pero el bot es mencionado o el mensaje es relevante
+    // Por ahora, procesar todo lo que no sea comando con IA si tiene más de 5 palabras
+    if (trimmed.split(' ').length >= 3) {
+      return cmdAI(trimmed);
+    }
+    return null;
   }
 
   switch (cmd) {
@@ -306,9 +519,46 @@ export async function handleCommand(text, senderName) {
     case 'resumen':
       return cmdReporte();
 
+    case 'pdf':
+    case 'descargar':
+    case 'formato':
+      return cmdPdf(args);
+
+    case 'email':
+    case 'correo':
+    case 'gmail':
+      return cmdEmail(args);
+
+    case 'proveedor':
+    case 'contrato':
+    case 'empresa':
+    case 'servicio':
+      return cmdProveedor(args);
+
+    case 'casillas':
+    case 'ceneval':
+    case 'conservacion':
+    case 'formato':
+      // mediaBuffer y mimeType se pasan desde index.js cuando hay imagen adjunta
+      return cmdCasillasOCR(null, null, args);
+
     default:
       return null; // Comando no reconocido, no responder
   }
+}
+
+/**
+ * Llamada especial desde index.js cuando llega una IMAGEN con caption /casillas
+ * Debe invocarse ANTES de handleCommand si el mensaje es de tipo imagen.
+ */
+export async function handleImageCommand(text, mediaBuffer, mimeType) {
+  const trimmed = (text || '').trim();
+  if (trimmed.toLowerCase().startsWith('/casillas') || trimmed.toLowerCase().startsWith('/ceneval')) {
+    const spaceIdx = trimmed.indexOf(' ');
+    const args = spaceIdx > 0 ? trimmed.slice(spaceIdx + 1).trim() : '';
+    return cmdCasillasOCR(mediaBuffer, mimeType, args);
+  }
+  return null; // No es un comando de casillas
 }
 
 // Exportar reporte para el scheduler

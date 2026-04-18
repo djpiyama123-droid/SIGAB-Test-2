@@ -1,23 +1,26 @@
-from dataclasses import dataclass, field
-from typing import Optional
-from datetime import date, datetime
+from sqlmodel import SQLModel, Field, Relationship, Column
+from sqlalchemy.dialects import mysql
+from typing import Optional, List
+from datetime import date, datetime, timezone
 
-
-@dataclass
-class Equipo:
-    id: int = 0
-    serie: str = ""
+class Equipo(SQLModel, table=True):
+    __tablename__ = "equipos"
+    
+    id: Optional[int] = Field(
+        default=None, 
+        sa_column=Column(mysql.INTEGER(unsigned=True), primary_key=True, autoincrement=True)
+    )
+    serie: str = Field(index=True, unique=True)
     inventario: Optional[str] = None
-    nombre: str = ""
-    marca: str = ""
-    modelo: str = ""
-    ubicacion: str = ""
+    nombre: str
+    marca: str
+    modelo: str
+    ubicacion: str
     piso: Optional[str] = None
     area: Optional[str] = None
     fotos: Optional[str] = None
-    cobertura: Optional[str] = None
-    estado: str = "operativo"
-    criticidad: str = "media"
+    estado: str = Field(default="operativo")
+    criticidad: str = Field(default="media")
     fecha_instalacion: Optional[date] = None
     fecha_ultimo_mantenimiento: Optional[date] = None
     fecha_proximo_mantenimiento: Optional[date] = None
@@ -25,5 +28,23 @@ class Equipo:
     numero_contrato: Optional[str] = None
     proveedor_servicio: Optional[str] = None
     qr_code_path: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    # Auditoría
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(mysql.DATETIME, nullable=False)
+    )
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(mysql.DATETIME, nullable=False)
+    )
+    
+    # Campos extendidos del mapa (AG-01 compatible)
+    zona_id: Optional[int] = Field(default=None, foreign_key="zonas_mapa.id")
+    pos_x: float = Field(default=50.0)
+    pos_y: float = Field(default=50.0)
+    imagen_url: Optional[str] = None
+    tipo_equipo: str = Field(default="otro")
+    clase_cofepris: str = Field(default="II")
+    fecha_compra: Optional[date] = None
+    numero_contrato_servicio: Optional[str] = None
+    qr_token: Optional[str] = Field(default=None, index=True)

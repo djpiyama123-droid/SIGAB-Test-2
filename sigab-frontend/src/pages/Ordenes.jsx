@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/sigab';
 import OrdenDetalleModal from '../components/OrdenDetalleModal';
+import OrdenCasillasForm from '../components/OrdenCasillasForm';
 
 const PRIORIDAD_BADGE = {
   critica: 'bg-red-900/60 text-red-300 border border-red-700',
@@ -32,6 +33,10 @@ export default function Ordenes() {
   });
   const [guardando, setGuardando]     = useState(false);
   const [selectedOrden, setSelectedOrden] = useState(null);
+  // Casillas CENEVAL
+  const [showCasillas, setShowCasillas]     = useState(false);
+  const [casillasOrdenId, setCasillasOrdenId] = useState(null);
+  const [casillasEquipo, setCasillasEquipo]   = useState({});
 
   const cargar = useCallback(async () => {
     setLoading(true);
@@ -79,12 +84,20 @@ export default function Ordenes() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-white">Órdenes de Servicio</h1>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
-        >
-          {showForm ? '✕ Cancelar' : '+ Nueva OS'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => { setCasillasOrdenId(null); setCasillasEquipo({}); setShowCasillas(true); }}
+            className="px-4 py-2 bg-teal-700 hover:bg-teal-600 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            📋 + Nueva OS (Casillas)
+          </button>
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            {showForm ? '✕ Cancelar' : '+ Nueva OS'}
+          </button>
+        </div>
       </div>
 
       {/* Formulario crear */}
@@ -197,13 +210,25 @@ export default function Ordenes() {
                         {os.prioridad}
                       </span>
                     </td>
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      {os.estado !== 'cerrada' && os.estado !== 'cancelada' && (
-                        <button onClick={() => handleCerrar(os.id)}
-                          className="text-xs text-emerald-400 hover:text-emerald-300 hover:underline">
-                          Cerrar Rápido
+                    <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex gap-2">
+                        {os.estado !== 'cerrada' && os.estado !== 'cancelada' && (
+                          <button onClick={() => handleCerrar(os.id)}
+                            className="text-xs text-emerald-400 hover:text-emerald-300 hover:underline">
+                            Cerrar
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setCasillasOrdenId(os.id);
+                            setCasillasEquipo({ nombre: os.equipo_nombre, serie: os.equipo_serie, area: os.area, piso: os.piso });
+                            setShowCasillas(true);
+                          }}
+                          className="text-xs text-teal-400 hover:text-teal-300 hover:underline"
+                        >
+                          📋 Casillas
                         </button>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -221,6 +246,16 @@ export default function Ordenes() {
           ordenId={selectedOrden}
           onClose={() => setSelectedOrden(null)}
           onUpdated={cargar}
+        />
+      )}
+
+      {/* Modal Casillas CENEVAL */}
+      {showCasillas && (
+        <OrdenCasillasForm
+          ordenId={casillasOrdenId}
+          equipoData={casillasEquipo}
+          onGuardado={() => { cargar(); }}
+          onCerrar={() => setShowCasillas(false)}
         />
       )}
     </div>
