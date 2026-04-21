@@ -28,6 +28,19 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Archivos binarios grandes — no versionar en git
+sigab-backend/static/uploads/FOTOSEQUIPO/
+sigab-backend/static/uploads/ORDENESIMSS/
+sigab-backend/static/uploads/equipos/
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.docx
+*.xlsx
+*.~lock.*
 desktop.ini
 
 # IDE
