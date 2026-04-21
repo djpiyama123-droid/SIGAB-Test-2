@@ -40,6 +40,7 @@ export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
       }
     } catch (err) {
       console.error(err);
+      toast.error(err?.response?.data?.detail || 'No se pudo cargar el detalle del evento');
     } finally {
       setLoading(false);
     }
@@ -111,15 +112,21 @@ export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
 
   const handleSubirEvidencia = async (e) => {
     e.preventDefault();
-    if (!evidFile) return;
+    if (!evidFile) {
+      toast.error('Selecciona un archivo antes de subir');
+      return;
+    }
     setSubiendo(true);
+    const tid = toast.loading('Subiendo evidencia...');
     try {
       await api.subirEvidenciaEvento(eventoId, evidTipo, evidDesc, evidFile);
+      toast.success('Evidencia subida', { id: tid });
       setEvidFile(null);
       setEvidDesc('');
       cargarEvento();
     } catch (err) {
       console.error(err);
+      toast.error(err?.response?.data?.detail || 'No se pudo subir la evidencia', { id: tid });
     } finally {
       setSubiendo(false);
     }

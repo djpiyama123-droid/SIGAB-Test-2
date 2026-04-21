@@ -4,36 +4,9 @@ import sqlalchemy as sa
 from typing import Optional
 from datetime import datetime, timezone
 
-class LSMaterial(SQLModel, table=True):
-    __tablename__ = "os_materiales"
-    
-    id: Optional[int] = Field(
-        default=None, 
-        sa_column=Column(mysql.INTEGER(unsigned=True), primary_key=True, autoincrement=True)
-    )
-    orden_id: int = Field(
-        sa_column=Column(mysql.INTEGER(unsigned=True), sa.ForeignKey("ordenes_servicio.id"), nullable=False)
-    )
-    descripcion: str
-    cantidad: int = Field(default=1)
-
-class OSEvidencia(SQLModel, table=True):
-    __tablename__ = "os_evidencias"
-    
-    id: Optional[int] = Field(
-        default=None, 
-        sa_column=Column(mysql.INTEGER(unsigned=True), primary_key=True, autoincrement=True)
-    )
-    orden_id: int = Field(
-        sa_column=Column(mysql.INTEGER(unsigned=True), sa.ForeignKey("ordenes_servicio.id"), nullable=False)
-    )
-    ruta_archivo: str = Field(max_length=500)
-    tipo: str = Field(default="durante")
-    descripcion: Optional[str] = None
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        sa_column=Column(mysql.DATETIME, nullable=False)
-    )
+# Re-exports para compatibilidad con alembic/env.py
+# Las clases reales viven en models.orden_servicio para evitar duplicados de MetaData
+from models.orden_servicio import MATERIAL_OS as LSMaterial, EVIDENCIA_OS as OSEvidencia  # noqa: F401
 
 class AuditLog(SQLModel, table=True):
     __tablename__ = "log_auditoria_nom016"

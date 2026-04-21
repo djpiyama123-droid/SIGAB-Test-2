@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { api } from '../api/sigab';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from './Toast';
 
 export default function ChangePasswordModal({ isOpen, onClose, required }) {
   const { setUser, user } = useAuth();
+  const toast = useToast();
   const [actual, setActual] = useState('');
   const [nueva, setNueva] = useState('');
   const [confirmar, setConfirmar] = useState('');
@@ -15,35 +17,41 @@ export default function ChangePasswordModal({ isOpen, onClose, required }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    
+
     if (nueva !== confirmar) {
       return setError('Las contraseñas nuevas no coinciden');
     }
     if (nueva.length < 6) {
       return setError('La nueva contraseña debe tener al menos 6 caracteres');
     }
+    if (actual === nueva) {
+      return setError('La nueva contraseña debe ser distinta de la actual');
+    }
 
     setLoading(true);
+    const tid = toast.loading('Actualizando contraseña…');
     try {
       await api.changePassword({ password_actual: actual, password_nueva: nueva });
-      
+
       // Actualizar estado del usuario
       setUser({ ...user, must_change_password: false });
-      
+
+      toast.success('Contraseña actualizada', { id: tid });
       onClose();
     } catch (err) {
-      setError(err.response?.data?.detail || 'Error al cambiar contraseña');
+      const msg = err.response?.data?.detail || 'Error al cambiar contraseña';
+      setError(msg);
+      toast.error(msg, { id: tid });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-        <div className="fixed inset-0 bg-slate-900/75 transition-opacity backdrop-blu-sm" aria-hidden="true" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-slate-900/75 transition-opacity backdrop-blur-sm" aria-hidden="true" />
 
-        <div className="relative transform overflow-hidden rounded-lg bg-slate-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-700">
+        <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-slate-800 text-left shadow-xl border border-slate-700">
           <form onSubmit={handleSubmit}>
             <div className="bg-slate-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
               <div className="sm:flex sm:items-start">
@@ -116,7 +124,7 @@ export default function ChangePasswordModal({ isOpen, onClose, required }) {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                  className="mt-3 inline-flex w-full justify-center rounded-md bg-slate-700 px-3 py-2 text-sm font-semibold text-slate-200 shadow-sm hover:bg-slate-600 sm:mt-0 sm:w-auto"
                 >
                   Cancelar
                 </button>
@@ -124,7 +132,6 @@ export default function ChangePasswordModal({ isOpen, onClose, required }) {
             </div>
           </form>
         </div>
-      </div>
     </div>
   );
 }

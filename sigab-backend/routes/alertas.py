@@ -9,11 +9,10 @@ router = APIRouter()
 
 from sqlmodel import select, or_, func, update
 from sqlmodel.ext.asyncio.session import AsyncSession
+import sqlalchemy as sa
 from database import get_async_session
 from models.alerta import Alerta
 from models.equipo import Equipo
-
-router = APIRouter()
 
 
 @router.get("/")

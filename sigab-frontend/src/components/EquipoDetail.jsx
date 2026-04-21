@@ -9,6 +9,7 @@ import { useToast } from './Toast';
 import EquipoForm from './EquipoForm';
 import ConfirmDialog from './ConfirmDialog';
 import QRPanel from './QRPanel';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function EquipoDetail({ equipo, onClose, onChange }) {
   const toast = useToast();
@@ -91,65 +92,135 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
           </div>
 
           <div className="p-6 space-y-6">
-            {/* Info grid */}
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-slate-500">Serie</span>
-                <p className="text-white font-mono">{equipo.serie}</p>
+            {/* Info grid & QR Code */}
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="flex-1 grid grid-cols-2 gap-4 text-sm w-full">
+                <div className="col-span-2 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 flex flex-col">
+                  <span className="text-slate-500 text-xs uppercase tracking-wider mb-0.5">N° Serie del Equipo</span>
+                  <p className="text-emerald-400 font-mono text-lg font-semibold">{equipo.serie || 'NO ASIGNADO'}</p>
+                </div>
+                <div className="col-span-2 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 flex flex-col">
+                  <span className="text-slate-500 text-xs uppercase tracking-wider mb-0.5">N° Inventario IMSS</span>
+                  <p className="text-blue-400 font-mono text-lg font-semibold">{equipo.inventario ? `HGR1-${equipo.inventario}` : 'NO ASIGNADO'}</p>
+                </div>
+                <div>
+                  <span className="text-slate-500">Estado</span>
+                  <p className="mt-1">
+                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium text-white ${ESTADO_COLORS[equipo.estado]}`}>
+                      {ESTADO_LABELS[equipo.estado]}
+                    </span>
+                  </p>
+                </div>
+                <div>
+                  <span className="text-slate-500">Criticidad</span>
+                  <p className="text-white capitalize mt-1">{equipo.criticidad || '—'}</p>
+                </div>
+                <div>
+                  <span className="text-slate-500">Piso</span>
+                  <p className="text-white mt-1">{equipo.piso || '—'}</p>
+                </div>
+                <div>
+                  <span className="text-slate-500">Area</span>
+                  <p className="text-white mt-1">{equipo.area || '—'}</p>
+                </div>
               </div>
-              <div>
-                <span className="text-slate-500">Estado</span>
-                <p>
-                  <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium text-white ${ESTADO_COLORS[equipo.estado]}`}>
-                    {ESTADO_LABELS[equipo.estado]}
-                  </span>
-                </p>
-              </div>
-              <div>
-                <span className="text-slate-500">Piso</span>
-                <p className="text-white">{equipo.piso || '—'}</p>
-              </div>
-              <div>
-                <span className="text-slate-500">Area</span>
-                <p className="text-white">{equipo.area || '—'}</p>
-              </div>
-              <div>
-                <span className="text-slate-500">Inventario</span>
-                <p className="text-white">{equipo.inventario || '—'}</p>
-              </div>
-              <div>
-                <span className="text-slate-500">Criticidad</span>
-                <p className="text-white capitalize">{equipo.criticidad || '—'}</p>
-              </div>
+              
+              {/* QR Code Prominente */}
+              {equipo.qr_token && (
+                <div className="w-full md:w-auto bg-white p-4 rounded-xl flex flex-col items-center justify-center shrink-0 shadow-2xl">
+                  <QRCodeSVG
+                    value={`${window.location.origin}/equipo/${equipo.qr_token}`}
+                    size={140}
+                    level="H"
+                    includeMargin={false}
+                  />
+                  <div className="mt-3 text-center">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest block">QR Único</span>
+                    <span className="text-xs font-mono text-slate-800 font-semibold">{equipo.qr_token}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Historial de ordenes */}
+            {/* Fotos adicionales */}
+            {(() => {
+              try {
+                const fotosArr = equipo.fotos ? JSON.parse(equipo.fotos) : [];
+                if (fotosArr.length > 1) { // Only show if more than 1 image (first one is already at the top)
+                  return (
+                    <div className="mb-6">
+                      <h3 className="text-sm font-semibold text-slate-300 mb-3">Galería de Imágenes</h3>
+                      <div className="flex gap-2 overflow-x-auto pb-2">
+                        {fotosArr.map((foto, idx) => (
+                           <div key={idx} className="relative flex-shrink-0 w-24 h-24 bg-black rounded-lg overflow-hidden border border-slate-700 hover:border-emerald-500 cursor-pointer shadow-lg" onClick={() => window.open(foto, '_blank')}>
+                             <img src={foto} className="object-cover w-full h-full hover:opacity-75 transition-opacity" />
+                           </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+              } catch (e) {
+                return null;
+              }
+            })()}
+
+            {/* Tickets / Órdenes de Servicio */}
             <div>
-              <h3 className="text-sm font-semibold text-slate-300 mb-3">Historial de Ordenes</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  Tickets / Órdenes de Servicio
+                </h3>
+                {historial.ordenes.length > 0 && (
+                  <span className="text-xs text-slate-500">{historial.ordenes.length} registro{historial.ordenes.length !== 1 ? 's' : ''}</span>
+                )}
+              </div>
               {historial.ordenes.length === 0 ? (
-                <p className="text-slate-500 text-sm">Sin ordenes registradas</p>
+                <p className="text-slate-500 text-sm">Sin órdenes registradas</p>
               ) : (
                 <div className="space-y-2">
-                  {historial.ordenes.slice(0, 5).map((os, i) => (
-                    <div key={i} className="bg-slate-900/50 rounded-lg p-3 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-white font-medium">{os.numero_orden}</span>
-                        <span className="text-slate-500">{os.fecha}</span>
-                      </div>
-                      <p className="text-slate-400 mt-1">
-                        {os.falla_reportada || os.tipo_mantenimiento}
-                      </p>
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full ${
-                          os.estado === 'cerrada'
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'bg-yellow-500/20 text-yellow-400'
-                        }`}
-                      >
-                        {os.estado}
-                      </span>
-                    </div>
-                  ))}
+                  {historial.ordenes.slice(0, 5).map((os, i) => {
+                    const CardWrapper = os.pdf_url ? 'a' : 'div';
+                    const wrapperProps = os.pdf_url ? { href: os.pdf_url, target: "_blank", rel: "noopener noreferrer" } : {};
+                    return (
+                      <CardWrapper key={i} {...wrapperProps} className={`block bg-slate-900/50 rounded-lg p-3 text-sm ${os.pdf_url ? 'hover:bg-slate-800 hover:ring-1 ring-emerald-500/50 cursor-pointer transition-all' : ''}`}>
+                        <div className="flex justify-between items-start gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${os.estado === 'cerrada' ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
+                            <span className="text-emerald-300 font-mono text-xs font-bold truncate">
+                              {os.numero_orden}
+                            </span>
+                            {os.pdf_url && (
+                              <svg className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            )}
+                          </div>
+                          <span className="text-slate-500 text-xs whitespace-nowrap flex-shrink-0">{os.fecha}</span>
+                        </div>
+                        <p className="text-slate-400 mt-1.5 text-xs pl-4">
+                          {os.falla_reportada || os.tipo_mantenimiento}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2 pl-4">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full capitalize ${
+                            os.estado === 'cerrada'
+                              ? 'bg-emerald-500/20 text-emerald-400'
+                              : os.estado === 'en_progreso'
+                              ? 'bg-blue-500/20 text-blue-400'
+                              : 'bg-amber-500/20 text-amber-400'
+                          }`}>
+                            {os.estado?.replace('_', ' ')}
+                          </span>
+                          {os.tipo_mantenimiento && (
+                            <span className="text-[10px] text-slate-600 capitalize">{os.tipo_mantenimiento}</span>
+                          )}
+                        </div>
+                      </CardWrapper>
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -14,12 +14,8 @@ export default function Metrologia() {
   const cargar = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/metrologia/', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setCalibraciones(data || []);
+      const data = await api.getMetrologia();
+      setCalibraciones(data.calibraciones || data || []);
     } catch (err) {
       toast.error('Error al cargar metrología');
     } finally {
@@ -33,7 +29,7 @@ export default function Metrologia() {
   });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
@@ -42,7 +38,9 @@ export default function Metrologia() {
           </h1>
           <p className="text-slate-400 mt-1">Control de exactitud y certificados de instrumentos de medición.</p>
         </div>
-        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl font-semibold transition-all shadow-lg active:scale-95">
+        <button
+          onClick={() => toast('Registro de nueva calibración — disponible en la próxima fase del módulo', { icon: 'ℹ️' })}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl font-semibold transition-all shadow-lg active:scale-95">
           <Plus className="h-4 w-4" />
           Nueva Calibración
         </button>
@@ -65,7 +63,7 @@ export default function Metrologia() {
         </div>
       </div>
 
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-x-auto">
         <table className="w-full text-left">
           <thead className="bg-slate-900/80 border-b border-slate-800">
             <tr>
@@ -99,7 +97,18 @@ export default function Metrologia() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-blue-400 hover:text-blue-300 shadow-sm"><FileText className="h-5 w-5 ml-auto" /></button>
+                    <button
+                      onClick={() => {
+                        if (c.certificado_url) {
+                          window.open(c.certificado_url, '_blank');
+                        } else {
+                          toast('Certificado aún no cargado para este equipo', { icon: '📄' });
+                        }
+                      }}
+                      title={c.certificado_url ? 'Abrir certificado' : 'Sin certificado'}
+                      className="text-blue-400 hover:text-blue-300 shadow-sm">
+                      <FileText className="h-5 w-5 ml-auto" />
+                    </button>
                   </td>
                 </tr>
               );

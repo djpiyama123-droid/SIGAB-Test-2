@@ -16,16 +16,11 @@ export default function Almacen() {
   const cargar = async () => {
     setLoading(true);
     try {
-      // Usamos fetch nativo ya que no lo agregué al objeto api de sigab.js aún
-      const token = localStorage.getItem('token');
-      const params = new URLSearchParams();
-      if (busqueda) params.append('busqueda', busqueda);
-      if (filterStockBajo) params.append('stock_bajo', 'true');
-      
-      const res = await fetch(`/api/almacen/?${params}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
+      const params = {};
+      if (busqueda) params.busqueda = busqueda;
+      if (filterStockBajo) params.stock_bajo = 'true';
+
+      const data = await api.getAlmacen(params);
       setRefacciones(data.refacciones || []);
     } catch (err) {
       toast.error('Error al cargar almacén');
@@ -39,7 +34,7 @@ export default function Almacen() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
@@ -49,7 +44,9 @@ export default function Almacen() {
           </h1>
           <p className="text-slate-400 mt-1">Gestión de stock técnico y control de insumos para mantenimiento.</p>
         </div>
-        <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-semibold transition-all shadow-lg shadow-emerald-900/20 active:scale-95">
+        <button
+          onClick={() => toast('Captura de nueva refacción — disponible en la próxima fase del módulo', { icon: 'ℹ️' })}
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-semibold transition-all shadow-lg shadow-emerald-900/20 active:scale-95">
           <Plus className="h-4 w-4" />
           Nueva Refacción
         </button>
@@ -107,11 +104,15 @@ export default function Almacen() {
             <AlertTriangle className="h-4 w-4" />
             Stock Bajo
           </button>
-          <button className="flex items-center gap-2 bg-slate-800 border border-slate-700 text-slate-400 px-4 py-2 rounded-xl font-medium hover:bg-slate-700 transition-all">
+          <button
+            onClick={() => toast('Filtros avanzados — disponibles en la próxima fase del módulo', { icon: '🔎' })}
+            className="flex items-center gap-2 bg-slate-800 border border-slate-700 text-slate-400 px-4 py-2 rounded-xl font-medium hover:bg-slate-700 transition-all">
             <Filter className="h-4 w-4" />
             Filtros
           </button>
-          <button className="flex items-center gap-2 bg-purple-600/10 border border-purple-500/50 text-purple-400 px-4 py-2 rounded-xl font-bold hover:bg-purple-600/20 transition-all active:scale-95">
+          <button
+            onClick={() => toast('Predicción IA de consumo — próximamente conectada a SIGAB Copilot', { icon: '🧠' })}
+            className="flex items-center gap-2 bg-purple-600/10 border border-purple-500/50 text-purple-400 px-4 py-2 rounded-xl font-bold hover:bg-purple-600/20 transition-all active:scale-95">
             <TrendingDown className="h-4 w-4 rotate-180" />
             Smart Predicción
           </button>
@@ -184,7 +185,11 @@ export default function Almacen() {
                         )}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button className="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase">Ajustar</button>
+                        <button
+                          onClick={() => toast(`Ajuste de stock para "${item.nombre}" — disponible en la próxima fase`, { icon: '📦' })}
+                          className="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase">
+                          Ajustar
+                        </button>
                       </td>
                     </tr>
                   )

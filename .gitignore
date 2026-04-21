@@ -36,10 +36,17 @@ desktop.ini
 *.swp
 *.swo
 
-# Database / secrets
+# Database / secrets — NO subir dumps ni seeds con datos reales
 *.sql.bak
 *.db
 *.sqlite
+database/seed_data.sql
+database/sigab_schema.sql
+database/sigab_schema_fresh.sql
+database/migrate_real_data.py
+
+# Vite timestamp files
+*.timestamp-*.mjs
 
 # Docker volumes
 mysql_data/
@@ -48,3 +55,12 @@ mysql_data/
 .coverage
 htmlcov/
 .pytest_cache/
+
+# LibreOffice temporals
+.~lock.*
+*.tmp
+~$*
+
+# Scratch / debug output
+scratch/
+sigab-backend/alembic_output.txt

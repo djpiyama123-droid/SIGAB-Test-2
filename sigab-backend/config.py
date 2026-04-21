@@ -1,3 +1,17 @@
+"""
+config.py — Variables de configuración centralizadas del backend SIGAB.
+
+Todas las configuraciones se leen de variables de entorno con prefijo SIGAB_*.
+Se proporcionan valores por defecto para desarrollo local.
+
+Secciones:
+  - DB_CONFIG:         Conexión MySQL (host, port, user, pass, db)
+  - JWT:               Secreto, algoritmo, TTL de acceso y refresh
+  - PUBLIC_BASE_URL:   URL embebida en QRs (IP LAN en producción)
+  - CORS_EXTRA:        Orígenes adicionales para celulares en LAN
+  - OLLAMA/GEMMA:      IA local vía Ollama (Gemma 4B / Qwen 7B)
+  - OCR:               Umbral de confianza y API key de Gemini
+"""
 import aiomysql
 import os
 
@@ -28,7 +42,9 @@ REFRESH_TTL_DAYS = int(os.getenv("SIGAB_REFRESH_TTL_DAYS", "7"))
 PUBLIC_BASE_URL = os.getenv("SIGAB_PUBLIC_BASE_URL", "http://localhost:5173")
 
 # CORS extra (separados por coma) para permitir escaneo desde celulares LAN
-CORS_EXTRA = [o.strip() for o in os.getenv("SIGAB_CORS_EXTRA", "").split(",") if o.strip()]
+_cors_env = os.getenv("SIGAB_CORS_EXTRA", "")
+_cors_lan = ["http://192.168.1.125:5173", "http://192.168.1.125:5174"]
+CORS_EXTRA = [*_cors_lan, *[o.strip() for o in _cors_env.split(",") if o.strip()]]
 
 # ── IA Local (Qwen / Gemma via Ollama) ────────────────────────────
 # Ollama se instala en el mismo servidor (Lenovo ThinkCentre) y expone :11434

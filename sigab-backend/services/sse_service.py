@@ -18,8 +18,11 @@ class SSEManager:
         self._clients.add(queue)
         try:
             while True:
-                data = await queue.get()
-                yield data
+                try:
+                    data = await asyncio.wait_for(queue.get(), timeout=25.0)
+                    yield data
+                except asyncio.TimeoutError:
+                    yield ": heartbeat\n\n"
         finally:
             self._clients.discard(queue)
 

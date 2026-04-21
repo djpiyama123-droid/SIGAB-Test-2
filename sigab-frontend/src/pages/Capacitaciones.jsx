@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { api } from '../api/sigab';
 import { Users, GraduationCap, Calendar, Plus, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -13,12 +14,8 @@ export default function Capacitaciones() {
   const cargar = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/capacitaciones/', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setCapacitaciones(data || []);
+      const data = await api.getCapacitaciones();
+      setCapacitaciones(data.capacitaciones || data || []);
     } catch (err) {
       toast.error('Error al cargar capacitaciones');
     } finally {
@@ -27,7 +24,7 @@ export default function Capacitaciones() {
   };
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-4 md:p-6 space-y-8">
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
@@ -36,7 +33,9 @@ export default function Capacitaciones() {
           </h1>
           <p className="text-slate-400 mt-1">Cumplimiento NOM-016: Registro de formación en uso y seguridad de equipos.</p>
         </div>
-        <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-semibold transition-all shadow-lg active:scale-95">
+        <button
+          onClick={() => toast('Captura de nuevo registro — disponible en la próxima fase del módulo', { icon: 'ℹ️' })}
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-semibold transition-all shadow-lg active:scale-95">
           <Plus className="h-4 w-4" />
           Nuevo Registro
         </button>
@@ -44,7 +43,10 @@ export default function Capacitaciones() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {capacitaciones.map((item) => (
-          <div key={item.id} className="bg-slate-800/40 border border-slate-700 hover:border-emerald-500/50 transition-all p-6 rounded-3xl group cursor-pointer">
+          <div
+            key={item.id}
+            onClick={() => toast(`Evidencia de "${item.tema}" — detalle disponible en la próxima fase`, { icon: '📂' })}
+            className="bg-slate-800/40 border border-slate-700 hover:border-emerald-500/50 transition-all p-6 rounded-3xl group cursor-pointer">
             <div className="flex justify-between items-start mb-4">
               <div className="bg-emerald-500/10 p-3 rounded-2xl text-emerald-500">
                 <Calendar className="h-6 w-6" />

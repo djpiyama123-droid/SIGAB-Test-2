@@ -34,7 +34,8 @@ export function useSSE({ assetId = null, onEvent = null } = {}) {
     if (assetId) params.append('asset_id', assetId);
     if (lastEventId) params.append('last_event_id', lastEventId);
 
-    const url = `http://localhost:8000/api/v1/events/subscribe?${params.toString()}`;
+    const base = `${window.location.protocol}//${window.location.host}`;
+    const url = `${base}/api/v1/events/subscribe?${params.toString()}`;
     const es = new EventSource(url);
     eventSourceRef.current = es;
 

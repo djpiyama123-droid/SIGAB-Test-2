@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
 import OCRScannerModal from './OCRScannerModal';
+import { useToast } from './Toast';
 
 export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
+  const toast = useToast();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   
@@ -49,27 +51,41 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
       });
     } catch (err) {
       console.error(err);
+      toast.error('No se pudo cargar el detalle de la orden');
     } finally {
       setLoading(false);
     }
   };
 
   const handleEstado = async (estado) => {
-    await api.cambiarEstadoOrden(ordenId, estado);
-    cargarOrden();
-    onUpdated();
+    const tid = toast.loading(estado === 'en_progreso' ? 'Iniciando trabajo…' : 'Actualizando estado…');
+    try {
+      await api.cambiarEstadoOrden(ordenId, estado);
+      toast.success(estado === 'en_progreso' ? 'Trabajo iniciado' : 'Estado actualizado', { id: tid });
+      cargarOrden();
+      onUpdated();
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.response?.data?.detail || 'No se pudo actualizar el estado', { id: tid });
+    }
   };
 
   const handleSubirEvidencia = async (e) => {
     e.preventDefault();
-    if (!evidenciaFile) return;
+    if (!evidenciaFile) {
+      toast.warn('Selecciona una imagen antes de subir');
+      return;
+    }
     setSubiendo(true);
+    const tid = toast.loading('Subiendo evidencia…');
     try {
       await api.subirEvidenciaOrden(ordenId, evidenciaTipo, '', evidenciaFile);
       setEvidenciaFile(null);
+      toast.success(`Evidencia "${evidenciaTipo}" subida`, { id: tid });
       cargarOrden();
     } catch (err) {
       console.error(err);
+      toast.error(err?.response?.data?.detail || 'Error al subir evidencia', { id: tid });
     } finally {
       setSubiendo(false);
     }
@@ -77,20 +93,37 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
 
   const handleFinalizar = async (e) => {
     e.preventDefault();
+    if (!formFinal.condiciones_encontradas.trim() || !formFinal.observaciones.trim() || !formFinal.condicion_final.trim()) {
+      toast.warn('Completa las condiciones, trabajo realizado y condición final');
+      return;
+    }
+    if (!formFinal.recibe_conformidad_nombre.trim()) {
+      toast.warn('Indica quién recibe la conformidad');
+      return;
+    }
+    const tid = toast.loading('Cerrando y firmando orden…');
     try {
       await api.finalizarOrden(ordenId, formFinal);
+      toast.success('Orden cerrada correctamente', { id: tid });
       setShowFinalizar(false);
       cargarOrden();
       onUpdated();
     } catch (err) {
       console.error(err);
+      toast.error(err?.response?.data?.detail || 'Error al finalizar orden', { id: tid });
     }
   };
 
   const handleImprimir = () => {
-    const url = api.getPdfOrdenUrl(ordenId);
-    const token = localStorage.getItem('token');
-    window.open(`${url}?token=${token}`, '_blank');
+    try {
+      const url = api.getPdfOrdenUrl(ordenId);
+      const token = localStorage.getItem('token');
+      window.open(`${url}?token=${token}`, '_blank');
+      toast.info('Abriendo PDF de la orden…');
+    } catch (err) {
+      console.error(err);
+      toast.error('No se pudo abrir el PDF');
+    }
   };
 
   if (loading || !data) {
@@ -143,7 +176,7 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
         <div className="p-6 space-y-6">
           <Timeline estado={orden.estado} />
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
                 <h3 className="text-sm font-semibold text-emerald-400 mb-2">Detalles del Fallo</h3>
@@ -185,14 +218,28 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
                 <h3 className="text-sm font-semibold text-slate-300 mb-2">Evidencias Fotográficas</h3>
                 <div className="flex gap-2 overflow-x-auto pb-2">
                   {evidencias.length === 0 ? <p className="text-xs text-slate-500">Sin evidencias aún</p> : 
-                    evidencias.map(ev => (
-                      <div key={ev.id} className="relative flex-shrink-0 w-24 h-24 bg-black rounded overflow-hidden">
-                        <img src={ev.ruta_archivo} className="object-cover w-full h-full" alt={ev.tipo} />
-                        <div className="absolute bottom-0 inset-x-0 bg-black/60 text-[10px] text-white text-center p-0.5 uppercase tracking-wide">
-                          {ev.tipo}
+                    evidencias.map(ev => {
+                      const isPDF = ev.ruta_archivo?.toLowerCase().endsWith('.pdf');
+                      return (
+                        <div key={ev.id} 
+                             onClick={() => window.open(ev.ruta_archivo, '_blank')}
+                             className="relative flex-shrink-0 w-24 h-24 bg-black rounded overflow-hidden group cursor-pointer border border-transparent hover:border-emerald-500 transition-colors">
+                          {isPDF ? (
+                            <div className="flex flex-col items-center justify-center w-full h-full bg-slate-800 text-slate-300 group-hover:bg-slate-700 transition-colors">
+                               <span className="text-3xl mb-1">📄</span>
+                               <span className="text-[9px] text-center px-1 truncate w-full text-slate-400 group-hover:text-white" title={ev.ruta_archivo.split('/').pop()}>
+                                 {ev.ruta_archivo.split('/').pop()}
+                               </span>
+                            </div>
+                          ) : (
+                            <img src={ev.ruta_archivo} className="object-cover w-full h-full group-hover:opacity-75 transition-opacity" alt={ev.tipo} />
+                          )}
+                          <div className="absolute bottom-0 inset-x-0 bg-black/60 text-[10px] text-white text-center p-0.5 uppercase tracking-wide">
+                            {ev.tipo}
+                          </div>
                         </div>
-                      </div>
-                  ))}
+                      );
+                  })}
                 </div>
                 {orden.estado !== 'cerrada' && (
                   <form onSubmit={handleSubirEvidencia} className="mt-3 flex gap-2 items-center">

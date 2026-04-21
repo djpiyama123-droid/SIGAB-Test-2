@@ -1,3 +1,23 @@
+"""
+routes/tecnovigilancia.py — Gestión de eventos adversos NOM-240-SSA1-2012.
+
+Ciclo de vida del evento:
+  reportado → en_investigacion → documentado → escalado_cofepris → cerrado
+                                             └→ cerrado (sin escalar)
+
+Operaciones:
+  GET    /tecnovigilancia/                      — Listado con filtros
+  GET    /tecnovigilancia/{id}                  — Detalle con evidencias
+  POST   /tecnovigilancia/                      — Crear evento (auto: snapshot del equipo, folio)
+  PUT    /tecnovigilancia/{id}/estado            — Transición de estado (validada)
+  PUT    /tecnovigilancia/{id}/investigar        — Registrar hallazgos y causa raíz
+  POST   /tecnovigilancia/{id}/escalar           — Escalar a COFEPRIS con folio
+  PUT    /tecnovigilancia/{id}/cerrar            — Cerrar con conclusión
+  POST   /tecnovigilancia/{id}/evidencia         — Subir evidencia fotográfica/documental
+  GET    /tecnovigilancia/{id}/pdf               — Descargar reporte NOM-240 en PDF
+
+Alertas automáticas: Severidad crítica/grave → equipo fuera_servicio + alerta al jefe
+"""
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Response
 from typing import Optional
 import aiomysql

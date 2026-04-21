@@ -3,11 +3,13 @@ import { api } from '../api/sigab';
 import { TV_ESTADO_COLORS, TV_SEVERIDAD_COLORS, TV_TIPO_LABELS, TV_ESTADO_LABELS } from '../utils/constants';
 import EventoAdversoModal from '../components/EventoAdversoModal';
 import EventoDetalleModal from '../components/EventoDetalleModal';
+import { useToast } from '../components/Toast';
 
 const FILTROS_ESTADO = ['', 'reportado', 'en_investigacion', 'documentado', 'escalado_cofepris', 'cerrado'];
 const FILTROS_SEVERIDAD = ['', 'critica', 'grave', 'moderada', 'leve'];
 
 export default function Tecnovigilancia() {
+  const toast = useToast();
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [estadoFiltro, setEstado] = useState('');
@@ -27,9 +29,11 @@ export default function Tecnovigilancia() {
       setEventos(res.eventos || []);
     } catch (err) {
       console.error(err);
+      toast.error('No se pudieron cargar los eventos de tecnovigilancia');
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estadoFiltro, severidadFiltro, busqueda]);
 
   useEffect(() => { cargar(); }, [cargar]);
@@ -44,7 +48,7 @@ export default function Tecnovigilancia() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="p-4 md:p-6 space-y-5">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
@@ -161,7 +165,11 @@ export default function Tecnovigilancia() {
       {showCrear && (
         <EventoAdversoModal
           onClose={() => setShowCrear(false)}
-          onCreated={() => { setShowCrear(false); cargar(); }}
+          onCreated={(num) => {
+            setShowCrear(false);
+            toast.success(`Evento ${num || 'adverso'} registrado`);
+            cargar();
+          }}
         />
       )}
 

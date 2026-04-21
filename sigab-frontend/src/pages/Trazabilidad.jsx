@@ -1,19 +1,25 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
+import { useToast } from '../components/Toast';
 
 export default function Trazabilidad() {
+  const toast = useToast();
   const [movimientos, setMovimientos] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.getTrazabilidad()
       .then((res) => setMovimientos(res.movimientos || []))
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        toast.error('No se pudo cargar la trazabilidad');
+      })
       .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className="space-y-5">
+    <div className="p-4 md:p-6 space-y-5">
       <div>
         <h1 className="text-2xl font-bold text-white">Trazabilidad de Equipos</h1>
         <p className="text-slate-400 text-sm">Historial de movimientos y traslados</p>

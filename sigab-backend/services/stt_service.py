@@ -1,8 +1,15 @@
 import os
 import base64
 import tempfile
-from faster_whisper import WhisperModel
 import logging
+
+try:
+    from faster_whisper import WhisperModel
+    _WHISPER_AVAILABLE = True
+except ImportError:
+    WhisperModel = None  # type: ignore
+    _WHISPER_AVAILABLE = False
+    logging.warning("faster_whisper no instalado — STT deshabilitado.")
 
 logger = logging.getLogger(__name__)
 

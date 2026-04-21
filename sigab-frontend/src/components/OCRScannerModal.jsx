@@ -21,15 +21,18 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
   const handleScan = async (fileToScan) => {
     setScanning(true);
     setScanResult(null);
+    const tid = toast.loading("Analizando documento con IA…");
     try {
       const res = await api.scanOCR(fileToScan);
       if (res.ok) {
         setScanResult(res.datos.campos_identificados);
-        toast.success("Análisis IA completado");
+        toast.success("Análisis IA completado", { id: tid });
+      } else {
+        toast.error(res.detail || "El análisis no devolvió datos útiles", { id: tid });
       }
     } catch (err) {
-      toast.error("Hubo un error analizando la imagen");
       console.error(err);
+      toast.error(err?.response?.data?.detail || "Hubo un error analizando la imagen", { id: tid });
     } finally {
       setScanning(false);
     }
@@ -38,6 +41,7 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
   const aceptarDatos = () => {
     if (scanResult) {
       onConfirm(scanResult);
+      toast.success("Datos extraídos confirmados");
       onClose();
     }
   };

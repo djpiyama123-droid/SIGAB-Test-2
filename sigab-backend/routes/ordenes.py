@@ -1,13 +1,34 @@
+"""
+routes/ordenes.py — Endpoints para gestión de Órdenes de Servicio (OS).
+
+Operaciones:
+  GET    /ordenes/                  — Listado con filtros (estado, tipo, equipo, fechas)
+  GET    /ordenes/{id}              — Detalle con materiales y evidencias
+  POST   /ordenes/                  — Crear OS con folio auto-generado (OS-YYYYMMDD-XXXX)
+  PUT    /ordenes/{id}/cerrar       — Cerrar orden
+  PUT    /ordenes/{id}/estado       — Transición de estado (abierta → en_progreso → cerrada)
+  PUT    /ordenes/{id}/finalizar    — Cierre con condiciones finales y conformidad
+  POST   /ordenes/{id}/evidencia    — Subir evidencia fotográfica (antes/después)
+  POST   /ordenes/ocr-scan          — Escanear formato físico con IA (Gemini Vision)
+  GET    /ordenes/{id}/pdf          — Descargar PDF de la OS
+
+Formatos soportados: correctivo_corto, correctivo_largo, orden_entrega, reporte_externo
+"""
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Response
 from typing import Optional
 import aiomysql
 import os
 import secrets
-from datetime import datetime
+from datetime import datetime, date
+import sqlalchemy as sa
 from config import get_db, UPLOAD_DIR
 from auth.dependencies import get_current_user, require_action
 from services.pdf_service import generar_pdf_orden
-from services.ocr_service import parsear_reporte_ocr
+try:
+    from services.ocr_service import parsear_reporte_ocr
+except ImportError:
+    def parsear_reporte_ocr(_b):  # type: ignore
+        raise HTTPException(status_code=503, detail="OCR deshabilitado en esta instancia")
 
 router = APIRouter()
 
@@ -55,6 +76,49 @@ async def listar_ordenes(
         ordenes_list.append(d)
 
     return {"ordenes": ordenes_list, "total": len(ordenes_list)}
+
+
+@router.get("/archivos-historicos")
+async def listar_archivos_historicos(
+    buscar: Optional[str] = None,
+    page: int = 1,
+    limit: int = 30,
+    user: dict = Depends(get_current_user),
+):
+    """Lista los PDFs del directorio ORDENESIMSS (858 órdenes físicas escaneadas)."""
+    folder = os.path.join(os.path.dirname(UPLOAD_DIR), "uploads", "ORDENESIMSS")
+    if not os.path.isdir(folder):
+        folder = os.path.join(UPLOAD_DIR, "ORDENESIMSS")
+    if not os.path.isdir(folder):
+        return {"archivos": [], "total": 0, "pagina": page, "limite": limit}
+
+    archivos = sorted(
+        [f for f in os.listdir(folder) if f.lower().endswith(".pdf")],
+        reverse=True,
+    )
+
+    if buscar:
+        q = buscar.lower()
+        archivos = [f for f in archivos if q in f.lower()]
+
+    total = len(archivos)
+    offset = (page - 1) * limit
+    page_files = archivos[offset : offset + limit]
+
+    result = []
+    for nombre in page_files:
+        stem = nombre[:-4]
+        parts = stem.split("_")
+        result.append({
+            "nombre": nombre,
+            "url": f"/static/uploads/ORDENESIMSS/{nombre}",
+            "folio": parts[0] if parts else stem,
+            "tipo": parts[1] if len(parts) > 1 else "—",
+            "anio": parts[2] if len(parts) > 2 else "—",
+            "serie": "_".join(parts[3:]) if len(parts) > 3 else "—",
+        })
+
+    return {"archivos": result, "total": total, "pagina": page, "limite": limit}
 
 
 @router.get("/{orden_id}")

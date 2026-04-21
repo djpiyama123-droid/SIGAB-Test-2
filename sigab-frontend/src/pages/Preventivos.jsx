@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
+import { useToast } from '../components/Toast';
 
 function diasRestantes(fecha) {
   if (!fecha) return null;
@@ -36,6 +37,7 @@ function BadgeVencimiento({ fecha }) {
 }
 
 export default function Preventivos() {
+  const toast = useToast();
   const [preventivos, setPreventivos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState('todos'); // todos | vencidos | proximos
@@ -44,18 +46,25 @@ export default function Preventivos() {
     setLoading(true);
     api.getPreventivos()
       .then((res) => setPreventivos(res.preventivos || []))
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        toast.error('No se pudieron cargar los preventivos');
+      })
       .finally(() => setLoading(false));
   };
 
   useEffect(() => { cargar(); }, []);
 
   const handleEjecutar = async (id) => {
+    if (!window.confirm('¿Registrar este preventivo como ejecutado hoy?')) return;
+    const tid = toast.loading('Registrando ejecución…');
     try {
       await api.ejecutarPreventivo(id);
+      toast.success('Preventivo registrado como ejecutado', { id: tid });
       cargar();
     } catch (err) {
       console.error(err);
+      toast.error(err?.response?.data?.detail || 'No se pudo registrar el preventivo', { id: tid });
     }
   };
 
@@ -67,7 +76,7 @@ export default function Preventivos() {
   });
 
   return (
-    <div className="space-y-5">
+    <div className="p-4 md:p-6 space-y-5">
       <div>
         <h1 className="text-2xl font-bold text-white">Mantenimientos Preventivos</h1>
         <p className="text-slate-400 text-sm">

@@ -172,6 +172,13 @@ export default function QRBatch() {
     : equiposParaImprimir.length;
 
   const handlePrint = () => {
+    if (seleccionados.length === 0) {
+      toast.error('Selecciona al menos un equipo antes de imprimir');
+      return;
+    }
+
+    toast.success(`Preparando ${seleccionados.length} etiquetas — ${paginasEstimadas} página(s)`);
+
     // Set the print mode CSS class on <html>
     document.documentElement.setAttribute('data-print-mode', modo);
 
@@ -197,7 +204,7 @@ export default function QRBatch() {
   const allVisibleSelected = equiposFiltrados.length > 0 && equiposFiltrados.every(e => seleccionados.includes(e.id));
 
   return (
-    <div className="p-6 space-y-6 qr-batch-screen">
+    <div className="p-4 md:p-6 space-y-6 qr-batch-screen">
       {/* ═══ Header ═══ */}
       <div className="flex flex-col lg:flex-row justify-between items-start gap-4 print:hidden">
         <div>

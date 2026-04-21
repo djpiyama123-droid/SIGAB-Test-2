@@ -1,3 +1,19 @@
+/**
+ * @module api/sigab
+ * @description Cliente HTTP centralizado del frontend SIGAB.
+ *
+ * Provee un objeto `api` con métodos para todos los endpoints del backend.
+ * Utiliza Axios con interceptores automáticos para:
+ * - Inyección del token JWT en cada request (header Authorization)
+ * - Extracción de `response.data` (evita `.data.data` en cada llamada)
+ * - Gestión de blobs para descargas PDF/Excel (responseType: 'blob')
+ *
+ * Patrón de uso:
+ *   import { api } from '../api/sigab';
+ *   const equipos = await api.getEquipos({ estado: 'operativo' });
+ *
+ * @requires axios
+ */
 import axios from 'axios';
 
 // Cliente axios con proxy via Vite (/api → localhost:8000/api)
@@ -26,8 +42,9 @@ client.interceptors.response.use(
       const isAuthError = err.config.url.startsWith('/auth');
       if (!isAuthError) {
          console.warn('No autorizado, token expirado o inválido.');
-         // localStorage.removeItem('token');
-         // window.location.href = '/login';
+         localStorage.removeItem('token');
+         localStorage.removeItem('user');
+         window.location.href = '/login';
       }
     }
     console.error('SIGAB API Error:', err.response?.status, err.config?.url);
@@ -68,6 +85,7 @@ export const api = {
 
   // ── Órdenes ───────────────────────────────────────────────
   getOrdenes: (params = {}) => client.get('/ordenes', { params }),
+  getArchivosHistoricos: (params = {}) => client.get('/ordenes/archivos-historicos', { params }),
   getOrden: (id) => client.get(`/ordenes/${id}`),
   crearOrden: (data) => client.post('/ordenes', data),
   cerrarOrden: (id) => client.put(`/ordenes/${id}/cerrar`),
@@ -172,4 +190,27 @@ export const api = {
   // El chat usa fetch nativo por streaming SSE (no axios)
   // Ver: chatStreamUrl en la página Copilot
   getCopilotChatUrl: () => '/api/copilot/chat',
+
+  // ── Almacén de Refacciones ─────────────────────────────────
+  getAlmacen: (params = {}) => client.get('/almacen/', { params }),
+  crearRefaccion: (data) => client.post('/almacen/', data),
+  ajustarStock: (id, data) => client.put(`/almacen/${id}/ajustar`, data),
+
+  // ── Metrología y Calibración ───────────────────────────────
+  getMetrologia: () => client.get('/metrologia/'),
+  crearCalibracion: (data) => client.post('/metrologia/', data),
+
+  // ── Capacitación de Personal ───────────────────────────────
+  getCapacitaciones: () => client.get('/capacitaciones/'),
+  crearCapacitacion: (data) => client.post('/capacitaciones/', data),
+
+  // ── Auditoría NOM-016 ──────────────────────────────────────
+  getAuditLogs: () => client.get('/auditoria/'),
+  verificarCadena: () => client.get('/auditoria/verificar'),
+  descargarBitacoraPdf: () => client.get('/auditoria/pdf', { responseType: 'blob' }),
+
+  // ── Checklists NOM-016 ─────────────────────────────────────
+  getChecklistTemplates: () => client.get('/checklists/templates'),
+  getChecklistResultados: () => client.get('/checklists/resultados'),
+  ejecutarChecklist: (data) => client.post('/checklists/ejecutar', data),
 };

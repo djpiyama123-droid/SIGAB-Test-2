@@ -1,0 +1,38 @@
+name: Deploy SIGAB → VPS Bluehost
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH deploy al VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 129.121.100.147
+          username: root
+          password: ${{ secrets.VPS_ROOT_PASS }}
+          script: |
+            set -e
+            cd /opt/sigab
+
+            # Traer últimos cambios
+            git pull origin main 2>/dev/null || git pull origin master 2>/dev/null
+
+            # Reconstruir y reiniciar contenedores si cambiaron
+            docker compose --env-file .env up -d --build
+
+            # Rebuild frontend si cambió
+            cd sigab-frontend
+            npm ci --silent
+            npm run build
+            cd ..
+
+            # Recargar Nginx para tomar el nuevo dist/
+            nginx -t && systemctl reload nginx
+
+            echo "SIGAB actualizado: $(date)"

@@ -1,7 +1,23 @@
+/**
+ * @module pages/Ordenes
+ * @description Gestión de Órdenes de Servicio (OS) del sistema SIGAB.
+ *
+ * Funcionalidades:
+ * - Listado con filtros por estado (abierta/en_progreso/cerrada) y tipo
+ * - Creación de nuevas OS con formulario inline (folio auto-generado)
+ * - Cierre de órdenes con confirmación
+ * - Modal de detalle completo (OrdenDetalleModal)
+ * - Integración con Casillas CENEVAL (OrdenCasillasForm)
+ *
+ * @requires api/sigab — Cliente HTTP centralizado
+ * @requires components/OrdenDetalleModal — Vista detallada de la OS
+ * @requires components/OrdenCasillasForm — Formulario CENEVAL
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/sigab';
 import OrdenDetalleModal from '../components/OrdenDetalleModal';
 import OrdenCasillasForm from '../components/OrdenCasillasForm';
+import { useToast } from '../components/Toast';
 
 const PRIORIDAD_BADGE = {
   critica: 'bg-red-900/60 text-red-300 border border-red-700',
@@ -21,6 +37,8 @@ const FILTROS_ESTADO = ['', 'abierta', 'en_progreso', 'cerrada'];
 const FILTROS_TIPO   = ['', 'correctivo', 'preventivo', 'instalacion', 'calibracion'];
 
 export default function Ordenes() {
+  const toast = useToast();
+  const [tab, setTab]                 = useState('activas'); // 'activas' | 'historico'
   const [ordenes, setOrdenes]         = useState([]);
   const [loading, setLoading]         = useState(true);
   const [estadoFiltro, setEstado]     = useState('');
@@ -37,6 +55,12 @@ export default function Ordenes() {
   const [showCasillas, setShowCasillas]     = useState(false);
   const [casillasOrdenId, setCasillasOrdenId] = useState(null);
   const [casillasEquipo, setCasillasEquipo]   = useState({});
+  // Archivo histórico ORDENESIMSS
+  const [archivos, setArchivos]             = useState([]);
+  const [archivosTotal, setArchivosTotal]   = useState(0);
+  const [archivosPag, setArchivosPag]       = useState(1);
+  const [archivoBuscar, setArchivoBuscar]   = useState('');
+  const [archivosLoading, setArchivosLoading] = useState(false);
 
   const cargar = useCallback(async () => {
     setLoading(true);
@@ -48,18 +72,47 @@ export default function Ordenes() {
       setOrdenes(res.ordenes || []);
     } catch (err) {
       console.error(err);
+      toast.error('No se pudieron cargar las órdenes');
     } finally {
       setLoading(false);
     }
-  }, [estadoFiltro, tipoFiltro]);
+  }, [estadoFiltro, tipoFiltro]); // eslint-disable-line
+
+  const cargarArchivos = useCallback(async (pagina = 1, buscar = '') => {
+    setArchivosLoading(true);
+    try {
+      const res = await api.getArchivosHistoricos({ page: pagina, buscar: buscar || undefined, limit: 30 });
+      setArchivos(res.archivos || []);
+      setArchivosTotal(res.total || 0);
+      setArchivosPag(pagina);
+    } catch (err) {
+      console.error(err);
+      toast.error('No se pudo cargar el archivo histórico');
+    } finally {
+      setArchivosLoading(false);
+    }
+  }, []); // eslint-disable-line
 
   useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    if (tab === 'historico') cargarArchivos(1, archivoBuscar);
+  }, [tab]); // eslint-disable-line
 
   const handleCrear = async (e) => {
     e.preventDefault();
+    // Validación mínima antes de POST
+    if (!form.falla_reportada.trim()) {
+      toast.error('Describe la falla reportada');
+      return;
+    }
+    if (!form.equipo_nombre.trim() && !form.equipo_serie.trim()) {
+      toast.error('Especifica nombre del equipo o número de serie');
+      return;
+    }
     setGuardando(true);
     try {
-      await api.crearOrden({ ...form, origen: 'dashboard' });
+      const res = await api.crearOrden({ ...form, origen: 'dashboard' });
+      toast.success(`Orden ${res.numero_orden || ''} creada`);
       setShowForm(false);
       setForm({ equipo_nombre:'', equipo_serie:'', tipo_mantenimiento:'correctivo',
                 tipo_formato:'correctivo_corto',
@@ -67,45 +120,171 @@ export default function Ordenes() {
       cargar();
     } catch (err) {
       console.error(err);
+      toast.error(err?.response?.data?.detail || 'Error al crear la orden');
     } finally {
       setGuardando(false);
     }
   };
 
   const handleCerrar = async (id) => {
-    await api.cerrarOrden(id);
-    cargar();
+    if (!window.confirm('¿Cerrar esta orden de servicio?')) return;
+    const tid = toast.loading('Cerrando orden...');
+    try {
+      await api.cerrarOrden(id);
+      toast.success('Orden cerrada', { id: tid });
+      cargar();
+    } catch (err) {
+      console.error(err);
+      toast.error('No se pudo cerrar la orden', { id: tid });
+    }
   };
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   return (
-    <div className="space-y-5">
+    <div className="p-4 md:p-6 space-y-5">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h1 className="text-2xl font-bold text-white">Órdenes de Servicio</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => { setCasillasOrdenId(null); setCasillasEquipo({}); setShowCasillas(true); }}
-            className="px-4 py-2 bg-teal-700 hover:bg-teal-600 text-white text-sm font-medium rounded-lg transition-colors"
+            className="px-3 py-2 bg-teal-700 hover:bg-teal-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
           >
-            📋 + Nueva OS (Casillas)
+            📋 Nueva OS (Casillas)
           </button>
           <button
             onClick={() => setShowForm((v) => !v)}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
+            className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
           >
             {showForm ? '✕ Cancelar' : '+ Nueva OS'}
           </button>
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 border-b border-slate-700">
+        {[['activas','Órdenes Activas'],['historico',`Archivo Histórico (${archivosTotal || 858})`]].map(([key, label]) => (
+          <button key={key} onClick={() => setTab(key)}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              tab === key
+                ? 'border-emerald-500 text-emerald-400'
+                : 'border-transparent text-slate-500 hover:text-slate-300'
+            }`}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── TAB: Archivo Histórico ORDENESIMSS ─────────────────────── */}
+      {tab === 'historico' && (
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              value={archivoBuscar}
+              onChange={(e) => setArchivoBuscar(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && cargarArchivos(1, archivoBuscar)}
+              placeholder="Buscar por folio, serie, tipo..."
+              className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-600"
+            />
+            <button onClick={() => cargarArchivos(1, archivoBuscar)}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-lg">
+              Buscar
+            </button>
+          </div>
+
+          {archivosLoading ? (
+            <div className="text-slate-400 py-8 text-center">Cargando archivos...</div>
+          ) : archivos.length === 0 ? (
+            <div className="text-slate-500 py-8 text-center">Sin resultados.</div>
+          ) : (
+            <>
+              {/* Vista móvil: cards */}
+              <div className="block sm:hidden space-y-2">
+                {archivos.map((a) => (
+                  <a key={a.nombre} href={a.url} target="_blank" rel="noopener noreferrer"
+                    className="block bg-slate-800 border border-slate-700 rounded-lg p-3 hover:border-emerald-600 transition-colors">
+                    <div className="flex justify-between items-start">
+                      <span className="font-mono text-xs text-emerald-400">{a.folio}</span>
+                      <span className="text-xs text-slate-500">{a.anio}</span>
+                    </div>
+                    <div className="text-xs text-slate-300 mt-1">{a.tipo} — Serie: {a.serie}</div>
+                    <div className="text-xs text-slate-500 mt-0.5 truncate">{a.nombre}</div>
+                  </a>
+                ))}
+              </div>
+
+              {/* Vista escritorio: tabla */}
+              <div className="hidden sm:block bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-slate-900/60 text-slate-400 text-left">
+                        {['Folio','Tipo','Año','No. Serie','Archivo'].map((h) => (
+                          <th key={h} className="px-4 py-3 font-medium whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {archivos.map((a) => (
+                        <tr key={a.nombre} className="border-t border-slate-700/50 hover:bg-slate-700/40 transition-colors">
+                          <td className="px-4 py-2 font-mono text-xs text-emerald-400">{a.folio}</td>
+                          <td className="px-4 py-2 text-xs text-slate-300 capitalize">{a.tipo}</td>
+                          <td className="px-4 py-2 text-xs text-slate-500">{a.anio}</td>
+                          <td className="px-4 py-2 text-xs text-slate-400">{a.serie}</td>
+                          <td className="px-4 py-2">
+                            <a href={a.url} target="_blank" rel="noopener noreferrer"
+                              className="text-xs text-blue-400 hover:text-blue-300 hover:underline">
+                              Ver PDF
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="px-4 py-2 flex items-center justify-between text-slate-500 text-xs border-t border-slate-700">
+                  <span>{archivosTotal} documentos en total</span>
+                  <div className="flex gap-2">
+                    <button onClick={() => cargarArchivos(archivosPag - 1, archivoBuscar)}
+                      disabled={archivosPag <= 1}
+                      className="px-2 py-1 bg-slate-700 rounded disabled:opacity-30 hover:bg-slate-600">
+                      ‹ Ant
+                    </button>
+                    <span className="self-center">Pág {archivosPag} / {Math.ceil(archivosTotal / 30)}</span>
+                    <button onClick={() => cargarArchivos(archivosPag + 1, archivoBuscar)}
+                      disabled={archivosPag >= Math.ceil(archivosTotal / 30)}
+                      className="px-2 py-1 bg-slate-700 rounded disabled:opacity-30 hover:bg-slate-600">
+                      Sig ›
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Paginación móvil */}
+              <div className="flex sm:hidden justify-between items-center text-xs text-slate-500">
+                <button onClick={() => cargarArchivos(archivosPag - 1, archivoBuscar)}
+                  disabled={archivosPag <= 1}
+                  className="px-3 py-1.5 bg-slate-700 rounded disabled:opacity-30">‹ Ant</button>
+                <span>Pág {archivosPag} / {Math.ceil(archivosTotal / 30)}</span>
+                <button onClick={() => cargarArchivos(archivosPag + 1, archivoBuscar)}
+                  disabled={archivosPag >= Math.ceil(archivosTotal / 30)}
+                  className="px-3 py-1.5 bg-slate-700 rounded disabled:opacity-30">Sig ›</button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── TAB: Órdenes Activas ──────────────────────────────────── */}
+      {tab === 'activas' && <>
+
       {/* Formulario crear */}
       {showForm && (
         <form onSubmit={handleCrear}
           className="bg-slate-800 border border-slate-700 rounded-xl p-5 space-y-4">
           <h2 className="text-base font-semibold text-white">Nueva Orden de Servicio</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[
               ['equipo_nombre','Equipo (nombre)','text'],
               ['equipo_serie','No. Serie','text'],
@@ -184,9 +363,15 @@ export default function Ordenes() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-900/60 text-slate-400 text-left">
-                  {['# Orden','Equipo','Falla','Técnico','Área','Fecha','Estado','Prioridad','Acción'].map((h) => (
-                    <th key={h} className="px-4 py-3 font-medium whitespace-nowrap">{h}</th>
-                  ))}
+                  <th className="px-4 py-3 font-medium whitespace-nowrap"># Orden</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap">Equipo</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap hidden sm:table-cell">Falla</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap hidden md:table-cell">Técnico</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap hidden md:table-cell">Área</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap hidden md:table-cell">Fecha</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap">Estado</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap hidden sm:table-cell">Prioridad</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -194,18 +379,18 @@ export default function Ordenes() {
                   <tr key={os.id}
                     onClick={() => setSelectedOrden(os.id)}
                     className="border-t border-slate-700/50 hover:bg-slate-700/50 cursor-pointer transition-colors">
-                    <td className="px-4 py-3 font-mono text-slate-300 text-xs">{os.numero_orden}</td>
-                    <td className="px-4 py-3 text-white">{os.equipo_nombre || '—'}</td>
-                    <td className="px-4 py-3 text-slate-400 max-w-xs truncate">{os.falla_reportada || '—'}</td>
-                    <td className="px-4 py-3 text-slate-400">{os.tecnico_nombre || '—'}</td>
-                    <td className="px-4 py-3 text-slate-500 text-xs">{os.area || '—'}</td>
-                    <td className="px-4 py-3 text-slate-500 text-xs">{os.fecha}</td>
+                    <td className="px-4 py-3 font-mono text-slate-300 text-xs whitespace-nowrap">{os.numero_orden}</td>
+                    <td className="px-4 py-3 text-white text-xs max-w-[120px] truncate">{os.equipo_nombre || '—'}</td>
+                    <td className="px-4 py-3 text-slate-400 text-xs max-w-xs truncate hidden sm:table-cell">{os.falla_reportada || '—'}</td>
+                    <td className="px-4 py-3 text-slate-400 text-xs hidden md:table-cell">{os.tecnico_nombre || '—'}</td>
+                    <td className="px-4 py-3 text-slate-500 text-xs hidden md:table-cell">{os.area || '—'}</td>
+                    <td className="px-4 py-3 text-slate-500 text-xs hidden md:table-cell">{os.fecha}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${ESTADO_BADGE[os.estado] || ''}`}>
                         {os.estado?.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden sm:table-cell">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${PRIORIDAD_BADGE[os.prioridad] || ''}`}>
                         {os.prioridad}
                       </span>
@@ -226,7 +411,7 @@ export default function Ordenes() {
                           }}
                           className="text-xs text-teal-400 hover:text-teal-300 hover:underline"
                         >
-                          📋 Casillas
+                          📋
                         </button>
                       </div>
                     </td>
@@ -258,6 +443,8 @@ export default function Ordenes() {
           onCerrar={() => setShowCasillas(false)}
         />
       )}
+
+      </> /* fin tab activas */}
     </div>
   );
 }

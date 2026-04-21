@@ -178,11 +178,11 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
 
   return (
     <div
-      className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
-        className="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-3xl my-8"
+        className="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

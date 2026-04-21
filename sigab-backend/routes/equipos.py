@@ -1,3 +1,20 @@
+"""
+routes/equipos.py — Endpoints CRUD para gestión de equipos biomédicos.
+
+Operaciones:
+  GET    /equipos/              — Listado paginado con filtros (estado, área, piso, búsqueda)
+  GET    /equipos/{id}          — Detalle con últimas órdenes y traslados
+  POST   /equipos/              — Alta con token QR opaco generado automáticamente
+  PUT    /equipos/{id}          — Actualización con campos filtrados por rol
+  DELETE /equipos/{id}          — Baja (cascade a órdenes y trazabilidad)
+  GET    /equipos/public/{qr}   — Consulta pública vía escaneo QR (sin auth)
+  GET    /equipos/{id}/qr       — Generar QR PNG (Segno, nivel H, 30% recuperación)
+  GET    /equipos/{id}/qr/label — Etiqueta A6 imprimible (PDF)
+  POST   /equipos/validar       — Triple Validación Poka-Yoke (QR + Inventario + Serie)
+  PATCH  /equipos/{id}/posicion — Drag & drop en mapa interactivo
+
+Normativas: NOM-016-SSA3-2012 (audit trail), ISO 13485 (trazabilidad)
+"""
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Response
 from typing import Optional
 import aiomysql
@@ -22,6 +39,7 @@ from services.audit_service import AuditService
 
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
+import sqlalchemy as sa
 from database import get_async_session
 from models.equipo import Equipo
 from models.orden_servicio import OrdenServicio
@@ -242,10 +260,25 @@ async def subir_imagen_equipo(
 @router.get("/{equipo_id}/historial")
 async def historial_equipo(equipo_id: int, session: AsyncSession = Depends(get_async_session)):
     """Devuelve historial completo de órdenes y traslados para el panel de Ficha Técnica."""
+    from models.orden_servicio import EVIDENCIA_OS
     
     stmt_ordenes = select(OrdenServicio).where(OrdenServicio.equipo_id == equipo_id).order_by(OrdenServicio.fecha.desc(), OrdenServicio.id.desc()).limit(50)
     res_ordenes = await session.execute(stmt_ordenes)
     ordenes = res_ordenes.scalars().all()
+
+    orden_ids = [o.id for o in ordenes]
+    evidencias_map = {}
+    if orden_ids:
+        stmt_ev = select(EVIDENCIA_OS).where(EVIDENCIA_OS.orden_id.in_(orden_ids), EVIDENCIA_OS.tipo == 'documento')
+        res_ev = await session.execute(stmt_ev)
+        for ev in res_ev.scalars().all():
+            evidencias_map[ev.orden_id] = ev.ruta_archivo
+
+    ordenes_list = []
+    for o in ordenes:
+        od = o.model_dump()
+        od["pdf_url"] = evidencias_map.get(o.id)
+        ordenes_list.append(od)
 
     stmt_traslados = select(Trazabilidad).where(Trazabilidad.equipo_id == equipo_id).order_by(Trazabilidad.fecha_movimiento.desc()).limit(50)
     res_traslados = await session.execute(stmt_traslados)
@@ -260,7 +293,7 @@ async def historial_equipo(equipo_id: int, session: AsyncSession = Depends(get_a
 
     return {
         "equipo_id": equipo_id,
-        "ordenes": [o.model_dump() for o in ordenes],
+        "ordenes": ordenes_list,
         "traslados": [t.model_dump() for t in traslados],
         "preventivos": [p.model_dump() for p in preventivos],
     }
@@ -272,43 +305,123 @@ async def listar_equipos(
     area: Optional[str] = None,
     piso: Optional[str] = None,
     buscar: Optional[str] = None,
-    limit: int = 100,
+    criticidad: Optional[str] = None,
+    tipo_equipo: Optional[str] = None,
+    marca: Optional[str] = None,
+    zona_id: Optional[int] = None,
+    clase_cofepris: Optional[str] = None,
+    orden: Optional[str] = "nombre",
+    limit: int = 50,
     offset: int = 0,
     user: Optional[dict] = Depends(get_current_user_optional),
     session: AsyncSession = Depends(get_async_session),
 ):
     query = select(Equipo)
+    count_query = select(func.count()).select_from(Equipo)
     
+    # Filtros dinámicos
+    conditions = []
     if estado:
-        query = query.where(Equipo.estado == estado)
+        conditions.append(Equipo.estado == estado)
     if area:
-        query = query.where(Equipo.area.contains(area))
+        conditions.append(Equipo.area.contains(area))
     if piso:
-        query = query.where(Equipo.piso == piso)
+        conditions.append(Equipo.piso == piso)
+    if criticidad:
+        conditions.append(Equipo.criticidad == criticidad)
+    if tipo_equipo:
+        conditions.append(Equipo.tipo_equipo == tipo_equipo)
+    if marca:
+        conditions.append(Equipo.marca.contains(marca))
+    if zona_id:
+        conditions.append(Equipo.zona_id == zona_id)
+    if clase_cofepris:
+        conditions.append(Equipo.clase_cofepris == clase_cofepris)
     if buscar:
-        query = query.where(
+        conditions.append(
             sa.or_(
                 Equipo.nombre.contains(buscar),
                 Equipo.serie.contains(buscar),
                 Equipo.marca.contains(buscar),
-                Equipo.modelo.contains(buscar)
+                Equipo.modelo.contains(buscar),
+                Equipo.inventario.contains(buscar),
+                Equipo.ubicacion.contains(buscar),
             )
         )
+    
+    for cond in conditions:
+        query = query.where(cond)
+        count_query = count_query.where(cond)
 
-    query = query.order_by(Equipo.nombre).limit(limit).offset(offset)
+    # Ordenamiento
+    order_map = {
+        "nombre": Equipo.nombre.asc(),
+        "nombre_desc": Equipo.nombre.desc(),
+        "marca": Equipo.marca.asc(),
+        "estado": sa.case(
+            (Equipo.estado == 'fuera_servicio', 1),
+            (Equipo.estado == 'en_mantenimiento', 2),
+            (Equipo.estado == 'en_traslado', 3),
+            (Equipo.estado == 'operativo', 4),
+            else_=5
+        ),
+        "criticidad": sa.case(
+            (Equipo.criticidad == 'alta', 1),
+            (Equipo.criticidad == 'media', 2),
+            (Equipo.criticidad == 'baja', 3),
+            else_=4
+        ),
+        "serie": Equipo.serie.asc(),
+        "area": Equipo.area.asc(),
+        "reciente": Equipo.created_at.desc(),
+    }
+    query = query.order_by(order_map.get(orden, Equipo.nombre.asc()))
+    query = query.limit(limit).offset(offset)
+    
     res = await session.execute(query)
     equipos = res.scalars().all()
 
-    # Total count
-    count_stmt = select(func.count()).select_from(Equipo)
-    total = (await session.execute(count_stmt)).scalar()
+    # Total count con los mismos filtros
+    total = (await session.execute(count_query)).scalar()
+
+    # Catálogos únicos para filtros del frontend
+    stmt_marcas = select(Equipo.marca).distinct().order_by(Equipo.marca)
+    marcas_disponibles = (await session.execute(stmt_marcas)).scalars().all()
+    
+    stmt_tipos = select(Equipo.tipo_equipo).distinct().order_by(Equipo.tipo_equipo)
+    tipos_disponibles = (await session.execute(stmt_tipos)).scalars().all()
 
     # Convert to dict and filter confidential
     equipos_list = [e.model_dump() for e in equipos]
     if not can(user, "view_confidential"):
         equipos_list = [filter_equipo_publico(e) for e in equipos_list]
 
-    return {"equipos": equipos_list, "total": total}
+    # Inyectar conteo de tickets abiertos (órdenes abiertas/en_progreso) por equipo
+    if equipos_list:
+        equipo_ids = [e["id"] for e in equipos_list]
+        stmt_tickets = (
+            select(OrdenServicio.equipo_id, func.count(OrdenServicio.id).label("cnt"))
+            .where(
+                OrdenServicio.equipo_id.in_(equipo_ids),
+                OrdenServicio.estado.in_(["abierta", "en_progreso"]),
+            )
+            .group_by(OrdenServicio.equipo_id)
+        )
+        res_tickets = await session.execute(stmt_tickets)
+        tickets_map = {r[0]: r[1] for r in res_tickets.all()}
+        for eq in equipos_list:
+            eq["tickets_abiertos"] = tickets_map.get(eq["id"], 0)
+
+    return {
+        "equipos": equipos_list,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "catalogos": {
+            "marcas": marcas_disponibles,
+            "tipos": tipos_disponibles,
+        }
+    }
 
 
 @router.get("/{equipo_id}")
@@ -404,6 +517,35 @@ async def actualizar_equipo(
         raise HTTPException(status_code=500, detail=f"Error al actualizar: {str(e)}")
 
     return {"ok": True, "mensaje": f"Equipo {equipo_id} actualizado"}
+
+
+@router.get("/{equipo_id}/qr/info")
+async def obtener_info_qr(
+    equipo_id: int,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """Devuelve el token y la URL canónica embebida en el QR del equipo.
+    Usado por el frontend para mostrar exactamente la misma URL que se codifica
+    en el PNG, sin divergencias basadas en window.location.origin."""
+    equipo = await session.get(Equipo, equipo_id)
+    if not equipo:
+        raise HTTPException(status_code=404, detail="Equipo no encontrado")
+
+    # Lazy-create token si el equipo antiguo no lo tiene
+    token = equipo.qr_token
+    if not token:
+        token = secrets.token_urlsafe(12)[:16]
+        equipo.qr_token = token
+        await session.commit()
+
+    url = f"{PUBLIC_BASE_URL}/equipo/{token}"
+    return {
+        "equipo_id": equipo.id,
+        "qr_token": token,
+        "url": url,
+        "public_base_url": PUBLIC_BASE_URL,
+    }
 
 
 @router.get("/{equipo_id}/qr")
@@ -509,7 +651,7 @@ async def validar_poka_yoke(
 
     return {
         "ok": es_valido,
-        "equipo": equipo if es_valido else None,
+        "equipo": equipo.model_dump() if (es_valido and equipo) else None,
         "detail": error_msg if not es_valido else "Validación triple exitosa",
         "matches": {
             "inventario": match_inventario,

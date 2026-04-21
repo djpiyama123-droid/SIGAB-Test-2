@@ -1,19 +1,41 @@
-import { useState } from 'react';
-import { api } from '../api/sigab';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
-const BACKEND_URL = 'http://localhost:8000';
+// Usa rutas relativas para respetar el proxy de Vite (baseURL = /api)
+// evitando hardcodear http://localhost:8000 (rompe en producción/remoto).
+const API_PREFIX = '/api';
 
 export default function QRPanel({ equipo, onClose }) {
   const [loading, setLoading] = useState(false);
   const [qrUrl, setQrUrl] = useState(null);
+  // URL canónica que realmente está codificada en el QR (viene del backend)
+  const [qrInfo, setQrInfo] = useState(null);
+
+  // Al abrir, consulta al backend la URL real que irá en el QR
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchInfo() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_PREFIX}/equipos/${equipo.id}/qr/info`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setQrInfo(data);
+      } catch (_) {
+        /* fallback al render local */
+      }
+    }
+    fetchInfo();
+    return () => { cancelled = true; };
+  }, [equipo.id]);
 
   const handleGenerarQR = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const url = `${BACKEND_URL}/api/equipos/${equipo.id}/qr`;
-      const res = await fetch(url, {
+      const res = await fetch(`${API_PREFIX}/equipos/${equipo.id}/qr`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -31,8 +53,7 @@ export default function QRPanel({ equipo, onClose }) {
   const handleDescargarEtiqueta = async () => {
     try {
       const token = localStorage.getItem('token');
-      const url = `${BACKEND_URL}/api/equipos/${equipo.id}/qr/label`;
-      const res = await fetch(url, {
+      const res = await fetch(`${API_PREFIX}/equipos/${equipo.id}/qr/label`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -46,8 +67,12 @@ export default function QRPanel({ equipo, onClose }) {
     }
   };
 
+  // Prefiere la URL canónica del backend (misma que va codificada en el PNG)
+  const publicUrl =
+    qrInfo?.url ||
+    `${window.location.origin}/equipo/${equipo.qr_token || ''}`;
+
   const handleCopiarURL = () => {
-    const publicUrl = `${window.location.origin}/equipo/${equipo.qr_token}`;
     navigator.clipboard.writeText(publicUrl);
     toast.success('URL copiada al portapapeles');
   };
@@ -90,10 +115,10 @@ export default function QRPanel({ equipo, onClose }) {
                 </button>
               </div>
               <p className="text-sm font-mono text-slate-300 break-all">
-                {equipo.qr_token}
+                {qrInfo?.qr_token || equipo.qr_token}
               </p>
-              <p className="text-[10px] text-slate-600 mt-1">
-                URL: {window.location.origin}/equipo/{equipo.qr_token}
+              <p className="text-[10px] text-slate-600 mt-1 break-all">
+                URL: {publicUrl}
               </p>
             </div>
           )}
