@@ -18,7 +18,7 @@ import base64
 import logging
 import os
 
-from database import get_session
+from database import get_async_session as get_session
 from models.orden_casillas import OrdenCasillas, CasillasCreate, CasillasRead
 from models.orden_servicio import OrdenServicio
 from services.sse_service import sse_manager

@@ -2,7 +2,8 @@
 // HospitalMap.jsx — Mapa Interactivo de Activos Biomédicos
 // SIGAB — Hospital General Regional No. 1 IMSS Tijuana
 // ============================================================
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from './Toast';
 import HistorialEquipoModal from './HistorialEquipoModal';
 import OrdenServicioRapidaModal from './OrdenServicioRapidaModal';
@@ -117,19 +118,29 @@ const CRITICIDAD_CONFIG = {
 };
 
 // ── Componente: punto de equipo individual en el mapa
-function EquipmentDot({ equipo, onClick }) {
+// mode="flow" (default) → se renderiza dentro de un grid auto-adjustable
+// mode="absolute" → usa pos_x/pos_y (layout legacy, conservado por compatibilidad)
+function EquipmentDot({ equipo, onClick, mode = 'flow' }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const status = STATUS_CONFIG[equipo.estado] || STATUS_CONFIG.baja;
   const Icon = EQUIPMENT_ICONS[equipo.tipo_equipo] || EQUIPMENT_ICONS.otro;
 
+  const wrapperStyle = mode === 'absolute'
+    ? {
+        position: 'absolute',
+        left: `calc(${equipo.pos_x ?? 50}% - 24px)`,
+        top:  `calc(${equipo.pos_y ?? 50}% - 24px)`,
+        zIndex: showTooltip ? 50 : 10,
+      }
+    : {
+        position: 'relative',
+        zIndex: showTooltip ? 50 : 1,
+      };
+
   return (
     <div
-      className="absolute group"
-      style={{
-        left: `calc(${equipo.pos_x}% - 24px)`,
-        top:  `calc(${equipo.pos_y}% - 24px)`,
-        zIndex: showTooltip ? 50 : 10,
-      }}
+      className="group"
+      style={wrapperStyle}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
@@ -235,48 +246,99 @@ function EquipmentDot({ equipo, onClick }) {
 }
 
 // ── Componente: caja de zona hospitalaria
+// El contenedor crece de forma automática según la cantidad de equipos (grid auto-wrap).
+// Además muestra un micro-resumen por estado (operativo / mant. / fuera).
 function ZoneBox({ zona, onEquipoClick }) {
-  const tieneEquipos = zona.equipos && zona.equipos.length > 0;
-  const conFalla = zona.equipos?.some(e => ['fuera_servicio','en_mantenimiento'].includes(e.estado));
+  const equipos = zona.equipos || [];
+  const tieneEquipos = equipos.length > 0;
+  const conFalla = equipos.some(e => ['fuera_servicio', 'en_mantenimiento'].includes(e.estado));
+
+  // Contadores por estado (para el mini-resumen de la zona)
+  const counts = equipos.reduce((acc, e) => {
+    acc[e.estado] = (acc[e.estado] || 0) + 1;
+    return acc;
+  }, {});
 
   return (
     <div
-      className="relative rounded-2xl overflow-hidden transition-all duration-300 min-h-[140px]"
+      className="relative rounded-2xl overflow-visible transition-all duration-300 flex flex-col"
       style={{
         backgroundColor: zona.color_bg || '#1e293b',
         border: `1px solid ${conFalla ? '#ef444430' : (zona.color_borde || '#334155')}`,
         boxShadow: conFalla ? '0 0 20px #ef444415' : 'none',
       }}
     >
+      {/* Header de la zona */}
       <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
-        <span className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">
+        <span className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase truncate">
           {zona.nombre}
         </span>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           {zona.piso && (
-            <span className="text-[9px] text-slate-600 bg-slate-800 px-1.5 py-0.5 rounded-full">
+            <span className="text-[9px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded-full">
               {zona.piso}
             </span>
           )}
-          <span className="text-[10px] font-semibold text-slate-500">
-            {zona.total_equipos || 0}
+          <span
+            className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+            style={{
+              backgroundColor: conFalla ? '#7f1d1d' : '#0f172a',
+              color: conFalla ? '#fca5a5' : '#cbd5e1',
+            }}
+            title={`${equipos.length} equipos en la zona`}
+          >
+            {equipos.length}
           </span>
         </div>
       </div>
 
-      <div className="relative w-full" style={{ height: tieneEquipos ? '120px' : '80px' }}>
-        {!tieneEquipos && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-slate-700 text-xs">Sin equipos registrados</span>
+      {/* Mini-resumen por estado */}
+      {tieneEquipos && (
+        <div className="flex items-center gap-2 px-3 pb-1.5 text-[9px] font-medium">
+          {counts.operativo > 0 && (
+            <span className="text-emerald-400">● {counts.operativo} OK</span>
+          )}
+          {counts.en_mantenimiento > 0 && (
+            <span className="text-amber-400">● {counts.en_mantenimiento} Mant.</span>
+          )}
+          {counts.fuera_servicio > 0 && (
+            <span className="text-red-400">● {counts.fuera_servicio} Fuera</span>
+          )}
+          {counts.en_traslado > 0 && (
+            <span className="text-purple-400">● {counts.en_traslado} Trasl.</span>
+          )}
+        </div>
+      )}
+
+      {/* Cuerpo: grid auto-adjustable — el contenedor crece con la cantidad de equipos */}
+      <div className="px-3 pb-3 pt-1 flex-1">
+        {!tieneEquipos ? (
+          <div className="flex items-center justify-center min-h-[60px]">
+            <span className="text-slate-600 text-[10px] italic">Sin equipos registrados</span>
+          </div>
+        ) : (
+          <div
+            className="grid gap-2"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fill, minmax(48px, 1fr))',
+              rowGap: '10px',
+            }}
+          >
+            {equipos.map(equipo => (
+              <div
+                key={equipo.id}
+                className="flex items-center justify-center"
+                style={{ minHeight: '48px' }}
+              >
+                <EquipmentDot
+                  equipo={equipo}
+                  onClick={onEquipoClick}
+                  mode="flow"
+                />
+              </div>
+            ))}
           </div>
         )}
-        {zona.equipos?.map(equipo => (
-          <EquipmentDot
-            key={equipo.id}
-            equipo={equipo}
-            onClick={onEquipoClick}
-          />
-        ))}
       </div>
     </div>
   );
@@ -456,6 +518,9 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR })
   );
 }
 
+// ── Orden canónico de pisos
+const ORDEN_PISOS = ['Sótano', '1er Piso', '2do Piso', '3er Piso', '4to Piso'];
+
 // ── Componente principal: HospitalMap
 export default function HospitalMap() {
   const [zonas, setZonas]             = useState([]);
@@ -465,22 +530,26 @@ export default function HospitalMap() {
   const [historialEquipo, setHistorialEquipo] = useState(null);
   const [equipoOS, setEquipoOS]               = useState(null);
   const [qrEquipo, setQrEquipo]               = useState(null);
-  const eventSourceRef                = useRef(null);
+
+  // ── Estado de filtros
+  const [busqueda, setBusqueda]       = useState('');
+  const [filtroEstado, setFiltroEstado] = useState('');
+  const [pisoActivo, setPisoActivo]   = useState('todos');
+
   const toast = useToast();
+  const navigate = useNavigate();
 
   const fetchMapa = useCallback(async () => {
     try {
       const res = await fetch('/api/dashboard/mapa', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setZonas(data.zonas || []);
       setError(null);
     } catch (err) {
-      setError('No se pudo cargar el mapa. Verificar que el backend este corriendo.');
+      setError('No se pudo cargar el mapa. Verificar que el backend esté corriendo.');
       console.error('Error cargando mapa:', err);
     } finally {
       setLoading(false);
@@ -489,29 +558,8 @@ export default function HospitalMap() {
 
   useEffect(() => {
     fetchMapa();
-
-    const sse = new EventSource('/api/dashboard/stream');
-    eventSourceRef.current = sse;
-
-    sse.onmessage = (event) => {
-      try {
-        const payload = JSON.parse(event.data);
-        if (payload.tipo === 'equipo_update' || payload.tipo === 'nueva_orden') {
-          fetchMapa();
-        }
-      } catch (_) {}
-    };
-
-    sse.addEventListener('equipo_update', () => fetchMapa());
-    sse.addEventListener('nueva_orden', () => fetchMapa());
-
-    sse.onerror = () => {
-      setTimeout(fetchMapa, 5000);
-    };
-
-    return () => {
-      sse.close();
-    };
+    const poll = setInterval(fetchMapa, 15000);
+    return () => clearInterval(poll);
   }, [fetchMapa]);
 
   if (loading) {
@@ -526,37 +574,61 @@ export default function HospitalMap() {
   if (error) {
     return (
       <div className="flex items-center gap-3 p-4 rounded-xl border border-red-800/50 bg-red-900/20 text-red-400 text-sm">
-        <span>&#9888;</span>
+        <span>⚠</span>
         <span>{error}</span>
-        <button onClick={fetchMapa} className="ml-auto text-xs underline hover:no-underline">
-          Reintentar
-        </button>
+        <button onClick={fetchMapa} className="ml-auto text-xs underline hover:no-underline">Reintentar</button>
       </div>
     );
   }
 
-  const handleAbrirOS = (equipo) => {
-    setEquipoOS(equipo);
-  };
+  // ── Derivar lista de pisos reales
+  const pisosEnDatos = [
+    ...ORDEN_PISOS.filter(p => zonas.some(z => z.piso === p)),
+    ...Array.from(new Set(zonas.map(z => z.piso).filter(p => p && !ORDEN_PISOS.includes(p)))),
+  ];
 
-  const handleVerHistorial = (equipo) => {
-    setHistorialEquipo(equipo);
-  };
+  // ── Lógica de filtrado
+  const busqLower = busqueda.toLowerCase().trim();
+  const zonasFiltradas = zonas
+    .filter(zona => pisoActivo === 'todos' || zona.piso === pisoActivo || (!zona.piso && pisoActivo === 'otras'))
+    .map(zona => {
+      // Filtrar equipos dentro de la zona por búsqueda y estado
+      let equiposFiltrados = zona.equipos || [];
+      if (filtroEstado) equiposFiltrados = equiposFiltrados.filter(e => e.estado === filtroEstado);
+      if (busqLower) {
+        equiposFiltrados = equiposFiltrados.filter(e =>
+          e.nombre?.toLowerCase().includes(busqLower) ||
+          e.serie?.toLowerCase().includes(busqLower) ||
+          e.marca?.toLowerCase().includes(busqLower) ||
+          zona.nombre?.toLowerCase().includes(busqLower)
+        );
+      }
+      return { ...zona, equipos: equiposFiltrados };
+    })
+    // Ocultar zonas sin equipos cuando hay filtros activos
+    .filter(zona => !busqLower && !filtroEstado ? true : zona.equipos.length > 0);
 
+  const totalEquiposFiltrados = zonasFiltradas.reduce((a, z) => a + z.equipos.length, 0);
+  const hayFiltros = busqLower || filtroEstado || pisoActivo !== 'todos';
+
+  const handleAbrirOS = (equipo) => setEquipoOS(equipo);
+  const handleVerHistorial = (equipo) => navigate(`/equipos?equipoId=${equipo.id}`);
   const handleOSCreada = (numero) => {
     toast.success(`Orden ${numero} creada`);
     setEquipoOS(null);
     fetchMapa();
+  };
+  const limpiarFiltros = () => {
+    setBusqueda('');
+    setFiltroEstado('');
+    setPisoActivo('todos');
   };
 
   return (
     <>
       {selectedEquipo && (
         <>
-          <div
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-            onClick={() => setSelected(null)}
-          />
+          <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setSelected(null)} />
           <FichaTecnica
             equipo={selectedEquipo}
             onClose={() => setSelected(null)}
@@ -566,86 +638,199 @@ export default function HospitalMap() {
           />
         </>
       )}
+      {historialEquipo && <HistorialEquipoModal equipo={historialEquipo} onClose={() => setHistorialEquipo(null)} />}
+      {equipoOS && <OrdenServicioRapidaModal equipo={equipoOS} onClose={() => setEquipoOS(null)} onCreada={handleOSCreada} />}
+      {qrEquipo && <QRPanel equipo={qrEquipo} onClose={() => setQrEquipo(null)} />}
 
-      {historialEquipo && (
-        <HistorialEquipoModal
-          equipo={historialEquipo}
-          onClose={() => setHistorialEquipo(null)}
-        />
-      )}
+      <div className="space-y-3">
 
-      {equipoOS && (
-        <OrdenServicioRapidaModal
-          equipo={equipoOS}
-          onClose={() => setEquipoOS(null)}
-          onCreada={handleOSCreada}
-        />
-      )}
+        {/* ── Barra de filtros ── */}
+        <div className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 space-y-3">
 
-      {qrEquipo && (
-        <QRPanel
-          equipo={qrEquipo}
-          onClose={() => setQrEquipo(null)}
-        />
-      )}
-
-      <div className="space-y-4">
-        {/* Header del mapa */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 text-blue-400">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                <circle cx="12" cy="9" r="2.5"/>
+          {/* Fila 1: búsqueda + estado + limpiar */}
+          <div className="flex flex-wrap gap-2 items-center">
+            {/* Búsqueda */}
+            <div className="relative flex-1 min-w-[160px]">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
               </svg>
+              <input
+                type="text"
+                placeholder="Buscar equipo, zona, serie..."
+                value={busqueda}
+                onChange={e => setBusqueda(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 bg-slate-900/60 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              />
             </div>
-            <span className="text-slate-300 text-sm font-semibold">
-              Plano HGR #1 — Trazabilidad de Activos
-            </span>
+
+            {/* Filtro por estado */}
+            <select
+              value={filtroEstado}
+              onChange={e => setFiltroEstado(e.target.value)}
+              className="py-1.5 pl-2.5 pr-6 bg-slate-900/60 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-blue-500 appearance-none cursor-pointer"
+            >
+              <option value="">Todos los estados</option>
+              {Object.entries(STATUS_CONFIG).map(([k, cfg]) => (
+                <option key={k} value={k}>{cfg.label}</option>
+              ))}
+            </select>
+
+            {/* Leyenda de estados */}
+            <div className="hidden md:flex items-center gap-3 ml-2">
+              {Object.entries(STATUS_CONFIG).slice(0, 3).map(([key, cfg]) => (
+                <button
+                  key={key}
+                  onClick={() => setFiltroEstado(filtroEstado === key ? '' : key)}
+                  className={`flex items-center gap-1 text-[10px] transition-opacity ${filtroEstado && filtroEstado !== key ? 'opacity-30' : ''}`}
+                >
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.border }} />
+                  <span className="text-slate-400">{cfg.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Limpiar filtros */}
+            {hayFiltros && (
+              <button
+                onClick={limpiarFiltros}
+                className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-slate-700"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                Limpiar
+              </button>
+            )}
           </div>
-          <div className="flex items-center gap-4">
-            {Object.entries(STATUS_CONFIG).slice(0, 3).map(([key, cfg]) => (
-              <div key={key} className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cfg.border }} />
-                <span className="text-slate-500 text-xs">{cfg.label}</span>
-              </div>
-            ))}
+
+          {/* Fila 2: tabs de piso */}
+          <div className="flex gap-1 overflow-x-auto pb-0.5">
+            <button
+              onClick={() => setPisoActivo('todos')}
+              className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                pisoActivo === 'todos'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-900/60 text-slate-400 hover:text-white hover:bg-slate-700'
+              }`}
+            >
+              Todos los pisos
+              <span className="ml-1.5 text-[10px] opacity-70">
+                ({zonas.reduce((a, z) => a + (z.equipos?.length || 0), 0)})
+              </span>
+            </button>
+
+            {pisosEnDatos.map(piso => {
+              const equiposPiso = zonas.filter(z => z.piso === piso).reduce((a, z) => a + (z.equipos?.length || 0), 0);
+              return (
+                <button
+                  key={piso}
+                  onClick={() => setPisoActivo(piso)}
+                  className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                    pisoActivo === piso
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-900/60 text-slate-400 hover:text-white hover:bg-slate-700'
+                  }`}
+                >
+                  {piso}
+                  <span className="ml-1.5 text-[10px] opacity-70">({equiposPiso})</span>
+                </button>
+              );
+            })}
+
+            {zonas.some(z => !z.piso) && (
+              <button
+                onClick={() => setPisoActivo('otras')}
+                className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  pisoActivo === 'otras'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-900/60 text-slate-400 hover:text-white hover:bg-slate-700'
+                }`}
+              >
+                Otras áreas
+                <span className="ml-1.5 text-[10px] opacity-70">
+                  ({zonas.filter(z => !z.piso).reduce((a, z) => a + (z.equipos?.length || 0), 0)})
+                </span>
+              </button>
+            )}
           </div>
+
+          {/* Contador de resultados cuando hay filtros */}
+          {hayFiltros && (
+            <div className="text-[10px] text-slate-500 flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+              Mostrando {totalEquiposFiltrados} equipo{totalEquiposFiltrados !== 1 ? 's' : ''} en {zonasFiltradas.length} zona{zonasFiltradas.length !== 1 ? 's' : ''}
+            </div>
+          )}
         </div>
 
-        {/* Grid de zonas hospitalarias agrupadas por piso */}
-        <div className="space-y-6">
-          {['2do Piso', '1er Piso', '3er Piso', 'Sótano', null].map(pisoKey => {
-            const zonasPiso = zonas.filter(z => z.piso === pisoKey || (pisoKey === null && !z.piso));
-            if (zonasPiso.length === 0) return null;
+        {/* ── Contenedor de zonas con altura fija y scroll ── */}
+        <div
+          className="overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-900/20"
+          style={{ maxHeight: '520px' }}
+        >
+          {zonasFiltradas.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-40 text-slate-500 gap-2">
+              <svg className="w-8 h-8 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 6a8 8 0 100 16 8 8 0 000-16z"/>
+              </svg>
+              <span className="text-sm">Sin resultados para los filtros aplicados</span>
+              <button onClick={limpiarFiltros} className="text-xs text-blue-400 hover:text-blue-300 underline">
+                Limpiar filtros
+              </button>
+            </div>
+          ) : (
+            <div className="p-3 space-y-3">
+              {/* Agrupar las zonas filtradas por piso */}
+              {(() => {
+                // Si hay un piso seleccionado, mostrar zonas sin encabezado de piso
+                if (pisoActivo !== 'todos') {
+                  return (
+                    <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+                      {zonasFiltradas.map(zona => (
+                        <ZoneBox key={zona.id} zona={zona} onEquipoClick={setSelected} />
+                      ))}
+                    </div>
+                  );
+                }
 
-            return (
-              <div key={pisoKey || 'otro'} className="bg-slate-800/50 rounded-2xl p-4 border border-slate-700/50">
-                <h3 className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded bg-blue-500/50" />
-                  {pisoKey ? `${pisoKey} Piso` : 'Otras Áreas'}
-                </h3>
-                <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
-                  {zonasPiso.map(zona => (
-                    <ZoneBox
-                      key={zona.id}
-                      zona={zona}
-                      onEquipoClick={setSelected}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+                // Vista "todos": agrupar por piso
+                const pisosPresentes = [
+                  ...ORDEN_PISOS.filter(p => zonasFiltradas.some(z => z.piso === p)),
+                  ...Array.from(new Set(zonasFiltradas.map(z => z.piso).filter(p => p && !ORDEN_PISOS.includes(p)))),
+                ];
+                const groups = [
+                  ...pisosPresentes.map(p => ({ key: p, label: p, zonas: zonasFiltradas.filter(z => z.piso === p) })),
+                  ...(zonasFiltradas.some(z => !z.piso) ? [{ key: 'otras', label: 'Otras Áreas', zonas: zonasFiltradas.filter(z => !z.piso) }] : []),
+                ];
+
+                return groups.map(group => (
+                  <div key={group.key} className="bg-slate-800/40 rounded-xl p-3 border border-slate-700/30">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-1.5 h-1.5 rounded bg-blue-500/60" />
+                      <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+                        {group.label}
+                      </span>
+                      <span className="text-slate-600 text-[9px] ml-auto">
+                        {group.zonas.length} zona{group.zonas.length !== 1 ? 's' : ''} · {group.zonas.reduce((a, z) => a + z.equipos.length, 0)} equipos
+                      </span>
+                    </div>
+                    <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+                      {group.zonas.map(zona => (
+                        <ZoneBox key={zona.id} zona={zona} onEquipoClick={setSelected} />
+                      ))}
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+          )}
         </div>
 
-        {/* Timestamp de ultima actualizacion */}
-        <div className="flex items-center gap-2 text-xs text-slate-600">
+        {/* Timestamp */}
+        <div className="flex items-center gap-2 text-[10px] text-slate-600">
           <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          <span>Mapa actualizado en tiempo real via SSE</span>
-          <span className="ml-auto font-mono">
-            {new Date().toLocaleTimeString('es-MX')}
-          </span>
+          <span>Actualizado cada 15s</span>
+          <span className="ml-auto font-mono">{new Date().toLocaleTimeString('es-MX')}</span>
         </div>
       </div>
     </>

@@ -9,8 +9,6 @@ from typing import Optional
 # Los campos que NO deben aparecer en respuestas para usuarios sin
 # permiso `view_confidential` (y nunca para anónimos vía QR público).
 CAMPOS_CONFIDENCIALES: set[str] = {
-    "serie",
-    "inventario",
     "numero_contrato",
     "numero_contrato_servicio",
     "proveedor_servicio",

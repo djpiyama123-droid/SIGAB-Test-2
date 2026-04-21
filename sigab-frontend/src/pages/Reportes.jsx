@@ -89,7 +89,7 @@ export default function Reportes() {
   ) || {};
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">Reportes</h1>
@@ -164,7 +164,7 @@ export default function Reportes() {
           <h2 className="text-base font-semibold text-white mb-3">
             Preventivos próximos 7 días
           </h2>
-          <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-900/50 text-slate-400 text-left">

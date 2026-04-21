@@ -105,7 +105,7 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
         dispositivo_estado_post: form.dispositivo_estado_post || null,
       });
       toast.success(`Evento registrado: ${res.numero_reporte}`, { id: tid });
-      onCreated();
+      onCreated?.(res.numero_reporte);
     } catch (err) {
       toast.error(err?.response?.data?.detail || 'Error al crear evento', { id: tid });
     } finally {

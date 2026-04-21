@@ -5,32 +5,73 @@
 //   const toast = useToast();
 //   toast.success('Equipo creado');
 //   toast.error('No se pudo guardar');
+//   const tid = toast.loading('Guardando…');
+//   toast.success('Listo', { id: tid });  // reemplaza el pendiente
 // ============================================================
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useRef } from 'react';
 
 const ToastContext = createContext(null);
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
+  const counter = useRef(0);
+
+  const genId = () => {
+    counter.current += 1;
+    return `t_${Date.now()}_${counter.current}`;
+  };
 
   const remove = useCallback((id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const push = useCallback(
-    (mensaje, tipo = 'info', duracion = 4000) => {
-      const id = Date.now() + Math.random();
-      setToasts((prev) => [...prev, { id, mensaje, tipo }]);
-      if (duracion > 0) setTimeout(() => remove(id), duracion);
+  // Reemplaza un toast existente (por id) o lo crea.
+  const upsert = useCallback(
+    (mensaje, tipo, duracion, id) => {
+      const theId = id || genId();
+      setToasts((prev) => {
+        const exists = prev.some((t) => t.id === theId);
+        const nuevo = { id: theId, mensaje, tipo };
+        return exists ? prev.map((t) => (t.id === theId ? nuevo : t)) : [...prev, nuevo];
+      });
+      if (duracion > 0) {
+        setTimeout(() => remove(theId), duracion);
+      }
+      return theId;
     },
     [remove]
   );
 
+  // Firma flexible: toast.success('msg')  o  toast.success('msg', { id, duration })
+  const normalize = (opts) => {
+    if (!opts) return {};
+    if (typeof opts === 'number') return { duracion: opts };
+    return { id: opts.id, duracion: opts.duration ?? opts.duracion };
+  };
+
   const api = {
-    success: (m, d) => push(m, 'success', d),
-    error:   (m, d) => push(m, 'error', d ?? 6000),
-    info:    (m, d) => push(m, 'info', d),
-    warn:    (m, d) => push(m, 'warn', d),
+    success: (m, opts) => {
+      const { id, duracion } = normalize(opts);
+      return upsert(m, 'success', duracion ?? 4000, id);
+    },
+    error: (m, opts) => {
+      const { id, duracion } = normalize(opts);
+      return upsert(m, 'error', duracion ?? 6000, id);
+    },
+    info: (m, opts) => {
+      const { id, duracion } = normalize(opts);
+      return upsert(m, 'info', duracion ?? 4000, id);
+    },
+    warn: (m, opts) => {
+      const { id, duracion } = normalize(opts);
+      return upsert(m, 'warn', duracion ?? 5000, id);
+    },
+    loading: (m, opts) => {
+      const { id } = normalize(opts);
+      // loading no se auto-descarta; sólo se cierra al ser reemplazado
+      return upsert(m, 'loading', 0, id);
+    },
+    dismiss: (id) => remove(id),
   };
 
   return (
@@ -50,6 +91,7 @@ const STYLES = {
   error:   { bg: 'bg-red-900/90 border-red-600',         text: 'text-red-200',     icon: '✕' },
   info:    { bg: 'bg-blue-900/90 border-blue-600',       text: 'text-blue-200',    icon: 'i' },
   warn:    { bg: 'bg-yellow-900/90 border-yellow-600',   text: 'text-yellow-200',  icon: '!' },
+  loading: { bg: 'bg-slate-800/95 border-slate-500',     text: 'text-slate-200',   icon: '⏳' },
 };
 
 function ToastItem({ toast, onClose }) {

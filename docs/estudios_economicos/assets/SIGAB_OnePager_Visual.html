@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SIGAB V2.0 — One Pager Visual</title>
+<style>
+  @page { size: Letter; margin: 0.3in; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #0F172A;
+    background: #FFFFFF;
+    line-height: 1.25;
+  }
+  .page {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  /* HEADER BAR */
+  .header {
+    background: linear-gradient(135deg, #002D5D 0%, #006CB7 100%);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-size: 18pt;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .header .subtitle {
+    font-size: 8pt;
+    opacity: 0.9;
+    margin-top: 1px;
+  }
+  .header .badge {
+    background: #10B981;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 8pt;
+    font-weight: 700;
+  }
+  /* PROBLEM / SOLUTION TOP */
+  .top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .card {
+    background: #F8FAFC;
+    border-left: 4px solid #006CB7;
+    padding: 8px 12px;
+    border-radius: 6px;
+  }
+  .card.problem { border-left-color: #DC2626; }
+  .card.solution { border-left-color: #10B981; }
+  .card h3 {
+    color: #002D5D;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    font-weight: 800;
+  }
+  .card p { font-size: 8.5pt; color: #334155; line-height: 1.3; }
+  .card.problem h3 { color: #991B1B; }
+  .card.solution h3 { color: #065F46; }
+  /* KPI GRID */
+  .kpi-section {
+    background: #EFF6FF;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border: 1px solid #BFDBFE;
+  }
+  .kpi-title {
+    color: #002D5D;
+    font-size: 9pt;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .kpi {
+    background: white;
+    padding: 6px 4px;
+    border-radius: 5px;
+    text-align: center;
+    border: 1px solid #E2E8F0;
+  }
+  .kpi .value {
+    font-size: 14pt;
+    font-weight: 800;
+    color: #006CB7;
+    line-height: 1.1;
+  }
+  .kpi .label {
+    font-size: 7pt;
+    color: #64748B;
+    margin-top: 2px;
+    font-weight: 600;
+  }
+  .kpi.highlight { background: linear-gradient(135deg,#10B981,#059669); }
+  .kpi.highlight .value, .kpi.highlight .label { color: white; }
+  /* ARQUITECTURA */
+  .arch-section {
+    background: #FEFCE8;
+    border: 1px solid #FDE68A;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .arch-title {
+    color: #92400E;
+    font-size: 9pt;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .arch-flow {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    align-items: center;
+  }
+  .arch-node {
+    background: white;
+    padding: 5px 4px;
+    border-radius: 5px;
+    text-align: center;
+    border: 2px solid #006CB7;
+    font-size: 8pt;
+    font-weight: 700;
+    color: #002D5D;
+  }
+  .arch-node .tech {
+    display: block;
+    font-size: 7pt;
+    color: #64748B;
+    font-weight: 500;
+    margin-top: 1px;
+  }
+  .arch-arrow {
+    text-align: center;
+    font-size: 14pt;
+    color: #006CB7;
+    font-weight: 800;
+  }
+  /* MODEL */
+  .model-section {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .model-box {
+    padding: 8px 12px;
+    border-radius: 6px;
+  }
+  .model-box h4 {
+    font-size: 9pt;
+    font-weight: 800;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .model-pricing {
+    background: #F0FDF4;
+    border: 1px solid #86EFAC;
+  }
+  .model-pricing h4 { color: #065F46; }
+  .model-pricing table { width: 100%; font-size: 8.5pt; border-collapse: collapse; }
+  .model-pricing td { padding: 2px 0; border-bottom: 1px dashed #86EFAC; }
+  .model-pricing .amount { text-align: right; font-weight: 700; color: #065F46; }
+  .model-pricing tr:last-child td { border-bottom: none; padding-top: 4px; font-weight: 800; font-size: 9.5pt; }
+  .model-compliance {
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+  }
+  .model-compliance h4 { color: #002D5D; }
+  .model-compliance ul { list-style: none; font-size: 8.5pt; }
+  .model-compliance li {
+    padding: 2px 0 2px 16px;
+    position: relative;
+    color: #334155;
+  }
+  .model-compliance li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #10B981;
+    font-weight: 800;
+  }
+  /* PROPOSAL TIMELINE */
+  .proposal {
+    background: linear-gradient(135deg, #002D5D 0%, #006CB7 100%);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .proposal h3 {
+    font-size: 9.5pt;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .timeline {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+  }
+  .step {
+    background: rgba(255,255,255,0.12);
+    padding: 5px 4px;
+    border-radius: 5px;
+    text-align: center;
+  }
+  .step .when {
+    font-size: 7pt;
+    font-weight: 700;
+    opacity: 0.9;
+    text-transform: uppercase;
+  }
+  .step .what {
+    font-size: 8pt;
+    font-weight: 600;
+    margin-top: 2px;
+    line-height: 1.15;
+  }
+  /* FOOTER */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 7.5pt;
+    color: #64748B;
+    padding-top: 6px;
+    border-top: 2px solid #E2E8F0;
+  }
+  .footer .author {
+    color: #002D5D;
+    font-weight: 700;
+  }
+  .footer .decision {
+    background: #10B981;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 8pt;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>SIGAB V2.0</h1>
+      <div class="subtitle">Sistema Integral de Gestión de Activos Biomédicos · On-Premise · HGR No.1 IMSS Tijuana</div>
+    </div>
+    <div class="badge">INVERTIR ✓</div>
+  </div>
+
+  <!-- PROBLEM & SOLUTION -->
+  <div class="top-row">
+    <div class="card problem">
+      <h3>⚠ Problema</h3>
+      <p>Conservación de Equipos Médicos opera con <strong>papel y Excel</strong>. Riesgo NOM-016 por trazabilidad incompleta, demora en mantenimientos preventivos y reportes manuales que consumen 40% del tiempo del subjefe.</p>
+    </div>
+    <div class="card solution">
+      <h3>✓ Solución SIGAB</h3>
+      <p>Plataforma <strong>web + WhatsApp + IA local</strong> que digitaliza el flujo completo: captura por foto en 90 s, dashboard vivo, reportes NOM-016/240 con un clic, IA Gemma on-premise sin fuga de datos.</p>
+    </div>
+  </div>
+
+  <!-- KPIs FINANCIEROS -->
+  <div class="kpi-section">
+    <div class="kpi-title">Indicadores Financieros — 5 Años</div>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="value">$850K</div>
+        <div class="label">Inversión inicial MXN</div>
+      </div>
+      <div class="kpi highlight">
+        <div class="value">+$493K</div>
+        <div class="label">VPN a TMAR 18%</div>
+      </div>
+      <div class="kpi highlight">
+        <div class="value">32.58%</div>
+        <div class="label">TIR (14.6 pts &gt; TMAR)</div>
+      </div>
+      <div class="kpi">
+        <div class="value">3.1×</div>
+        <div class="label">Retorno nominal</div>
+      </div>
+      <div class="kpi">
+        <div class="value">3.51</div>
+        <div class="label">Hospitales al BE</div>
+      </div>
+      <div class="kpi">
+        <div class="value">Año 1</div>
+        <div class="label">Cash-flow positivo</div>
+      </div>
+      <div class="kpi">
+        <div class="value">23.2%</div>
+        <div class="label">Margen neto año 5</div>
+      </div>
+      <div class="kpi">
+        <div class="value">210%</div>
+        <div class="label">ROI acumulado</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARQUITECTURA -->
+  <div class="arch-section">
+    <div class="arch-title">🖥️ Arquitectura On-Premise (100% local, cero fuga de datos)</div>
+    <div class="arch-flow">
+      <div class="arch-node">📱 WhatsApp<span class="tech">OpenClaw bot</span></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">🧠 IA Local<span class="tech">Ollama + Gemma</span></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">🗄️ MySQL + API<span class="tech">FastAPI · React</span></div>
+    </div>
+  </div>
+
+  <!-- MODELO + COMPLIANCE -->
+  <div class="model-section">
+    <div class="model-box model-pricing">
+      <h4>💰 Modelo Asset-Light</h4>
+      <table>
+        <tr><td>Despliegue por hospital</td><td class="amount">$30,000</td></tr>
+        <tr><td>Licencia anual (soporte + IA)</td><td class="amount">$120,000</td></tr>
+        <tr><td>Hardware (lo compra hospital)</td><td class="amount">$80,000</td></tr>
+        <tr><td>Total año 1 por hospital</td><td class="amount">$150,000</td></tr>
+      </table>
+    </div>
+    <div class="model-box model-compliance">
+      <h4>📋 Cumplimiento Normativo</h4>
+      <ul>
+        <li>NOM-016-SSA3-2012 (expediente)</li>
+        <li>NOM-240-SSA1-2012 (tecnovigilancia)</li>
+        <li>ISO-13485 (calidad DM)</li>
+        <li>LFPDPPP (datos personales)</li>
+        <li>Audit trail SHA-256 encadenado</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- PROPUESTA -->
+  <div class="proposal">
+    <h3>🎯 Propuesta al Ing. Carlos Oswaldo — Ruta de Pilotaje</h3>
+    <div class="timeline">
+      <div class="step"><div class="when">HOY 14:00</div><div class="what">Instalar ThinkCentre en Clínica 1</div></div>
+      <div class="step"><div class="when">Vie-Dom</div><div class="what">Piloto 60h · datos reales WhatsApp</div></div>
+      <div class="step"><div class="when">Lun 20</div><div class="what">Auditoría conjunta + reporte</div></div>
+      <div class="step"><div class="when">Mar 21</div><div class="what">Presentación Xochicalco con datos</div></div>
+      <div class="step"><div class="when">Sem 2-4</div><div class="what">Pilotaje extendido 20-30 equipos</div></div>
+      <div class="step"><div class="when">Mes 2</div><div class="what">Go-Live NOM-016 completo</div></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div>
+      <div class="author">Gustavo Aguilar Urias · Ing. Biomédica · Universidad Xochicalco</div>
+      <div>17 de abril de 2026 · 12:00 h · Café Quijarro, Tijuana · djpiyama123@gmail.com</div>
+    </div>
+    <div class="decision">VPN &gt; 0 ∧ TIR &gt; TMAR</div>
+  </div>
+</div>
+</body>
+</html>

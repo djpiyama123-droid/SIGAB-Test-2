@@ -1,3 +1,14 @@
+"""
+routes/dashboard.py — Endpoints del panel principal de KPIs.
+
+Operaciones:
+  GET /dashboard/resumen    — Resumen ejecutivo: equipos por estado, tickets, alertas,
+                              preventivos vencidos, movimientos y tendencia mensual.
+                              Cacheo de 30s vía cache_service (AG-11).
+  GET /dashboard/equipos    — Listado con filtros y orden por criticidad (fuera_servicio → operativo)
+  GET /dashboard/mapa       — Zonas del hospital con conteo de equipos por estado
+  GET /dashboard/fiabilidad — MTBF/MTTR (delegado a reliability_service, endpoint deprecated aquí)
+"""
 from fastapi import APIRouter, Depends, HTTPException
 import logging
 from datetime import datetime, timezone, date, timedelta
@@ -116,7 +127,7 @@ async def dashboard_resumen(session: AsyncSession = Depends(get_async_session)):
     # 6. Ordenes por mes (últimos 6 meses)
     stmt_mes = select(text("DATE_FORMAT(fecha, '%Y-%m') as mes"), func.count(OrdenServicio.id))\
                .where(OrdenServicio.fecha >= date.today() - timedelta(days=180))\
-               .group_by("mes").order_by("mes")
+               .group_by(text("mes")).order_by(text("mes"))
     res_mes = await session.execute(stmt_mes)
     ordenes_mes = [{"mes": r[0], "total": r[1]} for r in res_mes.all()]
 
@@ -186,4 +197,3 @@ async def dashboard_equipos(
 async def dashboard_sse_deprecated():
     """DEPRECATED: Use /api/v1/events/subscribe instead."""
     raise HTTPException(status_code=410, detail="SSE migrate to /api/v1/events/subscribe")
-  )

@@ -1,23 +1,36 @@
+/**
+ * @module pages/Dashboard
+ * @description Centro de Control principal del sistema SIGAB.
+ *
+ * Muestra KPIs en tiempo real vía SSE (Server-Sent Events):
+ * - Total de equipos, operativos, fallas críticas, mantenimiento pendiente
+ * - Gráficas de degradación y cumplimiento (Tremor + Framer Motion)
+ * - Mapa interactivo del hospital con zonas y equipos por zona
+ * - Modal de Triple Validación Poka-Yoke (QR + Inventario + Serie)
+ *
+ * NOTA: La tabla de 751 equipos se movió exclusivamente al módulo de Inventario (/equipos).
+ *
+ * @requires hooks/useDashboard — Datos del dashboard
+ * @requires hooks/useSSE — Suscripción a eventos en tiempo real
+ * @requires components/HospitalMap — Mapa SVG interactivo
+ * @requires @tremor/react — Componentes de UI para data viz
+ */
 import { useDashboard } from '../hooks/useDashboard';
 import { useSSE } from '../hooks/useSSE';
 import { useResponsive } from '../hooks/useResponsive';
 import AlertaBanner from '../components/AlertaBanner';
-import EquipoTable from '../components/EquipoTable';
-import FilterBar from '../components/FilterBar';
 import HospitalMap from '../components/HospitalMap';
 import TripleValidationModal from '../components/TripleValidationModal';
 import DashboardGrid, { GridItem } from '../components/layout/DashboardGrid';
 import KPICard from '../components/cards/KPICard';
 import StatusIndicator from '../components/cards/StatusIndicator';
-import DegradationChart from '../components/charts/DegradationChart';
 import MaintenanceChart from '../components/charts/MaintenanceChart';
 
-import { 
-  ShieldCheck, 
-  ClipboardCheck, 
-  Activity, 
-  Battery, 
-  Wrench, 
+import {
+  ShieldCheck,
+  ClipboardCheck,
+  Activity,
+  Wrench,
   AlertTriangle,
   Zap
 } from 'lucide-react';
@@ -193,20 +206,22 @@ export default function Dashboard() {
           />
         )}
 
-        {/* Analytics Row */}
-        <GridItem span={2}>
-          <Card className="bg-slate-900/40 border-slate-800 h-full backdrop-blur-sm">
-            <Title className="text-white flex items-center gap-2">
-              <Battery className="h-5 w-5 text-emerald-500" />
-              Degradación de Rendimiento (30d)
-            </Title>
-            <Text className="text-slate-500 text-xs mb-6">Promedio institucional de salud de activos</Text>
-            <DegradationChart />
+        {/* Mapa de Activos — ancho completo */}
+        <GridItem span={isControlRoom ? 4 : 3}>
+          <Card className="bg-slate-900/40 border-slate-800 backdrop-blur-sm p-0 overflow-hidden">
+            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+              <Title className="text-white">Mapa de Activos por Zona</Title>
+              <StatusIndicator status="green" icon="Wifi" />
+            </div>
+            <div className="p-5">
+              <HospitalMap />
+            </div>
           </Card>
         </GridItem>
 
-        <GridItem span={2}>
-          <Card className="bg-slate-900/40 border-slate-800 h-full backdrop-blur-sm">
+        {/* Cumplimiento de Mantenimiento — debajo del mapa */}
+        <GridItem span={isControlRoom ? 4 : 3}>
+          <Card className="bg-slate-900/40 border-slate-800 backdrop-blur-sm">
             <Title className="text-white flex items-center gap-2">
               <ClipboardCheck className="h-5 w-5 text-blue-500" />
               Cumplimiento de Mantenimiento
@@ -214,28 +229,6 @@ export default function Dashboard() {
             <Text className="text-slate-500 text-xs mb-6">Programado vs. Ejecutado por mes</Text>
             <MaintenanceChart />
           </Card>
-        </GridItem>
-
-        {/* Global Overview Row */}
-        <GridItem span={isControlRoom ? 4 : 3}>
-          <div className="space-y-6">
-            <Card className="bg-slate-900/40 border-slate-800 backdrop-blur-sm p-0 overflow-hidden">
-               <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-                 <Title className="text-white">Mapa de Activos por Piso</Title>
-                 <StatusIndicator status="green" icon="Wifi" />
-               </div>
-               <div className="p-6">
-                 <HospitalMap />
-               </div>
-            </Card>
-
-            <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-6 backdrop-blur-sm">
-              <div className="mb-6">
-                <FilterBar filtros={filtros} onChange={setFiltros} />
-              </div>
-              <EquipoTable equipos={equipos} />
-            </div>
-          </div>
         </GridItem>
       </DashboardGrid>
     </motion.div>

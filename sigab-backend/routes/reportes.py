@@ -1,3 +1,17 @@
+"""
+routes/reportes.py — Generación de reportes diarios y mensuales.
+
+Operaciones:
+  GET /reportes/diario           — Resumen del día (JSON): OS hoy, pendientes, equipos por estado
+  GET /reportes/equipos-criticos — Equipos fuera_servicio + mantenimiento + criticidad alta
+  GET /reportes/historial        — Historial de OS por mes/año
+  GET /reportes/diario/pdf       — Exportar reporte diario como PDF
+  GET /reportes/diario/excel     — Exportar reporte diario como Excel (.xlsx)
+  GET /reportes/historial/pdf    — Exportar historial mensual como PDF
+  GET /reportes/historial/excel  — Exportar historial mensual como Excel (.xlsx)
+
+Servicios utilizados: reporte_pdf_service, reporte_excel_service
+"""
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse, Response
 import aiomysql

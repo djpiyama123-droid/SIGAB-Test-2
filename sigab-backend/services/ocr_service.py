@@ -7,8 +7,24 @@ from PIL import Image
 import io
 import logging
 from typing import Optional, Dict, Any, Tuple
-from paddleocr import PaddleOCR
-import google.generativeai as genai
+
+# OCR opcional: si paddleocr / google-generativeai no están instalados,
+# el backend sigue arrancando y las rutas no-OCR funcionan normalmente.
+try:
+    from paddleocr import PaddleOCR
+    _PADDLE_AVAILABLE = True
+except ImportError:
+    PaddleOCR = None  # type: ignore
+    _PADDLE_AVAILABLE = False
+    logging.warning("paddleocr no instalado — OCR deshabilitado para esta sesión.")
+
+try:
+    import google.generativeai as genai
+    _GENAI_AVAILABLE = True
+except ImportError:
+    genai = None  # type: ignore
+    _GENAI_AVAILABLE = False
+    logging.warning("google-generativeai no instalado — fallback Gemini deshabilitado.")
 
 from config import (
     OCR_CONFIDENCE_THRESHOLD, 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
-import { Zap, TrendingUp, TrendingDown, Clock, ShieldCheck, Activity, Brain } from 'lucide-react';
+import { Zap, TrendingUp, TrendingDown, Clock, ShieldCheck, Activity, Brain, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Analitica() {
@@ -56,7 +56,10 @@ export default function Analitica() {
           </p>
         </div>
         <div className="flex gap-2">
-           <button onClick={cargarDatos} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl transition-all active:scale-90">
+           <button
+             onClick={() => { cargarDatos(); toast.success('Recalculando métricas…', { duration: 1500 }); }}
+             title="Recalcular métricas"
+             className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl transition-all active:scale-90">
              <Activity className="h-5 w-5" />
            </button>
         </div>
@@ -179,14 +182,5 @@ export default function Analitica() {
         </div>
       </div>
     </div>
-  );
-}
-
-// Icono faltante en lucide que agregue
-function AlertTriangle(props) {
-  return (
-    <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-    </svg>
   );
 }

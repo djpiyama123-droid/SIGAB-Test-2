@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 from sqlmodel import select, desc
 from sqlmodel.ext.asyncio.session import AsyncSession
-from database import AsyncSessionLocal
+from database import async_session_maker as AsyncSessionLocal
 from models.soporte import AuditLog
 
 class AuditService:

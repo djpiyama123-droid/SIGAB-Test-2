@@ -7,7 +7,7 @@ import logging
 import json
 import httpx
 
-router = APIRouter(prefix="/api/v1/events", tags=["events"])
+router = APIRouter(tags=["events"])
 logger = logging.getLogger(__name__)
 
 # --- SSE Subscription (Phase 1 Restoration) ---

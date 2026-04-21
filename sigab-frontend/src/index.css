@@ -2,6 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Tipografía global ── */
+body {
+  font-family: 'Lexend', 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Variables CSS — Design tokens de SIGAB ── */
+:root {
+  --color-primary:     #4F46E5;
+  --color-secondary:   #6366F1;
+  --color-accent:      #818CF8;
+  --color-glow:        rgba(79, 70, 229, 0.15);
+  --color-bg:          #0F172A;
+  --color-surface:     rgba(255, 255, 255, 0.04);
+  --color-border:      rgba(255, 255, 255, 0.08);
+
+  /* Z-index scale */
+  --z-dropdown:     20;
+  --z-sticky:       30;
+  --z-overlay:      40;
+  --z-modal:        50;
+  --z-modal-nested: 60;
+  --z-confirm:      70;
+  --z-toast:        80;
+}
+
+/* ── Focus ring global — accesibilidad ── */
+*:focus-visible {
+  outline: 2px solid #6366F1;
+  outline-offset: 2px;
+}
+
 /* Scrollbar personalizado para modo oscuro */
 ::-webkit-scrollbar {
   width: 8px;

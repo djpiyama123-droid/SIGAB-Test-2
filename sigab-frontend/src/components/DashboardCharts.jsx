@@ -11,14 +11,10 @@ import {
   CartesianGrid,
   Legend
 } from 'recharts';
+import { STATUS_HEX } from '../utils/tokens';
 
-const COLORS = {
-  operativo: '#10b981', // emerald-500
-  en_mantenimiento: '#eab308', // yellow-500
-  fuera_servicio: '#ef4444', // red-500
-  en_traslado: '#8b5cf6', // violet-500
-  baja: '#64748b' // slate-500
-};
+// Use centralized STATUS_HEX tokens as single source of truth
+const COLORS = STATUS_HEX;
 
 const LABEL_MAP = {
   operativo: 'Operativo',

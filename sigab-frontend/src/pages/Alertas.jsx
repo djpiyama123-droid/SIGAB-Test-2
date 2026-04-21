@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/sigab';
+import { useToast } from '../components/Toast';
 
 const PRIORIDAD_STYLE = {
   critica: { bar: 'bg-red-500',    badge: 'bg-red-900/50 text-red-300',    icon: '🚨' },
@@ -9,6 +10,7 @@ const PRIORIDAD_STYLE = {
 };
 
 export default function Alertas() {
+  const toast = useToast();
   const [alertas, setAlertas]     = useState([]);
   const [loading, setLoading]     = useState(true);
   const [filtro, setFiltro]       = useState(''); // '' | critica | alta | media | baja
@@ -20,27 +22,43 @@ export default function Alertas() {
       setAlertas(res.alertas || []);
     } catch (err) {
       console.error(err);
+      toast.error('No se pudieron cargar las alertas');
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => { cargar(); }, [cargar]);
 
   const marcar = async (id) => {
-    await api.marcarLeida(id);
-    setAlertas((prev) => prev.filter((a) => a.id !== id));
+    try {
+      await api.marcarLeida(id);
+      setAlertas((prev) => prev.filter((a) => a.id !== id));
+      toast.success('Alerta marcada como leída');
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.response?.data?.detail || 'No se pudo marcar la alerta');
+    }
   };
 
   const marcarTodas = async () => {
-    await api.marcarTodasLeidas();
-    setAlertas([]);
+    if (!window.confirm('¿Marcar todas las alertas como leídas?')) return;
+    const tid = toast.loading('Marcando todas…');
+    try {
+      await api.marcarTodasLeidas();
+      setAlertas([]);
+      toast.success('Todas las alertas marcadas como leídas', { id: tid });
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.response?.data?.detail || 'Error al marcar todas', { id: tid });
+    }
   };
 
   const visibles = filtro ? alertas.filter((a) => a.prioridad === filtro) : alertas;
 
   return (
-    <div className="space-y-5">
+    <div className="p-4 md:p-6 space-y-5">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>

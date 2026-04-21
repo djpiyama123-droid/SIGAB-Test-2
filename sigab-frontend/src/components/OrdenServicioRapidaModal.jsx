@@ -27,6 +27,7 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
     }
 
     setGuardando(true);
+    const tid = toast.loading('Creando orden de servicio…');
     try {
       const payload = {
         equipo_id: equipo.id,
@@ -46,10 +47,11 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
       };
 
       const res = await api.crearOrden(payload);
+      toast.success(`Orden ${res.numero_orden} creada`, { id: tid });
       onCreada?.(res.numero_orden);
     } catch (err) {
       const msg = err.response?.data?.detail || err.message || 'Error desconocido';
-      toast.error(`No se pudo crear la orden: ${msg}`);
+      toast.error(`No se pudo crear la orden: ${msg}`, { id: tid });
       console.error(err);
     } finally {
       setGuardando(false);
@@ -60,11 +62,11 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
 
   return (
     <div
-      className="fixed inset-0 z-[140] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-[140] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
-        className="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl max-w-xl w-full my-8"
+        className="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

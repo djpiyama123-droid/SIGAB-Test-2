@@ -20,8 +20,8 @@ services:
       - "3306:3306"
     volumes:
       - sigab_mysql_data:/var/lib/mysql
-      - ./sigab_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
-      - ./seed_data.sql:/docker-entrypoint-initdb.d/02_seed.sql
+      - ./database/sigab_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/seed_data.sql:/docker-entrypoint-initdb.d/02_seed.sql
     command: >
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
@@ -51,6 +51,14 @@ services:
       SIGAB_DB_PASS: ${DB_PASS:-sigab_pass_2026}
       SIGAB_DB_NAME: ${DB_NAME:-sigab}
       SIGAB_UPLOAD_DIR: /app/static/uploads
+      SIGAB_JWT_SECRET: ${SIGAB_JWT_SECRET:-dev-secret-CAMBIAR-EN-PRODUCCION}
+      SIGAB_PUBLIC_BASE_URL: ${SIGAB_PUBLIC_BASE_URL:-http://localhost:5173}
+      SIGAB_CORS_EXTRA: ${SIGAB_CORS_EXTRA:-}
+      SIGAB_OLLAMA_HOST: ${SIGAB_OLLAMA_HOST:-http://host-gateway:11434}
+      SIGAB_GEMMA_MODEL: ${SIGAB_GEMMA_MODEL:-gemma3:4b}
+      SIGAB_DISABLE_COPILOT: ${SIGAB_DISABLE_COPILOT:-0}
+    extra_hosts:
+      - "host-gateway:host-gateway"
     volumes:
       - sigab_uploads:/app/static/uploads
     depends_on:
@@ -62,19 +70,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # ── React Frontend ─────────────────────────────────────────
-  frontend:
-    build:
-      context: ./sigab-frontend
-      dockerfile: Dockerfile
-    container_name: sigab-frontend
-    restart: always
-    ports:
-      - "${FRONTEND_PORT:-5173}:5173"
-    environment:
-      VITE_API_URL: http://localhost:${BACKEND_PORT:-8000}
-    depends_on:
-      - backend
+  # Frontend eliminado — se sirve como build estático via Nginx en producción
 
 volumes:
   sigab_mysql_data:

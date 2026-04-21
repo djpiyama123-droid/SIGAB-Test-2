@@ -14,5 +14,15 @@
       "Bash(curl -s http://localhost:8000/api/dashboard/resumen)",
       "Bash(wsl -d Ubuntu-24.04 bash -c \"ss -tlnp | grep 3306; mysql -u sigab_user -psigab_pass_2026 -e ''SELECT 1'' 2>&1 || echo ''MySQL not running''\")"
     ]
-  }
+  },
+  "plugins": [
+    {
+      "name": "ui-ux-pro-max",
+      "source": ".claude/skills/ui-ux-pro-max",
+      "description": "UI/UX design intelligence — 67 estilos, 161 paletas de color, 57 pares tipográficos, 99 guías UX, 25 tipos de charts. Stack: React 19 + Vite + Tailwind CSS (SIGAB frontend).",
+      "version": "2.5.0",
+      "stack": "react",
+      "project": "SIGAB — Sistema Integral de Gestión de Activos Biomédicos"
+    }
+  ]
 }

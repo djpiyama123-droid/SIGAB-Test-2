@@ -1,3 +1,16 @@
+"""
+database.py — Motor asíncrono SQLModel para MySQL 8.0.
+
+Provee:
+  engine              — AsyncEngine (mysql+asyncmy) con SSL opcional
+  async_session_maker — Fábrica de sesiones (expire_on_commit=False)
+  get_async_session   — Dependency de FastAPI para inyección de sesiones
+  init_db             — Placeholder; las migraciones se manejan con Alembic/SQL
+  
+Control de SSL:
+  SIGAB_SSL_DISABLED=true  → Sin SSL (desarrollo local / Docker)
+  SIGAB_SSL_DISABLED=false → Con SSL (producción HGR No. 1)
+"""
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel, create_engine
