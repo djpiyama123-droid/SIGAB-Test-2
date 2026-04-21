@@ -27,7 +27,64 @@ export default function EquipoTable({ equipos, onChange }) {
 
   return (
     <>
-      <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+      {/* Vista móvil: tarjetas compactas */}
+      <div className="block md:hidden space-y-2">
+        {equipos.map((eq) => (
+          <div key={eq.id}
+            onClick={() => setSelected(eq)}
+            className="bg-slate-800 border border-slate-700 rounded-xl p-4 cursor-pointer hover:border-slate-600 active:bg-slate-700/50 transition-colors">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                {eq.imagen_url && (
+                  <img src={eq.imagen_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                    onError={(e) => { e.target.style.display = 'none'; }} />
+                )}
+                <div className="min-w-0">
+                  <p className="text-white font-medium text-sm truncate">{eq.nombre}</p>
+                  <p className="text-slate-500 text-xs truncate">{eq.marca} {eq.modelo}</p>
+                </div>
+              </div>
+              <span className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white ${ESTADO_COLORS[eq.estado] || 'bg-gray-500'}`}>
+                <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
+                {ESTADO_LABELS[eq.estado] || eq.estado}
+              </span>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+              {eq.serie && <span className="font-mono text-emerald-400 text-xs">Serie: {eq.serie}</span>}
+              {eq.inventario && <span className="font-mono text-blue-400 text-xs">NII: {eq.inventario}</span>}
+              {eq.area && <span className="text-slate-500 text-xs">{eq.area}{eq.piso ? ` · Piso ${eq.piso}` : ''}</span>}
+            </div>
+            <div className="mt-2 flex items-center justify-between">
+              <div className="flex gap-2">
+                {eq.tickets_abiertos > 0 && (
+                  <button onClick={(e) => handleTickets(e, eq)}
+                    className="inline-flex items-center gap-1 bg-red-500/20 text-red-400 text-xs px-2 py-0.5 rounded-full border border-red-700/40">
+                    {eq.tickets_abiertos} orden{eq.tickets_abiertos !== 1 ? 'es' : ''}
+                  </button>
+                )}
+                {eq.criticidad && (
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize ${CRITICIDAD_BADGE[eq.criticidad] || ''}`}>
+                    {eq.criticidad}
+                  </span>
+                )}
+              </div>
+              {eq.qr_token && (
+                <button onClick={(e) => handleQR(e, eq)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-600/20 text-emerald-400 text-xs rounded-lg border border-emerald-700/40">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  QR
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+        <p className="text-slate-600 text-xs text-center py-1">{equipos.length} equipos</p>
+      </div>
+
+      {/* Vista escritorio: tabla completa */}
+      <div className="hidden md:block bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800/50">
           <table className="w-full text-sm min-w-[1060px]">
             <thead>
