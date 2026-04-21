@@ -41,7 +41,7 @@ function EtiquetaCarta({ equipo }) {
       {/* QR Code */}
       <div className="qr-label-qr-container">
         <QRCodeSVG
-          value={`https://sigab.imss.gob.mx/eq/${equipo.serie}`}
+          value={`${window.location.origin}/equipo/${equipo.qr_token || equipo.serie}`}
           size={110}
           level="H"
           includeMargin={false}
@@ -72,7 +72,7 @@ function EtiquetaZebra({ equipo }) {
       {/* QR Left */}
       <div className="qr-zebra-qr">
         <QRCodeSVG
-          value={`https://sigab.imss.gob.mx/eq/${equipo.serie}`}
+          value={`${window.location.origin}/equipo/${equipo.qr_token || equipo.serie}`}
           size={62}
           level="H"
           includeMargin={false}
