@@ -122,8 +122,25 @@ const CRITICIDAD_CONFIG = {
 // mode="absolute" → usa pos_x/pos_y (layout legacy, conservado por compatibilidad)
 const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 'flow' }) {
   const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState('center'); // 'left', 'right', 'center'
+  const dotRef = React.useRef(null);
+  
   const status = STATUS_CONFIG[equipo.estado] || STATUS_CONFIG.baja;
   const Icon = EQUIPMENT_ICONS[equipo.tipo_equipo] || EQUIPMENT_ICONS.otro;
+
+  const handleMouseEnter = () => {
+    if (dotRef.current) {
+      const rect = dotRef.current.getBoundingClientRect();
+      const screenWidth = window.innerWidth;
+      const spaceRight = screenWidth - rect.right;
+      const spaceLeft = rect.left;
+
+      if (spaceRight < 150) setTooltipPos('right');
+      else if (spaceLeft < 150) setTooltipPos('left');
+      else setTooltipPos('center');
+    }
+    setShowTooltip(true);
+  };
 
   const wrapperStyle = mode === 'absolute'
     ? {
@@ -137,11 +154,24 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
         zIndex: showTooltip ? 50 : 1,
       };
 
+  const getTooltipStyle = () => {
+    const base = {
+      bottom: 'calc(100% + 15px)',
+      backgroundColor: '#0f172a',
+      backdropFilter: 'blur(12px)',
+    };
+    
+    if (tooltipPos === 'right') return { ...base, right: '0', transform: 'none' };
+    if (tooltipPos === 'left') return { ...base, left: '0', transform: 'none' };
+    return { ...base, left: '50%', transform: 'translateX(-50%)' };
+  };
+
   return (
     <div
+      ref={dotRef}
       className="group"
       style={wrapperStyle}
-      onMouseEnter={() => setShowTooltip(true)}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setShowTooltip(false)}
     >
       {/* Anillo pulsante para equipos con falla */}
@@ -187,14 +217,8 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       {/* Tooltip al hacer hover */}
       {showTooltip && (
         <div
-          className="absolute z-[100] w-64 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-600/50 overflow-hidden"
-          style={{
-            bottom: 'calc(100% + 15px)',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: '#0f172a',
-            backdropFilter: 'blur(12px)',
-          }}
+          className="absolute z-[100] w-64 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-600/50 overflow-hidden pointer-events-none"
+          style={getTooltipStyle()}
         >
           <div className="p-3 border-b border-slate-700">
             <div className="flex items-center gap-2 mb-1">
@@ -233,7 +257,6 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
 
           <div className="p-2 border-t border-slate-700 flex gap-1">
             <button
-              onClick={(e) => { e.stopPropagation(); onClick(equipo); }}
               className="flex-1 py-1.5 px-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600
                          text-white transition-colors"
             >
