@@ -23,6 +23,7 @@ body {
   --z-dropdown:     20;
   --z-sticky:       30;
   --z-overlay:      40;
+  --z-tooltip:      45;
   --z-modal:        50;
   --z-modal-nested: 60;
   --z-confirm:      70;
@@ -379,4 +380,14 @@ body {
 @page {
   size: letter portrait;
   margin: 10mm;
+}
+
+/* ── Ajustes Mapa Dashboard (Antirecortes) ── */
+.map-zone-container {
+  overflow: visible !important;
+}
+
+.map-tooltip-layer {
+  pointer-events: none;
+  z-index: var(--z-tooltip);
 }
