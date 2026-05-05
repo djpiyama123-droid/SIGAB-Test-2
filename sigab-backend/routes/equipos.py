@@ -85,7 +85,10 @@ from models.mapa import ZonasMapa
 from sqlmodel import func
 
 @router.get("/areas/catalogo")
-async def catalogo_areas(session: AsyncSession = Depends(get_async_session)):
+async def catalogo_areas(
+    session: AsyncSession = Depends(get_async_session),
+    _user: dict = Depends(get_current_user),
+):
     stmt_areas = select(Equipo.area).where(Equipo.area != None).distinct().order_by(Equipo.area)
     res_areas = await session.execute(stmt_areas)
     areas = res_areas.scalars().all()
@@ -98,7 +101,10 @@ async def catalogo_areas(session: AsyncSession = Depends(get_async_session)):
 
 
 @router.get("/zonas/catalogo")
-async def catalogo_zonas(session: AsyncSession = Depends(get_async_session)):
+async def catalogo_zonas(
+    session: AsyncSession = Depends(get_async_session),
+    _user: dict = Depends(get_current_user),
+):
     """Lista las zonas del mapa para el formulario de alta/edición de equipos."""
     stmt = select(ZonasMapa).where(ZonasMapa.activa == True).order_by(ZonasMapa.orden, ZonasMapa.nombre)
     res = await session.execute(stmt)
@@ -313,7 +319,7 @@ async def listar_equipos(
     orden: Optional[str] = "nombre",
     limit: int = 50,
     offset: int = 0,
-    user: Optional[dict] = Depends(get_current_user_optional),
+    user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
 ):
     query = select(Equipo)
