@@ -16,11 +16,14 @@ Operaciones:
 Normativas: NOM-016-SSA3-2012 (audit trail), ISO 13485 (trazabilidad)
 """
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Response
+from fastapi.responses import StreamingResponse
 from typing import Optional
 import aiomysql
 import os
 import secrets
 import uuid
+import csv
+import io
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from config import get_db, UPLOAD_DIR, MAX_UPLOAD_MB, PUBLIC_BASE_URL
@@ -342,6 +345,98 @@ async def historial_equipo(equipo_id: int, session: AsyncSession = Depends(get_a
         "traslados": [t.model_dump() for t in traslados],
         "preventivos": [p.model_dump() for p in preventivos],
     }
+
+
+@router.get("/exportar/csv")
+async def exportar_equipos_csv(
+    estado: Optional[str] = None,
+    area: Optional[str] = None,
+    piso: Optional[str] = None,
+    buscar: Optional[str] = None,
+    criticidad: Optional[str] = None,
+    tipo_equipo: Optional[str] = None,
+    marca: Optional[str] = None,
+    zona_id: Optional[int] = None,
+    clase_cofepris: Optional[str] = None,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """Exportar listado de equipos a CSV con los filtros aplicados."""
+    query = select(Equipo)
+    
+    conditions = []
+    if estado:
+        conditions.append(Equipo.estado == estado)
+    if area:
+        conditions.append(Equipo.area.contains(area))
+    if piso:
+        conditions.append(Equipo.piso == piso)
+    if criticidad:
+        conditions.append(Equipo.criticidad == criticidad)
+    if tipo_equipo:
+        conditions.append(Equipo.tipo_equipo == tipo_equipo)
+    if marca:
+        conditions.append(Equipo.marca.contains(marca))
+    if zona_id is not None:
+        conditions.append(Equipo.zona_id == zona_id)
+    if clase_cofepris:
+        conditions.append(Equipo.clase_cofepris == clase_cofepris)
+        
+    if buscar:
+        buscar = buscar.strip()
+        search_filter = sa.or_(
+            Equipo.nombre.contains(buscar),
+            Equipo.serie.contains(buscar),
+            Equipo.inventario.contains(buscar),
+            Equipo.marca.contains(buscar),
+            Equipo.modelo.contains(buscar),
+            Equipo.qr_token.contains(buscar),
+            Equipo.id.cast(sa.String).contains(buscar)
+        )
+        conditions.append(search_filter)
+
+    if conditions:
+        query = query.where(sa.and_(*conditions))
+    
+    query = query.order_by(Equipo.nombre)
+    res = await session.execute(query)
+    equipos = res.scalars().all()
+
+    async def iter_csv():
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(['id', 'nombre', 'marca', 'modelo', 'serie', 'area', 'piso', 'ubicacion', 'estado', 'riesgo', 'proxima_calibracion'])
+        yield output.getvalue()
+        output.truncate(0)
+        output.seek(0)
+        
+        chunk_size = 100
+        for i in range(0, len(equipos), chunk_size):
+            for eq in equipos[i:i+chunk_size]:
+                calibracion = eq.proxima_calibracion.strftime("%Y-%m-%d") if hasattr(eq, 'proxima_calibracion') and eq.proxima_calibracion else ''
+                writer.writerow([
+                    eq.id, 
+                    eq.nombre or '', 
+                    eq.marca or '', 
+                    eq.modelo or '', 
+                    eq.serie or '', 
+                    eq.area or '', 
+                    eq.piso or '', 
+                    eq.ubicacion or '', 
+                    eq.estado or '', 
+                    eq.riesgo or '', 
+                    calibracion
+                ])
+            yield output.getvalue()
+            output.truncate(0)
+            output.seek(0)
+
+    fecha_str = datetime.now().strftime("%Y%m%d")
+    return StreamingResponse(
+        iter_csv(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=inventario_sigab_{fecha_str}.csv"}
+    )
 
 
 @router.get("/")

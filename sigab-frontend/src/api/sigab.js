@@ -58,6 +58,18 @@ export const api = {
   getMe: () => client.get('/auth/me'),
   changePassword: (data) => client.post('/auth/change-password', data),
 
+  // Helper para descargas
+  triggerDownload: (blob, filename) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  },
+
   // ── Dashboard ─────────────────────────────────────────────
   getDashboard: () => client.get('/dashboard/resumen'),
   getDashboardEquipos: (params = {}) =>
@@ -75,6 +87,7 @@ export const api = {
   getAreasCatalogo: () => client.get('/equipos/areas/catalogo'),
   getZonasCatalogo: () => client.get('/equipos/zonas/catalogo'),
   getHistorialEquipo: (id) => client.get(`/equipos/${id}/historial`),
+  descargarEquiposCsv: (params = {}) => client.get('/equipos/exportar/csv', { params, responseType: 'blob' }),
   subirImagenEquipo: (id, file) => {
     const formData = new FormData();
     formData.append('file', file);
