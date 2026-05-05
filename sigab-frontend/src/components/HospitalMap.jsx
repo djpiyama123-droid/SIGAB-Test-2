@@ -147,8 +147,8 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       {/* Anillo pulsante para equipos con falla */}
       {status.pulse && (
         <div
-          className="absolute inset-0 rounded-full animate-ping opacity-40"
-          style={{ backgroundColor: status.border, transform: 'scale(1.4)' }}
+          className="absolute inset-0 rounded-full animate-pulse opacity-30 pointer-events-none"
+          style={{ backgroundColor: status.border, transform: 'scale(1.2)' }}
         />
       )}
 
@@ -159,7 +159,8 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
         style={{
           border: `3px solid ${status.border}`,
           backgroundColor: status.bg,
-          boxShadow: `0 0 12px ${status.border}55, 0 0 4px ${status.border}`,
+          boxShadow: `0 0 8px ${status.border}44`,
+          willChange: 'transform',
         }}
         onClick={() => onClick(equipo)}
       >
@@ -280,11 +281,11 @@ function ZoneBox({ zona, onEquipoClick }) {
   return (
     <div
       ref={containerRef}
-      className="relative rounded-2xl overflow-visible transition-all duration-300 flex flex-col min-h-[100px]"
+      className="relative rounded-2xl overflow-visible transition-shadow duration-200 flex flex-col h-fit"
       style={{
         backgroundColor: zona.color_bg || '#1e293b',
-        border: `1px solid ${conFalla ? '#ef444430' : (zona.color_borde || '#334155')}`,
-        boxShadow: conFalla ? '0 0 20px #ef444415' : 'none',
+        border: `1px solid ${conFalla ? '#ef444440' : (zona.color_borde || '#334155')}`,
+        boxShadow: conFalla ? '0 0 15px #ef444410' : 'none',
       }}
     >
       {/* Header de la zona */}
@@ -330,29 +331,28 @@ function ZoneBox({ zona, onEquipoClick }) {
       )}
 
       {/* Cuerpo: grid auto-adjustable — el contenedor crece con la cantidad de equipos */}
-      <div className="px-3 pb-3 pt-1 flex-1">
+      <div className="px-3 pb-3 pt-1 flex-1 overflow-visible">
         {!tieneEquipos ? (
-          <div className="flex items-center justify-center min-h-[60px]">
-            <span className="text-slate-600 text-[10px] italic">Sin equipos registrados</span>
+          <div className="flex items-center justify-center py-4">
+            <span className="text-slate-600 text-[10px] italic">Sin equipos</span>
           </div>
         ) : !isVisible ? (
-          <div className="flex items-center justify-center min-h-[60px]">
+          <div className="flex items-center justify-center py-6">
             <div className="w-4 h-4 border-2 border-slate-700 border-t-slate-500 rounded-full animate-spin" />
           </div>
         ) : (
           <div
             className="grid gap-2 map-zone-container"
             style={{
-              gridTemplateColumns: 'repeat(auto-fill, minmax(48px, 1fr))',
-              rowGap: '12px',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(44px, 1fr))',
+              rowGap: '8px',
               overflow: 'visible',
             }}
           >
             {equipos.map(equipo => (
               <div
                 key={equipo.id}
-                className="flex items-center justify-center"
-                style={{ minHeight: '48px' }}
+                className="flex items-center justify-center min-h-[44px]"
               >
                 <EquipmentDot
                   equipo={equipo}
