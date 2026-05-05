@@ -135,8 +135,8 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       const spaceRight = screenWidth - rect.right;
       const spaceLeft = rect.left;
 
-      if (spaceRight < 150) setTooltipPos('right');
-      else if (spaceLeft < 150) setTooltipPos('left');
+      if (spaceRight < 280) setTooltipPos('right');
+      else if (spaceLeft < 280) setTooltipPos('left');
       else setTooltipPos('center');
     }
     setShowTooltip(true);
@@ -217,7 +217,7 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       {/* Tooltip al hacer hover */}
       {showTooltip && (
         <div
-          className="absolute z-[100] w-64 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-600/50 overflow-hidden pointer-events-none"
+          className="absolute z-[100] w-64 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-600/50 overflow-hidden"
           style={getTooltipStyle()}
         >
           <div className="p-3 border-b border-slate-700">
@@ -257,8 +257,9 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
 
           <div className="p-2 border-t border-slate-700 flex gap-1">
             <button
+              onClick={(e) => { e.stopPropagation(); onClick(equipo); }}
               className="flex-1 py-1.5 px-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600
-                         text-white transition-colors"
+                         text-white transition-colors pointer-events-auto"
             >
               Ver Ficha
             </button>
