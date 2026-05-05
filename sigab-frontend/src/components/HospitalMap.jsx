@@ -789,8 +789,8 @@ export default function HospitalMap() {
 
         {/* ── Contenedor de zonas con altura fija y scroll ── */}
         <div
-          className="overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-900/20 p-1"
-          style={{ maxHeight: '600px', overflow: 'visible' }}
+          className="overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-900/20 p-1 custom-scrollbar"
+          style={{ maxHeight: '600px', overflowY: 'auto' }}
         >
           {zonasFiltradas.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-slate-500 gap-2">
