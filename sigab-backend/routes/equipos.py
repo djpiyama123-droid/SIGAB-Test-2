@@ -22,6 +22,7 @@ import os
 import secrets
 import uuid
 from datetime import datetime
+from sqlalchemy.exc import IntegrityError
 from config import get_db, UPLOAD_DIR, MAX_UPLOAD_MB, PUBLIC_BASE_URL
 from auth.dependencies import (
     get_current_user,
@@ -174,13 +175,45 @@ async def eliminar_equipo(
     nombre_equipo = equipo.nombre
     imagen_url = equipo.imagen_url
 
+    # Pre-flight: detectar relaciones bloqueantes ANTES de tocar la transacción.
+    # `trazabilidad` es histórico (NOM-016) y NO se borra. Si existe, 409.
+    # Preventivos/reservas activas: igual, mejor que el operador los cierre primero.
+    from models.reserva import Reserva
+    from models.alerta import Alerta
+    bloqueantes = []
+    n_traz = (await session.execute(
+        sa.select(sa.func.count()).select_from(Trazabilidad).where(Trazabilidad.equipo_id == equipo_id)
+    )).scalar() or 0
+    if n_traz:
+        bloqueantes.append(f"{n_traz} registro(s) de trazabilidad (NOM-016, no se eliminan)")
+    n_prev = (await session.execute(
+        sa.select(sa.func.count()).select_from(PreventivoProgramado).where(
+            PreventivoProgramado.equipo_id == equipo_id, PreventivoProgramado.activo == True
+        )
+    )).scalar() or 0
+    if n_prev:
+        bloqueantes.append(f"{n_prev} preventivo(s) programado(s) activo(s)")
+    n_res = (await session.execute(
+        sa.select(sa.func.count()).select_from(Reserva).where(Reserva.equipo_id == equipo_id)
+    )).scalar() or 0
+    if n_res:
+        bloqueantes.append(f"{n_res} reserva(s) registrada(s)")
+    if bloqueantes:
+        raise HTTPException(
+            status_code=409,
+            detail=("No se puede eliminar el equipo porque tiene relaciones activas: "
+                    + "; ".join(bloqueantes)
+                    + ". Considere cambiar el estado a 'baja' en lugar de eliminar."),
+        )
+
     try:
         # Liberar referencias en órdenes para no romper FK (si no es ON DELETE CASCADE)
-        # Nota: En SQLAlchemy/SQLModel podemos configurar la relación, 
-        # pero aquí hacemos el update manual para replicar la lógica original.
         stmt_cleanup = sa.update(OrdenServicio).where(OrdenServicio.equipo_id == equipo_id).values(equipo_id=None)
         await session.execute(stmt_cleanup)
-        
+        # Alertas referencian equipo con FK Optional (sin CASCADE) — nullificar.
+        stmt_alert = sa.update(Alerta).where(Alerta.equipo_id == equipo_id).values(equipo_id=None)
+        await session.execute(stmt_alert)
+
         await session.delete(equipo)
         await session.commit()
 
@@ -191,6 +224,12 @@ async def eliminar_equipo(
             entidad="equipos",
             entidad_id=equipo_id,
             datos={"nombre": nombre_equipo}
+        )
+    except IntegrityError as e:
+        await session.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail=f"No se puede eliminar el equipo: existe(n) referencia(s) que no permiten la baja física. ({e.orig.args[0] if hasattr(e, 'orig') else 'FK constraint'})",
         )
     except Exception as e:
         await session.rollback()
@@ -501,6 +540,25 @@ async def actualizar_equipo(
     campos_permitidos = allowed_update_fields(user)
     updates = {k: v for k, v in data.items() if k in campos_permitidos}
 
+    # ── BUGFIX UBICACION (NOT NULL) ────────────────────────────────────
+    # El frontend (EquipoForm.jsx) convierte strings vacíos a null antes
+    # de enviar el payload. Si el usuario llena `area`/`piso` pero deja
+    # `ubicacion` vacío, llega ubicacion=None y el UPDATE viola la
+    # constraint NOT NULL de equipos.ubicacion.
+    #
+    # Estrategia: si llega ubicacion=None, derivarla de los campos
+    # granulares (los del payload o, si no vienen, los actuales del
+    # equipo). Si tampoco hay datos para derivar, se descarta la clave
+    # para no nullificar el valor existente.
+    if "ubicacion" in updates and updates["ubicacion"] in (None, ""):
+        area_in = updates["area"] if "area" in updates else equipo.area
+        piso_in = updates["piso"] if "piso" in updates else equipo.piso
+        partes = [p for p in (area_in, piso_in) if p]
+        if partes:
+            updates["ubicacion"] = " · ".join(partes)
+        else:
+            del updates["ubicacion"]
+
     if not updates:
         raise HTTPException(status_code=400, detail="No hay campos válidos para actualizar con tu rol")
 
@@ -518,6 +576,11 @@ async def actualizar_equipo(
             entidad_id=equipo_id,
             datos=updates
         )
+    except IntegrityError as e:
+        await session.rollback()
+        # Mensaje accionable para el frontend (P2-01).
+        msg = e.orig.args[1] if (hasattr(e, "orig") and len(getattr(e.orig, "args", [])) > 1) else str(e)
+        raise HTTPException(status_code=400, detail=f"Datos inválidos para actualizar el equipo: {msg}")
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=f"Error al actualizar: {str(e)}")
