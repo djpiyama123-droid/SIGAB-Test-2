@@ -1,0 +1,100 @@
+From 8280837e7c013a769d684ced1d08f269103039d5 Mon Sep 17 00:00:00 2001
+From: claude <claude@sandbox>
+Date: Tue, 5 May 2026 13:33:07 +0000
+Subject: [PATCH 3/4] fix(equipos): preflight 409 on delete and 400 on PUT
+ integrity errors
+
+---
+ sigab-backend/routes/equipos.py | 51 +++++++++++++++++++++++++++++++--
+ 1 file changed, 48 insertions(+), 3 deletions(-)
+
+diff --git a/sigab-backend/routes/equipos.py b/sigab-backend/routes/equipos.py
+index 0bafbfc..0a1be5a 100644
+--- a/sigab-backend/routes/equipos.py
++++ b/sigab-backend/routes/equipos.py
+@@ -22,6 +22,7 @@ import os
+ import secrets
+ import uuid
+ from datetime import datetime
++from sqlalchemy.exc import IntegrityError
+ from config import get_db, UPLOAD_DIR, MAX_UPLOAD_MB, PUBLIC_BASE_URL
+ from auth.dependencies import (
+     get_current_user,
+@@ -174,13 +175,46 @@ async def eliminar_equipo(
+     nombre_equipo = equipo.nombre
+     imagen_url = equipo.imagen_url
+ 
++    # Pre-flight: detectar relaciones bloqueantes ANTES de tocar la transacción.
++    # `trazabilidad` es histórico (NOM-016) y NO se borra. Si existe, 409.
++    # Preventivos/reservas activas: igual, mejor que el operador los cierre primero.
++    from models.trazabilidad import Trazabilidad
++    from models.reserva import Reserva
++    bloqueantes = []
++    n_traz = (await session.execute(
++        sa.select(sa.func.count()).select_from(Trazabilidad).where(Trazabilidad.equipo_id == equipo_id)
++    )).scalar() or 0
++    if n_traz:
++        bloqueantes.append(f"{n_traz} registro(s) de trazabilidad (NOM-016, no se eliminan)")
++    n_prev = (await session.execute(
++        sa.select(sa.func.count()).select_from(PreventivoProgramado).where(
++            PreventivoProgramado.equipo_id == equipo_id, PreventivoProgramado.activo == True
++        )
++    )).scalar() or 0
++    if n_prev:
++        bloqueantes.append(f"{n_prev} preventivo(s) programado(s) activo(s)")
++    n_res = (await session.execute(
++        sa.select(sa.func.count()).select_from(Reserva).where(Reserva.equipo_id == equipo_id)
++    )).scalar() or 0
++    if n_res:
++        bloqueantes.append(f"{n_res} reserva(s) registrada(s)")
++    if bloqueantes:
++        raise HTTPException(
++            status_code=409,
++            detail=("No se puede eliminar el equipo porque tiene relaciones activas: "
++                    + "; ".join(bloqueantes)
++                    + ". Considere cambiar el estado a 'baja' en lugar de eliminar."),
++        )
++
+     try:
+         # Liberar referencias en órdenes para no romper FK (si no es ON DELETE CASCADE)
+-        # Nota: En SQLAlchemy/SQLModel podemos configurar la relación, 
+-        # pero aquí hacemos el update manual para replicar la lógica original.
+         stmt_cleanup = sa.update(OrdenServicio).where(OrdenServicio.equipo_id == equipo_id).values(equipo_id=None)
+         await session.execute(stmt_cleanup)
+-        
++        # Alertas referencian equipo con FK Optional (sin CASCADE) — nullificar.
++        from models.alerta import Alerta
++        stmt_alert = sa.update(Alerta).where(Alerta.equipo_id == equipo_id).values(equipo_id=None)
++        await session.execute(stmt_alert)
++
+         await session.delete(equipo)
+         await session.commit()
+ 
+@@ -192,6 +226,12 @@ async def eliminar_equipo(
+             entidad_id=equipo_id,
+             datos={"nombre": nombre_equipo}
+         )
++    except IntegrityError as e:
++        await session.rollback()
++        raise HTTPException(
++            status_code=409,
++            detail=f"No se puede eliminar el equipo: existe(n) referencia(s) que no permiten la baja física. ({e.orig.args[0] if hasattr(e, 'orig') else 'FK constraint'})",
++        )
+     except Exception as e:
+         await session.rollback()
+         raise HTTPException(status_code=500, detail=f"Error al eliminar: {str(e)}")
+@@ -537,6 +577,11 @@ async def actualizar_equipo(
+             entidad_id=equipo_id,
+             datos=updates
+         )
++    except IntegrityError as e:
++        await session.rollback()
++        # Mensaje accionable para el frontend (P2-01).
++        msg = e.orig.args[1] if (hasattr(e, "orig") and len(getattr(e.orig, "args", [])) > 1) else str(e)
++        raise HTTPException(status_code=400, detail=f"Datos inválidos para actualizar el equipo: {msg}")
+     except Exception as e:
+         await session.rollback()
+         raise HTTPException(status_code=500, detail=f"Error al actualizar: {str(e)}")
+-- 
+2.34.1
+

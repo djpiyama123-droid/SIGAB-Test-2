@@ -182,14 +182,14 @@ export function SigabModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="sigab-modal-title"
-      className="sigab-v2 fixed inset-0 z-[var(--z-modal)] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-cobalt-900/40 backdrop-blur-[2px]"
+      className="sigab-v2 fixed inset-0 z-[var(--z-modal)] flex items-center justify-center p-4 bg-cobalt-900/40 backdrop-blur-[2px]"
       onClick={(e) => e.target === e.currentTarget && onCancel?.()}
       onKeyDown={(e) => e.key === 'Escape' && onCancel?.()}
     >
       <div
         className={
-          `bg-white w-full ${widths[size]} rounded-t-[var(--sigab-radius-lg)] sm:rounded-[var(--sigab-radius-lg)] ` +
-          'shadow-[var(--sigab-shadow-lg)] flex flex-col max-h-[95vh] sm:max-h-[90vh] animate-slide-up'
+          `bg-white w-full ${widths[size]} rounded-[var(--sigab-radius-lg)] ` +
+          'shadow-[var(--sigab-shadow-lg)] flex flex-col max-h-[90vh] animate-slide-up'
         }
       >
         <header className="px-7 py-4 border-b border-cobalt-100">
