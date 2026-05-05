@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
-import { SigabButton } from './v2/SigabUI';
 import toast from 'react-hot-toast';
 
 const TIPOS_EVENTO = [
@@ -12,10 +11,10 @@ const TIPOS_EVENTO = [
 ];
 
 const SEVERIDADES = [
-  { value: 'critica', label: 'Crítica', color: 'border-rose-300 bg-rose-100 text-rose-800' },
-  { value: 'grave', label: 'Grave', color: 'border-orange-300 bg-orange-100 text-orange-800' },
-  { value: 'moderada', label: 'Moderada', color: 'border-amber-300 bg-amber-100 text-amber-800' },
-  { value: 'leve', label: 'Leve', color: 'border-emerald-300 bg-emerald-100 text-emerald-800' },
+  { value: 'critica', label: 'Critica', color: 'border-red-500 bg-red-600/20 text-red-300' },
+  { value: 'grave', label: 'Grave', color: 'border-orange-500 bg-orange-500/20 text-orange-300' },
+  { value: 'moderada', label: 'Moderada', color: 'border-yellow-500 bg-yellow-500/20 text-yellow-300' },
+  { value: 'leve', label: 'Leve', color: 'border-slate-500 bg-slate-500/20 text-slate-300' },
 ];
 
 const ESTADO_POST = [
@@ -117,53 +116,53 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
   const eq = form.equipo_selected;
 
   return (
-    <div className="sigab-v2 fixed inset-0 z-50 bg-cobalt-900/40 backdrop-blur-[2px] flex items-center justify-center p-4">
-      <div className="bg-white rounded-[var(--sigab-radius-lg)] w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-cobalt-100 shadow-[var(--sigab-shadow-lg)] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+      <div className="bg-slate-800 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-700">
         {/* Header */}
-        <div className="flex justify-between items-center p-5 border-b border-cobalt-100 sticky top-0 bg-white z-10 rounded-t-[var(--sigab-radius-lg)]">
+        <div className="flex justify-between items-center p-4 border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
           <div>
-            <h2 className="text-lg font-bold text-cobalt-900 font-sigabHead">Reportar Evento Adverso</h2>
-            <p className="text-xs text-sigab-text-muted mt-1 font-sigabBody">NOM-240-SSA1-2012 — Paso {paso} de 3</p>
+            <h2 className="text-lg font-bold text-white">Reportar Evento Adverso</h2>
+            <p className="text-xs text-slate-400">NOM-240-SSA1-2012 — Paso {paso} de 3</p>
           </div>
-          <button onClick={onClose} className="p-2 text-sigab-text-muted hover:text-rose-600 hover:bg-rose-50 transition-colors rounded-[var(--sigab-radius-sm)]">
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-white bg-slate-700 rounded-lg">
             ✕
           </button>
         </div>
 
         {/* Progress bar */}
-        <div className="flex gap-1 px-5 pt-5">
+        <div className="flex gap-1 px-4 pt-4">
           {[1, 2, 3].map((p) => (
             <div key={p} className={`h-1.5 flex-1 rounded-full transition-colors ${
-              p <= paso ? 'bg-rose-600' : 'bg-sigab-surface'
+              p <= paso ? 'bg-red-500' : 'bg-slate-700'
             }`} />
           ))}
         </div>
 
-        <div className="p-5 space-y-5 font-sigabBody">
+        <div className="p-5 space-y-4">
           {/* ── PASO 1: Dispositivo ── */}
           {paso === 1 && (
             <>
-              <h3 className="text-sm font-bold text-rose-600 font-sigabHead">1. Identificación del dispositivo</h3>
+              <h3 className="text-sm font-semibold text-red-400">1. Identificacion del dispositivo</h3>
 
               {/* Buscador de equipos */}
               {!eq ? (
                 <div className="space-y-2">
-                  <label className="text-xs text-sigab-text-muted block font-semibold">Buscar equipo (nombre, serie o inventario)</label>
+                  <label className="text-xs text-slate-400 block">Buscar equipo (nombre, serie o inventario)</label>
                   <input
                     type="text"
                     value={buscaEquipo}
                     onChange={(e) => setBuscaEquipo(e.target.value)}
                     placeholder="Ej: CARESCAPE, B650, serie..."
-                    className="w-full bg-sigab-surface-alt border border-sigab-border rounded-[var(--sigab-radius-md)] px-3 py-2 text-sm text-sigab-text placeholder:text-sigab-text-muted focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500"
                     autoFocus
                   />
                   {equiposFiltrados.length > 0 && (
-                    <div className="bg-white border border-sigab-border rounded-[var(--sigab-radius-md)] shadow-sm max-h-48 overflow-y-auto">
+                    <div className="bg-slate-900 border border-slate-700 rounded-lg max-h-48 overflow-y-auto">
                       {equiposFiltrados.map((e) => (
                         <button key={e.id} onClick={() => selectEquipo(e)}
-                          className="w-full text-left px-3 py-2 hover:bg-sigab-bg text-sm text-sigab-text border-b border-sigab-border last:border-0 transition-colors">
-                          <span className="font-semibold text-cobalt-900">{e.nombre}</span>
-                          <span className="text-sigab-text-muted ml-2 text-xs">
+                          className="w-full text-left px-3 py-2 hover:bg-slate-700 text-sm text-white border-b border-slate-800 last:border-0">
+                          <span className="font-medium">{e.nombre}</span>
+                          <span className="text-slate-400 ml-2 text-xs">
                             {e.marca} {e.modelo} — Serie: {e.serie || 'N/A'}
                           </span>
                         </button>
@@ -171,38 +170,38 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
                     </div>
                   )}
                   {buscaEquipo.length >= 2 && equiposFiltrados.length === 0 && (
-                    <p className="text-xs text-sigab-text-muted text-center py-2">Sin resultados</p>
+                    <p className="text-xs text-slate-500 text-center py-2">Sin resultados</p>
                   )}
                 </div>
               ) : (
-                <div className="bg-sigab-surface-alt border border-sigab-border rounded-[var(--sigab-radius-lg)] p-5 space-y-3">
+                <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4 space-y-2">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-cobalt-900 font-bold">{eq.nombre}</p>
-                      <p className="text-xs text-sigab-text-muted font-semibold">{eq.marca} {eq.modelo}</p>
+                      <p className="text-white font-medium">{eq.nombre}</p>
+                      <p className="text-xs text-slate-400">{eq.marca} {eq.modelo}</p>
                     </div>
                     <button onClick={() => setForm((f) => ({ ...f, equipo_id: null, equipo_selected: null }))}
-                      className="text-xs text-rose-600 hover:text-rose-700 font-semibold underline">
+                      className="text-xs text-red-400 hover:text-red-300">
                       Cambiar
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs text-sigab-text-muted">
-                    <span>Serie: <strong className="text-sigab-text">{eq.serie || 'N/A'}</strong></span>
-                    <span>Área: <strong className="text-sigab-text">{eq.area || 'N/A'}</strong></span>
-                    <span>Piso: <strong className="text-sigab-text">{eq.piso || 'N/A'}</strong></span>
-                    <span>Inventario: <strong className="text-sigab-text">{eq.inventario || 'N/A'}</strong></span>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
+                    <span>Serie: <strong className="text-slate-300">{eq.serie || 'N/A'}</strong></span>
+                    <span>Area: <strong className="text-slate-300">{eq.area || 'N/A'}</strong></span>
+                    <span>Piso: <strong className="text-slate-300">{eq.piso || 'N/A'}</strong></span>
+                    <span>Inventario: <strong className="text-slate-300">{eq.inventario || 'N/A'}</strong></span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-sigab-border">
+                  <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-slate-700">
                     <div>
-                      <label className="text-xs text-sigab-text-muted block mb-1 font-semibold">Lote (opcional)</label>
+                      <label className="text-xs text-slate-400 block mb-1">Lote (opcional)</label>
                       <input value={form.dispositivo_lote} onChange={set('dispositivo_lote')}
-                        className="w-full bg-white border border-sigab-border rounded-[var(--sigab-radius-md)] px-3 py-1.5 text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-rose-500/50" />
+                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-red-500" />
                     </div>
                     <div>
-                      <label className="text-xs text-sigab-text-muted block mb-1 font-semibold">Registro sanitario (opcional)</label>
+                      <label className="text-xs text-slate-400 block mb-1">Registro sanitario (opcional)</label>
                       <input value={form.dispositivo_registro_sanitario} onChange={set('dispositivo_registro_sanitario')}
-                        className="w-full bg-white border border-sigab-border rounded-[var(--sigab-radius-md)] px-3 py-1.5 text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-rose-500/50" />
+                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-red-500" />
                     </div>
                   </div>
                 </div>
@@ -213,25 +212,25 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
           {/* ── PASO 2: Evento ── */}
           {paso === 2 && (
             <>
-              <h3 className="text-sm font-bold text-rose-600 font-sigabHead">2. Datos del evento</h3>
+              <h3 className="text-sm font-semibold text-red-400">2. Datos del evento</h3>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-sigab-text-muted block mb-1 font-semibold">Fecha y hora del evento *</label>
+                  <label className="text-xs text-slate-400 block mb-1">Fecha y hora del evento *</label>
                   <input type="datetime-local" value={form.fecha_evento} onChange={set('fecha_evento')}
-                    className="w-full bg-sigab-surface-alt border border-sigab-border rounded-[var(--sigab-radius-md)] px-3 py-1.5 text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-rose-500/50" />
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-red-500" />
                 </div>
                 <div>
-                  <label className="text-xs text-sigab-text-muted block mb-1 font-semibold">Lugar del evento</label>
+                  <label className="text-xs text-slate-400 block mb-1">Lugar del evento</label>
                   <input value={form.lugar_evento} onChange={set('lugar_evento')} placeholder="Ej: Piso 3, Sala de Cirugia"
-                    className="w-full bg-sigab-surface-alt border border-sigab-border rounded-[var(--sigab-radius-md)] px-3 py-1.5 text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-rose-500/50" />
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-red-500" />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-sigab-text-muted block mb-1 font-semibold">Tipo de evento *</label>
+                <label className="text-xs text-slate-400 block mb-1">Tipo de evento *</label>
                 <select value={form.tipo_evento} onChange={set('tipo_evento')}
-                  className="w-full bg-sigab-surface-alt border border-sigab-border rounded-[var(--sigab-radius-md)] px-3 py-1.5 text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-rose-500/50">
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-red-500">
                   <option value="">— Seleccionar —</option>
                   {TIPOS_EVENTO.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -240,16 +239,16 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
               </div>
 
               <div>
-                <label className="text-xs text-sigab-text-muted block mb-2 font-semibold">Severidad *</label>
+                <label className="text-xs text-slate-400 block mb-2">Severidad *</label>
                 <div className="grid grid-cols-4 gap-2">
                   {SEVERIDADES.map((s) => (
                     <button key={s.value}
                       type="button"
                       onClick={() => setForm((f) => ({ ...f, severidad: s.value }))}
-                      className={`border rounded-[var(--sigab-radius-md)] py-2 text-xs font-bold text-center transition-all ${
+                      className={`border rounded-lg py-2 text-xs font-bold text-center transition-all ${
                         form.severidad === s.value
-                          ? s.color + ' ring-2 ring-offset-1 ring-offset-white shadow-sm'
-                          : 'border-sigab-border bg-sigab-surface text-sigab-text-muted hover:bg-sigab-bg hover:text-sigab-text'
+                          ? s.color + ' ring-2 ring-offset-1 ring-offset-slate-800'
+                          : 'border-slate-700 bg-slate-800 text-slate-500 hover:bg-slate-700'
                       }`}>
                       {s.label}
                     </button>
@@ -258,24 +257,24 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
               </div>
 
               <div>
-                <label className="text-xs text-sigab-text-muted block mb-1 font-semibold">Descripción del evento *</label>
+                <label className="text-xs text-slate-400 block mb-1">Descripcion del evento *</label>
                 <textarea rows={3} value={form.descripcion_evento} onChange={set('descripcion_evento')}
                   placeholder="Describa que sucedio con el dispositivo medico..."
-                  className="w-full bg-sigab-surface-alt border border-sigab-border rounded-[var(--sigab-radius-md)] px-3 py-2 text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-rose-500/50" />
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
               </div>
 
               <div>
-                <label className="text-xs text-sigab-text-muted block mb-1 font-semibold">Consecuencia clinica</label>
+                <label className="text-xs text-slate-400 block mb-1">Consecuencia clinica</label>
                 <textarea rows={2} value={form.consecuencia_clinica} onChange={set('consecuencia_clinica')}
                   placeholder="Describa las consecuencias clinicas si aplica..."
-                  className="w-full bg-sigab-surface-alt border border-sigab-border rounded-[var(--sigab-radius-md)] px-3 py-2 text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-rose-500/50" />
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
               </div>
 
               <div>
-                <label className="text-xs text-sigab-text-muted block mb-1 font-semibold">Accion correctiva inmediata</label>
+                <label className="text-xs text-slate-400 block mb-1">Accion correctiva inmediata</label>
                 <textarea rows={2} value={form.accion_correctiva} onChange={set('accion_correctiva')}
                   placeholder="Que accion se tomo inmediatamente..."
-                  className="w-full bg-sigab-surface-alt border border-sigab-border rounded-[var(--sigab-radius-md)] px-3 py-2 text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-rose-500/50" />
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
               </div>
             </>
           )}
@@ -283,22 +282,22 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
           {/* ── PASO 3: Paciente y cierre ── */}
           {paso === 3 && (
             <>
-              <h3 className="text-sm font-bold text-rose-600 font-sigabHead">3. Paciente y estado del dispositivo</h3>
+              <h3 className="text-sm font-semibold text-red-400">3. Paciente y estado del dispositivo</h3>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-[var(--sigab-radius-md)] p-4 space-y-1 shadow-sm">
-                <p className="text-xs text-amber-800 font-semibold flex items-center gap-2">
-                  <span>ℹ️</span> Datos anonimizados (LFPDPPP)
+              <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4 space-y-1">
+                <p className="text-xs text-yellow-400 font-semibold">
+                  Datos anonimizados (LFPDPPP)
                 </p>
-                <p className="text-xs text-amber-700">
+                <p className="text-xs text-slate-500">
                   Solo se registra sexo y edad del paciente. No se almacenan datos personales identificables.
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-sigab-text-muted block mb-1 font-semibold">Sexo del paciente</label>
+                  <label className="text-xs text-slate-400 block mb-1">Sexo del paciente</label>
                   <select value={form.paciente_sexo} onChange={set('paciente_sexo')}
-                    className="w-full bg-sigab-surface-alt border border-sigab-border rounded-[var(--sigab-radius-md)] px-3 py-1.5 text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-rose-500/50">
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-red-500">
                     <option value="no_aplica">No aplica</option>
                     <option value="M">Masculino</option>
                     <option value="F">Femenino</option>
@@ -306,17 +305,17 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-sigab-text-muted block mb-1 font-semibold">Edad del paciente</label>
+                  <label className="text-xs text-slate-400 block mb-1">Edad del paciente</label>
                   <input type="number" min="0" max="120" value={form.paciente_edad} onChange={set('paciente_edad')}
                     placeholder="Opcional"
-                    className="w-full bg-sigab-surface-alt border border-sigab-border rounded-[var(--sigab-radius-md)] px-3 py-1.5 text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-rose-500/50" />
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-red-500" />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-sigab-text-muted block mb-1 font-semibold">Estado del dispositivo post-evento</label>
+                <label className="text-xs text-slate-400 block mb-1">Estado del dispositivo post-evento</label>
                 <select value={form.dispositivo_estado_post} onChange={set('dispositivo_estado_post')}
-                  className="w-full bg-sigab-surface-alt border border-sigab-border rounded-[var(--sigab-radius-md)] px-3 py-1.5 text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-rose-500/50">
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-red-500">
                   {ESTADO_POST.map((e) => (
                     <option key={e.value} value={e.value}>{e.label}</option>
                   ))}
@@ -324,18 +323,18 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
               </div>
 
               {/* Resumen antes de crear */}
-              <div className="bg-rose-50 border border-rose-200 shadow-sm rounded-[var(--sigab-radius-md)] p-4 space-y-2 mt-2">
-                <p className="text-xs text-rose-800 font-bold">Resumen del reporte</p>
-                <div className="grid grid-cols-2 gap-2 text-xs text-rose-700/80">
-                  <span>Dispositivo: <strong className="text-rose-900 font-semibold">{eq?.nombre}</strong></span>
-                  <span>Serie: <strong className="text-rose-900 font-semibold">{eq?.serie || 'N/A'}</strong></span>
-                  <span>Tipo: <strong className="text-rose-900 font-semibold">
+              <div className="bg-slate-900/50 border border-red-500/30 rounded-lg p-4 space-y-2">
+                <p className="text-xs text-red-400 font-semibold">Resumen del reporte</p>
+                <div className="grid grid-cols-2 gap-1 text-xs text-slate-400">
+                  <span>Dispositivo: <strong className="text-white">{eq?.nombre}</strong></span>
+                  <span>Serie: <strong className="text-slate-300">{eq?.serie || 'N/A'}</strong></span>
+                  <span>Tipo: <strong className="text-white">
                     {TIPOS_EVENTO.find((t) => t.value === form.tipo_evento)?.label}
                   </strong></span>
-                  <span>Severidad: <strong className={`font-semibold ${
-                    form.severidad === 'critica' ? 'text-rose-600' :
-                    form.severidad === 'grave' ? 'text-orange-600' : 'text-amber-600'
-                  }`}>{form.severidad?.toUpperCase()}</strong></span>
+                  <span>Severidad: <strong className={
+                    form.severidad === 'critica' ? 'text-red-400' :
+                    form.severidad === 'grave' ? 'text-orange-400' : 'text-yellow-400'
+                  }>{form.severidad?.toUpperCase()}</strong></span>
                 </div>
               </div>
             </>
@@ -343,30 +342,30 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
         </div>
 
         {/* Footer con navegacion */}
-        <div className="flex justify-between items-center p-5 border-t border-cobalt-100 bg-sigab-surface-alt rounded-b-[var(--sigab-radius-lg)]">
-          <SigabButton
-            variant="secondary"
+        <div className="flex justify-between items-center p-4 border-t border-slate-700">
+          <button
             onClick={() => paso > 1 ? setPaso(paso - 1) : onClose()}
+            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg transition-colors"
           >
             {paso === 1 ? 'Cancelar' : 'Anterior'}
-          </SigabButton>
+          </button>
 
           {paso < 3 ? (
-            <SigabButton
-              variant="danger"
+            <button
               onClick={() => setPaso(paso + 1)}
               disabled={!validarPaso()}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Siguiente
-            </SigabButton>
+            </button>
           ) : (
-            <SigabButton
-              variant="danger"
+            <button
               onClick={handleCrear}
-              loading={guardando}
+              disabled={guardando}
+              className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors disabled:opacity-50"
             >
-              Crear reporte
-            </SigabButton>
+              {guardando ? 'Creando...' : 'Crear reporte'}
+            </button>
           )}
         </div>
       </div>

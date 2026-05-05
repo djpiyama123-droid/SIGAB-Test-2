@@ -22,7 +22,6 @@ import AlertaBanner from '../components/AlertaBanner';
 import HospitalMap from '../components/HospitalMap';
 import TripleValidationModal from '../components/TripleValidationModal';
 import DashboardGrid, { GridItem } from '../components/layout/DashboardGrid';
-import { SigabButton } from '../components/v2/SigabUI';
 import KPICard from '../components/cards/KPICard';
 import StatusIndicator from '../components/cards/StatusIndicator';
 import MaintenanceChart from '../components/charts/MaintenanceChart';
@@ -56,7 +55,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-sigab-bg">
+      <div className="flex items-center justify-center h-screen bg-[#0f172a]">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -66,11 +65,11 @@ export default function Dashboard() {
             <motion.div 
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-              className="absolute inset-0 border-4 border-teal2-500/20 border-t-teal2-500 rounded-full"
+              className="absolute inset-0 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full"
             />
-            <Activity className="absolute inset-0 m-auto h-8 w-8 text-teal2-500 animate-pulse" />
+            <Activity className="absolute inset-0 m-auto h-8 w-8 text-emerald-500 animate-pulse" />
           </div>
-          <p className="text-sigab-text-muted font-medium animate-pulse">Iniciando SIGAB Engine...</p>
+          <p className="text-slate-400 font-medium animate-pulse">Iniciando SIGAB Engine...</p>
         </motion.div>
       </div>
     );
@@ -79,14 +78,14 @@ export default function Dashboard() {
   if (error) {
     return (
       <div className="flex items-center justify-center h-screen px-4">
-        <Card className="max-w-md bg-rose-50 border-rose-200 text-center shadow-sm">
+        <Card className="max-w-md bg-rose-500/10 border-rose-500/20 text-center">
           <AlertTriangle className="h-12 w-12 text-rose-500 mx-auto mb-4" />
-          <Title className="text-rose-900 font-sigabHead">Error de Enlace</Title>
-          <Text className="text-rose-700/80 mt-2">{error}</Text>
+          <Title className="text-white">Error de Enlace</Title>
+          <Text className="text-rose-200/60 mt-2">{error}</Text>
           <Divider />
           <button 
             onClick={() => window.location.reload()}
-            className="px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-colors font-sigabBody font-semibold"
+            className="px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-colors"
           >
             Reintentar Conexión
           </button>
@@ -112,7 +111,7 @@ export default function Dashboard() {
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="sigab-v2 p-4 md:p-6 lg:p-8"
+      className="p-4 md:p-6 lg:p-8"
     >
       {/* Header Conquistador */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
@@ -127,30 +126,30 @@ export default function Dashboard() {
           </div>
           <div className="h-12 w-px bg-slate-800 hidden md:block" />
           <div>
-            <h1 className="text-3xl md:text-4xl font-black text-cobalt-900 tracking-tight flex items-center gap-2">
-              CENTRO DE CONTROL <span className="text-teal2-500">SIGAB</span>
+            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight flex items-center gap-2">
+              CENTRO DE CONTROL <span className="text-emerald-500">SIGAB</span>
             </h1>
-            <p className="text-sigab-text-muted text-sm md:text-base font-medium mt-1">
-              HGR No.1 — IMSS | <span className="text-teal2-700">Monitor Biotecnológico en Tiempo Real</span>
+            <p className="text-slate-400 text-sm md:text-base font-medium mt-1">
+              HGR No.1 — IMSS | <span className="text-emerald-500/80">Monitor Biotecnológico en Tiempo Real</span>
             </p>
           </div>
         </motion.div>
         
         <div className="flex gap-3">
-          <SigabButton 
-            variant="accent" 
+          <button 
             onClick={() => setShowPokaYoke(true)}
-            iconLeft={<ShieldCheck className="h-5 w-5" />}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-lg shadow-emerald-900/10"
           >
-            <span className="hidden sm:inline">Poka-Yoke</span>
-          </SigabButton>
-          <SigabButton 
-            variant="secondary" 
+            <ShieldCheck className="h-5 w-5" />
+            <span className="font-bold text-sm hidden sm:inline">Poka-Yoke</span>
+          </button>
+          <button 
             onClick={() => navigate('/checklists')}
-            iconLeft={<ClipboardCheck className="h-5 w-5" />}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-lg shadow-blue-900/10"
           >
-            <span className="hidden sm:inline">NOM-016</span>
-          </SigabButton>
+            <ClipboardCheck className="h-5 w-5" />
+            <span className="font-bold text-sm hidden sm:inline">NOM-016</span>
+          </button>
         </div>
       </div>
 
@@ -209,12 +208,12 @@ export default function Dashboard() {
 
         {/* Mapa de Activos — ancho completo */}
         <GridItem span={isControlRoom ? 4 : 3}>
-          <Card className="bg-sigab-surface border-sigab-border shadow-sm p-0 overflow-hidden">
-            <div className="p-5 border-b border-sigab-border flex items-center justify-between">
-              <Title className="text-cobalt-900 font-sigabHead font-semibold">Mapa de Activos por Zona</Title>
+          <Card className="bg-slate-900/40 border-slate-800 backdrop-blur-sm p-0 overflow-hidden">
+            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+              <Title className="text-white">Mapa de Activos por Zona</Title>
               <StatusIndicator status="green" icon="Wifi" />
             </div>
-            <div className="p-5 bg-sigab-surface-alt">
+            <div className="p-5">
               <HospitalMap />
             </div>
           </Card>
@@ -222,12 +221,12 @@ export default function Dashboard() {
 
         {/* Cumplimiento de Mantenimiento — debajo del mapa */}
         <GridItem span={isControlRoom ? 4 : 3}>
-          <Card className="bg-sigab-surface border-sigab-border shadow-sm">
-            <Title className="text-cobalt-900 font-sigabHead font-semibold flex items-center gap-2">
-              <ClipboardCheck className="h-5 w-5 text-cobalt-500" />
+          <Card className="bg-slate-900/40 border-slate-800 backdrop-blur-sm">
+            <Title className="text-white flex items-center gap-2">
+              <ClipboardCheck className="h-5 w-5 text-blue-500" />
               Cumplimiento de Mantenimiento
             </Title>
-            <Text className="text-sigab-text-muted text-xs mb-6">Programado vs. Ejecutado por mes</Text>
+            <Text className="text-slate-500 text-xs mb-6">Programado vs. Ejecutado por mes</Text>
             <MaintenanceChart />
           </Card>
         </GridItem>

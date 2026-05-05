@@ -18,7 +18,6 @@ import EquipoCard from '../components/EquipoCard';
 import EquipoTable from '../components/EquipoTable';
 import EquipoDetail from '../components/EquipoDetail';
 import EquipoForm from '../components/EquipoForm';
-import { SigabButton, SigabCard, SigabSpinner } from '../components/v2/SigabUI';
 import { useToast } from '../components/Toast';
 import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
 
@@ -47,6 +46,7 @@ export default function Equipos() {
   const [offset, setOffset] = useState(0);
   const [orden, setOrden] = useState('nombre');
   const [creando, setCreando] = useState(false);
+  const [exportandoCsv, setExportandoCsv] = useState(false);
   const [seleccionado, setSeleccionado] = useState(null);
 
   // Catálogos para filtros
@@ -127,87 +127,107 @@ export default function Equipos() {
     cargar();
   };
 
-  const handleExportarCsv = async () => {
-    try {
-      const blob = await api.descargarEquiposCsv({ ...filtros, buscar: buscarText || undefined });
-      const filename = `inventario_sigab_${new Date().toISOString().slice(0, 10).replace(/-/g, '')}.csv`;
-      api.triggerDownload(blob, filename);
-      toast.success('Inventario exportado correctamente');
-    } catch (err) {
-      console.error(err);
-      toast.error('Error al exportar el inventario');
-    }
-  };
-
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
   const activeFilterCount = Object.keys(filtros).filter(k => filtros[k]).length;
 
+  const handleExportarCsv = async () => {
+    try {
+      setExportandoCsv(true);
+      const params = { ...filtros, buscar: buscarText || undefined };
+      const res = await api.descargarEquiposCsv(params);
+      const filename = `inventario_sigab_${new Date().toISOString().split('T')[0]}.csv`;
+      api.triggerDownload(res, filename);
+      toast.success('Archivo CSV exportado exitosamente');
+    } catch (error) {
+      toast.error('No se pudo exportar el archivo CSV');
+      console.error(error);
+    } finally {
+      setExportandoCsv(false);
+    }
+  };
+
   return (
-    <div className="sigab-v2 p-4 md:p-6 space-y-5">
+    <div className="p-4 md:p-6 space-y-5">
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-cobalt-100 flex items-center justify-center">
-              <svg className="w-5 h-5 text-cobalt-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center">
+              <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
               </svg>
             </div>
             Inventario de Equipos
           </h1>
-          <p className="text-sigab-text-muted text-sm mt-1 ml-[52px]">
+          <p className="text-slate-400 text-sm mt-1 ml-[52px]">
             {total} equipos registrados · HGR No.1 IMSS
           </p>
         </div>
         <div className="flex items-center gap-3">
           {/* Vista toggle */}
-          <div className="flex bg-sigab-surface border border-sigab-border rounded-lg overflow-hidden shadow-sm">
+          <div className="flex bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
             {Object.values(VISTAS).map((v) => (
               <button
                 key={v}
                 onClick={() => setVista(v)}
                 className={`px-4 py-2 text-xs font-medium capitalize transition-colors ${
                   vista === v
-                    ? 'bg-cobalt-50 text-cobalt-700'
-                    : 'text-sigab-text-muted hover:bg-sigab-bg'
+                    ? 'bg-emerald-700 text-white'
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
                 {v === 'tarjeta' ? '⊞ Tarjetas' : '≡ Tabla'}
               </button>
             ))}
           </div>
-          <SigabButton
-            variant="secondary"
+          <button
             onClick={handleExportarCsv}
+            disabled={exportandoCsv}
+            className="px-4 py-2 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
           >
-            Exportar CSV
-          </SigabButton>
-          <SigabButton
-            variant="primary"
+            {exportandoCsv ? (
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+            )}
+            <span className="hidden sm:inline">{exportandoCsv ? 'Exportando...' : 'Exportar CSV'}</span>
+            <span className="sm:hidden">CSV</span>
+          </button>
+          <button
+            type="button"
             onClick={() => setCreando(true)}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-2"
           >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
             Nuevo Equipo
-          </SigabButton>
+          </button>
         </div>
       </div>
 
       {/* Filtros avanzados */}
-      <SigabCard>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs text-sigab-text-muted uppercase tracking-widest font-semibold flex items-center gap-2">
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs text-slate-500 uppercase tracking-widest font-semibold flex items-center gap-2">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
             Filtros
             {activeFilterCount > 0 && (
-              <span className="bg-cobalt-100 text-cobalt-700 text-[10px] px-1.5 py-0.5 rounded-full">{activeFilterCount}</span>
+              <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">{activeFilterCount}</span>
             )}
           </span>
           {activeFilterCount > 0 && (
             <button
               onClick={() => { setBuscarText(''); updateFiltros({}); }}
-              className="text-xs text-sigab-text-muted hover:text-sigab-text transition-colors flex items-center gap-1"
+              className="text-xs text-slate-400 hover:text-white transition-colors flex items-center gap-1"
             >
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -218,9 +238,9 @@ export default function Equipos() {
         </div>
 
         {/* Row 1: Búsqueda + Orden */}
-        <div className="flex flex-wrap gap-3 mb-3">
+        <div className="flex flex-wrap gap-3">
           <div className="relative flex-1 min-w-[250px]">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -228,13 +248,13 @@ export default function Equipos() {
               placeholder="Buscar por nombre, serie, marca, modelo, inventario..."
               value={buscarText}
               onChange={handleBuscar}
-              className="w-full pl-10 pr-4 py-2 bg-sigab-surface-alt border border-sigab-border rounded-lg text-sm text-sigab-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal2-500/50 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-600 transition-colors"
             />
           </div>
           <select
             value={orden}
             onChange={(e) => { setOffset(0); setOrden(e.target.value); }}
-            className="px-3 py-2 bg-sigab-surface-alt border border-sigab-border rounded-lg text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-teal2-500/50"
+            className="px-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-lg text-sm text-slate-300 focus:outline-none focus:border-emerald-600"
           >
             {ORDEN_OPTIONS.map(o => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -247,7 +267,7 @@ export default function Equipos() {
           <select
             value={filtros.estado || ''}
             onChange={(e) => updateFiltros({ ...filtros, estado: e.target.value || undefined })}
-            className="px-3 py-2 bg-sigab-surface-alt border border-sigab-border rounded-lg text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-teal2-500/50"
+            className="px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-sm text-slate-300 focus:outline-none focus:border-emerald-600"
           >
             <option value="">Todos los estados</option>
             <option value="operativo">✅ Operativo</option>
@@ -260,7 +280,7 @@ export default function Equipos() {
           <select
             value={filtros.criticidad || ''}
             onChange={(e) => updateFiltros({ ...filtros, criticidad: e.target.value || undefined })}
-            className="px-3 py-2 bg-sigab-surface-alt border border-sigab-border rounded-lg text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-teal2-500/50"
+            className="px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-sm text-slate-300 focus:outline-none focus:border-emerald-600"
           >
             <option value="">Todas las criticidades</option>
             <option value="alta">🔴 Alta</option>
@@ -271,7 +291,7 @@ export default function Equipos() {
           <select
             value={filtros.area || ''}
             onChange={(e) => updateFiltros({ ...filtros, area: e.target.value || undefined })}
-            className="px-3 py-2 bg-sigab-surface-alt border border-sigab-border rounded-lg text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-teal2-500/50"
+            className="px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-sm text-slate-300 focus:outline-none focus:border-emerald-600"
           >
             <option value="">Todas las áreas</option>
             {areas.map((a) => (
@@ -282,7 +302,7 @@ export default function Equipos() {
           <select
             value={filtros.piso || ''}
             onChange={(e) => updateFiltros({ ...filtros, piso: e.target.value || undefined })}
-            className="px-3 py-2 bg-sigab-surface-alt border border-sigab-border rounded-lg text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-teal2-500/50"
+            className="px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-sm text-slate-300 focus:outline-none focus:border-emerald-600"
           >
             <option value="">Todos los pisos</option>
             {pisos.map((p) => (
@@ -294,7 +314,7 @@ export default function Equipos() {
             <select
               value={filtros.marca || ''}
               onChange={(e) => updateFiltros({ ...filtros, marca: e.target.value || undefined })}
-              className="px-3 py-2 bg-sigab-surface-alt border border-sigab-border rounded-lg text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-teal2-500/50"
+              className="px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-sm text-slate-300 focus:outline-none focus:border-emerald-600"
             >
               <option value="">Todas las marcas</option>
               {marcas.map((m) => (
@@ -307,7 +327,7 @@ export default function Equipos() {
             <select
               value={filtros.tipo_equipo || ''}
               onChange={(e) => updateFiltros({ ...filtros, tipo_equipo: e.target.value || undefined })}
-              className="px-3 py-2 bg-sigab-surface-alt border border-sigab-border rounded-lg text-sm text-sigab-text focus:outline-none focus:ring-2 focus:ring-teal2-500/50"
+              className="px-3 py-2 bg-slate-900/60 border border-slate-700 rounded-lg text-sm text-slate-300 focus:outline-none focus:border-emerald-600"
             >
               <option value="">Todos los tipos</option>
               {tipos.map((t) => (
@@ -316,22 +336,27 @@ export default function Equipos() {
             </select>
           )}
         </div>
-      </SigabCard>
+      </div>
 
       {/* Contenido */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <SigabSpinner label="Cargando inventario..." />
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative w-12 h-12">
+              <div className="absolute inset-0 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
+            </div>
+            <p className="text-slate-400 text-sm animate-pulse">Cargando inventario...</p>
+          </div>
         </div>
       ) : equipos.length === 0 ? (
         <div className="text-center py-16">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-sigab-surface border border-sigab-border flex items-center justify-center shadow-sm">
-            <svg className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800 flex items-center justify-center">
+            <svg className="w-8 h-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          <p className="text-sigab-text text-base font-medium">No se encontraron equipos</p>
-          <p className="text-sigab-text-muted text-sm mt-1">Intenta con otros filtros de búsqueda</p>
+          <p className="text-slate-400 text-base font-medium">No se encontraron equipos</p>
+          <p className="text-slate-500 text-sm mt-1">Intenta con otros filtros de búsqueda</p>
         </div>
       ) : vista === VISTAS.tarjeta ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -346,27 +371,27 @@ export default function Equipos() {
       {/* Paginación */}
       {total > PAGE_SIZE && (
         <div className="flex items-center justify-between pt-2">
-          <p className="text-sigab-text-muted text-sm">
+          <p className="text-slate-500 text-sm">
             Mostrando {offset + 1}–{Math.min(offset + PAGE_SIZE, total)} de {total} equipos
           </p>
           <div className="flex items-center gap-2">
-            <SigabButton
-              variant="secondary"
+            <button
               onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
               disabled={offset === 0}
+              className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               ← Anterior
-            </SigabButton>
-            <span className="text-sigab-text-muted text-sm px-2">
+            </button>
+            <span className="text-slate-400 text-sm px-2">
               Pág. {currentPage} / {totalPages}
             </span>
-            <SigabButton
-              variant="secondary"
+            <button
               onClick={() => setOffset(offset + PAGE_SIZE)}
               disabled={offset + PAGE_SIZE >= total}
+              className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               Siguiente →
-            </SigabButton>
+            </button>
           </div>
         </div>
       )}
