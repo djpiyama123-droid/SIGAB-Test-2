@@ -7,6 +7,9 @@ export default {
     { pattern: /text-(emerald|red|yellow|blue|indigo|violet|purple|orange|slate|green)-(300|400|500)/ },
     { pattern: /border-(emerald|red|yellow|blue|indigo|violet|purple|orange|slate|green)-(400|500)\/20/ },
     { pattern: /ring-(emerald|red|yellow|blue|indigo|violet|purple|orange|slate|green)-(400|500)/ },
+    // SIGAB v2 cobalt + teal2 — tokens utilizados por components/v2/SigabUI.jsx
+    { pattern: /(bg|text|border|ring)-(cobalt|teal2)-(50|100|300|500|700|800|900)/ },
+    { pattern: /(bg|text|border|ring)-(cobalt|teal2)-(50|100|300|500|700|800|900)\/(20|30|40|45|50|60|70|80)/ },
   ],
   theme: {
     extend: {
@@ -19,6 +22,9 @@ export default {
       fontFamily: {
         sans: ['Lexend', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['JetBrains Mono', 'Courier New', 'monospace'],
+        // SIGAB v2 — identidad visual aprobada por CTO (Montserrat headers + Open Sans body)
+        sigabHead: ['Montserrat', 'Inter', 'system-ui', 'sans-serif'],
+        sigabBody: ['Open Sans', 'Inter', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         'xs':   ['clamp(0.75rem, 1vw, 1rem)',     { lineHeight: '1rem' }],
@@ -42,10 +48,29 @@ export default {
           blue:  '#006CB7',
         },
         sigab: {
-          primary:   '#4F46E5',  // indigo-600 — marca principal
+          primary:   '#4F46E5',  // indigo-600 — marca principal (legacy v1)
           secondary: '#6366F1',  // indigo-500
           accent:    '#818CF8',  // indigo-400
           glow:      'rgba(79,70,229,0.15)',
+        },
+        // SIGAB v2 — paleta cobalt aprobada por CTO (sustituye indigo en migraciones nuevas)
+        cobalt: {
+          50:  '#EAF2F8',
+          100: '#D4E5F0',
+          300: '#85B6D4',
+          500: '#3B7BA3',
+          700: '#1B4F72',
+          800: '#143850',
+          900: '#0E2D43',
+        },
+        teal2: {
+          50:  '#E6F2F6',
+          100: '#C2DDE6',
+          300: '#7FB3C2',
+          500: '#2E86AB',
+          700: '#246F8E',
+          800: '#1C5872',
+          900: '#143F52',
         },
       },
       backgroundImage: {
