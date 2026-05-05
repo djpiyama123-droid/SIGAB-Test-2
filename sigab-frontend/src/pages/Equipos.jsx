@@ -47,6 +47,7 @@ export default function Equipos() {
   const [orden, setOrden] = useState('nombre');
   const [creando, setCreando] = useState(false);
   const [exportandoCsv, setExportandoCsv] = useState(false);
+  const [filtrosExpandidos, setFiltrosExpandidos] = useState(false);
   const [seleccionado, setSeleccionado] = useState(null);
 
   // Catálogos para filtros
@@ -207,13 +208,41 @@ export default function Equipos() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-            Nuevo Equipo
+            <span className="hidden sm:inline">Nuevo Equipo</span>
           </button>
         </div>
       </div>
 
+      {/* Floating Action Button (Móvil) para Nuevo Equipo */}
+      <div className="md:hidden fixed bottom-6 right-6 z-[40]">
+        <button
+          onClick={() => setCreando(true)}
+          className="w-14 h-14 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full shadow-lg shadow-emerald-900/50 flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Boton para moviles: Mostrar/Ocultar Filtros */}
+      <div className="md:hidden flex justify-end">
+        <button
+          onClick={() => setFiltrosExpandidos(!filtrosExpandidos)}
+          className="px-3 py-1.5 bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-sm rounded-lg flex items-center gap-2 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          {filtrosExpandidos ? 'Ocultar Filtros' : 'Filtros'}
+          {activeFilterCount > 0 && !filtrosExpandidos && (
+            <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">{activeFilterCount}</span>
+          )}
+        </button>
+      </div>
+
       {/* Filtros avanzados */}
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 space-y-3">
+      <div className={`bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 space-y-3 ${!filtrosExpandidos ? 'hidden md:block' : 'block'}`}>
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs text-slate-500 uppercase tracking-widest font-semibold flex items-center gap-2">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
