@@ -186,13 +186,13 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       {/* Tooltip al hacer hover */}
       {showTooltip && (
         <div
-          className="absolute z-[100] w-56 rounded-xl shadow-2xl border border-slate-600/50 overflow-hidden"
+          className="absolute z-[100] w-64 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-600/50 overflow-hidden"
           style={{
-            bottom: 'calc(100% + 10px)',
+            bottom: 'calc(100% + 15px)',
             left: '50%',
             transform: 'translateX(-50%)',
             backgroundColor: '#0f172a',
-            backdropFilter: 'blur(20px)',
+            backdropFilter: 'blur(12px)',
           }}
         >
           <div className="p-3 border-b border-slate-700">
@@ -341,12 +341,11 @@ function ZoneBox({ zona, onEquipoClick }) {
           </div>
         ) : (
           <div
-            className="grid gap-2"
+            className="grid gap-2 map-zone-container"
             style={{
               gridTemplateColumns: 'repeat(auto-fill, minmax(48px, 1fr))',
-              rowGap: '10px',
-              maxHeight: equipos.length > 20 ? '240px' : 'none',
-              overflowY: equipos.length > 20 ? 'auto' : 'visible',
+              rowGap: '12px',
+              overflow: 'visible',
             }}
           >
             {equipos.map(equipo => (
@@ -790,8 +789,8 @@ export default function HospitalMap() {
 
         {/* ── Contenedor de zonas con altura fija y scroll ── */}
         <div
-          className="overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-900/20"
-          style={{ maxHeight: '520px' }}
+          className="overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-900/20 p-1"
+          style={{ maxHeight: '600px', overflow: 'visible' }}
         >
           {zonasFiltradas.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-slate-500 gap-2">
