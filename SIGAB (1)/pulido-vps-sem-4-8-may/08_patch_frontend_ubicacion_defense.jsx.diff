@@ -1,0 +1,38 @@
+From 30dc1ef5ef7012e303edf65f6d7976349e9d6ba4 Mon Sep 17 00:00:00 2001
+From: claude <claude@sandbox>
+Date: Tue, 5 May 2026 13:33:29 +0000
+Subject: [PATCH 4/4] style(equipos-frontend): derive ubicacion in client when
+ area/piso filled
+
+---
+ sigab-frontend/src/components/EquipoForm.jsx | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/sigab-frontend/src/components/EquipoForm.jsx b/sigab-frontend/src/components/EquipoForm.jsx
+index a37a394..91a63c7 100644
+--- a/sigab-frontend/src/components/EquipoForm.jsx
++++ b/sigab-frontend/src/components/EquipoForm.jsx
+@@ -138,9 +138,19 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
+ 
+     setGuardando(true);
+     try {
++      // P2-02 (defensa cliente): si el operador dejó 'ubicacion' vacío pero llenó
++      // 'area' y/o 'piso', derivamos ubicacion en el cliente para evitar el round-trip
++      // y un eventual 400 del backend (que sí lo cubre, pero queremos UX limpia).
++      let formNormalizado = form;
++      const ubicacionEnBlanco = !form.ubicacion || !String(form.ubicacion).trim();
++      if (ubicacionEnBlanco && (form.area || form.piso)) {
++        const partes = [form.area, form.piso].map((s) => (s || '').trim()).filter(Boolean);
++        formNormalizado = { ...form, ubicacion: partes.join(' · ') };
++      }
++
+       // Limpiar payload: enviar null donde sea string vacío
+       const payload = Object.fromEntries(
+-        Object.entries(form).map(([k, v]) => [k, v === '' ? null : v])
++        Object.entries(formNormalizado).map(([k, v]) => [k, v === '' ? null : v])
+       );
+ 
+       let equipoId;
+-- 
+2.34.1
+

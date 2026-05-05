@@ -141,7 +141,7 @@ const estadoInicial = () => ({
 
 function RadioGroup({ opciones, valor, onChange, cols = 3 }) {
   return (
-    <div className={`grid gap-2 ${cols === 2 ? 'grid-cols-2' : cols === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3'}`}>
+    <div className={`grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-${cols}`}>
       {opciones.map((op) => (
         <label
           key={op.value}
@@ -170,7 +170,7 @@ function RadioGroup({ opciones, valor, onChange, cols = 3 }) {
 
 function CheckboxGrid({ campos, form, onChange }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
       {campos.map(({ key, label }) => {
         const marcado = form[key] === 1;
         return (
@@ -279,8 +279,8 @@ export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado
       `}</style>
 
       {/* ── Modal overlay ── */}
-      <div className="fixed inset-0 bg-black/70 z-50 flex items-start justify-center p-4 overflow-y-auto">
-        <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl shadow-2xl my-4">
+      <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-start justify-center p-0 sm:p-4 overflow-y-auto">
+        <div className="bg-slate-900 border-t sm:border border-slate-700 rounded-t-2xl sm:rounded-2xl w-full max-w-4xl shadow-2xl h-[95vh] sm:h-auto overflow-y-auto">
 
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 sticky top-0 bg-slate-900 z-10 rounded-t-2xl">

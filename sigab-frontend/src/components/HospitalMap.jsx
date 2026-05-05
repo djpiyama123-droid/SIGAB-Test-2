@@ -2,7 +2,7 @@
 // HospitalMap.jsx — Mapa Interactivo de Activos Biomédicos
 // SIGAB — Hospital General Regional No. 1 IMSS Tijuana
 // ============================================================
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './Toast';
 import HistorialEquipoModal from './HistorialEquipoModal';
@@ -120,7 +120,7 @@ const CRITICIDAD_CONFIG = {
 // ── Componente: punto de equipo individual en el mapa
 // mode="flow" (default) → se renderiza dentro de un grid auto-adjustable
 // mode="absolute" → usa pos_x/pos_y (layout legacy, conservado por compatibilidad)
-function EquipmentDot({ equipo, onClick, mode = 'flow' }) {
+const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 'flow' }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const status = STATUS_CONFIG[equipo.estado] || STATUS_CONFIG.baja;
   const Icon = EQUIPMENT_ICONS[equipo.tipo_equipo] || EQUIPMENT_ICONS.otro;
@@ -243,12 +243,30 @@ function EquipmentDot({ equipo, onClick, mode = 'flow' }) {
       )}
     </div>
   );
-}
+});
 
 // ── Componente: caja de zona hospitalaria
 // El contenedor crece de forma automática según la cantidad de equipos (grid auto-wrap).
 // Además muestra un micro-resumen por estado (operativo / mant. / fuera).
 function ZoneBox({ zona, onEquipoClick }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const containerRef = React.useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect(); // Una vez visible, lo mantenemos (o podemos hacerlo dinámico)
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   const equipos = zona.equipos || [];
   const tieneEquipos = equipos.length > 0;
   const conFalla = equipos.some(e => ['fuera_servicio', 'en_mantenimiento'].includes(e.estado));
@@ -261,7 +279,8 @@ function ZoneBox({ zona, onEquipoClick }) {
 
   return (
     <div
-      className="relative rounded-2xl overflow-visible transition-all duration-300 flex flex-col"
+      ref={containerRef}
+      className="relative rounded-2xl overflow-visible transition-all duration-300 flex flex-col min-h-[100px]"
       style={{
         backgroundColor: zona.color_bg || '#1e293b',
         border: `1px solid ${conFalla ? '#ef444430' : (zona.color_borde || '#334155')}`,
@@ -316,12 +335,18 @@ function ZoneBox({ zona, onEquipoClick }) {
           <div className="flex items-center justify-center min-h-[60px]">
             <span className="text-slate-600 text-[10px] italic">Sin equipos registrados</span>
           </div>
+        ) : !isVisible ? (
+          <div className="flex items-center justify-center min-h-[60px]">
+            <div className="w-4 h-4 border-2 border-slate-700 border-t-slate-500 rounded-full animate-spin" />
+          </div>
         ) : (
           <div
             className="grid gap-2"
             style={{
               gridTemplateColumns: 'repeat(auto-fill, minmax(48px, 1fr))',
               rowGap: '10px',
+              maxHeight: equipos.length > 20 ? '240px' : 'none',
+              overflowY: equipos.length > 20 ? 'auto' : 'visible',
             }}
           >
             {equipos.map(equipo => (

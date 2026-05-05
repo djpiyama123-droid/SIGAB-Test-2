@@ -384,7 +384,62 @@ export default function Ordenes() {
         <div className="text-slate-500 py-8 text-center">Sin órdenes con ese filtro.</div>
       ) : (
         <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Vista móvil: Cards */}
+          <div className="block sm:hidden divide-y divide-slate-700/50">
+            {ordenes.map((os) => (
+              <div
+                key={os.id}
+                onClick={() => setSelectedOrden(os.id)}
+                className="p-4 hover:bg-slate-700/30 transition-colors cursor-pointer"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <span className="font-mono text-xs text-emerald-400">{os.numero_orden}</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${ESTADO_BADGE[os.estado] || ''}`}>
+                    {os.estado?.replace('_', ' ')}
+                  </span>
+                </div>
+                <h3 className="text-white text-sm font-bold mb-1">{os.equipo_nombre || 'Sin nombre'}</h3>
+                <p className="text-slate-400 text-xs mb-3 line-clamp-2">{os.falla_reportada || 'Sin reporte'}</p>
+                <div className="flex flex-wrap gap-y-2 gap-x-4 text-[11px] text-slate-500">
+                  <div className="flex items-center gap-1">
+                    <span className="text-slate-600">👤</span> {os.tecnico_nombre || '—'}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-slate-600">📍</span> {os.area || '—'}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-slate-600">📅</span> {os.fecha}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mt-4 pt-3 border-t border-slate-700/30">
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${PRIORIDAD_BADGE[os.prioridad] || ''}`}>
+                    {os.prioridad}
+                  </span>
+                  <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => {
+                        setCasillasOrdenId(os.id);
+                        setCasillasEquipo({ nombre: os.equipo_nombre, serie: os.equipo_serie, area: os.area, piso: os.piso });
+                        setShowCasillas(true);
+                      }}
+                      className="px-3 py-1 bg-teal-600/20 text-teal-400 rounded-lg border border-teal-500/30 text-xs"
+                    >
+                      📋 CENEVAL
+                    </button>
+                    {os.estado !== 'cerrada' && os.estado !== 'cancelada' && (
+                      <button onClick={() => handleCerrar(os.id)}
+                        className="px-3 py-1 bg-emerald-600/20 text-emerald-400 rounded-lg border border-emerald-500/30 text-xs">
+                        Cerrar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Vista escritorio: Tabla */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-900/60 text-slate-400 text-left">

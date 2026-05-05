@@ -1,0 +1,43 @@
+From df7140bcd8beaea3be3da6b26fa936fae8e6e38a Mon Sep 17 00:00:00 2001
+From: claude <claude@sandbox>
+Date: Tue, 5 May 2026 13:32:22 +0000
+Subject: [PATCH 1/4] fix(equipos): derive ubicacion from granular fields when
+ not provided
+
+---
+ sigab-backend/routes/equipos.py | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/sigab-backend/routes/equipos.py b/sigab-backend/routes/equipos.py
+index 78a9b23..11a5451 100644
+--- a/sigab-backend/routes/equipos.py
++++ b/sigab-backend/routes/equipos.py
+@@ -495,6 +495,25 @@ async def actualizar_equipo(
+     campos_permitidos = allowed_update_fields(user)
+     updates = {k: v for k, v in data.items() if k in campos_permitidos}
+ 
++    # ── BUGFIX UBICACION (NOT NULL) ────────────────────────────────────
++    # El frontend (EquipoForm.jsx) convierte strings vacíos a null antes
++    # de enviar el payload. Si el usuario llena `area`/`piso` pero deja
++    # `ubicacion` vacío, llega ubicacion=None y el UPDATE viola la
++    # constraint NOT NULL de equipos.ubicacion.
++    #
++    # Estrategia: si llega ubicacion=None, derivarla de los campos
++    # granulares (los del payload o, si no vienen, los actuales del
++    # equipo). Si tampoco hay datos para derivar, se descarta la clave
++    # para no nullificar el valor existente.
++    if "ubicacion" in updates and updates["ubicacion"] in (None, ""):
++        area_in = updates["area"] if "area" in updates else equipo.area
++        piso_in = updates["piso"] if "piso" in updates else equipo.piso
++        partes = [p for p in (area_in, piso_in) if p]
++        if partes:
++            updates["ubicacion"] = " · ".join(partes)
++        else:
++            del updates["ubicacion"]
++
+     if not updates:
+         raise HTTPException(status_code=400, detail="No hay campos válidos para actualizar con tu rol")
+ 
+-- 
+2.34.1
+

@@ -12,7 +12,12 @@
       "Bash(curl -s http://localhost:8000/api/dashboard/mapa)",
       "Bash(curl -s http://localhost:8000/api/dashboard/mapa -v)",
       "Bash(curl -s http://localhost:8000/api/dashboard/resumen)",
-      "Bash(wsl -d Ubuntu-24.04 bash -c \"ss -tlnp | grep 3306; mysql -u sigab_user -psigab_pass_2026 -e ''SELECT 1'' 2>&1 || echo ''MySQL not running''\")"
+      "Bash(wsl -d Ubuntu-24.04 bash -c \"ss -tlnp | grep 3306; mysql -u sigab_user -psigab_pass_2026 -e ''SELECT 1'' 2>&1 || echo ''MySQL not running''\")",
+      "Bash(git -C \"C:/Users/djpiy/Desktop/Bioingeneria/SIGAB\" config --get-all url.git@github.com:.insteadOf)",
+      "Bash(git -C \"C:/Users/djpiy/Desktop/Bioingeneria/SIGAB\" config --get remote.origin.url)",
+      "Bash(git -C \"C:/Users/djpiy/Desktop/Bioingeneria/SIGAB\" ls-remote origin HEAD)",
+      "Bash(npm run *)",
+      "Bash(npm install *)"
     ]
   },
   "plugins": [
