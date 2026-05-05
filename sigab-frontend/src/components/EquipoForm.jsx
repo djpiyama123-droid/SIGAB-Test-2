@@ -138,9 +138,19 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
 
     setGuardando(true);
     try {
+      // P2-02 (defensa cliente): si el operador dejó 'ubicacion' vacío pero llenó
+      // 'area' y/o 'piso', derivamos ubicacion en el cliente para evitar el round-trip
+      // y un eventual 400 del backend (que sí lo cubre, pero queremos UX limpia).
+      let formNormalizado = form;
+      const ubicacionEnBlanco = !form.ubicacion || !String(form.ubicacion).trim();
+      if (ubicacionEnBlanco && (form.area || form.piso)) {
+        const partes = [form.area, form.piso].map((s) => (s || '').trim()).filter(Boolean);
+        formNormalizado = { ...form, ubicacion: partes.join(' · ') };
+      }
+
       // Limpiar payload: enviar null donde sea string vacío
       const payload = Object.fromEntries(
-        Object.entries(form).map(([k, v]) => [k, v === '' ? null : v])
+        Object.entries(formNormalizado).map(([k, v]) => [k, v === '' ? null : v])
       );
 
       let equipoId;
