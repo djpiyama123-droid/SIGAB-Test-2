@@ -128,8 +128,8 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
 
   if (loading || !data) {
     return (
-      <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
-        <div className="text-white">Cargando detalles...</div>
+      <div className="sigab-v2 fixed inset-0 z-50 bg-cobalt-900/40 backdrop-blur-[2px] flex items-center justify-center">
+        <div className="text-cobalt-100 font-sigabBody">Cargando detalles...</div>
       </div>
     );
   }
@@ -143,10 +143,10 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
       <div className="flex items-center gap-2 my-4">
         {steps.map((st, i) => (
           <div key={st} className="flex items-center gap-2">
-            <div className={`px-2 py-1 text-xs font-semibold rounded-full ${i <= idx ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-400'}`}>
+            <div className={`px-2 py-1 text-xs font-semibold rounded-full ${i <= idx ? 'bg-teal2-500 text-white' : 'bg-sigab-surface-alt text-sigab-text-muted border border-sigab-border'}`}>
               {st.replace('_', ' ').toUpperCase()}
             </div>
-            {i < steps.length - 1 && <div className={`w-8 h-1 ${i < idx ? 'bg-emerald-600' : 'bg-slate-700'}`} />}
+            {i < steps.length - 1 && <div className={`w-8 h-1 ${i < idx ? 'bg-teal2-500' : 'bg-sigab-border'}`} />}
           </div>
         ))}
       </div>
@@ -154,58 +154,58 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-      <div className="bg-slate-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-slate-700 flex flex-col">
+    <div className="sigab-v2 fixed inset-0 z-50 bg-cobalt-900/40 backdrop-blur-[2px] flex items-center justify-center p-4">
+      <div className="bg-white rounded-[var(--sigab-radius-lg)] w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-[var(--sigab-shadow-lg)] flex flex-col">
         {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
+        <div className="flex justify-between items-center p-5 border-b border-cobalt-100 sticky top-0 bg-white z-10 rounded-t-[var(--sigab-radius-lg)]">
           <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-3">
+            <h2 className="text-lg font-sigabHead font-bold text-cobalt-900 flex items-center gap-3">
               Orden {orden.numero_orden}
-              {orden.estado === 'cancelada' && <span className="text-xs bg-red-600 px-2 py-0.5 rounded text-white">CANCELADA</span>}
+              {orden.estado === 'cancelada' && <span className="text-xs bg-rose-600 px-2 py-0.5 rounded text-white font-sigabBody">CANCELADA</span>}
             </h2>
-            <p className="text-sm text-slate-400">{orden.equipo_nombre} - Serie: {orden.equipo_serie}</p>
+            <p className="text-sm text-sigab-text-muted mt-1 font-sigabBody">{orden.equipo_nombre} - Serie: {orden.equipo_serie}</p>
           </div>
-          <div className="flex gap-2">
-            <button onClick={handleImprimir} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg flex items-center gap-1">
+          <div className="flex gap-2 font-sigabBody">
+            <button onClick={handleImprimir} className="px-3 py-1.5 bg-cobalt-50 text-cobalt-700 hover:bg-cobalt-100 font-semibold text-sm rounded-[var(--sigab-radius-sm)] flex items-center gap-1 transition-colors">
               🖨️ PDF
             </button>
-            <button onClick={onClose} className="p-2 text-slate-400 hover:text-white bg-slate-700 rounded-lg">✕</button>
+            <button onClick={onClose} className="p-2 text-sigab-text-muted hover:text-rose-600 hover:bg-rose-50 transition-colors rounded-[var(--sigab-radius-sm)]">✕</button>
           </div>
         </div>
 
         <div className="p-6 space-y-6">
           <Timeline estado={orden.estado} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 font-sigabBody">
             <div className="space-y-4">
-              <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
-                <h3 className="text-sm font-semibold text-emerald-400 mb-2">Detalles del Fallo</h3>
-                <p className="text-sm text-slate-300">{orden.falla_reportada}</p>
+              <div className="bg-sigab-surface-alt p-5 rounded-[var(--sigab-radius-lg)] border border-sigab-border shadow-sm">
+                <h3 className="text-sm font-semibold text-teal2-600 mb-2 font-sigabHead">Detalles del Fallo</h3>
+                <p className="text-sm text-sigab-text">{orden.falla_reportada}</p>
               </div>
               
-              <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
-                <h3 className="text-sm font-semibold text-blue-400 mb-2">Información</h3>
-                <ul className="text-sm text-slate-300 space-y-1">
-                  <li><strong>Técnico:</strong> {orden.tecnico_nombre}</li>
-                  <li><strong>Fecha:</strong> {orden.fecha}</li>
-                  <li><strong>Formato IMSS:</strong> <span className="uppercase text-yellow-400 text-xs">{orden.tipo_formato.replace('_', ' ')}</span></li>
+              <div className="bg-sigab-surface-alt p-5 rounded-[var(--sigab-radius-lg)] border border-sigab-border shadow-sm">
+                <h3 className="text-sm font-semibold text-cobalt-600 mb-2 font-sigabHead">Información</h3>
+                <ul className="text-sm text-sigab-text space-y-1">
+                  <li><strong className="font-semibold">Técnico:</strong> {orden.tecnico_nombre}</li>
+                  <li><strong className="font-semibold">Fecha:</strong> {orden.fecha}</li>
+                  <li><strong className="font-semibold">Formato IMSS:</strong> <span className="uppercase text-amber-600 font-semibold text-xs ml-1">{orden.tipo_formato.replace('_', ' ')}</span></li>
                 </ul>
                 {(orden.tipo_atencion === 'contrato' || orden.tipo_atencion === 'garantia') && orden.estado !== 'cerrada' && (
-                  <button onClick={() => setShowOCR(true)} className="mt-3 w-full py-2 bg-slate-800 hover:bg-slate-700 border border-emerald-500/50 text-emerald-400 rounded-lg text-xs font-bold transition-all shadow-[0_0_10px_rgba(16,185,129,0.1)] flex items-center justify-center gap-2">
+                  <button onClick={() => setShowOCR(true)} className="mt-4 w-full py-2 bg-white hover:bg-teal2-50 border border-teal2-500/50 text-teal2-700 rounded-[var(--sigab-radius-md)] text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2">
                     <span>✨</span> Escanear Reporte Físico (IA)
                   </button>
                 )}
               </div>
 
               {orden.estado !== 'cerrada' && orden.estado !== 'cancelada' && !showFinalizar && (
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-4">
                   {orden.estado === 'abierta' && (
-                    <button onClick={() => handleEstado('en_progreso')} className="flex-1 py-2 bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg text-sm font-semibold transition-colors">
+                    <button onClick={() => handleEstado('en_progreso')} className="flex-1 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-[var(--sigab-radius-md)] text-sm font-semibold transition-colors hover:bg-amber-100">
                       ▶ Iniciar Trabajo
                     </button>
                   )}
                   {orden.estado === 'en_progreso' && (
-                    <button onClick={() => setShowFinalizar(true)} className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-semibold transition-colors">
+                    <button onClick={() => setShowFinalizar(true)} className="flex-1 py-2 bg-teal2-500 hover:bg-teal2-600 text-white rounded-[var(--sigab-radius-md)] text-sm font-semibold transition-colors shadow-sm">
                       ✔ Finalizar y Cerrar
                     </button>
                   )}
@@ -214,27 +214,27 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
             </div>
 
             <div className="space-y-4">
-              <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
-                <h3 className="text-sm font-semibold text-slate-300 mb-2">Evidencias Fotográficas</h3>
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  {evidencias.length === 0 ? <p className="text-xs text-slate-500">Sin evidencias aún</p> : 
+              <div className="bg-sigab-surface-alt p-5 rounded-[var(--sigab-radius-lg)] border border-sigab-border shadow-sm">
+                <h3 className="text-sm font-semibold text-cobalt-900 mb-3 font-sigabHead">Evidencias Fotográficas</h3>
+                <div className="flex gap-3 overflow-x-auto pb-3">
+                  {evidencias.length === 0 ? <p className="text-xs text-sigab-text-muted">Sin evidencias aún</p> : 
                     evidencias.map(ev => {
                       const isPDF = ev.ruta_archivo?.toLowerCase().endsWith('.pdf');
                       return (
                         <div key={ev.id} 
                              onClick={() => window.open(ev.ruta_archivo, '_blank')}
-                             className="relative flex-shrink-0 w-24 h-24 bg-black rounded overflow-hidden group cursor-pointer border border-transparent hover:border-emerald-500 transition-colors">
+                             className="relative flex-shrink-0 w-24 h-24 bg-sigab-surface rounded-[var(--sigab-radius-sm)] overflow-hidden group cursor-pointer border border-sigab-border hover:border-teal2-500 shadow-sm transition-all">
                           {isPDF ? (
-                            <div className="flex flex-col items-center justify-center w-full h-full bg-slate-800 text-slate-300 group-hover:bg-slate-700 transition-colors">
+                            <div className="flex flex-col items-center justify-center w-full h-full bg-sigab-surface-alt text-sigab-text group-hover:bg-teal2-50 transition-colors">
                                <span className="text-3xl mb-1">📄</span>
-                               <span className="text-[9px] text-center px-1 truncate w-full text-slate-400 group-hover:text-white" title={ev.ruta_archivo.split('/').pop()}>
+                               <span className="text-[9px] text-center px-1 truncate w-full text-sigab-text-muted group-hover:text-teal2-700 font-semibold" title={ev.ruta_archivo.split('/').pop()}>
                                  {ev.ruta_archivo.split('/').pop()}
                                </span>
                             </div>
                           ) : (
-                            <img src={ev.ruta_archivo} className="object-cover w-full h-full group-hover:opacity-75 transition-opacity" alt={ev.tipo} />
+                            <img src={ev.ruta_archivo} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" alt={ev.tipo} />
                           )}
-                          <div className="absolute bottom-0 inset-x-0 bg-black/60 text-[10px] text-white text-center p-0.5 uppercase tracking-wide">
+                          <div className="absolute bottom-0 inset-x-0 bg-cobalt-900/80 backdrop-blur-sm text-[10px] text-white text-center py-1 uppercase tracking-wide font-semibold">
                             {ev.tipo}
                           </div>
                         </div>
@@ -242,33 +242,33 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
                   })}
                 </div>
                 {orden.estado !== 'cerrada' && (
-                  <form onSubmit={handleSubirEvidencia} className="mt-3 flex gap-2 items-center">
-                    <select value={evidenciaTipo} onChange={e => setEvidenciaTipo(e.target.value)} className="bg-slate-800 border bg-slate-700 text-xs text-white p-1.5 rounded">
+                  <form onSubmit={handleSubirEvidencia} className="mt-4 flex gap-2 items-center bg-white p-2 rounded-[var(--sigab-radius-md)] border border-sigab-border">
+                    <select value={evidenciaTipo} onChange={e => setEvidenciaTipo(e.target.value)} className="bg-transparent border-none text-xs text-sigab-text font-semibold focus:outline-none focus:ring-0">
                       <option value="antes">Antes</option>
                       <option value="durante">Durante</option>
                       <option value="despues">Después</option>
                     </select>
-                    <input type="file" accept="image/*" onChange={e => setEvidenciaFile(e.target.files[0])} className="text-xs text-slate-400 w-full" />
-                    <button disabled={!evidenciaFile || subiendo} className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-500 disabled:opacity-50">
-                      {subiendo ? 'Subiendo' : 'Subir'}
+                    <input type="file" accept="image/*" onChange={e => setEvidenciaFile(e.target.files[0])} className="text-xs text-sigab-text-muted w-full flex-1 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-cobalt-50 file:text-cobalt-700 hover:file:bg-cobalt-100" />
+                    <button disabled={!evidenciaFile || subiendo} className="px-3 py-1.5 bg-cobalt-600 text-white text-xs font-semibold rounded-[var(--sigab-radius-sm)] hover:bg-cobalt-700 disabled:opacity-50 transition-colors">
+                      {subiendo ? 'Subiendo...' : 'Subir'}
                     </button>
                   </form>
                 )}
               </div>
 
               {showFinalizar && (
-                <form onSubmit={handleFinalizar} className="bg-slate-900 border border-emerald-500/50 p-4 rounded-lg space-y-3">
-                  <h3 className="text-sm font-semibold text-emerald-400">Datos de Cierre e Inspección</h3>
-                  <textarea placeholder="Condiciones Encontradas..." required value={formFinal.condiciones_encontradas} onChange={e=>setFormFinal(f=>({...f, condiciones_encontradas: e.target.value}))} className="w-full bg-slate-800 border border-slate-600 text-xs text-white p-2 rounded" />
-                  <textarea placeholder="Trabajo / Descripción del Servicio / Partes Reemplazadas..." required value={formFinal.observaciones} onChange={e=>setFormFinal(f=>({...f, observaciones: e.target.value}))} className="w-full bg-slate-800 border border-slate-600 text-xs text-white p-2 rounded" />
-                  <textarea placeholder="Condiciones Finales Operativas..." required value={formFinal.condicion_final} onChange={e=>setFormFinal(f=>({...f, condicion_final: e.target.value}))} className="w-full bg-slate-800 border border-slate-600 text-xs text-white p-2 rounded" />
-                  <div className="flex gap-2">
-                    <input type="text" placeholder="Recibido Por (Nombre)" required value={formFinal.recibe_conformidad_nombre} onChange={e=>setFormFinal(f=>({...f, recibe_conformidad_nombre: e.target.value}))} className="w-1/2 bg-slate-800 border border-slate-600 text-xs text-white p-2 rounded" />
-                    <input type="text" placeholder="Matrícula" value={formFinal.recibe_conformidad_matricula} onChange={e=>setFormFinal(f=>({...f, recibe_conformidad_matricula: e.target.value}))} className="w-1/2 bg-slate-800 border border-slate-600 text-xs text-white p-2 rounded" />
+                <form onSubmit={handleFinalizar} className="bg-teal2-50 border border-teal2-200 p-5 rounded-[var(--sigab-radius-lg)] space-y-4 shadow-sm">
+                  <h3 className="text-sm font-semibold text-teal2-800 font-sigabHead">Datos de Cierre e Inspección</h3>
+                  <textarea placeholder="Condiciones Encontradas..." required value={formFinal.condiciones_encontradas} onChange={e=>setFormFinal(f=>({...f, condiciones_encontradas: e.target.value}))} className="w-full bg-white border border-sigab-border text-xs text-sigab-text p-2.5 rounded-[var(--sigab-radius-md)] focus:outline-none focus:ring-2 focus:ring-teal2-500/50" />
+                  <textarea placeholder="Trabajo / Descripción del Servicio / Partes Reemplazadas..." required value={formFinal.observaciones} onChange={e=>setFormFinal(f=>({...f, observaciones: e.target.value}))} className="w-full bg-white border border-sigab-border text-xs text-sigab-text p-2.5 rounded-[var(--sigab-radius-md)] focus:outline-none focus:ring-2 focus:ring-teal2-500/50" />
+                  <textarea placeholder="Condiciones Finales Operativas..." required value={formFinal.condicion_final} onChange={e=>setFormFinal(f=>({...f, condicion_final: e.target.value}))} className="w-full bg-white border border-sigab-border text-xs text-sigab-text p-2.5 rounded-[var(--sigab-radius-md)] focus:outline-none focus:ring-2 focus:ring-teal2-500/50" />
+                  <div className="flex gap-3">
+                    <input type="text" placeholder="Recibido Por (Nombre)" required value={formFinal.recibe_conformidad_nombre} onChange={e=>setFormFinal(f=>({...f, recibe_conformidad_nombre: e.target.value}))} className="w-1/2 bg-white border border-sigab-border text-xs text-sigab-text p-2.5 rounded-[var(--sigab-radius-md)] focus:outline-none focus:ring-2 focus:ring-teal2-500/50" />
+                    <input type="text" placeholder="Matrícula" value={formFinal.recibe_conformidad_matricula} onChange={e=>setFormFinal(f=>({...f, recibe_conformidad_matricula: e.target.value}))} className="w-1/2 bg-white border border-sigab-border text-xs text-sigab-text p-2.5 rounded-[var(--sigab-radius-md)] focus:outline-none focus:ring-2 focus:ring-teal2-500/50" />
                   </div>
-                  <div className="flex gap-2 mt-2">
-                    <button type="button" onClick={() => setShowFinalizar(false)} className="flex-1 py-1.5 bg-slate-700 text-white rounded text-sm hover:bg-slate-600">Cancelar</button>
-                    <button type="submit" className="flex-1 py-1.5 bg-emerald-600 text-white font-semibold rounded text-sm hover:bg-emerald-500">Firmar y Cerrar</button>
+                  <div className="flex gap-3 mt-4">
+                    <button type="button" onClick={() => setShowFinalizar(false)} className="flex-1 py-2 bg-white border border-sigab-border text-sigab-text-muted font-semibold rounded-[var(--sigab-radius-md)] text-sm hover:bg-sigab-surface transition-colors shadow-sm">Cancelar</button>
+                    <button type="submit" className="flex-1 py-2 bg-teal2-600 text-white font-semibold rounded-[var(--sigab-radius-md)] text-sm hover:bg-teal2-700 transition-colors shadow-sm">Firmar y Cerrar</button>
                   </div>
                 </form>
               )}
