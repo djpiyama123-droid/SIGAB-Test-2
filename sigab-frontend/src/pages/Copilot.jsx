@@ -560,9 +560,9 @@ Puedo ayudarte con:
         </div>
       )}
 
-      <div className="flex gap-4 flex-1 min-h-0">
+      <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 relative">
         {/* ── Chat principal ── */}
-        <div className="flex flex-col flex-1 min-h-0 bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
+        <div className="flex flex-col flex-1 min-h-0 bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden order-1 lg:order-1">
           {/* Mensajes */}
           <div className="flex-1 overflow-y-auto p-4 space-y-1">
             {messages.map((msg, i) => (
@@ -584,7 +584,7 @@ Puedo ayudarte con:
           )}
 
           {/* Input */}
-          <div className="border-t border-slate-700 p-3">
+          <div className="border-t border-slate-700 p-3 bg-slate-800">
             <div className="flex gap-2 items-end">
               <textarea
                 ref={inputRef}
@@ -596,8 +596,8 @@ Puedo ayudarte con:
                     enviarMensaje();
                   }
                 }}
-                placeholder="Pregunta sobre equipos, mantenimiento, NOM-240, diagnósticos... (Enter para enviar)"
-                rows={2}
+                placeholder="Pregunta... (Enter para enviar)"
+                rows={1}
                 disabled={streaming}
                 className="flex-1 bg-slate-900/60 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-600 resize-none disabled:opacity-50"
               />
@@ -613,27 +613,36 @@ Puedo ayudarte con:
                 </button>
               )}
             </div>
-            <p className="text-[10px] text-slate-600 mt-1 text-center">
-              Shift+Enter para nueva línea · Enter para enviar · IA local — sin datos a la nube
-            </p>
           </div>
         </div>
 
-        {/* ── Panel lateral ── */}
-        <div className="w-72 flex-shrink-0 space-y-3 overflow-y-auto">
+        {/* ── Panel lateral / Pestañas de herramientas (Responsivo) ── */}
+        <div className={`
+          fixed lg:relative inset-x-0 bottom-0 lg:inset-auto
+          lg:w-72 flex-shrink-0 space-y-3 
+          bg-slate-900 lg:bg-transparent p-4 lg:p-0
+          border-t lg:border-none border-slate-700
+          transition-transform duration-300 z-30
+          ${showDiagnostico || showVision ? 'translate-y-0' : 'translate-y-[85%] lg:translate-y-0'}
+          max-h-[80vh] lg:max-h-none overflow-y-auto order-2 lg:order-2
+        `}>
+          {/* Botón retráctil para móviles */}
+          <div className="lg:hidden flex justify-center mb-2 -mt-2">
+            <button 
+              onClick={() => { setShowDiagnostico(false); setShowVision(false); }}
+              className="w-12 h-1 bg-slate-700 rounded-full"
+            />
+          </div>
           {/* Diagnóstico rápido */}
           {showDiagnostico ? (
             <DiagnosticoPanel onClose={() => setShowDiagnostico(false)} />
           ) : (
             <button onClick={() => { setShowDiagnostico(true); setShowVision(false); }}
               className="w-full text-left p-4 bg-slate-800 border border-slate-700 hover:border-yellow-500/50 rounded-xl transition-colors group">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2">
                 <span className="text-yellow-400">⚡</span>
                 <span className="text-sm font-semibold text-white">Diagnóstico de Falla</span>
               </div>
-              <p className="text-xs text-slate-400">
-                Describe la falla de un equipo y Gemma sugiere causas, verificaciones y acciones.
-              </p>
             </button>
           )}
 
@@ -643,13 +652,10 @@ Puedo ayudarte con:
           ) : (
             <button onClick={() => { setShowVision(true); setShowDiagnostico(false); }}
               className="w-full text-left p-4 bg-slate-800 border border-slate-700 hover:border-blue-500/50 rounded-xl transition-colors group">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2">
                 <span className="text-blue-400"><IconImage /></span>
                 <span className="text-sm font-semibold text-white">Vision (Gemma 4)</span>
               </div>
-              <p className="text-xs text-slate-400">
-                Sube foto de etiqueta o reporte de servicio. Gemma extrae datos automáticamente.
-              </p>
             </button>
           )}
 
