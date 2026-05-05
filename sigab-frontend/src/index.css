@@ -352,8 +352,30 @@ body {
   }
 }
 
-/* @page rules — default Carta format.
-   For Zebra, we dynamically inject a <style> from JS to override. */
+/* ── Animaciones ── */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* ── Soporte UTF-8 / Acentos ── */
+.text-accent-fix {
+  font-feature-settings: "kern", "liga", "clig", "calt";
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Hide scrollbar but keep functionality ── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 @page {
   size: letter portrait;
   margin: 10mm;
