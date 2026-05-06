@@ -19,7 +19,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import axios from 'axios';
 import cors from 'cors';
-import { handleCommand } from './commands.js';
+import { handleCommand, handleImageCommand } from './commands.js';
 import { initScheduler } from './scheduler.js';
 
 // ── Configuración ──────────────────────────────────────────
@@ -100,6 +100,28 @@ async function startBot() {
           console.log('✅ Voice note reenviada a FastAPI');
         } catch (err) {
           console.error('❌ Error procesando voice note:', err.message);
+        }
+        continue;
+      }
+
+      // Handle Image messages (OS scan, casillas CENEVAL, etc.)
+      if (msg.message?.imageMessage) {
+        const caption = (msg.message.imageMessage.caption || '').trim();
+        const senderName = msg.pushName || remoteJid;
+        console.log(`🖼️ Imagen recibida de ${senderName} con caption: "${caption}"`);
+
+        if (caption.startsWith('/')) {
+          try {
+            const buffer = await downloadMediaMessage(msg, 'buffer', {}, { logger, reuploadRequest: sock.updateMediaMessage });
+            const mimeType = msg.message.imageMessage.mimetype || 'image/jpeg';
+            const response = await handleImageCommand(caption, buffer, mimeType, senderName);
+            if (response) {
+              await sock.sendMessage(remoteJid, typeof response === 'string' ? { text: response } : response);
+            }
+          } catch (err) {
+            console.error('❌ Error procesando imagen:', err.message);
+            await sock.sendMessage(remoteJid, { text: `❌ Error procesando la imagen: ${err.message}` });
+          }
         }
         continue;
       }

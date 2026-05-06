@@ -30,6 +30,16 @@ except ImportError:
     def parsear_reporte_ocr(_b):  # type: ignore
         raise HTTPException(status_code=503, detail="OCR deshabilitado en esta instancia")
 
+try:
+    from services.imss_os_extractor import extract_imss_os, map_to_orden_servicio
+    _IMSS_EXTRACTOR_AVAILABLE = True
+except Exception as _e:  # pragma: no cover
+    _IMSS_EXTRACTOR_AVAILABLE = False
+    async def extract_imss_os(_b):  # type: ignore
+        raise HTTPException(status_code=503, detail="Extractor IMSS no disponible")
+    def map_to_orden_servicio(_e):  # type: ignore
+        return {}
+
 router = APIRouter()
 
 
@@ -292,16 +302,150 @@ async def escanear_reporte_físico(
         ext = file.filename.split(".")[-1].lower()
         if ext not in ["png", "jpg", "jpeg", "webp"]:
             raise HTTPException(status_code=400, detail="El motor OCR solo soporta imágenes (PNG/JPG)")
-            
+
         b = await file.read()
         resultado = parsear_reporte_ocr(b)
-        
+
         if "error" in resultado:
             return {"ok": False, "mensaje": resultado["error"]}
-            
+
         return {"ok": True, "datos": resultado}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/scan-imss")
+async def escanear_os_imss(
+    file: UploadFile = File(...),
+    auto_create: bool = False,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """
+    Escanea una hoja física en formato SIGAB-IMSS-OS-V3 usando Gemma 3:4b
+    (local) con fallback a Gemini 1.5 Flash. Extrae los campos y opcionalmente
+    crea la Orden de Servicio en estado 'pendiente_validacion'.
+
+    auto_create=false → solo retorna campos extraídos para revisión humana.
+    auto_create=true  → crea la OS y guarda la imagen como evidencia.
+    """
+    if not _IMSS_EXTRACTOR_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Extractor IMSS no disponible en esta instancia")
+
+    ext = (file.filename or "img").split(".")[-1].lower()
+    if ext not in ["png", "jpg", "jpeg", "webp"]:
+        raise HTTPException(status_code=400, detail="Sólo PNG/JPG/WEBP")
+
+    img_bytes = await file.read()
+    if len(img_bytes) > 15 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Imagen excede 15 MB")
+
+    extracted = await extract_imss_os(img_bytes)
+
+    if extracted.get("error") == "no_es_formato_imss":
+        raise HTTPException(
+            status_code=422,
+            detail="La imagen no es un formato OS IMSS válido (cabecera no coincide)",
+        )
+    if extracted.get("error") == "extraction_failed":
+        return {"ok": False, "campos_identificados": None, "detalle": extracted}
+
+    if not auto_create:
+        return {"ok": True, "campos_identificados": extracted}
+
+    # ── Crear OS en estado 'pendiente_validacion' ──────────────────
+    mapped = map_to_orden_servicio(extracted)
+
+    # Folio: usar el extraído si parece válido (OS-YYYYMMDD-XXXX), si no auto-generar
+    numero = mapped.get("numero_orden")
+    if not numero or not (isinstance(numero, str) and numero.startswith("OS-") and len(numero) >= 12):
+        hoy = date.today()
+        stmt_count = select(func.count()).select_from(OrdenServicio).where(
+            sa.extract('year', OrdenServicio.fecha) == hoy.year
+        )
+        n = (await session.execute(stmt_count)).scalar() + 1
+        numero = f"OS-{hoy.strftime('%Y%m%d')}-{n:04d}"
+    mapped["numero_orden"] = numero
+
+    # Convertir tiempo_real_min → tiempo_real_hrs (Decimal)
+    if "tiempo_real_min" in mapped:
+        try:
+            from decimal import Decimal as _D
+            mapped["tiempo_real_hrs"] = _D(mapped.pop("tiempo_real_min")) / _D(60)
+        except Exception:
+            mapped.pop("tiempo_real_min", None)
+
+    # Hora_inicio / hora_termino → time
+    from datetime import time as _t
+    for k in ("hora_inicio", "hora_termino"):
+        if k in mapped and isinstance(mapped[k], str) and ":" in mapped[k]:
+            try:
+                hh, mm = mapped[k].split(":")[:2]
+                mapped[k] = _t(int(hh), int(mm))
+            except Exception:
+                mapped.pop(k, None)
+
+    # fecha → date
+    if "fecha" in mapped and isinstance(mapped["fecha"], str):
+        try:
+            mapped["fecha"] = datetime.strptime(mapped["fecha"], "%Y-%m-%d").date()
+        except Exception:
+            mapped["fecha"] = date.today()
+    else:
+        mapped["fecha"] = date.today()
+
+    mapped["estado"] = "pendiente_validacion"
+    mapped["origen"] = "scan_imss"
+
+    # Resolver equipo_id a partir de equipo_serie si existe
+    if mapped.get("equipo_serie"):
+        eq_stmt = select(Equipo.id).where(Equipo.serie == mapped["equipo_serie"])
+        eq_id = (await session.execute(eq_stmt)).scalar_one_or_none()
+        if eq_id:
+            mapped["equipo_id"] = eq_id
+
+    orden = OrdenServicio(**mapped)
+    session.add(orden)
+    await session.commit()
+    await session.refresh(orden)
+
+    # Guardar refacciones extraídas
+    for ref in (extracted.get("refacciones") or []):
+        try:
+            desc = ref.get("descripcion") or ""
+            cant = int(ref.get("cantidad") or 1)
+            if desc:
+                session.add(MATERIAL_OS(orden_id=orden.id, descripcion=desc, cantidad=cant))
+        except Exception:
+            continue
+    await session.commit()
+
+    # Guardar imagen original como evidencia
+    try:
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        fname = f"scan_imss_{orden.id}_{secrets.token_hex(4)}.{ext}"
+        fpath = os.path.join(UPLOAD_DIR, fname)
+        with open(fpath, "wb") as f:
+            f.write(img_bytes)
+        ev = EVIDENCIA_OS(
+            orden_id=orden.id,
+            ruta_archivo=f"/static/uploads/{fname}",
+            tipo="documento",
+            descripcion=f"Escaneo IMSS v3 (engine={extracted.get('engine')}, conf={extracted.get('confianza_global')})",
+        )
+        session.add(ev)
+        await session.commit()
+    except Exception as e:
+        # No abortar si falla guardar evidencia
+        pass
+
+    return {
+        "ok": True,
+        "orden_id": orden.id,
+        "numero_orden": orden.numero_orden,
+        "estado": orden.estado,
+        "campos_identificados": extracted,
+    }
 
 
 @router.get("/{orden_id}/pdf")

@@ -25,13 +25,32 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
   });
 
   const handleOCRExtracted = (datos) => {
+    // Soporta tanto el nuevo extractor IMSS v3 como el legado (folio/costo/ingeniero)
     setShowFinalizar(true);
-    setFormFinal(f => ({
+    if (datos.numero_orden || datos.equipo_serie || datos.tecnico_nombre) {
+      // Nuevo: extractor IMSS v3 (Gemma + Gemini)
+      const refsTexto = Array.isArray(datos.refacciones) && datos.refacciones.length > 0
+        ? datos.refacciones.map(r => `${r.cantidad || 1}× ${r.descripcion || ''}${r.folio ? ` (${r.folio})` : ''}`).join('\n')
+        : '';
+      setFormFinal(f => ({
+        ...f,
+        condiciones_encontradas: [
+          datos.descripcion_servicio,
+          datos.causa_raiz ? `Causa raíz: ${datos.causa_raiz}` : null,
+        ].filter(Boolean).join('\n\n') || f.condiciones_encontradas,
+        observaciones: [datos.observaciones, refsTexto && `Refacciones:\n${refsTexto}`].filter(Boolean).join('\n\n') || f.observaciones,
+        condicion_final: f.condicion_final || 'Equipo entregado en operación. Validado por SIGAB-IMSS-OS-V3.',
+        recibe_conformidad_nombre: datos.recibe_nombre || f.recibe_conformidad_nombre,
+      }));
+    } else {
+      // Legado: mantener compatibilidad con respuesta vieja
+      setFormFinal(f => ({
         ...f,
         condiciones_encontradas: `Datos OCR:\nFolio Externo: ${datos.folio || 'N/A'}\nCosto: $${datos.costo || '0.00'}\nIngeniero Asignado: ${datos.ingeniero_externo || 'N/A'}`,
         observaciones: `Piezas/Refacciones:\n${datos.refacciones || 'Servicio de mantenimiento externo.'}`,
         condicion_final: 'Operativo, en conformidad con proveedor externo.',
-    }));
+      }));
+    }
   };
 
   useEffect(() => {

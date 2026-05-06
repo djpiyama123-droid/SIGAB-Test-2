@@ -118,6 +118,14 @@ export const api = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+  scanImssOS: (file, autoCreate = false) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return client.post(`/ordenes/scan-imss?auto_create=${autoCreate}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000,
+    });
+  },
   finalizarOrden: (id, data) => client.put(`/ordenes/${id}/finalizar`, data),
   getPdfOrdenUrl: (id) => `${client.defaults.baseURL}/ordenes/${id}/pdf`,
   getPdfOrdenFisicaUrl: (id) => `${client.defaults.baseURL}/ordenes/${id}/pdf-fisico`,
