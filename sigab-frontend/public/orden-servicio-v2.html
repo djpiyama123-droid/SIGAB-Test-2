@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>SIGAB · Orden de Servicio v2.0 (Poka-Yoke)</title>
+<meta name="description" content="Formato físico imprimible de Orden de Servicio Biomédica HGR No.1 IMSS Tijuana — diseño Poka-Yoke v2.0">
+<style>
+  /* ================================================================
+     SIGAB · Orden de Servicio v2.0 — Diseño Poka-Yoke (a prueba de errores)
+     Formato físico imprimible para técnicos en campo. Letter (US Carta).
+     ================================================================ */
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  @page {
+    size: letter portrait;
+    margin: 12mm 14mm;
+  }
+
+  html { font-size: 10pt; }
+
+  body {
+    margin: 0;
+    font-family: 'Inter', 'Helvetica Neue', Arial, system-ui, sans-serif;
+    color: #000;
+    background: #f3f4f6;
+    line-height: 1.35;
+  }
+
+  .sheet {
+    background: #fff;
+    max-width: 8.5in;
+    min-height: 11in;
+    margin: 1.5rem auto;
+    padding: 12mm 14mm;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  }
+
+  /* ── Tipografía ── */
+  h1, h2, h3 { margin: 0; font-weight: 700; }
+  h1 { font-size: 18pt; letter-spacing: 0.5pt; }
+  h2 { font-size: 11pt; text-transform: uppercase; letter-spacing: 0.6pt; color: #111; }
+  h3 { font-size: 10pt; text-transform: uppercase; letter-spacing: 0.4pt; color: #444; }
+  small { font-size: 8pt; color: #555; }
+
+  .req::after {
+    content: ' *';
+    color: #B91C1C;
+    font-weight: 700;
+  }
+
+  /* ── Cabecera institucional ── */
+  .header {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 10mm;
+    align-items: center;
+    border-bottom: 2pt solid #000;
+    padding-bottom: 4mm;
+    margin-bottom: 5mm;
+  }
+  .imss-shield {
+    width: 60px; height: 60px;
+    border: 2pt solid #065F46;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #065F46;
+    font-weight: 800;
+    font-size: 16pt;
+    background: #ECFDF5;
+  }
+  .header-text { line-height: 1.2; }
+  .header-text .institucion {
+    font-size: 11pt; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.4pt;
+  }
+  .header-text .unidad {
+    font-size: 9pt; color: #333; margin-top: 1mm;
+  }
+  .header-text .area {
+    font-size: 8pt; color: #555; margin-top: 0.5mm;
+  }
+  .folio-box {
+    border: 1.5pt solid #000;
+    padding: 2mm 4mm;
+    text-align: center;
+    min-width: 40mm;
+  }
+  .folio-box .label {
+    font-size: 7pt; text-transform: uppercase;
+    letter-spacing: 0.6pt; color: #666;
+  }
+  .folio-box .value {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 11pt; font-weight: 700;
+    margin-top: 1mm;
+    min-height: 14pt;
+  }
+
+  /* ── Título ── */
+  .doc-title {
+    text-align: center;
+    margin: 4mm 0 5mm;
+    padding: 2mm;
+    border: 2pt double #000;
+  }
+
+  /* ── Layout en bloques ── */
+  .block {
+    border: 1pt solid #000;
+    padding: 3mm 4mm;
+    margin-bottom: 3mm;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .block-title {
+    background: #000;
+    color: #fff;
+    margin: -3mm -4mm 3mm -4mm;
+    padding: 1.5mm 4mm;
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
+  }
+
+  /* ── Identificación equipo ── */
+  .equipo-grid {
+    display: grid;
+    grid-template-columns: 35mm 1fr;
+    gap: 4mm;
+    align-items: stretch;
+  }
+  .qr-zone {
+    border: 1.5pt dashed #444;
+    height: 35mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: #fafafa;
+    padding: 2mm;
+  }
+  .qr-zone .qr-icon {
+    font-size: 20pt; line-height: 1;
+    color: #333;
+  }
+  .qr-zone small {
+    margin-top: 1.5mm;
+    font-size: 6.5pt;
+    line-height: 1.2;
+  }
+  .equipo-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2mm 6mm;
+  }
+  .field {
+    display: flex; flex-direction: column;
+  }
+  .field .label {
+    font-size: 7pt;
+    text-transform: uppercase;
+    letter-spacing: 0.4pt;
+    color: #444;
+  }
+  .field .value-line {
+    border-bottom: 0.75pt solid #000;
+    min-height: 10pt;
+    padding: 0.5mm 1mm;
+    font-size: 9.5pt;
+    margin-top: 0.5mm;
+  }
+
+  /* ── Caja de número de serie destacada ── */
+  .serie-emphasis {
+    grid-column: 1 / -1;
+    border: 2pt solid #000;
+    padding: 2mm 3mm;
+    margin-top: 2mm;
+    background: #FEF3C7;
+  }
+  .serie-emphasis .label {
+    font-size: 7pt; font-weight: 700;
+    text-transform: uppercase;
+    color: #B91C1C;
+  }
+  .serie-emphasis .value {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 14pt;
+    font-weight: 700;
+    letter-spacing: 1pt;
+    border-bottom: 1pt solid #000;
+    min-height: 20pt;
+    padding-top: 1mm;
+  }
+  .serie-emphasis .instruction {
+    font-size: 6.5pt;
+    color: #B91C1C;
+    margin-top: 1mm;
+    font-style: italic;
+  }
+
+  /* ── Checkboxes ── */
+  .checkbox-row {
+    display: flex; flex-wrap: wrap;
+    gap: 4mm;
+    align-items: center;
+    margin: 1.5mm 0;
+  }
+  .check-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.5mm;
+    font-size: 9pt;
+  }
+  .checkbox {
+    display: inline-block;
+    width: 4mm; height: 4mm;
+    border: 1.5pt solid #000;
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .check-item.priority-alta .checkbox { border-color: #B91C1C; }
+  .check-item.priority-media .checkbox { border-color: #B45309; }
+  .check-item.priority-baja .checkbox { border-color: #047857; }
+
+  /* ── Zonas de escritura libre ── */
+  .write-area {
+    border: 0.5pt solid #999;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 7mm,
+      #ddd 7mm,
+      #ddd 7.5mm
+    );
+    min-height: 35mm;
+    padding: 2mm 3mm;
+  }
+  .write-area.short { min-height: 18mm; }
+
+  /* ── Tabla refacciones ── */
+  table.refacciones {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+  }
+  table.refacciones th, table.refacciones td {
+    border: 0.75pt solid #000;
+    padding: 1.5mm 2mm;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.refacciones th {
+    background: #f3f4f6;
+    font-weight: 700;
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.3pt;
+  }
+  table.refacciones td { min-height: 7mm; height: 7mm; }
+  table.refacciones col.cant { width: 10%; }
+  table.refacciones col.desc { width: 50%; }
+  table.refacciones col.folio { width: 20%; }
+  table.refacciones col.tiempo { width: 20%; }
+
+  /* ── Validación Poka-Yoke (zona crítica) ── */
+  .poka-yoke {
+    border: 2pt solid #B91C1C;
+    background: #FEF2F2;
+    padding: 3mm;
+    margin-bottom: 3mm;
+  }
+  .poka-yoke .block-title { background: #B91C1C; }
+  .poka-yoke ul { list-style: none; padding: 0; margin: 0; }
+  .poka-yoke li {
+    display: flex; align-items: flex-start;
+    gap: 2mm;
+    margin-bottom: 1.5mm;
+    font-size: 8.5pt;
+  }
+  .poka-yoke li:last-child { margin-bottom: 0; }
+  .poka-yoke .checkbox { border-color: #B91C1C; margin-top: 0.5mm; }
+
+  /* ── Firmas ── */
+  .firmas {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6mm;
+    margin-top: 5mm;
+  }
+  .firma {
+    text-align: center;
+  }
+  .firma .firma-line {
+    border-bottom: 1pt solid #000;
+    height: 15mm;
+    margin-bottom: 1mm;
+  }
+  .firma .firma-label {
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4pt;
+  }
+  .firma .firma-meta {
+    font-size: 7pt;
+    color: #444;
+    margin-top: 0.5mm;
+  }
+
+  /* ── Pie ── */
+  .footer {
+    margin-top: 5mm;
+    padding-top: 2mm;
+    border-top: 0.5pt solid #999;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 7pt;
+    color: #555;
+  }
+
+  /* ── Reglas impresión ── */
+  @media print {
+    body { background: #fff; }
+    .sheet {
+      margin: 0;
+      max-width: none;
+      box-shadow: none;
+      padding: 0;
+    }
+    .no-print { display: none !important; }
+  }
+
+  /* ── Toolbar visible solo en pantalla ── */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    padding: 0.75rem;
+    background: #1e293b;
+    color: #fff;
+    border-bottom: 1px solid #334155;
+  }
+  .toolbar button {
+    background: #10B981;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.875rem;
+  }
+  .toolbar button:hover { background: #059669; }
+  .toolbar .info { font-size: 0.8125rem; opacity: 0.85; align-self: center; }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <button onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
+  <span class="info">SIGAB · Orden de Servicio v2.0 (Poka-Yoke) · Carta US Letter</span>
+</div>
+
+<div class="sheet">
+
+  <!-- ────────────── Cabecera institucional ────────────── -->
+  <header class="header">
+    <div class="imss-shield" aria-label="Logo IMSS">IMSS</div>
+    <div class="header-text">
+      <div class="institucion">Instituto Mexicano del Seguro Social</div>
+      <div class="unidad">Hospital General Regional No. 1 — Tijuana, Baja California</div>
+      <div class="area">Departamento de Conservación e Ingeniería Biomédica</div>
+    </div>
+    <div class="folio-box">
+      <div class="label">Folio OS</div>
+      <div class="value">OS-________-____</div>
+    </div>
+  </header>
+
+  <!-- ────────────── Título del documento ────────────── -->
+  <div class="doc-title">
+    <h1>ORDEN DE SERVICIO BIOMÉDICA</h1>
+    <small>Formato Poka-Yoke v2.0 · NOM-016-SSA3-2012 · NOM-240-SSA1-2012 · ISO-13485</small>
+  </div>
+
+  <!-- ────────────── 1. Identificación del equipo ────────────── -->
+  <section class="block">
+    <div class="block-title">1 · Identificación del Equipo</div>
+
+    <div class="equipo-grid">
+      <div class="qr-zone">
+        <div class="qr-icon">▣</div>
+        <small><b>Pegar / escanear<br/>etiqueta QR</b><br/>del equipo aquí</small>
+      </div>
+
+      <div class="equipo-fields">
+        <div class="field">
+          <span class="label req">Nombre del equipo</span>
+          <span class="value-line"></span>
+        </div>
+        <div class="field">
+          <span class="label">Marca</span>
+          <span class="value-line"></span>
+        </div>
+        <div class="field">
+          <span class="label">Modelo</span>
+          <span class="value-line"></span>
+        </div>
+        <div class="field">
+          <span class="label">Inventario IMSS</span>
+          <span class="value-line"></span>
+        </div>
+        <div class="field">
+          <span class="label req">Área / Servicio</span>
+          <span class="value-line"></span>
+        </div>
+        <div class="field">
+          <span class="label req">Piso / Ubicación</span>
+          <span class="value-line"></span>
+        </div>
+
+        <!-- Caja destacada de número de serie -->
+        <div class="serie-emphasis">
+          <div class="label">Número de serie físico (obligatorio)</div>
+          <div class="value">&nbsp;</div>
+          <div class="instruction">⚠ Debe coincidir EXACTAMENTE con la etiqueta física del equipo y con el QR escaneado.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────── 2. Tipo y prioridad ────────────── -->
+  <section class="block">
+    <div class="block-title">2 · Tipo de Servicio y Prioridad</div>
+
+    <h3 class="req">Tipo de mantenimiento</h3>
+    <div class="checkbox-row">
+      <span class="check-item"><span class="checkbox"></span> Preventivo</span>
+      <span class="check-item"><span class="checkbox"></span> Correctivo</span>
+      <span class="check-item"><span class="checkbox"></span> Calibración</span>
+      <span class="check-item"><span class="checkbox"></span> Instalación</span>
+      <span class="check-item"><span class="checkbox"></span> Verificación / Inspección</span>
+      <span class="check-item"><span class="checkbox"></span> Baja / Decomisión</span>
+    </div>
+
+    <h3 class="req" style="margin-top: 2mm;">Prioridad</h3>
+    <div class="checkbox-row">
+      <span class="check-item priority-alta"><span class="checkbox"></span> ALTA — Equipo crítico fuera de servicio</span>
+      <span class="check-item priority-media"><span class="checkbox"></span> MEDIA — Funciona con limitaciones</span>
+      <span class="check-item priority-baja"><span class="checkbox"></span> BAJA — Programado / preventivo</span>
+    </div>
+
+    <h3 style="margin-top: 2mm;">Fecha y hora de solicitud</h3>
+    <div class="checkbox-row">
+      <span class="field" style="flex: 1;">
+        <span class="label">Fecha</span>
+        <span class="value-line">______ / ______ / ____________</span>
+      </span>
+      <span class="field" style="flex: 1;">
+        <span class="label">Hora</span>
+        <span class="value-line">______ : ______</span>
+      </span>
+      <span class="field" style="flex: 2;">
+        <span class="label">Solicita (nombre y matrícula)</span>
+        <span class="value-line"></span>
+      </span>
+    </div>
+  </section>
+
+  <!-- ────────────── 3. Falla / motivo ────────────── -->
+  <section class="block">
+    <div class="block-title">3 · Falla Reportada / Motivo del Servicio</div>
+    <h3 class="req">Descripción del problema</h3>
+    <div class="write-area"></div>
+  </section>
+
+  <!-- ────────────── 4. Diagnóstico ────────────── -->
+  <section class="block">
+    <div class="block-title">4 · Diagnóstico y Acciones Realizadas</div>
+    <h3>Condiciones encontradas</h3>
+    <div class="write-area short"></div>
+    <h3 style="margin-top: 2mm;">Trabajo realizado / acciones</h3>
+    <div class="write-area short"></div>
+  </section>
+
+  <!-- ────────────── 5. Refacciones ────────────── -->
+  <section class="block">
+    <div class="block-title">5 · Refacciones / Materiales Utilizados</div>
+    <table class="refacciones">
+      <colgroup>
+        <col class="cant"><col class="desc"><col class="folio"><col class="tiempo">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Cant.</th>
+          <th>Descripción</th>
+          <th>Folio refacción</th>
+          <th>Tiempo (min)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ────────────── 6. Validación Poka-Yoke ────────────── -->
+  <section class="block poka-yoke">
+    <div class="block-title">6 · Validación Poka-Yoke (a prueba de errores)</div>
+    <ul>
+      <li>
+        <span class="checkbox"></span>
+        <span><b>QR validado.</b> El número de serie escaneado del QR coincide con el número de serie físico del equipo.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span><b>Inventario validado.</b> El número de inventario IMSS impreso en la placa del equipo coincide con el de la presente orden.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span><b>Ubicación validada.</b> El equipo se encuentra físicamente en el área y piso registrados en SIGAB; cualquier traslado debe quedar documentado en observaciones.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span><b>Causa raíz documentada</b> (sólo correctivos). Se identificó al menos una causa raíz utilizando el árbol de 5 porqués cuando aplicó.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span><b>Condición final declarada.</b> Se especifica si el equipo queda <i>operativo</i>, <i>en mantenimiento</i>, <i>fuera de servicio</i> o <i>dado de baja</i>.</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ────────────── 7. Condición final ────────────── -->
+  <section class="block">
+    <div class="block-title">7 · Condición Final del Equipo</div>
+    <div class="checkbox-row">
+      <span class="check-item"><span class="checkbox" style="border-color:#047857"></span> Operativo (entregado al servicio)</span>
+      <span class="check-item"><span class="checkbox" style="border-color:#B45309"></span> En mantenimiento (refacciones pendientes)</span>
+      <span class="check-item"><span class="checkbox" style="border-color:#B91C1C"></span> Fuera de servicio (resguardo)</span>
+      <span class="check-item"><span class="checkbox" style="border-color:#52525B"></span> Baja / decomisión</span>
+    </div>
+
+    <h3 style="margin-top: 2mm;">Observaciones / recomendaciones para el usuario</h3>
+    <div class="write-area short"></div>
+  </section>
+
+  <!-- ────────────── 8. Firmas ────────────── -->
+  <section class="block" style="border:none; padding:0;">
+    <div class="firmas">
+      <div class="firma">
+        <div class="firma-line"></div>
+        <div class="firma-label req">Realizó (Ing. Biomédico)</div>
+        <div class="firma-meta">Nombre · Matrícula · Fecha</div>
+      </div>
+      <div class="firma">
+        <div class="firma-line"></div>
+        <div class="firma-label">Validó (Jefe de Conservación)</div>
+        <div class="firma-meta">Nombre · Matrícula · Fecha</div>
+      </div>
+      <div class="firma">
+        <div class="firma-line"></div>
+        <div class="firma-label req">Recibe Conformidad</div>
+        <div class="firma-meta">Nombre · Servicio · Fecha</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────── Pie ────────────── -->
+  <footer class="footer">
+    <div>SIGAB v2.0 · Sistema Integral de Gestión de Activos Biomédicos · HGR No.1 IMSS Tijuana</div>
+    <div>Formato OS v2.0 — 2026-05 · Versión Poka-Yoke</div>
+  </footer>
+
+</div>
+
+</body>
+</html>
