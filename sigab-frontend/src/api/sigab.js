@@ -129,6 +129,11 @@ export const api = {
   finalizarOrden: (id, data) => client.put(`/ordenes/${id}/finalizar`, data),
   getPdfOrdenUrl: (id) => `${client.defaults.baseURL}/ordenes/${id}/pdf`,
   getPdfOrdenFisicaUrl: (id) => `${client.defaults.baseURL}/ordenes/${id}/pdf-fisico`,
+  // Descargas con auth via interceptor (window.open NO envía Authorization)
+  descargarPdfOrden: (id) =>
+    client.get(`/ordenes/${id}/pdf`, { responseType: 'blob' }),
+  descargarPdfOrdenFisica: (id) =>
+    client.get(`/ordenes/${id}/pdf-fisico`, { responseType: 'blob' }),
 
   // ── Casillas CENEVAL (Conservación) ──────────────────────
   getCasillas: (ordenId) => client.get(`/casillas/${ordenId}`),
