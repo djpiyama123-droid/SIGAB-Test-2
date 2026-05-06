@@ -1,16 +1,24 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from typing import Optional
 import aiomysql
 import json
 import os
 import shutil
-from datetime import datetime
+import secrets
+from decimal import Decimal
+from datetime import datetime, date, time
 from config import get_db, UPLOAD_DIR
 from services.pdf_service import generar_pdf_orden
 from services.reporte_pdf_service import generar_pdf_reporte_diario
 from services.mail_service import enviar_reporte_email
 from services import gemma_service
 from fastapi.responses import Response, JSONResponse
+
+try:
+    from services.imss_os_extractor import extract_imss_os, map_to_orden_servicio
+    _IMSS_EXTRACTOR_AVAILABLE = True
+except Exception:
+    _IMSS_EXTRACTOR_AVAILABLE = False
 
 router = APIRouter()
 
@@ -369,11 +377,162 @@ async def check_calibraciones(conn=Depends(get_db)):
     """Resumen de calibraciones próximas a vencer para el Bot."""
     async with conn.cursor(aiomysql.DictCursor) as cur:
         await cur.execute("""
-            SELECT m.*, e.nombre, e.serie 
-            FROM metrologia_calibracion m 
-            JOIN equipos e ON m.equipo_id = e.id 
+            SELECT m.*, e.nombre, e.serie
+            FROM metrologia_calibracion m
+            JOIN equipos e ON m.equipo_id = e.id
             WHERE m.proxima_calibracion <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
         """)
         vencidas = await cur.fetchall()
         return {"ok": True, "vencidas": vencidas}
+
+
+@router.post("/scan-os")
+async def escanear_os_whatsapp(
+    foto: UploadFile = File(...),
+    auto_create: bool = Form(True),
+    remitente: str = Form(None),
+    conn=Depends(get_db),
+):
+    """
+    Recibe una foto de OS IMSS (formato SIGAB-IMSS-OS-V3) desde el bot OpenClaw
+    de WhatsApp. Ejecuta el extractor IMSS y, por defecto (auto_create=true),
+    crea la Orden de Servicio en estado 'pendiente_validacion'.
+
+    Sin JWT (es endpoint del bot, autenticado por red interna).
+    """
+    if not _IMSS_EXTRACTOR_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Extractor IMSS no disponible")
+
+    ext = (foto.filename or "img").split(".")[-1].lower() if foto.filename else "jpg"
+    if ext not in {"png", "jpg", "jpeg", "webp"}:
+        ext = "jpg"
+
+    img_bytes = await foto.read()
+    if len(img_bytes) > 15 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Imagen excede 15 MB")
+
+    extracted = await extract_imss_os(img_bytes)
+
+    if extracted.get("error") == "no_es_formato_imss":
+        return {
+            "ok": False,
+            "mensaje": "La foto no parece una OS IMSS. Asegúrate que el formato tenga la cabecera del IMSS y el código SIGAB-IMSS-OS-V3 al pie.",
+        }
+    if extracted.get("error") == "extraction_failed":
+        return {
+            "ok": False,
+            "mensaje": "No pude extraer datos legibles de la foto. ¿Puedes tomarla con mejor iluminación y enfocada?",
+            "campos_identificados": extracted,
+        }
+
+    if not auto_create:
+        return {"ok": True, "campos_identificados": extracted}
+
+    # ── Crear OS ───────────────────────────────────────────────────
+    mapped = map_to_orden_servicio(extracted)
+
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        # Folio
+        numero = mapped.get("numero_orden")
+        if not numero or not (isinstance(numero, str) and numero.startswith("OS-") and len(numero) >= 12):
+            await cur.execute(
+                "SELECT COUNT(*)+1 as next_num FROM ordenes_servicio WHERE YEAR(fecha) = YEAR(CURDATE())"
+            )
+            n = (await cur.fetchone())["next_num"]
+            numero = f"OS-{datetime.now().strftime('%Y%m%d')}-{n:04d}"
+
+        # Resolver equipo_id por serie
+        equipo_id = None
+        if mapped.get("equipo_serie"):
+            await cur.execute("SELECT id FROM equipos WHERE serie = %s", (mapped["equipo_serie"],))
+            row = await cur.fetchone()
+            if row:
+                equipo_id = row["id"]
+
+        # tiempo_real_min → hrs
+        tiempo_real_hrs = None
+        if "tiempo_real_min" in mapped:
+            try:
+                tiempo_real_hrs = float(mapped.pop("tiempo_real_min")) / 60.0
+            except Exception:
+                mapped.pop("tiempo_real_min", None)
+
+        # fecha
+        fecha_orden = mapped.get("fecha")
+        if not fecha_orden:
+            fecha_orden = date.today()
+        elif isinstance(fecha_orden, str):
+            try:
+                fecha_orden = datetime.strptime(fecha_orden, "%Y-%m-%d").date()
+            except Exception:
+                fecha_orden = date.today()
+
+        await cur.execute(
+            """INSERT INTO ordenes_servicio
+            (numero_orden, tipo_formato, equipo_id, equipo_nombre, equipo_marca, equipo_modelo, equipo_serie,
+             ubicacion_fisica, piso, area, tipo_mantenimiento, falla_reportada, descripcion_servicio,
+             observaciones, tecnico_nombre, fecha, tiempo_real_hrs, estado, prioridad, origen)
+            VALUES (%s, 'correctivo_corto', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                    'pendiente_validacion', %s, 'scan_whatsapp')""",
+            (
+                numero, equipo_id,
+                mapped.get("equipo_nombre"), mapped.get("equipo_marca"),
+                mapped.get("equipo_modelo"), mapped.get("equipo_serie"),
+                mapped.get("ubicacion_fisica"), mapped.get("piso"), mapped.get("area"),
+                mapped.get("tipo_mantenimiento", "correctivo"),
+                mapped.get("falla_reportada"), mapped.get("descripcion_servicio"),
+                mapped.get("observaciones"), mapped.get("tecnico_nombre"),
+                fecha_orden, tiempo_real_hrs, mapped.get("prioridad", "media"),
+            ),
+        )
+        orden_id = cur.lastrowid
+
+        # Refacciones extraídas
+        for ref in (extracted.get("refacciones") or []):
+            try:
+                desc = ref.get("descripcion") or ""
+                cant = int(ref.get("cantidad") or 1)
+                if desc:
+                    await cur.execute(
+                        "INSERT INTO os_materiales (orden_id, descripcion, cantidad) VALUES (%s, %s, %s)",
+                        (orden_id, desc, cant),
+                    )
+            except Exception:
+                continue
+
+        # Guardar foto original como evidencia
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        secure_name = f"scan_wapp_{orden_id}_{datetime.now().strftime('%Y%m%d')}_{secrets.token_hex(3)}.{ext}"
+        foto_path = os.path.join(UPLOAD_DIR, secure_name)
+        with open(foto_path, "wb") as f:
+            f.write(img_bytes)
+        await cur.execute(
+            "INSERT INTO os_evidencias (orden_id, ruta_archivo, tipo, descripcion) VALUES (%s, %s, 'documento', %s)",
+            (
+                orden_id,
+                f"/static/uploads/{secure_name}",
+                f"Escaneo IMSS via WhatsApp (engine={extracted.get('engine')}, conf={extracted.get('confianza_global')}, remitente={remitente or 'desconocido'})",
+            ),
+        )
+
+        # Alerta para validación
+        await cur.execute(
+            """INSERT INTO alertas (tipo, equipo_id, orden_id, mensaje, prioridad)
+               VALUES ('os_pendiente_validacion', %s, %s, %s, %s)""",
+            (
+                equipo_id, orden_id,
+                f"OS {numero} creada por escaneo WhatsApp — requiere validación",
+                "media",
+            ),
+        )
+
+    return {
+        "ok": True,
+        "numero_orden": numero,
+        "orden_id": orden_id,
+        "estado": "pendiente_validacion",
+        "engine": extracted.get("engine"),
+        "confianza": extracted.get("confianza_global"),
+        "mensaje": f"OS {numero} creada. Confianza extracción: {(extracted.get('confianza_global') or 0)*100:.0f}%. Requiere validación en SIGAB.",
+    }
 

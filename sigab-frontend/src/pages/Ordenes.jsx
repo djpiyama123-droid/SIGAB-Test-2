@@ -17,6 +17,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/sigab';
 import OrdenDetalleModal from '../components/OrdenDetalleModal';
 import OrdenCasillasForm from '../components/OrdenCasillasForm';
+import OCRScannerModal from '../components/OCRScannerModal';
 import { useToast } from '../components/Toast';
 
 const PRIORIDAD_BADGE = {
@@ -55,6 +56,8 @@ export default function Ordenes() {
   const [showCasillas, setShowCasillas]     = useState(false);
   const [casillasOrdenId, setCasillasOrdenId] = useState(null);
   const [casillasEquipo, setCasillasEquipo]   = useState({});
+  // Escaneo IMSS (cámara / archivo) → pre-llena form de Nueva OS
+  const [showScanIMSS, setShowScanIMSS]     = useState(false);
   // Archivo histórico ORDENESIMSS
   const [archivos, setArchivos]             = useState([]);
   const [archivosTotal, setArchivosTotal]   = useState(0);
@@ -141,12 +144,36 @@ export default function Ordenes() {
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  // Pre-llena el form de Nueva OS con los datos extraídos por el escaneo IMSS
+  const handleScanIMSSConfirm = (datos) => {
+    setForm((f) => ({
+      ...f,
+      equipo_nombre: datos.equipo_nombre || f.equipo_nombre,
+      equipo_serie: datos.equipo_serie || f.equipo_serie,
+      tipo_mantenimiento: datos.tipo_mantenimiento || f.tipo_mantenimiento,
+      falla_reportada: datos.descripcion_servicio || f.falla_reportada,
+      tecnico_nombre: datos.tecnico_nombre || f.tecnico_nombre,
+      area: datos.area || f.area,
+      piso: datos.piso || f.piso,
+      prioridad: datos.prioridad || f.prioridad,
+    }));
+    setShowForm(true);
+    toast.success('Datos pre-llenados desde el escaneo. Revisa antes de guardar.');
+  };
+
   return (
     <div className="p-4 md:p-6 space-y-5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h1 className="text-2xl font-bold text-white">Órdenes de Servicio</h1>
         <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setShowScanIMSS(true)}
+            className="hidden md:block px-3 py-2 bg-purple-700 hover:bg-purple-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
+            title="Escanear formato OS IMSS con cámara o foto"
+          >
+            📸 Escanear OS IMSS
+          </button>
           <button
             onClick={() => { setCasillasOrdenId(null); setCasillasEquipo({}); setShowCasillas(true); }}
             className="hidden md:block px-3 py-2 bg-teal-700 hover:bg-teal-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
@@ -164,6 +191,13 @@ export default function Ordenes() {
 
       {/* FAB Móvil */}
       <div className="md:hidden fixed bottom-6 right-6 z-[40] flex flex-col gap-3">
+        <button
+          onClick={() => setShowScanIMSS(true)}
+          className="w-12 h-12 bg-purple-600 hover:bg-purple-500 text-white rounded-full shadow-lg shadow-purple-900/50 flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
+          title="Escanear OS IMSS"
+        >
+          📸
+        </button>
         <button
           onClick={() => { setCasillasOrdenId(null); setCasillasEquipo({}); setShowCasillas(true); }}
           className="w-12 h-12 bg-teal-600 hover:bg-teal-500 text-white rounded-full shadow-lg shadow-teal-900/50 flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
@@ -521,6 +555,14 @@ export default function Ordenes() {
           equipoData={casillasEquipo}
           onGuardado={() => { cargar(); }}
           onCerrar={() => setShowCasillas(false)}
+        />
+      )}
+
+      {/* Modal Escaneo OS IMSS (cámara/archivo → OCR Gemma → pre-llena form) */}
+      {showScanIMSS && (
+        <OCRScannerModal
+          onClose={() => setShowScanIMSS(false)}
+          onConfirm={handleScanIMSSConfirm}
         />
       )}
 

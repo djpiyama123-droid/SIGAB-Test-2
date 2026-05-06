@@ -41,6 +41,9 @@ function cmdAyuda() {
 📄 */pdf* _[serie]_
    Generar PDF IMSS del equipo
 
+📸 */escanear* _(envía foto)_
+   Escanear OS IMSS llena → IA crea la orden
+
 📧 */email* _[serie]_ _[correo]_
    Mandar reporte por Gmail
 
@@ -445,6 +448,65 @@ El sistema usará IA para leer las casillas automáticamente. ✅`;
   }
 }
 
+// ── Escanear OS IMSS desde foto (formato SIGAB-IMSS-OS-V3) ─────────────────
+/**
+ * Handler para fotos con caption "/escanear" (o sin caption — auto-detecta el banner).
+ * Envía la imagen a POST /api/openclaw/scan-os, que ejecuta Gemma 3:4b → Gemini
+ * y crea automáticamente la OS en estado 'pendiente_validacion'.
+ */
+async function cmdEscanearOS(mediaBuffer, mimeType, args, senderName) {
+  if (!mediaBuffer) {
+    return `📸 *Escanear Orden de Servicio IMSS*
+
+Para crear una OS automáticamente desde una foto:
+1. Imprime el formato desde SIGAB (Órdenes → "📄 Formato IMSS").
+2. Llena la hoja a mano (asegúrate que el banner *SIGAB-IMSS-OS-V3* esté visible al pie).
+3. Envíame la foto con caption: */escanear*
+
+Yo usaré IA (Gemma local + Gemini fallback) para extraer:
+✅ Folio, fecha, hora inicio/término
+✅ Equipo (serie, marca, modelo)
+✅ Tipo de mantenimiento, prioridad
+✅ Descripción, observaciones, técnico
+✅ Refacciones utilizadas
+✅ Validaciones Poka-Yoke
+
+La OS quedará en estado *pendiente_validacion* para que la revises en SIGAB.`;
+  }
+
+  try {
+    const FormData = (await import('formdata-node')).FormData;
+    const { Blob } = await import('buffer');
+
+    const fd = new FormData();
+    fd.set('foto', new Blob([mediaBuffer], { type: mimeType || 'image/jpeg' }), 'os.jpg');
+    fd.set('auto_create', 'true');
+    if (senderName) fd.set('remitente', senderName);
+
+    const res = await fetch(`${API}/scan-os`, {
+      method: 'POST',
+      body: fd,
+    });
+    const json = await res.json();
+
+    if (!json.ok) {
+      return `❌ ${json.mensaje || 'No se pudo procesar la imagen'}`;
+    }
+
+    const conf = Math.round((json.confianza || 0) * 100);
+    const engine = json.engine === 'gemma' ? '🏠 Gemma local' : '☁ Gemini cloud';
+    let reply = `✅ *${json.numero_orden}* creada\n\n`;
+    reply += `🤖 Motor: ${engine}\n`;
+    reply += `🎯 Confianza: ${conf}%\n`;
+    reply += `📋 Estado: _pendiente_validacion_\n\n`;
+    reply += `Revisa la OS en SIGAB para validar los datos extraídos.`;
+    return reply;
+  } catch (err) {
+    console.error('cmdEscanearOS error:', err);
+    return `❌ Error escaneando: ${err.message}`;
+  }
+}
+
 // ── Info de Proveedor/Contrato ─────────────────────────────
 async function cmdProveedor(serie) {
   if (!serie) return '❌ Uso: */proveedor* _serie_';
@@ -538,9 +600,14 @@ export async function handleCommand(text, senderName) {
     case 'casillas':
     case 'ceneval':
     case 'conservacion':
-    case 'formato':
       // mediaBuffer y mimeType se pasan desde index.js cuando hay imagen adjunta
       return cmdCasillasOCR(null, null, args);
+
+    case 'escanear':
+    case 'escaneo':
+    case 'scan':
+    case 'leer':
+      return cmdEscanearOS(null, null, args, senderName);
 
     default:
       return null; // Comando no reconocido, no responder
@@ -551,14 +618,24 @@ export async function handleCommand(text, senderName) {
  * Llamada especial desde index.js cuando llega una IMAGEN con caption /casillas
  * Debe invocarse ANTES de handleCommand si el mensaje es de tipo imagen.
  */
-export async function handleImageCommand(text, mediaBuffer, mimeType) {
-  const trimmed = (text || '').trim();
-  if (trimmed.toLowerCase().startsWith('/casillas') || trimmed.toLowerCase().startsWith('/ceneval')) {
+export async function handleImageCommand(text, mediaBuffer, mimeType, senderName) {
+  const trimmed = (text || '').trim().toLowerCase();
+  if (trimmed.startsWith('/casillas') || trimmed.startsWith('/ceneval')) {
     const spaceIdx = trimmed.indexOf(' ');
-    const args = spaceIdx > 0 ? trimmed.slice(spaceIdx + 1).trim() : '';
+    const args = spaceIdx > 0 ? text.slice(spaceIdx + 1).trim() : '';
     return cmdCasillasOCR(mediaBuffer, mimeType, args);
   }
-  return null; // No es un comando de casillas
+  if (
+    trimmed.startsWith('/escanear') ||
+    trimmed.startsWith('/escaneo') ||
+    trimmed.startsWith('/scan') ||
+    trimmed.startsWith('/leer')
+  ) {
+    const spaceIdx = trimmed.indexOf(' ');
+    const args = spaceIdx > 0 ? text.slice(spaceIdx + 1).trim() : '';
+    return cmdEscanearOS(mediaBuffer, mimeType, args, senderName);
+  }
+  return null; // No es un comando con imagen reconocido
 }
 
 // Exportar reporte para el scheduler
