@@ -65,15 +65,67 @@ services:
       mysql:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD-SHELL", "python3 -c 'import urllib.request,sys; sys.exit(0 if urllib.request.urlopen(\"http://localhost:8000/health\",timeout=3).status==200 else 1)'"]
       interval: 15s
       timeout: 5s
       retries: 5
+    networks:
+      - default
+      - hostedapps_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=hostedapps_default"
+      - "traefik.http.routers.sigab-api.rule=Host(`sigab.129-121-100-147.sslip.io`) && (PathPrefix(`/api`) || PathPrefix(`/static`) || PathPrefix(`/health`) || PathPrefix(`/docs`))"
+      - "traefik.http.routers.sigab-api.entrypoints=web"
+      - "traefik.http.routers.sigab-api.priority=100"
+      - "traefik.http.routers.sigab-api.middlewares=sigab-redirect@docker"
+      - "traefik.http.routers.sigab-api.service=sigab-api-svc"
+      - "traefik.http.routers.sigab-api-s.rule=Host(`sigab.129-121-100-147.sslip.io`) && (PathPrefix(`/api`) || PathPrefix(`/static`) || PathPrefix(`/health`) || PathPrefix(`/docs`))"
+      - "traefik.http.routers.sigab-api-s.entrypoints=websecure"
+      - "traefik.http.routers.sigab-api-s.priority=100"
+      - "traefik.http.routers.sigab-api-s.service=sigab-api-svc"
+      - "traefik.http.routers.sigab-api-s.tls=true"
+      - "traefik.http.routers.sigab-api-s.tls.certresolver=challenger"
+      - "traefik.http.services.sigab-api-svc.loadbalancer.server.port=8000"
+      - "traefik.http.middlewares.sigab-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sigab-redirect.redirectscheme.permanent=true"
 
-  # Frontend eliminado — se sirve como build estático via Nginx en producción
+  # ── Frontend estático (nginx:alpine sirviendo build) ─────────
+  frontend:
+    image: nginx:alpine
+    container_name: sigab-frontend
+    restart: always
+    volumes:
+      - ./sigab-frontend/dist:/usr/share/nginx/html:ro
+      - ./nginx-frontend.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - hostedapps_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=hostedapps_default"
+      - "traefik.http.routers.sigab-fe.rule=Host(`129.121.100.147`) || Host(`sigab.129-121-100-147.sslip.io`)"
+      - "traefik.http.routers.sigab-fe.entrypoints=web"
+      - "traefik.http.routers.sigab-fe.middlewares=sigab-redirect@docker"
+      - "traefik.http.routers.sigab-fe.priority=10"
+      - "traefik.http.routers.sigab-fe.service=sigab-fe-svc"
+      - "traefik.http.routers.sigab-fe-s.rule=Host(`sigab.129-121-100-147.sslip.io`)"
+      - "traefik.http.routers.sigab-fe-s.entrypoints=websecure"
+      - "traefik.http.routers.sigab-fe-s.priority=10"
+      - "traefik.http.routers.sigab-fe-s.service=sigab-fe-svc"
+      - "traefik.http.routers.sigab-fe-s.tls=true"
+      - "traefik.http.routers.sigab-fe-s.tls.certresolver=challenger"
+      - "traefik.http.services.sigab-fe-svc.loadbalancer.server.port=80"
 
 volumes:
   sigab_mysql_data:
     name: sigab_mysql_data
   sigab_uploads:
     name: sigab_uploads
+
+networks:
+  default:
+    name: sigab_default
+  hostedapps_default:
+    external: true
