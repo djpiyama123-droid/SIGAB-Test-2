@@ -133,27 +133,32 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
     }
   };
 
-  const handleImprimir = () => {
+  const handleImprimir = async () => {
+    const tid = toast.loading('Generando PDF…');
     try {
-      const url = api.getPdfOrdenUrl(ordenId);
-      const token = localStorage.getItem('token');
-      window.open(`${url}?token=${token}`, '_blank');
-      toast.info('Abriendo PDF de la orden…');
+      const blob = await api.descargarPdfOrden(ordenId);
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      // Liberar memoria después de un rato (deja tiempo a que la pestaña cargue)
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      toast.success('PDF abierto en nueva pestaña', { id: tid });
     } catch (err) {
       console.error(err);
-      toast.error('No se pudo abrir el PDF');
+      toast.error('No se pudo generar el PDF', { id: tid });
     }
   };
 
-  const handleImprimirFisico = () => {
+  const handleImprimirFisico = async () => {
+    const tid = toast.loading('Generando formato Poka-Yoke…');
     try {
-      const url = api.getPdfOrdenFisicaUrl(ordenId);
-      const token = localStorage.getItem('token');
-      window.open(`${url}?token=${token}`, '_blank');
-      toast.info('Abriendo formato físico Poka-Yoke…');
+      const blob = await api.descargarPdfOrdenFisica(ordenId);
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      toast.success('Formato físico abierto', { id: tid });
     } catch (err) {
       console.error(err);
-      toast.error('No se pudo abrir el formato físico');
+      toast.error('No se pudo abrir el formato físico', { id: tid });
     }
   };
 
