@@ -3,6 +3,7 @@
 // SIGAB — Hospital General Regional No. 1 IMSS Tijuana
 // ============================================================
 import React, { useState, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './Toast';
 import HistorialEquipoModal from './HistorialEquipoModal';
@@ -122,49 +123,123 @@ const CRITICIDAD_CONFIG = {
 // mode="absolute" → usa pos_x/pos_y (layout legacy, conservado por compatibilidad)
 const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 'flow' }) {
   const [showTooltip, setShowTooltip] = useState(false);
-  const [tooltipPos, setTooltipPos] = useState('center'); // 'left', 'right', 'center'
+  const [tooltipCoords, setTooltipCoords] = useState({ x: 0, y: 0, align: 'center' });
   const dotRef = React.useRef(null);
-  
+
   const status = STATUS_CONFIG[equipo.estado] || STATUS_CONFIG.baja;
   const Icon = EQUIPMENT_ICONS[equipo.tipo_equipo] || EQUIPMENT_ICONS.otro;
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = useCallback(() => {
     if (dotRef.current) {
       const rect = dotRef.current.getBoundingClientRect();
-      const screenWidth = window.innerWidth;
-      const spaceRight = screenWidth - rect.right;
-      const spaceLeft = rect.left;
+      const vw = window.innerWidth;
+      const TOOLTIP_W = 256; // w-64
 
-      if (spaceRight < 280) setTooltipPos('right');
-      else if (spaceLeft < 280) setTooltipPos('left');
-      else setTooltipPos('center');
+      let x, align;
+      if (vw - rect.right < TOOLTIP_W + 10) {
+        x = rect.right;
+        align = 'right';
+      } else if (rect.left < TOOLTIP_W + 10) {
+        x = rect.left;
+        align = 'left';
+      } else {
+        x = rect.left + rect.width / 2;
+        align = 'center';
+      }
+      setTooltipCoords({ x, y: rect.top, align });
     }
     setShowTooltip(true);
-  };
+  }, []);
+
+  const handleMouseLeave = useCallback(() => setShowTooltip(false), []);
+
+  // Hide tooltip while the scroll container scrolls (tooltip is detached from DOM flow)
+  useEffect(() => {
+    if (!showTooltip) return;
+    const hide = () => setShowTooltip(false);
+    window.addEventListener('scroll', hide, true);
+    return () => window.removeEventListener('scroll', hide, true);
+  }, [showTooltip]);
 
   const wrapperStyle = mode === 'absolute'
     ? {
         position: 'absolute',
         left: `calc(${equipo.pos_x ?? 50}% - 24px)`,
         top:  `calc(${equipo.pos_y ?? 50}% - 24px)`,
-        zIndex: showTooltip ? 50 : 10,
+        zIndex: 10,
       }
     : {
         position: 'relative',
-        zIndex: showTooltip ? 50 : 1,
+        zIndex: 1,
       };
 
-  const getTooltipStyle = () => {
+  const getTooltipFixedStyle = () => {
+    const { x, y, align } = tooltipCoords;
+    const GAP = 10;
     const base = {
-      bottom: 'calc(100% + 15px)',
+      position: 'fixed',
+      bottom: `${window.innerHeight - y + GAP}px`,
+      zIndex: 9999,
       backgroundColor: '#0f172a',
       backdropFilter: 'blur(12px)',
     };
-    
-    if (tooltipPos === 'right') return { ...base, right: '0', transform: 'none' };
-    if (tooltipPos === 'left') return { ...base, left: '0', transform: 'none' };
-    return { ...base, left: '50%', transform: 'translateX(-50%)' };
+    if (align === 'right') return { ...base, right: `${window.innerWidth - x}px` };
+    if (align === 'left')  return { ...base, left: `${x}px` };
+    return { ...base, left: `${x}px`, transform: 'translateX(-50%)' };
   };
+
+  const tooltipPortal = showTooltip ? ReactDOM.createPortal(
+    <div
+      className="w-64 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-600/50 overflow-hidden"
+      style={getTooltipFixedStyle()}
+    >
+      <div className="p-3 border-b border-slate-700">
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: status.border }} />
+          <span className="text-xs font-medium" style={{ color: status.border }}>
+            {status.label}
+          </span>
+        </div>
+        <p className="text-white text-sm font-semibold leading-tight">{equipo.nombre}</p>
+        <p className="text-slate-400 text-xs">{equipo.marca} {equipo.modelo}</p>
+      </div>
+
+      <div className="p-3 space-y-1">
+        <div className="flex justify-between text-xs">
+          <span className="text-slate-500">Serie</span>
+          <span className="text-slate-300 font-mono">{equipo.serie}</span>
+        </div>
+        {equipo.clase_cofepris && (
+          <div className="flex justify-between text-xs">
+            <span className="text-slate-500">COFEPRIS</span>
+            <span className="text-purple-400 font-semibold">Clase {equipo.clase_cofepris}</span>
+          </div>
+        )}
+        {equipo.fecha_proximo_mantenimiento && (
+          <div className="flex justify-between text-xs">
+            <span className="text-slate-500">Prox. Mant.</span>
+            <span className={`font-medium ${
+              new Date(equipo.fecha_proximo_mantenimiento) < new Date()
+                ? 'text-red-400' : 'text-slate-300'
+            }`}>
+              {new Date(equipo.fecha_proximo_mantenimiento).toLocaleDateString('es-MX')}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="p-2 border-t border-slate-700 flex gap-1">
+        <button
+          onMouseDown={(e) => { e.stopPropagation(); onClick(equipo); }}
+          className="flex-1 py-1.5 px-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600
+                     text-white transition-colors pointer-events-auto"
+        >
+          Ver Ficha
+        </button>
+      </div>
+    </div>,
+    document.body
+  ) : null;
 
   return (
     <div
@@ -172,7 +247,7 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       className="group"
       style={wrapperStyle}
       onMouseEnter={handleMouseEnter}
-      onMouseLeave={() => setShowTooltip(false)}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Anillo pulsante para equipos con falla */}
       {status.pulse && (
@@ -185,7 +260,7 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       {/* Circulo principal del equipo */}
       <div
         className="relative w-12 h-12 rounded-full cursor-pointer transition-all duration-200
-                   hover:scale-125 hover:z-50 flex items-center justify-center overflow-hidden"
+                   hover:scale-125 flex items-center justify-center overflow-hidden"
         style={{
           border: `3px solid ${status.border}`,
           backgroundColor: status.bg,
@@ -214,58 +289,7 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
         </div>
       </div>
 
-      {/* Tooltip al hacer hover */}
-      {showTooltip && (
-        <div
-          className="absolute z-[100] w-64 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-600/50 overflow-hidden"
-          style={getTooltipStyle()}
-        >
-          <div className="p-3 border-b border-slate-700">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: status.border }} />
-              <span className="text-xs font-medium" style={{ color: status.border }}>
-                {status.label}
-              </span>
-            </div>
-            <p className="text-white text-sm font-semibold leading-tight">{equipo.nombre}</p>
-            <p className="text-slate-400 text-xs">{equipo.marca} {equipo.modelo}</p>
-          </div>
-
-          <div className="p-3 space-y-1">
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-500">Serie</span>
-              <span className="text-slate-300 font-mono">{equipo.serie}</span>
-            </div>
-            {equipo.clase_cofepris && (
-              <div className="flex justify-between text-xs">
-                <span className="text-slate-500">COFEPRIS</span>
-                <span className="text-purple-400 font-semibold">Clase {equipo.clase_cofepris}</span>
-              </div>
-            )}
-            {equipo.fecha_proximo_mantenimiento && (
-              <div className="flex justify-between text-xs">
-                <span className="text-slate-500">Prox. Mant.</span>
-                <span className={`font-medium ${
-                  new Date(equipo.fecha_proximo_mantenimiento) < new Date()
-                    ? 'text-red-400' : 'text-slate-300'
-                }`}>
-                  {new Date(equipo.fecha_proximo_mantenimiento).toLocaleDateString('es-MX')}
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="p-2 border-t border-slate-700 flex gap-1">
-            <button
-              onClick={(e) => { e.stopPropagation(); onClick(equipo); }}
-              className="flex-1 py-1.5 px-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600
-                         text-white transition-colors pointer-events-auto"
-            >
-              Ver Ficha
-            </button>
-          </div>
-        </div>
-      )}
+      {tooltipPortal}
     </div>
   );
 });
