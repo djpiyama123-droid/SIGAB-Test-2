@@ -23,7 +23,7 @@ from datetime import datetime, date
 import sqlalchemy as sa
 from config import get_db, UPLOAD_DIR
 from auth.dependencies import get_current_user, require_action
-from services.pdf_service import generar_pdf_orden
+from services.pdf_service import generar_pdf_orden, generar_pdf_orden_v2_poka_yoke
 try:
     from services.ocr_service import parsear_reporte_ocr
 except ImportError:
@@ -329,10 +329,56 @@ async def descargar_pdf_orden(
     evidencias_dict = [e.model_dump() for e in evidencias]
 
     pdf_bytes = generar_pdf_orden(orden_dict, materiales_dict, evidencias_dict)
-    
+
     numero = orden.numero_orden or str(orden_id)
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
         headers={"Content-Disposition": f"inline; filename=OS_{numero}.pdf"}
+    )
+
+
+@router.get("/{orden_id}/pdf-fisico")
+async def descargar_pdf_fisico_poka_yoke(
+    orden_id: int,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """Genera el PDF de la OS en formato físico Poka-Yoke v2.0 imprimible.
+
+    A diferencia del PDF post-cierre tradicional, este formato:
+    - Marca campos obligatorios con asterisco rojo y caja amarilla en la serie.
+    - Pre-imprime checkboxes para tipo de mantenimiento, prioridad y condición final.
+    - Reserva una zona QR de 35mm cuadrados para pegar la etiqueta del equipo.
+    - Incluye bloque rojo "Validación Poka-Yoke" con 5 verificaciones obligatorias.
+
+    Es útil tanto para imprimir en blanco (técnico llena a mano en campo) como
+    para regenerar con datos finales pre-rellenados sobre el formato.
+    """
+    orden = await session.get(OrdenServicio, orden_id)
+    if not orden:
+        raise HTTPException(status_code=404, detail="Orden no encontrada")
+
+    # Datos del equipo (si la orden está vinculada a uno)
+    equipo_dict = {}
+    if orden.equipo_id:
+        equipo = await session.get(Equipo, orden.equipo_id)
+        if equipo:
+            equipo_dict = equipo.model_dump()
+
+    # Materiales asociados
+    stmt_mat = select(MATERIAL_OS).where(MATERIAL_OS.orden_id == orden_id)
+    res_mat = await session.execute(stmt_mat)
+    materiales = res_mat.scalars().all()
+    materiales_dict = [m.model_dump() for m in materiales]
+
+    orden_dict = orden.model_dump()
+
+    pdf_bytes = generar_pdf_orden_v2_poka_yoke(orden_dict, equipo_dict, materiales_dict)
+
+    numero = orden.numero_orden or str(orden_id)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"inline; filename=OS-Fisica_{numero}.pdf"}
     )

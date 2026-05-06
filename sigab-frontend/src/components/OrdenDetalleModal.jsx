@@ -126,6 +126,18 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
     }
   };
 
+  const handleImprimirFisico = () => {
+    try {
+      const url = api.getPdfOrdenFisicaUrl(ordenId);
+      const token = localStorage.getItem('token');
+      window.open(`${url}?token=${token}`, '_blank');
+      toast.info('Abriendo formato físico Poka-Yoke…');
+    } catch (err) {
+      console.error(err);
+      toast.error('No se pudo abrir el formato físico');
+    }
+  };
+
   if (loading || !data) {
     return (
       <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
@@ -165,9 +177,20 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
             </h2>
             <p className="text-sm text-slate-400">{orden.equipo_nombre} - Serie: {orden.equipo_serie}</p>
           </div>
-          <div className="flex gap-2">
-            <button onClick={handleImprimir} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg flex items-center gap-1">
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={handleImprimir}
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg flex items-center gap-1"
+              title="PDF de cierre con materiales y firmas"
+            >
               🖨️ PDF
+            </button>
+            <button
+              onClick={handleImprimirFisico}
+              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-sm rounded-lg flex items-center gap-1"
+              title="Formato físico Poka-Yoke v2 imprimible (campo)"
+            >
+              📋 Físico
             </button>
             <button onClick={onClose} className="p-2 text-slate-400 hover:text-white bg-slate-700 rounded-lg">✕</button>
           </div>
