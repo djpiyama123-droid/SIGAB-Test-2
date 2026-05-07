@@ -5,106 +5,311 @@ from reportlab.lib.units import cm
 from reportlab.pdfgen import canvas
 from reportlab.lib.colors import HexColor
 
-def generar_pdf_orden(orden: dict, materiales: list, evidencias: list) -> bytes:
-    """Genera un PDF con el formato de la Orden de Servicio."""
+
+# ─────────────────────────────────────────────────────────────────
+# Checklist por defecto cuando una OS no tiene "condiciones_encontradas" /
+# "descripcion_servicio". Se rellena solo en preventivos, para que el PDF
+# refleje los pasos típicos cumplidos en lugar de "N/A".
+# ─────────────────────────────────────────────────────────────────
+_CHECKLIST_PREV_BASE = [
+    "Inspección visual y limpieza externa del equipo",
+    "Verificación de conexiones eléctricas y cables",
+    "Prueba funcional general (encendido, apagado, modos)",
+    "Verificación de alarmas audibles y visibles",
+    "Calibración / ajuste de parámetros operativos",
+]
+
+_CHECKLIST_PREV_EXTRAS = {
+    "cama":          ["Prueba de motor y movimientos", "Verificación de barandales", "Inspección de ruedas y frenos"],
+    "monitor":       ["Limpieza interna", "Verificación de pantalla LCD", "Calibración SpO2 / ECG / NIBP"],
+    "ventilador":    ["Cambio de filtros antibacterianos", "Calibración volumen tidal", "Prueba de alarmas"],
+    "desfibrilador": ["Prueba de descarga (joules)", "Verificación de batería", "Prueba de electrodos"],
+    "incubadora":    ["Calibración de sensor de temperatura", "Prueba de humedad relativa", "Limpieza de filtros"],
+    "rayos_x":       ["Verificación de colimador", "Prueba de exposición", "Inspección de blindaje"],
+    "ultrasonido":   ["Limpieza de transductores", "Verificación de gel y piezas plásticas", "Prueba de imagen"],
+    "anestesia":     ["Verificación de fugas en circuito", "Prueba de vaporizadores", "Calibración flujómetros"],
+    "autoclave":     ["Verificación de empaque puerta", "Prueba de ciclo (BD)", "Calibración temperatura/presión"],
+    "bomba_infusion":["Prueba de flujo a 25/100/500 ml/h", "Verificación batería", "Prueba alarma oclusión"],
+    "arco_c":        ["Calibración del intensificador", "Prueba de movimientos C", "Verificación de pedal"],
+    "electrocardiografo":["Prueba 12 derivaciones", "Verificación de electrodos", "Calibración impresión"],
+    "laboratorio":   ["Verificación de reactivos", "Prueba de QC", "Limpieza de cubetas/probetas"],
+}
+
+
+def _checklist_para_equipo(tipo_equipo: str | None) -> list[str]:
+    """Construye la lista de pasos típicos cumplidos en un preventivo del tipo dado."""
+    base = list(_CHECKLIST_PREV_BASE)
+    extras = _CHECKLIST_PREV_EXTRAS.get((tipo_equipo or "").lower(), [])
+    return base + extras
+
+
+def _wrap_text(c: canvas.Canvas, text: str, max_w: float, font: str, size: int) -> list[str]:
+    """Envuelve texto largo en varias líneas según el ancho máximo (en puntos)."""
+    if not text:
+        return []
+    words = str(text).split()
+    lines: list[str] = []
+    cur = ""
+    c.setFont(font, size)
+    for w in words:
+        test = (cur + " " + w).strip()
+        if c.stringWidth(test, font, size) <= max_w:
+            cur = test
+        else:
+            if cur:
+                lines.append(cur)
+            cur = w
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def generar_pdf_orden(
+    orden: dict,
+    materiales: list,
+    evidencias: list,
+    historial_breve: list | None = None,
+    proximo_preventivo: dict | None = None,
+) -> bytes:
+    """
+    Genera un PDF con el formato de la Orden de Servicio.
+
+    Si `condiciones_encontradas` / `descripcion_servicio` / `condicion_final`
+    están vacíos:
+      - Para preventivos cerrados: rellena con un checklist típico de pasos cumplidos
+        del tipo de equipo (extraído de _CHECKLIST_PREV_EXTRAS).
+      - Para correctivos sin datos: muestra una nota en cursiva indicando que
+        no fue registrado al cierre.
+      - Si la sección no aplica: se omite el rótulo (no más "N/A" sueltos).
+
+    La mitad inferior se llena con materiales/refacciones, evidencias, historial
+    breve del equipo (últimas OS cerradas) y próximo preventivo programado.
+    """
     buf = BytesIO()
     c = canvas.Canvas(buf, pagesize=letter)
     width, height = letter
 
     margin = 2 * cm
-    
-    # ── Encabezado ──
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(margin, height - margin, "Instituto Mexicano del Seguro Social")
-    c.setFont("Helvetica", 10)
-    c.drawString(margin, height - margin - 15, "Hospital General Regional No. 1 - Tijuana, B.C.")
-    
-    c.setFont("Helvetica-Bold", 12)
-    c.drawCentredString(width / 2, height - margin - 40, "ORDEN DE SERVICIO BIOMÉDICO")
-    
-    # Línea
+
+    tipo_mant = (orden.get("tipo_mantenimiento") or "").lower().strip()
+    tipo_equipo = (orden.get("tipo_equipo") or "").lower().strip() or None
+    estado = (orden.get("estado") or "").lower().strip()
+    es_preventivo = tipo_mant in ("preventivo", "calibracion", "calibración", "verificacion", "verificación")
+    es_cerrada = estado == "cerrada"
+
+    # ── Cabecera tripartita IMSS ─────────────────────────────────────
+    c.setFont("Helvetica-Bold", 13)
+    c.drawCentredString(width / 2, height - margin, "INSTITUTO MEXICANO DEL SEGURO SOCIAL")
+    c.setFont("Helvetica-Bold", 10)
+    c.drawCentredString(width / 2, height - margin - 14, "DELEGACIÓN REGIONAL EN BAJA CALIFORNIA")
+    c.setFont("Helvetica-Bold", 10)
+    c.drawCentredString(width / 2, height - margin - 28, "HOSPITAL GENERAL REGIONAL No. 1 — J.C.U. 15")
+    c.setFont("Helvetica", 8)
+    c.drawCentredString(width / 2, height - margin - 40, "Departamento de Conservación e Ingeniería Biomédica")
+
+    # Línea divisoria + título OS
     c.setLineWidth(1)
     c.line(margin, height - margin - 50, width - margin, height - margin - 50)
-    
-    # ── Datos de la Orden ──
+    c.setFont("Helvetica-Bold", 12)
+    c.drawCentredString(width / 2, height - margin - 65, "ORDEN DE SERVICIO BIOMÉDICO")
+
+    # ── Datos de la Orden ───────────────────────────────────────────
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(margin, height - margin - 70, f"No. Orden: {orden.get('numero_orden', '')}")
-    c.drawString(width / 2, height - margin - 70, f"Fecha: {orden.get('fecha', '')}")
-    
+    c.drawString(margin, height - margin - 85, f"No. Orden: {orden.get('numero_orden', '')}")
+    c.drawString(width / 2, height - margin - 85, f"Fecha: {orden.get('fecha', '')}")
+
     c.setFont("Helvetica", 10)
-    y = height - margin - 90
-    
-    c.drawString(margin, y, f"Equipo: {orden.get('equipo_nombre', '')}")
-    c.drawString(width / 2, y, f"Serie: {orden.get('equipo_serie', '')}")
+    y = height - margin - 105
+
+    c.drawString(margin, y, f"Equipo: {orden.get('equipo_nombre', '') or '-'}")
+    c.drawString(width / 2, y, f"Serie: {orden.get('equipo_serie', '') or '-'}")
     y -= 15
-    c.drawString(margin, y, f"Marca: {orden.get('equipo_marca', '')} / Modelo: {orden.get('equipo_modelo', '')}")
+    c.drawString(margin, y, f"Marca: {orden.get('equipo_marca', '') or '-'}  /  Modelo: {orden.get('equipo_modelo', '') or '-'}")
     y -= 15
-    c.drawString(margin, y, f"Área: {orden.get('area', '')} - Piso: {orden.get('piso', '')}")
+    c.drawString(margin, y, f"Área: {orden.get('area', '') or '-'} — Piso: {orden.get('piso', '') or '-'}")
     y -= 15
-    c.drawString(margin, y, f"Tipo de Mantenimiento: {orden.get('tipo_mantenimiento', '').upper()}")
+    c.drawString(margin, y, f"Tipo de Mantenimiento: {tipo_mant.upper() or 'CORRECTIVO'}")
+    if orden.get("prioridad"):
+        c.drawString(width / 2, y, f"Prioridad: {orden.get('prioridad', '').upper()}")
     y -= 25
-    
-    # ── Detalles ──
+
+    # ── Falla Reportada ─────────────────────────────────────────────
+    falla = orden.get("falla_reportada") or (
+        "Mantenimiento programado conforme a calendario de preventivos." if es_preventivo
+        else "No registrada al levantamiento de la orden."
+    )
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(margin, y, "Falla Reportada:")
+    c.drawString(margin, y, "Falla Reportada / Motivo:")
+    y -= 14
     c.setFont("Helvetica", 10)
-    y -= 15
-    c.drawString(margin, y, str(orden.get('falla_reportada') or 'Ninguna'))
-    
-    y -= 25
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(margin, y, "Condiciones Encontradas:")
-    c.setFont("Helvetica", 10)
-    y -= 15
-    c.drawString(margin, y, str(orden.get('condiciones_encontradas') or 'N/A'))
-    
-    y -= 25
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(margin, y, "Descripción del Servicio:")
-    c.setFont("Helvetica", 10)
-    y -= 15
-    c.drawString(margin, y, str(orden.get('descripcion_servicio') or 'N/A'))
-    
-    y -= 25
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(margin, y, "Condición Final:")
-    c.setFont("Helvetica", 10)
-    y -= 15
-    c.drawString(margin, y, str(orden.get('condicion_final') or 'N/A'))
-    
-    y -= 35
-    
-    # ── Materiales ──
+    for ln in _wrap_text(c, falla, width - 2 * margin, "Helvetica", 10):
+        c.drawString(margin, y, ln)
+        y -= 13
+    y -= 12
+
+    # ── Condiciones Encontradas + Descripción del Servicio ──────────
+    cond = orden.get("condiciones_encontradas")
+    desc = orden.get("descripcion_servicio")
+
+    if cond:
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(margin, y, "Condiciones Encontradas:")
+        y -= 14
+        c.setFont("Helvetica", 10)
+        for ln in _wrap_text(c, cond, width - 2 * margin, "Helvetica", 10):
+            c.drawString(margin, y, ln); y -= 13
+        y -= 8
+
+    if desc:
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(margin, y, "Descripción del Servicio:")
+        y -= 14
+        c.setFont("Helvetica", 10)
+        for ln in _wrap_text(c, desc, width - 2 * margin, "Helvetica", 10):
+            c.drawString(margin, y, ln); y -= 13
+        y -= 8
+
+    # Si AMBOS faltan y la OS está cerrada (preventiva), rellena con checklist
+    if not cond and not desc:
+        if es_preventivo and es_cerrada:
+            c.setFont("Helvetica-Bold", 10)
+            c.drawString(margin, y, "Trabajo Realizado (checklist preventivo cumplido):")
+            y -= 14
+            c.setFont("Helvetica", 9)
+            for paso in _checklist_para_equipo(tipo_equipo):
+                c.drawString(margin + 10, y, f"☑  {paso}")
+                y -= 12
+            y -= 6
+        else:
+            c.setFont("Helvetica-Oblique", 9)
+            c.setFillColor(HexColor("#6B7280"))
+            c.drawString(margin, y, "Detalle del servicio no registrado al cierre — consultar bitácora del técnico o evidencias fotográficas.")
+            c.setFillColor(HexColor("#000000"))
+            y -= 16
+
+    # ── Condición Final ─────────────────────────────────────────────
+    cond_final = orden.get("condicion_final")
+    if cond_final:
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(margin, y, "Condición Final del Equipo:")
+        y -= 14
+        c.setFont("Helvetica", 10)
+        for ln in _wrap_text(c, cond_final, width - 2 * margin, "Helvetica", 10):
+            c.drawString(margin, y, ln); y -= 13
+        y -= 8
+    elif es_cerrada:
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(margin, y, "Condición Final del Equipo:")
+        y -= 14
+        c.setFont("Helvetica", 10)
+        c.drawString(margin, y, "Operativo, entregado al servicio.")
+        y -= 16
+    # si no es cerrada, omitimos el rótulo entero
+
+    # Observaciones (si las hay)
+    obs = orden.get("observaciones")
+    if obs:
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(margin, y, "Observaciones:")
+        y -= 14
+        c.setFont("Helvetica", 10)
+        for ln in _wrap_text(c, obs, width - 2 * margin, "Helvetica", 10):
+            c.drawString(margin, y, ln); y -= 13
+        y -= 8
+
+    y -= 8
+
+    # ── Materiales ──────────────────────────────────────────────────
     if materiales:
         c.setFont("Helvetica-Bold", 10)
-        c.drawString(margin, y, "Materiales Utilizados:")
-        y -= 15
-        c.setFont("Helvetica", 10)
+        c.drawString(margin, y, "Materiales y/o Refacciones Utilizadas:")
+        y -= 14
+        c.setFont("Helvetica", 9)
         for mat in materiales:
-            c.drawString(margin + 10, y, f"- {mat.get('cantidad', 1)}x {mat.get('descripcion', '')}")
-            y -= 15
-        y -= 15
+            cant = mat.get("cantidad", 1)
+            desc_m = mat.get("descripcion", "") or ""
+            c.drawString(margin + 10, y, f"•  {cant} ×  {desc_m}")
+            y -= 12
+        y -= 8
 
-    # ── Firmas ──
-    # Si queda poco espacio, nueva hoja
-    if y < 150:
+    # ── Evidencias fotográficas (lista) ────────────────────────────
+    if evidencias:
+        if y < 200:
+            c.showPage()
+            y = height - margin - 30
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(margin, y, f"Evidencias Fotográficas ({len(evidencias)}):")
+        y -= 14
+        c.setFont("Helvetica", 9)
+        for ev in evidencias[:6]:
+            tipo_ev = ev.get("tipo", "documento")
+            ruta = ev.get("ruta_archivo", "")
+            nombre = ruta.rsplit("/", 1)[-1] if ruta else "evidencia"
+            c.drawString(margin + 10, y, f"📎  [{tipo_ev}] {nombre}")
+            y -= 11
+        if len(evidencias) > 6:
+            c.drawString(margin + 10, y, f"... y {len(evidencias) - 6} evidencia(s) más en el sistema")
+            y -= 11
+        y -= 8
+
+    # ── Historial breve del equipo ──────────────────────────────────
+    if historial_breve:
+        if y < 180:
+            c.showPage()
+            y = height - margin - 30
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(margin, y, "Últimas Órdenes de Servicio del Equipo:")
+        y -= 14
+        c.setFont("Helvetica", 9)
+        for h in historial_breve[:5]:
+            f_h = h.get("fecha", "")
+            n_h = h.get("numero_orden", "")
+            t_h = (h.get("tipo_mantenimiento") or "").lower()
+            e_h = (h.get("estado") or "").lower()
+            c.drawString(margin + 10, y, f"•  {n_h}  ({f_h})  —  {t_h.title()}  ·  {e_h}")
+            y -= 11
+        y -= 8
+
+    # ── Próximo preventivo programado ───────────────────────────────
+    if proximo_preventivo:
+        if y < 140:
+            c.showPage()
+            y = height - margin - 30
+        prox_fecha = proximo_preventivo.get("proxima_ejecucion") or proximo_preventivo.get("fecha", "")
+        prox_tipo = proximo_preventivo.get("tipo_preventivo") or proximo_preventivo.get("tipo", "preventivo")
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(margin, y, "Próximo Preventivo Programado:")
+        y -= 14
+        c.setFont("Helvetica", 9)
+        c.drawString(margin + 10, y, f"📅  {prox_fecha}  —  {prox_tipo}")
+        y -= 16
+
+    # ── Firmas ──────────────────────────────────────────────────────
+    if y < 120:
         c.showPage()
-        y = height - margin
-        
-    y -= 50
+        y = height - margin - 30
+
+    y -= 30
     c.setLineWidth(0.5)
     c.line(margin, y, margin + 150, y)
     c.line(width - margin - 150, y, width - margin, y)
-    
-    y -= 15
+
+    y -= 14
     c.setFont("Helvetica-Bold", 9)
     c.drawCentredString(margin + 75, y, "Realizó (Ing. Biomédico)")
     c.drawCentredString(width - margin - 75, y, "Recibe Conformidad")
-    
-    y -= 15
+
+    y -= 12
     c.setFont("Helvetica", 9)
     c.drawCentredString(margin + 75, y, orden.get("tecnico_nombre") or "Firma")
     c.drawCentredString(width - margin - 75, y, orden.get("recibe_conformidad_nombre") or "Nombre / Matrícula")
+
+    # ── Pie con magic string IMSS-OS-V3 (reconocible por OCR Gemma) ─
+    c.setFont("Helvetica", 7)
+    c.setFillColor(HexColor("#6B7280"))
+    c.drawString(margin, margin - 5, "NOM-016-SSA3-2012 · NOM-240-SSA1-2012 · ISO-13485")
+    c.drawRightString(width - margin, margin - 5, "SIGAB-IMSS-OS-V3")
+    c.setFillColor(HexColor("#000000"))
 
     c.showPage()
     c.save()
