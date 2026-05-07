@@ -55,7 +55,8 @@ services:
       SIGAB_PUBLIC_BASE_URL: ${SIGAB_PUBLIC_BASE_URL:-http://localhost:5173}
       SIGAB_CORS_EXTRA: ${SIGAB_CORS_EXTRA:-}
       SIGAB_OLLAMA_HOST: ${SIGAB_OLLAMA_HOST:-http://host-gateway:11434}
-      SIGAB_GEMMA_MODEL: ${SIGAB_GEMMA_MODEL:-gemma3:4b}
+      SIGAB_GEMMA_MODEL: ${SIGAB_GEMMA_MODEL:-qwen-claw}
+      SIGAB_VISION_MODEL: ${SIGAB_VISION_MODEL:-gemma4-claw}
       SIGAB_DISABLE_COPILOT: ${SIGAB_DISABLE_COPILOT:-0}
     extra_hosts:
       - "host-gateway:host-gateway"

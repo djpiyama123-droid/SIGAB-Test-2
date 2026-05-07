@@ -17,6 +17,26 @@ import base64
 from typing import AsyncGenerator
 from config import OLLAMA_HOST, GEMMA_MODEL
 
+_ollama_client: httpx.AsyncClient | None = None
+
+
+def get_ollama_client() -> httpx.AsyncClient:
+    global _ollama_client
+    if _ollama_client is None:
+        _ollama_client = httpx.AsyncClient(
+            base_url=OLLAMA_HOST,
+            timeout=httpx.Timeout(120.0, connect=5.0),
+            limits=httpx.Limits(max_keepalive_connections=5, max_connections=10),
+        )
+    return _ollama_client
+
+
+async def close_ollama_client() -> None:
+    global _ollama_client
+    if _ollama_client is not None:
+        await _ollama_client.aclose()
+        _ollama_client = None
+
 # ── Prompt de sistema ─────────────────────────────────────────────
 SYSTEM_PROMPT_BASE = """Eres SIGAB Copilot, el asistente de inteligencia artificial biomédica del Sistema Integral de Gestión de Activos Biomédicos (SIGAB) del Hospital General Regional No. 1 del IMSS en Tijuana, Baja California, México.
 
@@ -115,21 +135,22 @@ Evento adverso en análisis:
 async def verificar_ollama() -> dict:
     """Verifica si Ollama está corriendo y si el modelo está disponible."""
     try:
-        async with httpx.AsyncClient(timeout=5) as client:
-            resp = await client.get(f"{OLLAMA_HOST}/api/tags")
-            if resp.status_code == 200:
-                data = resp.json()
-                modelos = [m["name"] for m in data.get("models", [])]
-                modelo_disponible = any(
-                    GEMMA_MODEL.split(":")[0] in m for m in modelos
-                )
-                return {
-                    "ok": True,
-                    "ollama_activo": True,
-                    "modelo": GEMMA_MODEL,
-                    "modelo_disponible": modelo_disponible,
-                    "modelos_instalados": modelos,
-                }
+        client = get_ollama_client()
+        resp = await client.get("/api/tags", timeout=5.0)
+        if resp.status_code == 200:
+            data = resp.json()
+            modelos = [m["name"] for m in data.get("models", [])]
+            modelo_base = GEMMA_MODEL.split(":")[0]
+            modelo_disponible = any(
+                modelo_base in m or GEMMA_MODEL in m for m in modelos
+            )
+            return {
+                "ok": True,
+                "ollama_activo": True,
+                "modelo": GEMMA_MODEL,
+                "modelo_disponible": modelo_disponible,
+                "modelos_instalados": modelos,
+            }
     except Exception as e:
         return {
             "ok": False,
@@ -158,34 +179,34 @@ async def chat_stream(
             *messages,
         ],
         "stream": True,
+        "keep_alive": "30m",
         "options": {
             "temperature": 0.7,
-            "num_predict": 2048,
+            "num_predict": 512,
+            "num_ctx": 8192,
             "top_p": 0.9,
         },
     }
 
     try:
-        async with httpx.AsyncClient(timeout=120) as client:
-            async with client.stream(
-                "POST", f"{OLLAMA_HOST}/api/chat", json=payload
-            ) as response:
-                if response.status_code != 200:
-                    yield f"data: {json.dumps({'error': f'Ollama error {response.status_code}', 'done': True})}\n\n"
-                    return
+        client = get_ollama_client()
+        async with client.stream("POST", "/api/chat", json=payload) as response:
+            if response.status_code != 200:
+                yield f"data: {json.dumps({'error': f'Ollama error {response.status_code}', 'done': True})}\n\n"
+                return
 
-                async for line in response.aiter_lines():
-                    if not line.strip():
-                        continue
-                    try:
-                        data = json.loads(line)
-                        token = data.get("message", {}).get("content", "")
-                        done = data.get("done", False)
-                        yield f"data: {json.dumps({'token': token, 'done': done})}\n\n"
-                        if done:
-                            break
-                    except json.JSONDecodeError:
-                        continue
+            async for line in response.aiter_lines():
+                if not line.strip():
+                    continue
+                try:
+                    data = json.loads(line)
+                    token = data.get("message", {}).get("content", "")
+                    done = data.get("done", False)
+                    yield f"data: {json.dumps({'token': token, 'done': done})}\n\n"
+                    if done:
+                        break
+                except json.JSONDecodeError:
+                    continue
 
     except httpx.ConnectError:
         yield (
@@ -209,18 +230,20 @@ async def analizar_no_stream(prompt_user: str, contexto: dict = None) -> str:
             {"role": "user", "content": prompt_user},
         ],
         "stream": False,
+        "keep_alive": "30m",
         "options": {
             "temperature": 0.5,
-            "num_predict": 1024,
+            "num_predict": 768,
+            "num_ctx": 8192,
         },
     }
 
     try:
-        async with httpx.AsyncClient(timeout=90) as client:
-            resp = await client.post(f"{OLLAMA_HOST}/api/chat", json=payload)
-            resp.raise_for_status()
-            data = resp.json()
-            return data.get("message", {}).get("content", "")
+        client = get_ollama_client()
+        resp = await client.post("/api/chat", json=payload, timeout=90.0)
+        resp.raise_for_status()
+        data = resp.json()
+        return data.get("message", {}).get("content", "")
     except httpx.ConnectError:
         return "Error: Ollama no está disponible. Verifica que el servicio esté corriendo en el servidor."
     except Exception as e:
@@ -233,8 +256,11 @@ async def analizar_imagen(image_b64: str, pregunta: str) -> str:
     image_b64: imagen en base64 (PNG/JPG)
     pregunta: instrucción sobre qué analizar
     """
+    import os
+    vision_model = os.getenv("SIGAB_VISION_MODEL", "gemma4-claw")
+
     payload = {
-        "model": GEMMA_MODEL,
+        "model": vision_model,
         "messages": [
             {
                 "role": "user",
@@ -243,15 +269,16 @@ async def analizar_imagen(image_b64: str, pregunta: str) -> str:
             }
         ],
         "stream": False,
-        "options": {"temperature": 0.3, "num_predict": 512},
+        "keep_alive": "30m",
+        "options": {"temperature": 0.3, "num_predict": 384, "num_ctx": 8192},
     }
 
     try:
-        async with httpx.AsyncClient(timeout=60) as client:
-            resp = await client.post(f"{OLLAMA_HOST}/api/chat", json=payload)
-            resp.raise_for_status()
-            data = resp.json()
-            return data.get("message", {}).get("content", "")
+        client = get_ollama_client()
+        resp = await client.post("/api/chat", json=payload, timeout=60.0)
+        resp.raise_for_status()
+        data = resp.json()
+        return data.get("message", {}).get("content", "")
     except Exception as e:
         return f"Error en análisis de imagen: {str(e)}"
 
