@@ -16,6 +16,7 @@ import aiomysql
 import base64
 import json
 from datetime import date
+from cachetools import TTLCache
 
 from config import get_db, GEMMA_MODEL
 from auth.dependencies import get_current_user
@@ -24,11 +25,22 @@ from services.reliability_service import obtener_metricas_fiabilidad
 
 router = APIRouter()
 
+_resumen_cache: TTLCache = TTLCache(maxsize=4, ttl=60)
+_equipo_cache: TTLCache = TTLCache(maxsize=128, ttl=30)
+
 
 # ── Helpers ──────────────────────────────────────────────────────
 
 async def _get_resumen_db(conn) -> dict:
-    """Obtiene resumen rápido del dashboard para inyección de contexto."""
+    """Obtiene resumen rápido del dashboard para inyección de contexto.
+
+    Cacheado 60s — el dashboard cambia lentamente y en una conversación
+    de 3-5 turnos solo el primero hace queries.
+    """
+    cached = _resumen_cache.get("dashboard")
+    if cached is not None:
+        return cached
+
     async with conn.cursor(aiomysql.DictCursor) as cur:
         await cur.execute("SELECT estado, COUNT(*) as total FROM equipos GROUP BY estado")
         estados = await cur.fetchall()
@@ -54,7 +66,7 @@ async def _get_resumen_db(conn) -> dict:
         except Exception:
             tv_activos = 0
 
-    return {
+    resumen = {
         "equipos_por_estado": [{"estado": e["estado"], "total": int(e["total"])} for e in estados],
         "tickets_abiertos": tickets,
         "alertas_pendientes": alertas,
@@ -62,6 +74,41 @@ async def _get_resumen_db(conn) -> dict:
         "eventos_adversos_activos": tv_activos,
         "fecha_hoy": date.today().isoformat(),
     }
+    _resumen_cache["dashboard"] = resumen
+    return resumen
+
+
+async def _get_equipo_contexto(conn, equipo_id: int) -> dict | None:
+    """Obtiene equipo + últimas 8 órdenes con cache TTL 30s."""
+    cached = _equipo_cache.get(equipo_id)
+    if cached is not None:
+        return cached
+
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        await cur.execute("SELECT * FROM equipos WHERE id = %s", (equipo_id,))
+        equipo = await cur.fetchone()
+        if not equipo:
+            return None
+        for k, v in equipo.items():
+            if hasattr(v, "isoformat"):
+                equipo[k] = v.isoformat()
+
+        await cur.execute(
+            """SELECT numero_orden, tipo_mantenimiento, estado, fecha,
+                      falla_reportada, closed_at
+               FROM ordenes_servicio WHERE equipo_id = %s
+               ORDER BY fecha DESC LIMIT 8""",
+            (equipo_id,),
+        )
+        ordenes = await cur.fetchall()
+        for o in ordenes:
+            for k, v in o.items():
+                if hasattr(v, "isoformat"):
+                    o[k] = v.isoformat()
+
+    contexto = {"equipo": equipo, "historial_ordenes": list(ordenes)}
+    _equipo_cache[equipo_id] = contexto
+    return contexto
 
 
 # ── Endpoints ─────────────────────────────────────────────────────
@@ -101,30 +148,12 @@ async def copilot_chat(
     resumen = await _get_resumen_db(conn)
     contexto["resumen"] = resumen
 
-    # Contexto específico de equipo
+    # Contexto específico de equipo (cacheado 30s)
     if equipo_id:
-        async with conn.cursor(aiomysql.DictCursor) as cur:
-            await cur.execute("SELECT * FROM equipos WHERE id = %s", (equipo_id,))
-            equipo = await cur.fetchone()
-            if equipo:
-                for k, v in equipo.items():
-                    if hasattr(v, "isoformat"):
-                        equipo[k] = v.isoformat()
-                contexto["equipo"] = equipo
-
-                await cur.execute(
-                    """SELECT numero_orden, tipo_mantenimiento, estado, fecha,
-                              falla_reportada, closed_at
-                       FROM ordenes_servicio WHERE equipo_id = %s
-                       ORDER BY fecha DESC LIMIT 8""",
-                    (equipo_id,),
-                )
-                ordenes = await cur.fetchall()
-                for o in ordenes:
-                    for k, v in o.items():
-                        if hasattr(v, "isoformat"):
-                            o[k] = v.isoformat()
-                contexto["historial_ordenes"] = ordenes
+        eq_ctx = await _get_equipo_contexto(conn, equipo_id)
+        if eq_ctx:
+            contexto["equipo"] = eq_ctx["equipo"]
+            contexto["historial_ordenes"] = eq_ctx["historial_ordenes"]
 
     # Métricas MTBF si se pide análisis de fiabilidad
     if contexto_tipo == "fiabilidad":
