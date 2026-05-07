@@ -417,7 +417,7 @@ function ZoneBox({ zona, onEquipoClick }) {
 }
 
 // ── Panel lateral: Ficha Tecnica del equipo
-function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR }) {
+function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, onAccionRapida, onProgramarPreventivo }) {
   if (!equipo) return null;
 
   const status = STATUS_CONFIG[equipo.estado] || STATUS_CONFIG.baja;
@@ -569,6 +569,29 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR })
           </svg>
           Abrir Orden de Servicio
         </button>
+
+        {/* Acción rápida: ir a la OS abierta del equipo (si existe) */}
+        <button
+          type="button"
+          onClick={() => onAccionRapida?.(equipo)}
+          className="w-full py-2 rounded-xl font-medium text-xs transition-all
+                     bg-amber-800/40 hover:bg-amber-700/50 text-amber-300 border border-amber-700/50
+                     flex items-center justify-center gap-2"
+        >
+          ⚡ Acción Rápida (OS abierta del equipo)
+        </button>
+
+        {/* Programar preventivo desde aquí */}
+        <button
+          type="button"
+          onClick={() => onProgramarPreventivo?.(equipo)}
+          className="w-full py-2 rounded-xl font-medium text-xs transition-all
+                     bg-blue-800/40 hover:bg-blue-700/50 text-blue-300 border border-blue-700/50
+                     flex items-center justify-center gap-2"
+        >
+          📅 Programar Mantenimiento Preventivo
+        </button>
+
         <button
           type="button"
           onClick={() => onVerHistorial?.(equipo)}
@@ -602,6 +625,7 @@ export default function HospitalMap() {
   const [historialEquipo, setHistorialEquipo] = useState(null);
   const [equipoOS, setEquipoOS]               = useState(null);
   const [qrEquipo, setQrEquipo]               = useState(null);
+  const [accionRapidaLoading, setAccionRapidaLoading] = useState(false);
 
   // ── Estado de filtros
   const [busqueda, setBusqueda]       = useState('');
@@ -690,6 +714,47 @@ export default function HospitalMap() {
     setEquipoOS(null);
     fetchMapa();
   };
+
+  // Acción Rápida: si el equipo tiene OS abierta o en_progreso → navegar a Órdenes con filtro;
+  // si no tiene → ir directo al flujo de crear OS rápida.
+  const handleAccionRapida = async (equipo) => {
+    if (accionRapidaLoading) return;
+    setAccionRapidaLoading(true);
+    const tid = toast.loading('Buscando OS abiertas del equipo...');
+    try {
+      // Buscar OS del equipo en estado abierta o en_progreso
+      const res = await fetch(`/api/ordenes/?equipo_id=${equipo.id}&estado=abierta&limit=5`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+      });
+      const data = await res.json();
+      const abiertas = (data.ordenes || []).filter(o =>
+        o.estado === 'abierta' || o.estado === 'en_progreso' || o.estado === 'pendiente_validacion'
+      );
+      toast.dismiss(tid);
+      if (abiertas.length === 0) {
+        toast('Sin OS abiertas — abriendo formulario para crear una nueva');
+        setEquipoOS(equipo);
+      } else if (abiertas.length === 1) {
+        // Navegar a Órdenes con la OS abierta seleccionada por query string
+        toast.success(`OS ${abiertas[0].numero_orden} encontrada`);
+        navigate(`/ordenes?ordenId=${abiertas[0].id}`);
+      } else {
+        toast.success(`${abiertas.length} OS abiertas para este equipo`);
+        navigate(`/ordenes?equipoId=${equipo.id}&estado=abierta`);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('No se pudo consultar OS del equipo', { id: tid });
+    } finally {
+      setAccionRapidaLoading(false);
+    }
+  };
+
+  // Programar Preventivo: por ahora navega a /preventivos con preset del equipo
+  // (UI completa de programación se hará en Fase futura)
+  const handleProgramarPreventivo = (equipo) => {
+    navigate(`/preventivos?equipoId=${equipo.id}&accion=nuevo`);
+  };
   const limpiarFiltros = () => {
     setBusqueda('');
     setFiltroEstado('');
@@ -707,6 +772,8 @@ export default function HospitalMap() {
             onAbrirOS={handleAbrirOS}
             onVerHistorial={handleVerHistorial}
             onAbrirQR={(eq) => setQrEquipo(eq)}
+            onAccionRapida={handleAccionRapida}
+            onProgramarPreventivo={handleProgramarPreventivo}
           />
         </>
       )}

@@ -411,7 +411,16 @@ async def escanear_os_whatsapp(
     if len(img_bytes) > 15 * 1024 * 1024:
         raise HTTPException(status_code=413, detail="Imagen excede 15 MB")
 
-    extracted = await extract_imss_os(img_bytes)
+    # Cargar catálogo de series para fuzzy match
+    series_catalogo: list[str] = []
+    try:
+        async with conn.cursor(aiomysql.DictCursor) as cur_cat:
+            await cur_cat.execute("SELECT serie FROM equipos WHERE serie IS NOT NULL AND serie != ''")
+            series_catalogo = [r["serie"] for r in await cur_cat.fetchall()]
+    except Exception:
+        pass
+
+    extracted = await extract_imss_os(img_bytes, series_catalogo=series_catalogo)
 
     if extracted.get("error") == "no_es_formato_imss":
         return {

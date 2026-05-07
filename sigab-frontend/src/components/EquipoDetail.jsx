@@ -9,6 +9,7 @@ import { useToast } from './Toast';
 import EquipoForm from './EquipoForm';
 import ConfirmDialog from './ConfirmDialog';
 import QRPanel from './QRPanel';
+import OrdenDetalleModal from './OrdenDetalleModal';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function EquipoDetail({ equipo, onClose, onChange }) {
@@ -18,6 +19,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
   const [confirmandoEliminar, setConfirmandoEliminar] = useState(false);
   const [eliminando, setEliminando] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [ordenAbierta, setOrdenAbierta] = useState(null); // OS clickeada en la lista
 
   useEffect(() => {
     if (equipo?.id) {
@@ -183,10 +185,19 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
               ) : (
                 <div className="space-y-2">
                   {historial.ordenes.slice(0, 5).map((os, i) => {
-                    const CardWrapper = os.pdf_url ? 'a' : 'div';
-                    const wrapperProps = os.pdf_url ? { href: os.pdf_url, target: "_blank", rel: "noopener noreferrer" } : {};
+                    // Click en cualquier parte de la card → abre OrdenDetalleModal con esa OS.
+                    // Si además tiene pdf_url (archivo histórico ORDENESIMSS), un mini-icono lleva al PDF
+                    // sin abrir el modal (stopPropagation).
+                    const hasOsId = !!os.id;
                     return (
-                      <CardWrapper key={i} {...wrapperProps} className={`block bg-slate-900/50 rounded-lg p-3 text-sm ${os.pdf_url ? 'hover:bg-slate-800 hover:ring-1 ring-emerald-500/50 cursor-pointer transition-all' : ''}`}>
+                      <div
+                        key={i}
+                        onClick={hasOsId ? () => setOrdenAbierta(os.id) : undefined}
+                        role={hasOsId ? 'button' : undefined}
+                        tabIndex={hasOsId ? 0 : undefined}
+                        onKeyDown={hasOsId ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOrdenAbierta(os.id); } } : undefined}
+                        className={`block bg-slate-900/50 rounded-lg p-3 text-sm ${hasOsId ? 'hover:bg-slate-800 hover:ring-1 ring-emerald-500/50 cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/70' : ''}`}
+                      >
                         <div className="flex justify-between items-start gap-2">
                           <div className="flex items-center gap-2 min-w-0">
                             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${os.estado === 'cerrada' ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
@@ -194,9 +205,18 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                               {os.numero_orden}
                             </span>
                             {os.pdf_url && (
-                              <svg className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
+                              <a
+                                href={os.pdf_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-blue-400 hover:text-blue-300 flex-shrink-0"
+                                title="Abrir PDF original"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                              </a>
                             )}
                           </div>
                           <span className="text-slate-500 text-xs whitespace-nowrap flex-shrink-0">{os.fecha}</span>
@@ -218,7 +238,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                             <span className="text-[10px] text-slate-600 capitalize">{os.tipo_mantenimiento}</span>
                           )}
                         </div>
-                      </CardWrapper>
+                      </div>
                     );
                   })}
                 </div>
@@ -311,6 +331,23 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
         <QRPanel
           equipo={equipo}
           onClose={() => setShowQR(false)}
+        />
+      )}
+
+      {/* Modal detalle de OS al hacer click en un ticket de la lista */}
+      {ordenAbierta && (
+        <OrdenDetalleModal
+          ordenId={ordenAbierta}
+          onClose={() => setOrdenAbierta(null)}
+          onUpdated={() => {
+            // refrescar el historial de OS al cerrar
+            api.getHistorialEquipo(equipo.id)
+              .then((res) => setHistorial({
+                ordenes: res.ordenes || [],
+                traslados: res.traslados || [],
+              }))
+              .catch(() => {});
+          }}
         />
       )}
     </>

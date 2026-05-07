@@ -115,19 +115,21 @@ export default function Dashboard() {
     >
       {/* Header Conquistador */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-        <motion.div variants={containerVariants} className="flex items-center gap-5">
-          <div className="relative">
-            <div className="absolute -inset-1 bg-emerald-500/20 blur-lg rounded-full animate-pulse" />
-            <img 
-              src="/imss_logo.png" 
-              alt="IMSS Logo" 
+        <motion.div variants={containerVariants} className="flex items-center gap-6 md:gap-8 flex-wrap md:flex-nowrap">
+          <div className="relative flex-shrink-0">
+            {/* Halo contenido al área del logo (no se desparrama hacia el título) */}
+            <div className="absolute inset-0 bg-emerald-500/15 blur-md rounded-full pointer-events-none" />
+            <img
+              src="/imss_logo.png"
+              alt="IMSS Logo"
               className="relative h-14 md:h-16 w-auto object-contain brightness-110 contrast-125"
             />
           </div>
-          <div className="h-12 w-px bg-slate-800 hidden md:block" />
-          <div>
-            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight flex items-center gap-2">
-              CENTRO DE CONTROL <span className="text-emerald-500">SIGAB</span>
+          <div className="h-12 w-px bg-slate-800 hidden md:block flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tight flex items-center gap-2 flex-wrap">
+              <span>CENTRO DE CONTROL</span>
+              <span className="text-emerald-500">SIGAB</span>
             </h1>
             <p className="text-slate-400 text-sm md:text-base font-medium mt-1">
               HGR No.1 — IMSS | <span className="text-emerald-500/80">Monitor Biotecnológico en Tiempo Real</span>

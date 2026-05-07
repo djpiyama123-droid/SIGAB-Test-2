@@ -340,7 +340,15 @@ async def escanear_os_imss(
     if len(img_bytes) > 15 * 1024 * 1024:
         raise HTTPException(status_code=413, detail="Imagen excede 15 MB")
 
-    extracted = await extract_imss_os(img_bytes)
+    # Cargar catálogo de series para fuzzy match (corrección de caracteres OCR)
+    series_catalogo: list[str] = []
+    try:
+        series_q = await session.execute(select(Equipo.serie).where(Equipo.serie.isnot(None)))
+        series_catalogo = [s for s in series_q.scalars().all() if s]
+    except Exception:
+        pass
+
+    extracted = await extract_imss_os(img_bytes, series_catalogo=series_catalogo)
 
     if extracted.get("error") == "no_es_formato_imss":
         raise HTTPException(
@@ -467,12 +475,61 @@ async def descargar_pdf_orden(
     res_ev = await session.execute(stmt_ev)
     evidencias = res_ev.scalars().all()
 
+    # ── Datos extra para que el PDF llene la mitad inferior ────────
+    # (a) Tipo de equipo desde la tabla equipos para escoger el checklist correcto
+    tipo_equipo = None
+    if orden.equipo_id:
+        eq_row = await session.execute(
+            select(Equipo.tipo_equipo).where(Equipo.id == orden.equipo_id)
+        )
+        tipo_equipo = eq_row.scalar_one_or_none()
+
+    # (b) Historial breve: últimas 5 OS cerradas del mismo equipo (excluyendo la actual)
+    historial_breve = []
+    if orden.equipo_id:
+        stmt_hist = (
+            select(OrdenServicio)
+            .where(OrdenServicio.equipo_id == orden.equipo_id)
+            .where(OrdenServicio.id != orden_id)
+            .order_by(OrdenServicio.fecha.desc())
+            .limit(5)
+        )
+        res_hist = await session.execute(stmt_hist)
+        historial_breve = [h.model_dump() for h in res_hist.scalars().all()]
+
+    # (c) Próximo preventivo programado (si la tabla existe)
+    proximo_preventivo = None
+    if orden.equipo_id:
+        try:
+            from sqlalchemy import text as sa_text
+            r = await session.execute(
+                sa_text(
+                    "SELECT tipo_preventivo, proxima_ejecucion FROM preventivos_programados "
+                    "WHERE equipo_id = :eq AND activo = 1 "
+                    "ORDER BY proxima_ejecucion ASC LIMIT 1"
+                ),
+                {"eq": orden.equipo_id},
+            )
+            row = r.mappings().first()
+            if row:
+                proximo_preventivo = dict(row)
+        except Exception:
+            pass
+
     # Convertir a dict para el service (que espera dicts)
     orden_dict = orden.model_dump()
+    if tipo_equipo:
+        orden_dict["tipo_equipo"] = tipo_equipo
     materiales_dict = [m.model_dump() for m in materiales]
     evidencias_dict = [e.model_dump() for e in evidencias]
 
-    pdf_bytes = generar_pdf_orden(orden_dict, materiales_dict, evidencias_dict)
+    pdf_bytes = generar_pdf_orden(
+        orden_dict,
+        materiales_dict,
+        evidencias_dict,
+        historial_breve=historial_breve,
+        proximo_preventivo=proximo_preventivo,
+    )
 
     numero = orden.numero_orden or str(orden_id)
     return Response(

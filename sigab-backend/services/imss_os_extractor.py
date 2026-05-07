@@ -10,12 +10,23 @@ Path de uso:
 
 El prompt verifica el banner 'SIGAB-IMSS-OS-V3' impreso en el footer
 de la plantilla orden-servicio-v3-imss.html.
+
+Post-procesamiento (`normalize_extracted`):
+  - Folio: forzar formato OS-YYYYMMDD-XXXX, corregir confusiones O/0.
+  - Fecha: normalizar a YYYY-MM-DD aceptando varios formatos.
+  - Horas: forzar HH:MM 24h.
+  - Tipo de mantenimiento: lowercase + diccionario de sinónimos.
+  - Prioridad: lowercase ASCII (alta/media/baja).
+  - Serie: fuzzy match contra catálogo de equipos si está disponible.
 """
 import os
+import re
 import json
 import base64
 import logging
-from typing import Any, Dict, Optional
+from datetime import datetime
+from difflib import get_close_matches
+from typing import Any, Dict, Iterable, Optional
 
 import httpx
 
@@ -87,13 +98,18 @@ Reglas:
 # ─────────────────────────────────────────────────────────────────
 # Public API
 # ─────────────────────────────────────────────────────────────────
-async def extract_imss_os(imagen_bytes: bytes) -> Dict[str, Any]:
+async def extract_imss_os(
+    imagen_bytes: bytes,
+    series_catalogo: Optional[Iterable[str]] = None,
+) -> Dict[str, Any]:
     """
     Extrae los campos de una OS IMSS desde los bytes de una imagen.
 
     1. Intenta primero Gemma local (privacy-preserving, on-prem).
     2. Si Gemma falla o devuelve confianza < 0.6, hace fallback a Gemini.
     3. Si ambos fallan, devuelve {"error": "extraction_failed", ...}.
+    4. Antes de retornar, aplica `normalize_extracted` (corrección de
+       caracteres, fuzzy match de serie contra catálogo).
 
     El campo `engine` indica qué motor produjo el resultado final:
       'gemma' | 'gemini' | 'fallback_failed'
@@ -105,7 +121,7 @@ async def extract_imss_os(imagen_bytes: bytes) -> Dict[str, Any]:
     if gemma_result and not gemma_result.get("error"):
         confidence = gemma_result.get("confianza_global", 0)
         if confidence >= 0.6:
-            return {"engine": "gemma", **gemma_result}
+            return normalize_extracted({"engine": "gemma", **gemma_result}, series_catalogo)
         logger.info(f"Gemma confianza baja ({confidence:.2f}), intentando Gemini")
     else:
         logger.info(f"Gemma no respondió útilmente: {gemma_result}")
@@ -113,11 +129,13 @@ async def extract_imss_os(imagen_bytes: bytes) -> Dict[str, Any]:
     # ── 2. Gemini fallback ──────────────────────────────────────────
     if not GEMINI_API_KEY or not _GENAI_AVAILABLE:
         logger.warning("Gemini no disponible (sin API key o sin lib)")
-        return gemma_result or {"error": "extraction_failed", "engine": "fallback_failed"}
+        if gemma_result and not gemma_result.get("error"):
+            return normalize_extracted({"engine": "gemma", **gemma_result}, series_catalogo)
+        return {"error": "extraction_failed", "engine": "fallback_failed"}
 
     gemini_result = await _extract_with_gemini(b64)
     if gemini_result and not gemini_result.get("error"):
-        return {"engine": "gemini", **gemini_result}
+        return normalize_extracted({"engine": "gemini", **gemini_result}, series_catalogo)
 
     # ── 3. Ambos fallaron ───────────────────────────────────────────
     return {
@@ -200,6 +218,177 @@ def _parse_json_response(raw: str, engine: str) -> Optional[Dict[str, Any]]:
     except json.JSONDecodeError as e:
         logger.warning(f"{engine} devolvió JSON inválido: {e}; raw[:200]={text[:200]}")
         return {"error": "invalid_json_response", "raw": text[:500]}
+
+
+# ─────────────────────────────────────────────────────────────────
+# Post-procesamiento: corrección de caracteres y normalización de tipos
+# ─────────────────────────────────────────────────────────────────
+
+_TIPO_MANT_SYNONYMS = {
+    "preventivo": "preventivo", "prev": "preventivo", "preventiva": "preventivo",
+    "correctivo": "correctivo", "corr": "correctivo", "correctiva": "correctivo",
+    "calibracion": "calibracion", "calibración": "calibracion", "calib": "calibracion",
+    "instalacion": "instalacion", "instalación": "instalacion", "instal": "instalacion",
+    "verificacion": "verificacion", "verificación": "verificacion",
+    "inspeccion": "verificacion", "inspección": "verificacion",
+    "baja": "baja", "decomision": "baja", "decomisión": "baja",
+}
+
+_PRIORIDAD_SYNONYMS = {
+    "alta": "alta", "high": "alta", "urgente": "alta", "critica": "alta", "crítica": "alta",
+    "media": "media", "medium": "media", "normal": "media",
+    "baja": "baja", "low": "baja", "rutinaria": "baja",
+}
+
+_PISO_SYNONYMS = {
+    "sotano": "Sótano", "sótano": "Sótano",
+    "1": "1", "1er": "1", "primero": "1", "uno": "1",
+    "2": "2", "2do": "2", "segundo": "2", "dos": "2",
+    "3": "3", "3er": "3", "tercero": "3", "tres": "3",
+    "4": "4", "4to": "4", "cuarto": "4", "cuatro": "4",
+}
+
+
+def _normalize_folio(folio: Optional[str]) -> Optional[str]:
+    """Forzar formato OS-YYYYMMDD-XXXX. Si Gemma escribió la O del prefijo como 0, corrige."""
+    if not folio or not isinstance(folio, str):
+        return folio
+    s = folio.upper().strip().replace(" ", "")
+    # Casos comunes: '0S-...', 'OS-...', 'OS_...'
+    s = re.sub(r"^0S[-_]", "OS-", s)
+    s = re.sub(r"^O5[-_]", "OS-", s)
+    s = s.replace("OS_", "OS-")
+    m = re.match(r"^OS-(\d{8})-?(\d{1,4})$", s.replace("-", ""))
+    if m:
+        return f"OS-{m.group(1)}-{m.group(2).zfill(4)}"
+    m = re.match(r"^OS-(\d{8})-(\d{1,4})$", s)
+    if m:
+        return f"OS-{m.group(1)}-{m.group(2).zfill(4)}"
+    return s if s.startswith("OS-") else folio
+
+
+def _normalize_fecha(fecha: Any) -> Optional[str]:
+    """Acepta YYYY-MM-DD, DD-MM-YYYY, DD/MM/YYYY, etc. Retorna ISO YYYY-MM-DD."""
+    if not fecha:
+        return None
+    s = str(fecha).strip()
+    for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%Y/%m/%d", "%d.%m.%Y"):
+        try:
+            return datetime.strptime(s, fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            continue
+    return None
+
+
+def _normalize_hora(h: Any) -> Optional[str]:
+    """Acepta '7:00', '07:00', '7:00 am', '15:30'. Devuelve 'HH:MM' 24h."""
+    if not h:
+        return None
+    s = str(h).strip().lower().replace(" ", "")
+    is_pm = "pm" in s
+    is_am = "am" in s
+    s = s.replace("am", "").replace("pm", "")
+    m = re.match(r"^(\d{1,2}):?(\d{0,2})$", s)
+    if not m:
+        return None
+    hh = int(m.group(1))
+    mm = int(m.group(2)) if m.group(2) else 0
+    if is_pm and hh < 12:
+        hh += 12
+    if is_am and hh == 12:
+        hh = 0
+    if 0 <= hh <= 23 and 0 <= mm <= 59:
+        return f"{hh:02d}:{mm:02d}"
+    return None
+
+
+def _normalize_enum(value: Any, table: Dict[str, str], default: Optional[str] = None) -> Optional[str]:
+    if not value:
+        return default
+    key = str(value).strip().lower()
+    return table.get(key, default if default is not None else value)
+
+
+def normalize_extracted(
+    extracted: Dict[str, Any],
+    series_catalogo: Optional[Iterable[str]] = None,
+) -> Dict[str, Any]:
+    """
+    Aplica reglas de corrección sobre el JSON crudo del OCR.
+
+    `series_catalogo` opcional: lista/iterable de seriales válidos del catálogo
+    de equipos. Si se pasa y la serie extraída no matchea exacto, hace fuzzy
+    match (cutoff 0.85) y guarda la corrección bajo el flag `_serie_corrected=True`.
+    """
+    if not extracted or extracted.get("error"):
+        return extracted
+
+    out = dict(extracted)
+
+    # Folio
+    if out.get("numero_orden"):
+        out["numero_orden"] = _normalize_folio(out["numero_orden"])
+
+    # Fecha
+    if out.get("fecha"):
+        norm_f = _normalize_fecha(out["fecha"])
+        if norm_f:
+            out["fecha"] = norm_f
+
+    # Horas
+    for k in ("hora_inicio", "hora_termino"):
+        if out.get(k):
+            norm_h = _normalize_hora(out[k])
+            if norm_h:
+                out[k] = norm_h
+
+    # Tipo de mantenimiento
+    if out.get("tipo_mantenimiento"):
+        out["tipo_mantenimiento"] = _normalize_enum(
+            out["tipo_mantenimiento"], _TIPO_MANT_SYNONYMS,
+            default=str(out["tipo_mantenimiento"]).lower().strip(),
+        )
+
+    # Prioridad
+    if out.get("prioridad"):
+        out["prioridad"] = _normalize_enum(
+            out["prioridad"], _PRIORIDAD_SYNONYMS,
+            default=str(out["prioridad"]).lower().strip(),
+        )
+
+    # Piso
+    if out.get("piso"):
+        out["piso"] = _normalize_enum(
+            out["piso"], _PISO_SYNONYMS,
+            default=str(out["piso"]).strip(),
+        )
+
+    # Serie: fuzzy match contra catálogo si se entregó
+    if out.get("equipo_serie") and series_catalogo:
+        serie_raw = str(out["equipo_serie"]).strip().upper()
+        catalogo_set = {str(s).strip().upper(): s for s in series_catalogo if s}
+        if serie_raw in catalogo_set:
+            out["equipo_serie"] = catalogo_set[serie_raw]
+        else:
+            match = get_close_matches(serie_raw, list(catalogo_set.keys()), n=1, cutoff=0.85)
+            if match:
+                out["equipo_serie"] = catalogo_set[match[0]]
+                out["_serie_corrected"] = {
+                    "from": serie_raw,
+                    "to": catalogo_set[match[0]],
+                    "method": "fuzzy",
+                }
+
+    # Strings: limpiar trailing spaces y N/A literal
+    for k, v in list(out.items()):
+        if isinstance(v, str):
+            stripped = v.strip()
+            if stripped.upper() in ("N/A", "NA", "-", "—", ""):
+                out[k] = None
+            else:
+                out[k] = stripped
+
+    return out
 
 
 def map_to_orden_servicio(extracted: Dict[str, Any]) -> Dict[str, Any]:
