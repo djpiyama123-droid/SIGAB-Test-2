@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
 import { Zap, TrendingUp, TrendingDown, Clock, ShieldCheck, Activity, Brain, AlertTriangle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 export default function Analitica() {
   const [metricas, setMetricas] = useState([]);

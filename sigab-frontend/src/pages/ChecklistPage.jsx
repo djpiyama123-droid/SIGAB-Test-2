@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
 import { ClipboardList, CheckSquare, Save, Search, History } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 const ChecklistPage = () => {
   const [templates, setTemplates] = useState([]);

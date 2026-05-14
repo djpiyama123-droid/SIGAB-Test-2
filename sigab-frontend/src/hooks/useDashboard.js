@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 import { useSSE } from './useSSE';
 
 export function useDashboard() {

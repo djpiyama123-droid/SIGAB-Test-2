@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 // ── Iconos inline ─────────────────────────────────────────────────
 const IconIA = () => (

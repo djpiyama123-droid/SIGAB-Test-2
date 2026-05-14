@@ -14,7 +14,7 @@
  */
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 // Etiquetas legibles en español para los campos extraídos por Gemma
 const FIELD_LABELS = {

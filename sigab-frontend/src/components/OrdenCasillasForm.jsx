@@ -11,7 +11,7 @@
  */
 import { useState, useCallback } from 'react';
 import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 // ─── Paleta SIGAB ────────────────────────────────────────────────────────────
 const C = {

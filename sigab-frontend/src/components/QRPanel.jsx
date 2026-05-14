@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 // Usa rutas relativas para respetar el proxy de Vite (baseURL = /api)
 // evitando hardcodear http://localhost:8000 (rompe en producción/remoto).

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
 import { ShieldCheck, Calendar, AlertCircle, Plus, Search, FileText } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 export default function Metrologia() {
   const [calibraciones, setCalibraciones] = useState([]);
