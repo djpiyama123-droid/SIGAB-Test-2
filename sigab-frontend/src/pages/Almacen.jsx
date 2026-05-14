@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
 import { Package, AlertTriangle, Search, Plus, Filter, TrendingDown } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 export default function Almacen() {
   const [refacciones, setRefacciones] = useState([]);

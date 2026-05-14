@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { api } from '../api/sigab';
 import { QrCode, Printer, CheckCircle, Search, LayoutGrid, Sticker, Eye, ChevronDown, X, CheckSquare, Square } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 /* ─── IMSS Logo SVG Component (official eagle/serpent/hands emblem, monochrome) ─── */
 function IMSSLogo({ size = 28, className = '' }) {
