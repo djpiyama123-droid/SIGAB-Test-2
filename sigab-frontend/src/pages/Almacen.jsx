@@ -38,11 +38,11 @@ export default function Almacen() {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-[var(--content-text)] flex items-center gap-3">
             <Package className="h-8 w-8 text-emerald-500" />
             Almacén de Refacciones
           </h1>
-          <p className="text-slate-400 mt-1">Gestión de stock técnico y control de insumos para mantenimiento.</p>
+          <p className="text-[var(--content-muted)] mt-1">Gestión de stock técnico y control de insumos para mantenimiento.</p>
         </div>
         <button
           onClick={() => toast('Captura de nueva refacción — disponible en la próxima fase del módulo', { icon: 'ℹ️' })}
@@ -54,12 +54,12 @@ export default function Almacen() {
 
       {/* Stats Quick View */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-slate-800/50 border border-slate-700 p-6 rounded-2xl relative overflow-hidden group">
+        <div className="bg-slate-800/50 border border-[var(--content-border)] p-6 rounded-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <Package className="h-16 w-16" />
           </div>
-          <p className="text-slate-400 text-sm font-medium">Items en Inventario</p>
-          <p className="text-3xl font-bold text-white mt-2">{refacciones.length}</p>
+          <p className="text-[var(--content-muted)] text-sm font-medium">Items en Inventario</p>
+          <p className="text-3xl font-bold text-[var(--content-text)] mt-2">{refacciones.length}</p>
         </div>
         <div className="bg-red-900/10 border border-red-900/50 p-6 rounded-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-red-500">
@@ -82,11 +82,11 @@ export default function Almacen() {
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--content-muted)]" />
           <input
             type="text"
             placeholder="Buscar por nombre, código o compatibilidad..."
-            className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+            className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-xl pl-10 pr-4 py-2.5 text-white placeholder:text-[var(--content-muted)] focus:outline-none focus:border-emerald-500 transition-colors"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             onKeyDown={handlesearch}
@@ -98,7 +98,7 @@ export default function Almacen() {
             className={`flex items-center gap-2 px-4 py-2 rounded-xl border font-medium transition-all ${
               filterStockBajo 
                 ? 'bg-red-500/10 border-red-500/50 text-red-400' 
-                : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'
+                : 'bg-[var(--content-surface)] border-[var(--content-border)] text-[var(--content-muted)] hover:bg-[var(--content-border)]'
             }`}
           >
             <AlertTriangle className="h-4 w-4" />
@@ -106,7 +106,7 @@ export default function Almacen() {
           </button>
           <button
             onClick={() => toast('Filtros avanzados — disponibles en la próxima fase del módulo', { icon: '🔎' })}
-            className="flex items-center gap-2 bg-slate-800 border border-slate-700 text-slate-400 px-4 py-2 rounded-xl font-medium hover:bg-slate-700 transition-all">
+            className="flex items-center gap-2 bg-[var(--content-surface)] border border-[var(--content-border)] text-[var(--content-muted)] px-4 py-2 rounded-xl font-medium hover:bg-[var(--content-border)] transition-all">
             <Filter className="h-4 w-4" />
             Filtros
           </button>
@@ -120,28 +120,28 @@ export default function Almacen() {
       </div>
 
       {/* Inventory Table */}
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="bg-[var(--content-bg)]/50 border border-[var(--content-border)] rounded-2xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-slate-900/80 border-b border-slate-800">
+            <thead className="bg-[var(--content-bg)]/80 border-b border-[var(--content-border)]">
               <tr>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Refacción</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Código</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Compatible con</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Stock</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Ubicación</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Acciones</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase tracking-wider">Refacción</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase tracking-wider">Código</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase tracking-wider">Compatible con</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase tracking-wider text-center">Stock</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase tracking-wider">Ubicación</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase tracking-wider">Estado</th>
+                <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase tracking-wider text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-slate-500">Cargando almacén...</td>
+                  <td colSpan={7} className="px-6 py-12 text-center text-[var(--content-muted)]">Cargando almacén...</td>
                 </tr>
               ) : refacciones.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-slate-500">No se encontraron refacciones.</td>
+                  <td colSpan={7} className="px-6 py-12 text-center text-[var(--content-muted)]">No se encontraron refacciones.</td>
                 </tr>
               ) : (
                 refacciones.map((item) => {
@@ -149,12 +149,12 @@ export default function Almacen() {
                   return (
                     <tr key={item.id} className="hover:bg-slate-800/30 transition-colors group">
                       <td className="px-6 py-4">
-                        <p className="font-bold text-white group-hover:text-emerald-400 transition-colors">{item.nombre}</p>
-                        <p className="text-xs text-slate-500">{item.proveedor || 'Sin proveedor'}</p>
+                        <p className="font-bold text-[var(--content-text)] group-hover:text-emerald-400 transition-colors">{item.nombre}</p>
+                        <p className="text-xs text-[var(--content-muted)]">{item.proveedor || 'Sin proveedor'}</p>
                       </td>
-                      <td className="px-6 py-4 font-mono text-xs text-slate-400">{item.codigo_interno}</td>
+                      <td className="px-6 py-4 font-mono text-xs text-[var(--content-muted)]">{item.codigo_interno}</td>
                       <td className="px-6 py-4">
-                        <span className="text-xs text-slate-300 max-w-[200px] truncate block" title={item.compatible_con_modelo}>
+                        <span className="text-xs text-[var(--content-muted)] max-w-[200px] truncate block" title={item.compatible_con_modelo}>
                           {item.compatible_con_modelo}
                         </span>
                       </td>
@@ -163,11 +163,11 @@ export default function Almacen() {
                           <span className={`text-lg font-bold ${isLow ? 'text-red-500' : 'text-emerald-500'}`}>
                             {item.cantidad_disponible}
                           </span>
-                          <span className="text-[10px] text-slate-600 uppercase">mín: {item.cantidad_minima}</span>
+                          <span className="text-[10px] text-[var(--content-muted)] uppercase">mín: {item.cantidad_minima}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="bg-slate-800 text-slate-400 px-2 py-1 rounded text-xs">
+                        <span className="bg-[var(--content-surface)] text-[var(--content-muted)] px-2 py-1 rounded text-xs">
                           {item.ubicacion_almacen || '—'}
                         </span>
                       </td>
@@ -187,7 +187,7 @@ export default function Almacen() {
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => toast(`Ajuste de stock para "${item.nombre}" — disponible en la próxima fase`, { icon: '📦' })}
-                          className="text-slate-500 hover:text-white transition-colors text-xs font-bold uppercase">
+                          className="text-[var(--content-muted)] hover:text-white transition-colors text-xs font-bold uppercase">
                           Ajustar
                         </button>
                       </td>
