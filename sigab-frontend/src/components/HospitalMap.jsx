@@ -115,7 +115,7 @@ const STATUS_CONFIG = {
 const CRITICIDAD_CONFIG = {
   alta:  { badge: 'bg-red-900/50 text-red-300 border border-red-700',   label: 'Alto Riesgo' },
   media: { badge: 'bg-yellow-900/50 text-yellow-300 border border-yellow-700', label: 'Riesgo Medio' },
-  baja:  { badge: 'bg-slate-700 text-slate-300 border border-slate-600', label: 'Riesgo Bajo' },
+  baja:  { badge: 'bg-[var(--content-surface)] text-[var(--content-muted)] border border-[var(--content-border)]', label: 'Riesgo Bajo' },
 };
 
 // ── Componente: punto de equipo individual en el mapa
@@ -190,10 +190,10 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
 
   const tooltipPortal = showTooltip ? ReactDOM.createPortal(
     <div
-      className="w-64 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-600/50 overflow-hidden"
+      className="w-64 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[var(--content-border)]/50 overflow-hidden"
       style={getTooltipFixedStyle()}
     >
-      <div className="p-3 border-b border-slate-700">
+      <div className="p-3 border-b border-[var(--content-border)]">
         <div className="flex items-center gap-2 mb-1">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: status.border }} />
           <span className="text-xs font-medium" style={{ color: status.border }}>
@@ -201,26 +201,26 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
           </span>
         </div>
         <p className="text-white text-sm font-semibold leading-tight">{equipo.nombre}</p>
-        <p className="text-slate-400 text-xs">{equipo.marca} {equipo.modelo}</p>
+        <p className="text-[var(--content-muted)] text-xs">{equipo.marca} {equipo.modelo}</p>
       </div>
 
       <div className="p-3 space-y-1">
         <div className="flex justify-between text-xs">
-          <span className="text-slate-500">Serie</span>
-          <span className="text-slate-300 font-mono">{equipo.serie}</span>
+          <span className="text-[var(--content-muted)]">Serie</span>
+          <span className="text-[var(--content-muted)] font-mono">{equipo.serie}</span>
         </div>
         {equipo.clase_cofepris && (
           <div className="flex justify-between text-xs">
-            <span className="text-slate-500">COFEPRIS</span>
+            <span className="text-[var(--content-muted)]">COFEPRIS</span>
             <span className="text-purple-400 font-semibold">Clase {equipo.clase_cofepris}</span>
           </div>
         )}
         {equipo.fecha_proximo_mantenimiento && (
           <div className="flex justify-between text-xs">
-            <span className="text-slate-500">Prox. Mant.</span>
+            <span className="text-[var(--content-muted)]">Prox. Mant.</span>
             <span className={`font-medium ${
               new Date(equipo.fecha_proximo_mantenimiento) < new Date()
-                ? 'text-red-400' : 'text-slate-300'
+                ? 'text-red-400' : 'text-[var(--content-muted)]'
             }`}>
               {new Date(equipo.fecha_proximo_mantenimiento).toLocaleDateString('es-MX')}
             </span>
@@ -228,10 +228,10 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
         )}
       </div>
 
-      <div className="p-2 border-t border-slate-700 flex gap-1">
+      <div className="p-2 border-t border-[var(--content-border)] flex gap-1">
         <button
           onMouseDown={(e) => { e.stopPropagation(); onClick(equipo); }}
-          className="flex-1 py-1.5 px-2 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600
+          className="flex-1 py-1.5 px-2 rounded-lg text-xs font-medium bg-[var(--content-surface)] hover:bg-[var(--content-border)]
                      text-white transition-colors pointer-events-auto"
         >
           Ver Ficha
@@ -338,12 +338,12 @@ function ZoneBox({ zona, onEquipoClick }) {
     >
       {/* Header de la zona */}
       <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
-        <span className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase truncate">
+        <span className="text-[10px] font-bold tracking-[0.2em] text-[var(--content-muted)] uppercase truncate">
           {zona.nombre}
         </span>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {zona.piso && (
-            <span className="text-[9px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded-full">
+            <span className="text-[9px] text-[var(--content-muted)] bg-[var(--content-surface)] px-1.5 py-0.5 rounded-full">
               {zona.piso}
             </span>
           )}
@@ -382,11 +382,11 @@ function ZoneBox({ zona, onEquipoClick }) {
       <div className="px-3 pb-3 pt-1 flex-1 overflow-visible">
         {!tieneEquipos ? (
           <div className="flex items-center justify-center py-4">
-            <span className="text-slate-600 text-[10px] italic">Sin equipos</span>
+            <span className="text-[var(--content-muted)] text-[10px] italic">Sin equipos</span>
           </div>
         ) : !isVisible ? (
           <div className="flex items-center justify-center py-6">
-            <div className="w-4 h-4 border-2 border-slate-700 border-t-slate-500 rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-[var(--content-border)] border-t-slate-500 rounded-full animate-spin" />
           </div>
         ) : (
           <div
@@ -428,12 +428,12 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
   return (
     <div className="fixed inset-y-0 right-0 z-50 w-80 shadow-2xl flex flex-col"
          style={{ backgroundColor: '#0f172a', borderLeft: '1px solid #1e293b' }}>
-      <div className="flex items-center justify-between p-4 border-b border-slate-800">
-        <h3 className="text-white font-semibold text-sm">Ficha Tecnica</h3>
+      <div className="flex items-center justify-between p-4 border-b border-[var(--content-border)]">
+        <h3 className="text-[var(--content-text)] font-semibold text-sm">Ficha Tecnica</h3>
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-white transition-colors w-7 h-7 flex items-center
-                     justify-center rounded-lg hover:bg-slate-800"
+          className="text-[var(--content-muted)] hover:text-white transition-colors w-7 h-7 flex items-center
+                     justify-center rounded-lg hover:bg-[var(--content-surface)]"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
             <path d="M18 6L6 18M6 6l12 12"/>
@@ -442,12 +442,12 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="relative bg-slate-800/50 mx-4 mt-4 rounded-xl overflow-hidden h-36 flex items-center justify-center">
+        <div className="relative mx-4 mt-4 rounded-xl overflow-hidden h-36 flex items-center justify-center border border-[var(--content-border)]" style={{ background: "var(--content-surface)" }}>
           {equipo.imagen_url ? (
             <img src={equipo.imagen_url} alt={equipo.nombre}
                  className="w-full h-full object-contain p-4" />
           ) : (
-            <div className="w-16 h-16 opacity-30 text-slate-400">
+            <div className="w-16 h-16 opacity-30 text-[var(--content-muted)]">
               {EQUIPMENT_ICONS[equipo.tipo_equipo] || EQUIPMENT_ICONS.otro}
             </div>
           )}
@@ -468,7 +468,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
             </span>
           </div>
           <h2 className="text-white text-base font-bold leading-snug">{equipo.nombre}</h2>
-          <p className="text-slate-400 text-xs mt-0.5">
+          <p className="text-[var(--content-muted)] text-xs mt-0.5">
             {equipo.inventario ? `HGR1-${equipo.inventario}` : equipo.serie}
           </p>
         </div>
@@ -480,18 +480,18 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
             { label: 'N\u00b0 Serie', value: equipo.serie, mono: true },
           ].map(({ label, value, mono }) => value ? (
             <div key={label} className="flex justify-between items-start gap-4">
-              <span className="text-slate-500 text-xs flex-shrink-0">{label}</span>
-              <span className={`text-slate-200 text-xs text-right ${mono ? 'font-mono' : 'font-medium'}`}>
+              <span className="text-[var(--content-muted)] text-xs flex-shrink-0">{label}</span>
+              <span className={`text-[var(--content-text)] text-xs text-right ${mono ? 'font-mono' : 'font-medium'}`}>
                 {value}
               </span>
             </div>
           ) : null)}
         </div>
 
-        <div className="mx-4 border-t border-slate-800 pt-3 pb-2 space-y-2.5">
+        <div className="mx-4 border-t border-[var(--content-border)] pt-3 pb-2 space-y-2.5">
           {equipo.clase_cofepris && (
             <div className="flex justify-between items-center">
-              <span className="text-slate-500 text-[10px] uppercase tracking-widest">Clase COFEPRIS</span>
+              <span className="text-[var(--content-muted)] text-[10px] uppercase tracking-widest">Clase COFEPRIS</span>
               <span className="bg-purple-900/50 text-purple-300 border border-purple-700 text-xs px-2 py-0.5 rounded-full font-semibold">
                 Clase {equipo.clase_cofepris}
               </span>
@@ -499,7 +499,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
           )}
           {equipo.criticidad && (
             <div className="flex justify-between items-center">
-              <span className="text-slate-500 text-[10px] uppercase tracking-widest">Riesgo</span>
+              <span className="text-[var(--content-muted)] text-[10px] uppercase tracking-widest">Riesgo</span>
               <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${criticidad.badge}`}>
                 {criticidad.label}
               </span>
@@ -507,27 +507,27 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
           )}
         </div>
 
-        <div className="mx-4 border-t border-slate-800 pt-3 pb-2 space-y-2.5">
+        <div className="mx-4 border-t border-[var(--content-border)] pt-3 pb-2 space-y-2.5">
           {equipo.fecha_compra && (
             <div className="flex justify-between text-xs">
-              <span className="text-slate-500">Fecha Compra</span>
-              <span className="text-slate-300">
+              <span className="text-[var(--content-muted)]">Fecha Compra</span>
+              <span className="text-[var(--content-muted)]">
                 {new Date(equipo.fecha_compra).toLocaleDateString('es-MX')}
               </span>
             </div>
           )}
           {equipo.fecha_ultimo_mantenimiento && (
             <div className="flex justify-between text-xs">
-              <span className="text-slate-500">Ultimo Mant.</span>
-              <span className="text-slate-300">
+              <span className="text-[var(--content-muted)]">Ultimo Mant.</span>
+              <span className="text-[var(--content-muted)]">
                 {new Date(equipo.fecha_ultimo_mantenimiento).toLocaleDateString('es-MX')}
               </span>
             </div>
           )}
           {equipo.fecha_proximo_mantenimiento && (
             <div className="flex justify-between text-xs">
-              <span className="text-slate-500">Prox. Mant.</span>
-              <span className={mantenimientoVencido ? 'text-red-400 font-semibold' : 'text-slate-300'}>
+              <span className="text-[var(--content-muted)]">Prox. Mant.</span>
+              <span className={mantenimientoVencido ? 'text-red-400 font-semibold' : 'text-[var(--content-muted)]'}>
                 {new Date(equipo.fecha_proximo_mantenimiento).toLocaleDateString('es-MX')}
                 {mantenimientoVencido && ' \u26a0'}
               </span>
@@ -536,7 +536,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
         </div>
 
         {(equipo.area || equipo.piso) && (
-          <div className="mx-4 border-t border-slate-800 pt-3 pb-4">
+          <div className="mx-4 border-t border-[var(--content-border)] pt-3 pb-4">
             <div className="flex items-start gap-2">
               <svg className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" viewBox="0 0 24 24"
                    fill="none" stroke="currentColor" strokeWidth={2}>
@@ -549,7 +549,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
                 </p>
                 <p className="text-white text-xs font-semibold">{equipo.area}</p>
                 {equipo.piso && (
-                  <p className="text-slate-400 text-xs">{equipo.piso}</p>
+                  <p className="text-[var(--content-muted)] text-xs">{equipo.piso}</p>
                 )}
               </div>
             </div>
@@ -557,7 +557,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
         )}
       </div>
 
-      <div className="p-4 border-t border-slate-800 space-y-2">
+      <div className="p-4 border-t border-[var(--content-border)] space-y-2">
         <button
           type="button"
           onClick={() => onAbrirOS?.(equipo)}
@@ -596,7 +596,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
           type="button"
           onClick={() => onVerHistorial?.(equipo)}
           className="w-full py-2 rounded-xl font-medium text-xs transition-all
-                     bg-slate-800 hover:bg-slate-700 text-slate-300"
+                     bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-muted)]"
         >
           Ver Historial Completo
         </button>
@@ -660,8 +660,8 @@ export default function HospitalMap() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-48 text-slate-500">
-        <div className="animate-spin w-6 h-6 border-2 border-slate-600 border-t-blue-500 rounded-full mr-3" />
+      <div className="flex items-center justify-center h-48 text-[var(--content-muted)]">
+        <div className="animate-spin w-6 h-6 border-2 border-[var(--content-border)] border-t-blue-500 rounded-full mr-3" />
         Cargando mapa de activos...
       </div>
     );
@@ -784,13 +784,13 @@ export default function HospitalMap() {
       <div className="space-y-3">
 
         {/* ── Barra de filtros ── */}
-        <div className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 space-y-3">
+        <div className="border border-[var(--content-border)] rounded-xl p-3 space-y-3" style={{ background: "var(--content-surface)" }}>
 
           {/* Fila 1: búsqueda + estado + limpiar */}
           <div className="flex flex-wrap gap-2 items-center">
             {/* Búsqueda */}
             <div className="relative flex-1 min-w-[160px]">
-              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--content-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
               </svg>
               <input
@@ -798,7 +798,7 @@ export default function HospitalMap() {
                 placeholder="Buscar equipo, zona, serie..."
                 value={busqueda}
                 onChange={e => setBusqueda(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 bg-slate-900/60 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                className="w-full pl-8 pr-3 py-1.5 bg-[var(--content-bg)]/60 border border-[var(--content-border)] rounded-lg text-xs text-[var(--content-text)] placeholder-slate-500 focus:outline-none focus:border-blue-500"
               />
             </div>
 
@@ -806,7 +806,7 @@ export default function HospitalMap() {
             <select
               value={filtroEstado}
               onChange={e => setFiltroEstado(e.target.value)}
-              className="py-1.5 pl-2.5 pr-6 bg-slate-900/60 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-blue-500 appearance-none cursor-pointer"
+              className="py-1.5 pl-2.5 pr-6 bg-[var(--content-bg)]/60 border border-[var(--content-border)] rounded-lg text-xs text-[var(--content-muted)] focus:outline-none focus:border-blue-500 appearance-none cursor-pointer"
             >
               <option value="">Todos los estados</option>
               {Object.entries(STATUS_CONFIG).map(([k, cfg]) => (
@@ -823,7 +823,7 @@ export default function HospitalMap() {
                   className={`flex items-center gap-1 text-[10px] transition-opacity ${filtroEstado && filtroEstado !== key ? 'opacity-30' : ''}`}
                 >
                   <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.border }} />
-                  <span className="text-slate-400">{cfg.label}</span>
+                  <span className="text-[var(--content-muted)]">{cfg.label}</span>
                 </button>
               ))}
             </div>
@@ -832,7 +832,7 @@ export default function HospitalMap() {
             {hayFiltros && (
               <button
                 onClick={limpiarFiltros}
-                className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-slate-700"
+                className="flex items-center gap-1 text-xs text-[var(--content-muted)] hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-[var(--content-border)]"
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -849,7 +849,7 @@ export default function HospitalMap() {
               className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                 pisoActivo === 'todos'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-slate-900/60 text-slate-400 hover:text-white hover:bg-slate-700'
+                  : 'bg-[var(--content-bg)]/60 text-[var(--content-muted)] hover:text-white hover:bg-[var(--content-border)]'
               }`}
             >
               Todos los pisos
@@ -867,7 +867,7 @@ export default function HospitalMap() {
                   className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                     pisoActivo === piso
                       ? 'bg-blue-600 text-white'
-                      : 'bg-slate-900/60 text-slate-400 hover:text-white hover:bg-slate-700'
+                      : 'bg-[var(--content-bg)]/60 text-[var(--content-muted)] hover:text-white hover:bg-[var(--content-border)]'
                   }`}
                 >
                   {piso}
@@ -882,7 +882,7 @@ export default function HospitalMap() {
                 className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                   pisoActivo === 'otras'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-slate-900/60 text-slate-400 hover:text-white hover:bg-slate-700'
+                    : 'bg-[var(--content-bg)]/60 text-[var(--content-muted)] hover:text-white hover:bg-[var(--content-border)]'
                 }`}
               >
                 Otras áreas
@@ -895,7 +895,7 @@ export default function HospitalMap() {
 
           {/* Contador de resultados cuando hay filtros */}
           {hayFiltros && (
-            <div className="text-[10px] text-slate-500 flex items-center gap-1.5">
+            <div className="text-[10px] text-[var(--content-muted)] flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
               Mostrando {totalEquiposFiltrados} equipo{totalEquiposFiltrados !== 1 ? 's' : ''} en {zonasFiltradas.length} zona{zonasFiltradas.length !== 1 ? 's' : ''}
             </div>
@@ -904,11 +904,11 @@ export default function HospitalMap() {
 
         {/* ── Contenedor de zonas con altura fija y scroll ── */}
         <div
-          className="overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-900/20 p-1 custom-scrollbar"
+          className="overflow-y-auto rounded-xl border border-[var(--content-border)]/50 bg-[var(--content-bg)]/20 p-1 custom-scrollbar"
           style={{ maxHeight: '600px', overflowY: 'auto' }}
         >
           {zonasFiltradas.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-slate-500 gap-2">
+            <div className="flex flex-col items-center justify-center h-40 text-[var(--content-muted)] gap-2">
               <svg className="w-8 h-8 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 6a8 8 0 100 16 8 8 0 000-16z"/>
               </svg>
@@ -943,13 +943,13 @@ export default function HospitalMap() {
                 ];
 
                 return groups.map(group => (
-                  <div key={group.key} className="bg-slate-800/40 rounded-xl p-3 border border-slate-700/30">
+                  <div key={group.key} className="rounded-xl p-3 border border-[var(--content-border)]" style={{ background: "var(--content-surface)" }}>
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-1.5 h-1.5 rounded bg-blue-500/60" />
-                      <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+                      <span className="text-[var(--content-muted)] text-[10px] font-bold uppercase tracking-widest">
                         {group.label}
                       </span>
-                      <span className="text-slate-600 text-[9px] ml-auto">
+                      <span className="text-[var(--content-muted)] text-[9px] ml-auto">
                         {group.zonas.length} zona{group.zonas.length !== 1 ? 's' : ''} · {group.zonas.reduce((a, z) => a + z.equipos.length, 0)} equipos
                       </span>
                     </div>
@@ -966,7 +966,7 @@ export default function HospitalMap() {
         </div>
 
         {/* Timestamp */}
-        <div className="flex items-center gap-2 text-[10px] text-slate-600">
+        <div className="flex items-center gap-2 text-[10px] text-[var(--content-muted)]">
           <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
           <span>Actualizado cada 15s</span>
           <span className="ml-auto font-mono">{new Date().toLocaleTimeString('es-MX')}</span>

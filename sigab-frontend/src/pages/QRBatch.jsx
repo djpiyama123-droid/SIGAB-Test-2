@@ -208,24 +208,24 @@ export default function QRBatch() {
       {/* ═══ Header ═══ */}
       <div className="flex flex-col lg:flex-row justify-between items-start gap-4 print:hidden">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-[var(--content-text)] flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
               <QrCode className="h-5 w-5 text-white" />
             </div>
             Etiquetado Masivo QR
           </h1>
-          <p className="text-slate-400 mt-1">Genera etiquetas QR profesionales con identidad IMSS para impresión en papel o stickers térmicos.</p>
+          <p className="text-[var(--content-muted)] mt-1">Genera etiquetas QR profesionales con identidad IMSS para impresión en papel o stickers térmicos.</p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
           {/* Mode Toggle */}
-          <div className="flex bg-slate-800 rounded-xl p-1 border border-slate-700">
+          <div className="flex bg-[var(--content-surface)] rounded-xl p-1 border border-[var(--content-border)]">
             <button
               onClick={() => setModo('carta')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 modo === 'carta'
                   ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-[var(--content-muted)] hover:text-white'
               }`}
             >
               <LayoutGrid className="h-4 w-4" />
@@ -236,7 +236,7 @@ export default function QRBatch() {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 modo === 'zebra'
                   ? 'bg-amber-600 text-white shadow-lg shadow-amber-500/20'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-[var(--content-muted)] hover:text-white'
               }`}
             >
               <Sticker className="h-4 w-4" />
@@ -258,16 +258,16 @@ export default function QRBatch() {
 
       {/* ═══ Stats Bar ═══ */}
       <div className="flex flex-wrap gap-3 print:hidden">
-        <div className="flex items-center gap-2 bg-slate-800/60 px-4 py-2 rounded-xl border border-slate-700/50">
-          <span className="text-slate-400 text-sm">Seleccionados:</span>
-          <span className="text-white font-bold text-lg">{seleccionados.length}</span>
+        <div className="flex items-center gap-2 bg-slate-800/60 px-4 py-2 rounded-xl border border-[var(--content-border)]/50">
+          <span className="text-[var(--content-muted)] text-sm">Seleccionados:</span>
+          <span className="text-[var(--content-text)] font-bold text-lg">{seleccionados.length}</span>
         </div>
-        <div className="flex items-center gap-2 bg-slate-800/60 px-4 py-2 rounded-xl border border-slate-700/50">
-          <span className="text-slate-400 text-sm">Páginas estimadas:</span>
-          <span className="text-white font-bold text-lg">{paginasEstimadas || '—'}</span>
+        <div className="flex items-center gap-2 bg-slate-800/60 px-4 py-2 rounded-xl border border-[var(--content-border)]/50">
+          <span className="text-[var(--content-muted)] text-sm">Páginas estimadas:</span>
+          <span className="text-[var(--content-text)] font-bold text-lg">{paginasEstimadas || '—'}</span>
         </div>
-        <div className="flex items-center gap-2 bg-slate-800/60 px-4 py-2 rounded-xl border border-slate-700/50">
-          <span className="text-slate-400 text-sm">Formato:</span>
+        <div className="flex items-center gap-2 bg-slate-800/60 px-4 py-2 rounded-xl border border-[var(--content-border)]/50">
+          <span className="text-[var(--content-muted)] text-sm">Formato:</span>
           <span className={`font-bold text-lg ${modo === 'carta' ? 'text-purple-400' : 'text-amber-400'}`}>
             {modo === 'carta' ? '8.5" × 11" (3×4)' : '2" × 1" (Sticker)'}
           </span>
@@ -275,7 +275,7 @@ export default function QRBatch() {
         {seleccionados.length > 0 && (
           <button
             onClick={() => setShowPreview(!showPreview)}
-            className="flex items-center gap-2 ml-auto bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all"
+            className="flex items-center gap-2 ml-auto bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-white px-4 py-2 rounded-xl text-sm font-medium transition-all"
           >
             <Eye className="h-4 w-4" />
             {showPreview ? 'Ocultar' : 'Vista'} Previa
@@ -286,14 +286,14 @@ export default function QRBatch() {
       {/* ═══ Preview Section ═══ */}
       {showPreview && seleccionados.length > 0 && (
         <div className="print:hidden">
-          <div className="bg-slate-800/30 border border-slate-700 rounded-2xl p-6">
-            <h3 className="text-sm font-medium text-slate-400 mb-4">Vista Previa de Etiqueta</h3>
+          <div className="bg-slate-800/30 border border-[var(--content-border)] rounded-2xl p-6">
+            <h3 className="text-sm font-medium text-[var(--content-muted)] mb-4">Vista Previa de Etiqueta</h3>
             <div className="flex gap-6 overflow-x-auto pb-4">
               {equiposParaImprimir.slice(0, 4).map(eq => (
                 <PreviewCard key={eq.id} equipo={eq} modo={modo} />
               ))}
               {equiposParaImprimir.length > 4 && (
-                <div className="flex items-center px-6 text-slate-500 text-sm">
+                <div className="flex items-center px-6 text-[var(--content-muted)] text-sm">
                   +{equiposParaImprimir.length - 4} más...
                 </div>
               )}
@@ -303,19 +303,19 @@ export default function QRBatch() {
       )}
 
       {/* ═══ Toolbar ═══ */}
-      <div className="flex flex-wrap gap-3 print:hidden bg-slate-800/30 p-4 rounded-2xl border border-slate-700">
+      <div className="flex flex-wrap gap-3 print:hidden bg-slate-800/30 p-4 rounded-2xl border border-[var(--content-border)]">
         {/* Search */}
         <div className="flex-1 min-w-[200px] relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--content-muted)]" />
           <input
             type="text"
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
             placeholder="Buscar por nombre, serie o marca..."
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2.5 text-white text-sm placeholder:text-slate-600 focus:border-purple-500 focus:ring-1 focus:ring-purple-500/30 transition-all outline-none"
+            className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg pl-10 pr-4 py-2.5 text-white text-sm placeholder:text-[var(--content-muted)] focus:border-purple-500 focus:ring-1 focus:ring-purple-500/30 transition-all outline-none"
           />
           {busqueda && (
-            <button onClick={() => setBusqueda('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+            <button onClick={() => setBusqueda('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--content-muted)] hover:text-white">
               <X className="h-4 w-4" />
             </button>
           )}
@@ -326,18 +326,18 @@ export default function QRBatch() {
           <select
             value={area}
             onChange={e => setArea(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm appearance-none cursor-pointer focus:border-purple-500 outline-none"
+            className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-4 py-2.5 text-white text-sm appearance-none cursor-pointer focus:border-purple-500 outline-none"
           >
             <option value="">Todas las áreas</option>
             {areas.map(a => <option key={a} value={a}>{a}</option>)}
           </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--content-muted)] pointer-events-none" />
         </div>
 
         {/* Select All/None */}
         <button
           onClick={toggleSeleccionarTodos}
-          className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-all"
+          className="flex items-center gap-2 bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-all"
         >
           {allVisibleSelected ? <CheckSquare className="h-4 w-4 text-purple-400" /> : <Square className="h-4 w-4" />}
           {allVisibleSelected ? 'Deseleccionar' : 'Seleccionar'} visibles ({equiposFiltrados.length})
@@ -360,7 +360,7 @@ export default function QRBatch() {
             <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : equiposFiltrados.length === 0 ? (
-          <div className="text-center py-16 text-slate-500">
+          <div className="text-center py-16 text-[var(--content-muted)]">
             <QrCode className="h-12 w-12 mx-auto mb-3 opacity-30" />
             <p>No se encontraron equipos{busqueda ? ` para "${busqueda}"` : ''}</p>
           </div>
@@ -375,17 +375,17 @@ export default function QRBatch() {
                   className={`group cursor-pointer p-3 border rounded-xl transition-all duration-200 ${
                     selected
                       ? 'bg-purple-900/30 border-purple-500 shadow-lg shadow-purple-500/10 ring-1 ring-purple-500/20'
-                      : 'bg-slate-800/40 border-slate-700/50 hover:border-slate-500 hover:bg-slate-800/70'
+                      : 'bg-slate-800/40 border-[var(--content-border)]/50 hover:border-[var(--content-border)] hover:bg-slate-800/70'
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-white truncate">{eq.nombre}</p>
-                      <p className="text-[10px] text-slate-500 font-mono mt-0.5 truncate">{eq.serie}</p>
-                      {eq.area && <p className="text-[10px] text-slate-600 mt-0.5 truncate">{eq.area}</p>}
+                      <p className="text-[10px] text-[var(--content-muted)] font-mono mt-0.5 truncate">{eq.serie}</p>
+                      {eq.area && <p className="text-[10px] text-[var(--content-muted)] mt-0.5 truncate">{eq.area}</p>}
                     </div>
                     <div className={`ml-2 transition-all duration-200 ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'}`}>
-                      <CheckCircle className={`h-4 w-4 ${selected ? 'text-purple-400' : 'text-slate-600'}`} />
+                      <CheckCircle className={`h-4 w-4 ${selected ? 'text-purple-400' : 'text-[var(--content-muted)]'}`} />
                     </div>
                   </div>
                 </div>

@@ -78,8 +78,8 @@ export default function Preventivos() {
   return (
     <div className="p-4 md:p-6 space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-white">Mantenimientos Preventivos</h1>
-        <p className="text-slate-400 text-sm">
+        <h1 className="text-2xl font-bold text-[var(--content-text)]">Mantenimientos Preventivos</h1>
+        <p className="text-[var(--content-muted)] text-sm">
           Programación y seguimiento de preventivos
         </p>
       </div>
@@ -89,7 +89,7 @@ export default function Preventivos() {
         {[['todos','Todos'],['vencidos','Vencidos'],['proximos','Próximos 30d']].map(([v,l]) => (
           <button key={v} onClick={() => setFiltro(v)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              filtro === v ? 'bg-emerald-800/60 text-emerald-300' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+              filtro === v ? 'bg-emerald-800/60 text-emerald-300' : 'bg-[var(--content-surface)] text-[var(--content-muted)] hover:bg-[var(--content-border)]'
             }`}>
             {l}
           </button>
@@ -97,9 +97,9 @@ export default function Preventivos() {
       </div>
 
       {loading ? (
-        <div className="text-slate-400 py-12 text-center">Cargando preventivos...</div>
+        <div className="text-[var(--content-muted)] py-12 text-center">Cargando preventivos...</div>
       ) : visibles.length === 0 ? (
-        <div className="text-slate-500 py-12 text-center">
+        <div className="text-[var(--content-muted)] py-12 text-center">
           Sin preventivos en esta categoría.
         </div>
       ) : (
@@ -109,44 +109,44 @@ export default function Preventivos() {
             const urgente = dias !== null && dias <= 3;
             return (
               <div key={pp.id}
-                className={`bg-slate-800 rounded-xl border p-5 ${
-                  urgente ? 'border-red-700' : 'border-slate-700'
+                className={`bg-[var(--content-surface)] rounded-xl border p-5 ${
+                  urgente ? 'border-red-700' : 'border-[var(--content-border)]'
                 }`}>
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-white font-medium text-sm">
+                      <h3 className="text-[var(--content-text)] font-medium text-sm">
                         {pp.tipo_preventivo}
                       </h3>
                       <BadgeVencimiento fecha={pp.proxima_ejecucion} />
                     </div>
-                    <p className="text-slate-400 text-xs">
+                    <p className="text-[var(--content-muted)] text-xs">
                       {pp.equipo_nombre}
                       {pp.equipo_serie && (
-                        <span className="ml-1 font-mono text-slate-500">
+                        <span className="ml-1 font-mono text-[var(--content-muted)]">
                           ({pp.equipo_serie})
                         </span>
                       )}
                     </p>
                     {pp.equipo_area && (
-                      <p className="text-slate-500 text-xs mt-0.5">
+                      <p className="text-[var(--content-muted)] text-xs mt-0.5">
                         Área: {pp.equipo_area}
                       </p>
                     )}
                     {pp.descripcion_procedimiento && (
-                      <p className="text-slate-600 text-xs mt-2 line-clamp-2">
+                      <p className="text-[var(--content-muted)] text-xs mt-2 line-clamp-2">
                         {pp.descripcion_procedimiento}
                       </p>
                     )}
                   </div>
                   <div className="text-right ml-4 space-y-2">
                     <div>
-                      <p className="text-xs text-slate-500">Próxima ejecución</p>
+                      <p className="text-xs text-[var(--content-muted)]">Próxima ejecución</p>
                       <p className="text-white text-sm font-mono">
                         {pp.proxima_ejecucion}
                       </p>
                     </div>
-                    <p className="text-xs text-slate-600">
+                    <p className="text-xs text-[var(--content-muted)]">
                       Cada {pp.frecuencia_dias} días
                     </p>
                     <button onClick={() => handleEjecutar(pp.id)}

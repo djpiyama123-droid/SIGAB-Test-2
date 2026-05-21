@@ -13,7 +13,7 @@ const COLOR_MAP = {
   orange:  { bg: 'bg-orange-500/10',  text: 'text-orange-400'  },
   sky:     { bg: 'bg-sky-500/10',     text: 'text-sky-400'     },
   teal:    { bg: 'bg-teal-500/10',    text: 'text-teal-400'    },
-  slate:   { bg: 'bg-slate-500/10',   text: 'text-slate-400'   },
+  slate:   { bg: 'bg-slate-500/10',   text: 'text-[var(--content-muted)]'   },
 };
 
 export default function KPICard({ title, value, unit, trend = 'neutral', icon: Icon, color = 'emerald' }) {
@@ -31,13 +31,13 @@ export default function KPICard({ title, value, unit, trend = 'neutral', icon: I
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card decoration="top" decorationColor={color} className="bg-slate-900/40 border-slate-800 backdrop-blur-sm shadow-lg hover:shadow-emerald-500/10 transition-all">
+      <Card decoration="top" decorationColor={color} className="bg-[var(--content-bg)]/40 border-[var(--content-border)] backdrop-blur-sm shadow-lg hover:shadow-emerald-500/10 transition-all">
         <Flex alignItems="start">
           <div className="flex flex-col">
-            <Text className="text-slate-400 font-medium text-xs uppercase tracking-wider">{title}</Text>
+            <Text className="text-[var(--content-muted)] font-medium text-xs uppercase tracking-wider">{title}</Text>
             <Flex className="items-baseline justify-start space-x-2 mt-1">
-              <Metric className="text-white font-bold">{value}</Metric>
-              {unit && <Text className="text-slate-500 text-sm">{unit}</Text>}
+              <Metric className="text-[var(--content-text)] font-bold">{value}</Metric>
+              {unit && <Text className="text-[var(--content-muted)] text-sm">{unit}</Text>}
             </Flex>
           </div>
           {Icon && (
@@ -48,7 +48,7 @@ export default function KPICard({ title, value, unit, trend = 'neutral', icon: I
         </Flex>
         <Flex className="mt-4 justify-start space-x-2">
           <BadgeDelta deltaType={deltaType} size="xs" />
-          <Text className="text-slate-500 text-xs truncate">Vs. mes anterior</Text>
+          <Text className="text-[var(--content-muted)] text-xs truncate">Vs. mes anterior</Text>
         </Flex>
       </Card>
     </motion.div>

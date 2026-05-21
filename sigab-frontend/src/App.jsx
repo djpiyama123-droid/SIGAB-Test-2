@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sileo';
 import 'sileo/styles.css';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
@@ -27,8 +28,9 @@ import QRScanner from './pages/QRScanner';
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Toaster position="top-right" theme="dark" />
+    <ThemeProvider>
+      <AuthProvider>
+      <Toaster position="top-right" theme="light" />
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -59,6 +61,7 @@ export default function App() {
           </Route>
         </Routes>
       </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

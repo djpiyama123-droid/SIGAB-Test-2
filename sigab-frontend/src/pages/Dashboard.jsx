@@ -69,7 +69,7 @@ export default function Dashboard() {
             />
             <Activity className="absolute inset-0 m-auto h-8 w-8 text-emerald-500 animate-pulse" />
           </div>
-          <p className="text-slate-400 font-medium animate-pulse">Iniciando SIGAB Engine...</p>
+          <p className="text-[var(--content-muted)] font-medium animate-pulse">Iniciando SIGAB Engine...</p>
         </motion.div>
       </div>
     );
@@ -125,13 +125,13 @@ export default function Dashboard() {
               className="relative h-14 md:h-16 w-auto object-contain brightness-110 contrast-125"
             />
           </div>
-          <div className="h-12 w-px bg-slate-800 hidden md:block flex-shrink-0" />
+          <div className="h-12 w-px bg-[var(--content-surface)] hidden md:block flex-shrink-0" />
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tight flex items-center gap-2 flex-wrap">
               <span>CENTRO DE CONTROL</span>
               <span className="text-emerald-500">SIGAB</span>
             </h1>
-            <p className="text-slate-400 text-sm md:text-base font-medium mt-1">
+            <p className="text-[var(--content-muted)] text-sm md:text-base font-medium mt-1">
               HGR No.1 — IMSS | <span className="text-emerald-500/80">Monitor Biotecnológico en Tiempo Real</span>
             </p>
           </div>
@@ -210,8 +210,8 @@ export default function Dashboard() {
 
         {/* Mapa de Activos — ancho completo */}
         <GridItem span={isControlRoom ? 4 : 3}>
-          <Card className="bg-slate-900/40 border-slate-800 backdrop-blur-sm p-0 overflow-hidden">
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+          <Card className="bg-[var(--content-bg)]/40 border-[var(--content-border)] backdrop-blur-sm p-0 overflow-hidden">
+            <div className="p-5 border-b border-[var(--content-border)] flex items-center justify-between">
               <Title className="text-white">Mapa de Activos por Zona</Title>
               <StatusIndicator status="green" icon="Wifi" />
             </div>
@@ -223,12 +223,12 @@ export default function Dashboard() {
 
         {/* Cumplimiento de Mantenimiento — debajo del mapa */}
         <GridItem span={isControlRoom ? 4 : 3}>
-          <Card className="bg-slate-900/40 border-slate-800 backdrop-blur-sm">
+          <Card className="bg-[var(--content-bg)]/40 border-[var(--content-border)] backdrop-blur-sm">
             <Title className="text-white flex items-center gap-2">
               <ClipboardCheck className="h-5 w-5 text-blue-500" />
               Cumplimiento de Mantenimiento
             </Title>
-            <Text className="text-slate-500 text-xs mb-6">Programado vs. Ejecutado por mes</Text>
+            <Text className="text-[var(--content-muted)] text-xs mb-6">Programado vs. Ejecutado por mes</Text>
             <MaintenanceChart />
           </Card>
         </GridItem>

@@ -66,27 +66,27 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
         onClick={onClose}
       >
         <div
-          className="bg-slate-800 rounded-2xl border border-slate-700 max-w-2xl w-full max-h-[85vh] overflow-auto"
+          className="bg-[var(--content-surface)] rounded-2xl border border-[var(--content-border)] max-w-2xl w-full max-h-[85vh] overflow-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="p-6 border-b border-slate-700 flex justify-between items-start">
+          <div className="p-6 border-b border-[var(--content-border)] flex justify-between items-start">
             <div className="flex gap-4">
               {equipo.imagen_url && (
                 <img
                   src={equipo.imagen_url}
                   alt={equipo.nombre}
-                  className="w-16 h-16 rounded-lg object-cover bg-slate-900 flex-shrink-0"
+                  className="w-16 h-16 rounded-lg object-cover bg-[var(--content-bg)] flex-shrink-0"
                 />
               )}
               <div>
-                <h2 className="text-xl font-bold text-white">{equipo.nombre}</h2>
-                <p className="text-slate-400 text-sm mt-1">
+                <h2 className="text-xl font-bold text-[var(--content-text)]">{equipo.nombre}</h2>
+                <p className="text-[var(--content-muted)] text-sm mt-1">
                   {equipo.marca} — {equipo.modelo}
                 </p>
               </div>
             </div>
-            <button onClick={onClose} className="text-slate-400 hover:text-white p-1">
+            <button onClick={onClose} className="text-[var(--content-muted)] hover:text-white p-1">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -97,16 +97,16 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
             {/* Info grid & QR Code */}
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex-1 grid grid-cols-2 gap-4 text-sm w-full">
-                <div className="col-span-2 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 flex flex-col">
-                  <span className="text-slate-500 text-xs uppercase tracking-wider mb-0.5">N° Serie del Equipo</span>
+                <div className="col-span-2 bg-[var(--content-bg)]/50 p-3 rounded-lg border border-[var(--content-border)]/50 flex flex-col">
+                  <span className="text-[var(--content-muted)] text-xs uppercase tracking-wider mb-0.5">N° Serie del Equipo</span>
                   <p className="text-emerald-400 font-mono text-lg font-semibold">{equipo.serie || 'NO ASIGNADO'}</p>
                 </div>
-                <div className="col-span-2 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 flex flex-col">
-                  <span className="text-slate-500 text-xs uppercase tracking-wider mb-0.5">N° Inventario IMSS</span>
+                <div className="col-span-2 bg-[var(--content-bg)]/50 p-3 rounded-lg border border-[var(--content-border)]/50 flex flex-col">
+                  <span className="text-[var(--content-muted)] text-xs uppercase tracking-wider mb-0.5">N° Inventario IMSS</span>
                   <p className="text-blue-400 font-mono text-lg font-semibold">{equipo.inventario ? `HGR1-${equipo.inventario}` : 'NO ASIGNADO'}</p>
                 </div>
                 <div>
-                  <span className="text-slate-500">Estado</span>
+                  <span className="text-[var(--content-muted)]">Estado</span>
                   <p className="mt-1">
                     <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium text-white ${ESTADO_COLORS[equipo.estado]}`}>
                       {ESTADO_LABELS[equipo.estado]}
@@ -114,16 +114,16 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                   </p>
                 </div>
                 <div>
-                  <span className="text-slate-500">Criticidad</span>
+                  <span className="text-[var(--content-muted)]">Criticidad</span>
                   <p className="text-white capitalize mt-1">{equipo.criticidad || '—'}</p>
                 </div>
                 <div>
-                  <span className="text-slate-500">Piso</span>
-                  <p className="text-white mt-1">{equipo.piso || '—'}</p>
+                  <span className="text-[var(--content-muted)]">Piso</span>
+                  <p className="text-[var(--content-text)] mt-1">{equipo.piso || '—'}</p>
                 </div>
                 <div>
-                  <span className="text-slate-500">Area</span>
-                  <p className="text-white mt-1">{equipo.area || '—'}</p>
+                  <span className="text-[var(--content-muted)]">Area</span>
+                  <p className="text-[var(--content-text)] mt-1">{equipo.area || '—'}</p>
                 </div>
               </div>
               
@@ -137,8 +137,8 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                     includeMargin={false}
                   />
                   <div className="mt-3 text-center">
-                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest block">QR Único</span>
-                    <span className="text-xs font-mono text-slate-800 font-semibold">{equipo.qr_token}</span>
+                    <span className="text-[10px] uppercase font-bold text-[var(--content-muted)] tracking-widest block">QR Único</span>
+                    <span className="text-xs font-mono text-[var(--content-muted)] font-semibold">{equipo.qr_token}</span>
                   </div>
                 </div>
               )}
@@ -151,10 +151,10 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                 if (fotosArr.length > 1) { // Only show if more than 1 image (first one is already at the top)
                   return (
                     <div className="mb-6">
-                      <h3 className="text-sm font-semibold text-slate-300 mb-3">Galería de Imágenes</h3>
+                      <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-3">Galería de Imágenes</h3>
                       <div className="flex gap-2 overflow-x-auto pb-2">
                         {fotosArr.map((foto, idx) => (
-                           <div key={idx} className="relative flex-shrink-0 w-24 h-24 bg-black rounded-lg overflow-hidden border border-slate-700 hover:border-emerald-500 cursor-pointer shadow-lg" onClick={() => window.open(foto, '_blank')}>
+                           <div key={idx} className="relative flex-shrink-0 w-24 h-24 bg-black rounded-lg overflow-hidden border border-[var(--content-border)] hover:border-emerald-500 cursor-pointer shadow-lg" onClick={() => window.open(foto, '_blank')}>
                              <img src={foto} className="object-cover w-full h-full hover:opacity-75 transition-opacity" />
                            </div>
                         ))}
@@ -170,18 +170,18 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
             {/* Tickets / Órdenes de Servicio */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                  <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <h3 className="text-sm font-semibold text-[var(--content-muted)] flex items-center gap-2">
+                  <svg className="w-4 h-4 text-[var(--content-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                   Tickets / Órdenes de Servicio
                 </h3>
                 {historial.ordenes.length > 0 && (
-                  <span className="text-xs text-slate-500">{historial.ordenes.length} registro{historial.ordenes.length !== 1 ? 's' : ''}</span>
+                  <span className="text-xs text-[var(--content-muted)]">{historial.ordenes.length} registro{historial.ordenes.length !== 1 ? 's' : ''}</span>
                 )}
               </div>
               {historial.ordenes.length === 0 ? (
-                <p className="text-slate-500 text-sm">Sin órdenes registradas</p>
+                <p className="text-[var(--content-muted)] text-sm">Sin órdenes registradas</p>
               ) : (
                 <div className="space-y-2">
                   {historial.ordenes.slice(0, 5).map((os, i) => {
@@ -196,7 +196,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                         role={hasOsId ? 'button' : undefined}
                         tabIndex={hasOsId ? 0 : undefined}
                         onKeyDown={hasOsId ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOrdenAbierta(os.id); } } : undefined}
-                        className={`block bg-slate-900/50 rounded-lg p-3 text-sm ${hasOsId ? 'hover:bg-slate-800 hover:ring-1 ring-emerald-500/50 cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/70' : ''}`}
+                        className={`block bg-[var(--content-bg)]/50 rounded-lg p-3 text-sm ${hasOsId ? 'hover:bg-[var(--content-surface)] hover:ring-1 ring-emerald-500/50 cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/70' : ''}`}
                       >
                         <div className="flex justify-between items-start gap-2">
                           <div className="flex items-center gap-2 min-w-0">
@@ -219,9 +219,9 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                               </a>
                             )}
                           </div>
-                          <span className="text-slate-500 text-xs whitespace-nowrap flex-shrink-0">{os.fecha}</span>
+                          <span className="text-[var(--content-muted)] text-xs whitespace-nowrap flex-shrink-0">{os.fecha}</span>
                         </div>
-                        <p className="text-slate-400 mt-1.5 text-xs pl-4">
+                        <p className="text-[var(--content-muted)] mt-1.5 text-xs pl-4">
                           {os.falla_reportada || os.tipo_mantenimiento}
                         </p>
                         <div className="flex items-center gap-2 mt-2 pl-4">
@@ -235,7 +235,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                             {os.estado?.replace('_', ' ')}
                           </span>
                           {os.tipo_mantenimiento && (
-                            <span className="text-[10px] text-slate-600 capitalize">{os.tipo_mantenimiento}</span>
+                            <span className="text-[10px] text-[var(--content-muted)] capitalize">{os.tipo_mantenimiento}</span>
                           )}
                         </div>
                       </div>
@@ -248,14 +248,14 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
             {/* Traslados */}
             {historial.traslados.length > 0 && (
               <div>
-                <h3 className="text-sm font-semibold text-slate-300 mb-3">Traslados Recientes</h3>
+                <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-3">Traslados Recientes</h3>
                 <div className="space-y-2">
                   {historial.traslados.slice(0, 5).map((t, i) => (
-                    <div key={i} className="bg-slate-900/50 rounded-lg p-3 text-sm flex justify-between">
+                    <div key={i} className="bg-[var(--content-bg)]/50 rounded-lg p-3 text-sm flex justify-between">
                       <span className="text-white">
                         {t.area_origen} → {t.area_destino}
                       </span>
-                      <span className="text-slate-500">{t.fecha_movimiento}</span>
+                      <span className="text-[var(--content-muted)]">{t.fecha_movimiento}</span>
                     </div>
                   ))}
                 </div>
@@ -264,7 +264,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
           </div>
 
           {/* Footer con acciones */}
-          <div className="p-4 border-t border-slate-700 flex justify-between items-center bg-slate-900/40 rounded-b-2xl">
+          <div className="p-4 border-t border-[var(--content-border)] flex justify-between items-center bg-[var(--content-bg)]/40 rounded-b-2xl">
             <button
               type="button"
               onClick={() => setConfirmandoEliminar(true)}
@@ -280,14 +280,14 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
               <button
                 type="button"
                 onClick={() => setShowQR(true)}
-                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm rounded-lg transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-text)] text-sm rounded-lg transition-colors flex items-center gap-2"
               >
                 📱 QR
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm rounded-lg transition-colors"
+                className="px-4 py-2 bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-text)] text-sm rounded-lg transition-colors"
               >
                 Cerrar
               </button>

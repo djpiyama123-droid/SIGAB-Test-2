@@ -46,8 +46,8 @@ export default function DashboardCharts({ resumen }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-sm">
-        <h3 className="text-sm font-semibold text-slate-300 mb-4">Equipos por Estado</h3>
+      <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-4">Equipos por Estado</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -73,8 +73,8 @@ export default function DashboardCharts({ resumen }) {
         </div>
       </div>
 
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-sm">
-        <h3 className="text-sm font-semibold text-slate-300 mb-4">Órdenes de Servicio (últimos 6 meses)</h3>
+      <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-4">Órdenes de Servicio (últimos 6 meses)</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={ordenesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>

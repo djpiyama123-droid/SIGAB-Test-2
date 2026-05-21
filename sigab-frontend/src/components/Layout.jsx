@@ -10,7 +10,6 @@ export default function Layout() {
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Items para la barra inferior (móvil)
   const BOTTOM_NAV = [
     { path: '/', label: 'Inicio', icon: 'LayoutDashboard' },
     { path: '/equipos', label: 'Equipos', icon: 'Cpu' },
@@ -20,8 +19,10 @@ export default function Layout() {
   ];
 
   return (
-    <div className="flex h-screen bg-slate-900 text-slate-100 print:block overflow-hidden">
-
+    <div
+      className="flex h-screen print:block overflow-hidden"
+      style={{ background: 'var(--content-bg)', color: 'var(--content-text)' }}
+    >
       {/* ── Overlay móvil ── */}
       {sidebarOpen && (
         <div
@@ -47,7 +48,10 @@ export default function Layout() {
         <div className="print:hidden">
           <Header onMenuClick={() => setSidebarOpen(true)} />
         </div>
-        <main className="flex-1 overflow-auto bg-slate-900 relative print:overflow-visible print:bg-white pb-16 lg:pb-0">
+        <main
+          className="flex-1 overflow-auto relative print:overflow-visible print:bg-white pb-16 lg:pb-0"
+          style={{ background: 'var(--content-bg)' }}
+        >
           <div className="text-accent-fix h-full">
             <Outlet />
           </div>
@@ -61,16 +65,21 @@ export default function Layout() {
         </main>
 
         {/* ── Barra de Navegación Inferior (Solo Móvil) ── */}
-        <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-slate-950/80 backdrop-blur-md border-t border-slate-800 flex justify-around items-center px-2 py-1 z-40">
+        <nav
+          className="lg:hidden fixed bottom-0 inset-x-0 backdrop-blur-md flex justify-around items-center px-2 py-1 z-40 border-t"
+          style={{
+            background: 'var(--bottom-nav-bg)',
+            borderColor: 'var(--bottom-nav-border)',
+          }}
+        >
           {BOTTOM_NAV.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
-              className={({ isActive }) => 
-                `flex flex-col items-center gap-1 p-2 transition-colors ${
-                  isActive ? 'text-indigo-400' : 'text-slate-500 hover:text-slate-300'
-                }`
-              }
+              className="flex flex-col items-center gap-1 p-2 transition-colors"
+              style={({ isActive }) => ({
+                color: isActive ? 'var(--bottom-nav-active)' : 'var(--bottom-nav-muted)',
+              })}
             >
               {Lucide[item.icon] && React.createElement(Lucide[item.icon], { size: 20 })}
               <span className="text-[10px] font-medium">{item.label}</span>

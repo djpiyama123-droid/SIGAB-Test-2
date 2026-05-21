@@ -26,18 +26,18 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[var(--content-bg)] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-white">
           SIGAB
         </h2>
-        <p className="mt-2 text-center text-sm text-slate-400">
+        <p className="mt-2 text-center text-sm text-[var(--content-muted)]">
           Hospital General Regional No. 1 — IMSS Tijuana
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-slate-900 py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-slate-800">
+        <div className="bg-[var(--content-bg)] py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-[var(--content-border)]">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-md text-sm">
@@ -46,7 +46,7 @@ export default function Login() {
             )}
             
             <div>
-              <label htmlFor="matricula" className="block text-sm font-medium text-slate-300">
+              <label htmlFor="matricula" className="block text-sm font-medium text-[var(--content-muted)]">
                 Matrícula
               </label>
               <div className="mt-1">
@@ -57,14 +57,14 @@ export default function Login() {
                   required
                   value={matricula}
                   onChange={(e) => setMatricula(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-400 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm"
+                  className="block w-full appearance-none rounded-md border border-[var(--content-border)] bg-[var(--content-surface)] px-3 py-2 text-[var(--content-text)] placeholder-slate-400 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm"
                   placeholder="Ej. ADMIN001"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-300">
+              <label htmlFor="password" className="block text-sm font-medium text-[var(--content-muted)]">
                 Contraseña
               </label>
               <div className="mt-1">
@@ -75,7 +75,7 @@ export default function Login() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-400 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm"
+                  className="block w-full appearance-none rounded-md border border-[var(--content-border)] bg-[var(--content-surface)] px-3 py-2 text-[var(--content-text)] placeholder-slate-400 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm"
                 />
               </div>
             </div>

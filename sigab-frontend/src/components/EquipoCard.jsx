@@ -3,11 +3,11 @@ import { ESTADO_COLORS, ESTADO_LABELS, ESTADO_DOT_COLORS } from '../utils/consta
 export default function EquipoCard({ equipo, onClick }) {
   return (
     <div
-      className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden hover:border-slate-600 cursor-pointer transition-all group"
+      className="bg-[var(--content-surface)] rounded-xl border border-[var(--content-border)] overflow-hidden hover:border-[var(--content-border)] cursor-pointer transition-all group"
       onClick={() => onClick?.(equipo)}
     >
       {/* Imagen del equipo */}
-      <div className="relative h-36 bg-slate-900/50 flex items-center justify-center overflow-hidden">
+      <div className="relative h-36 bg-[var(--content-bg)]/50 flex items-center justify-center overflow-hidden">
         {equipo.imagen_url ? (
           <img
             src={equipo.imagen_url}
@@ -16,7 +16,7 @@ export default function EquipoCard({ equipo, onClick }) {
             onError={(e) => { e.target.style.display = 'none'; }}
           />
         ) : (
-          <div className="flex flex-col items-center gap-2 text-slate-600">
+          <div className="flex flex-col items-center gap-2 text-[var(--content-muted)]">
             <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
             </svg>
@@ -37,17 +37,17 @@ export default function EquipoCard({ equipo, onClick }) {
 
       {/* Info */}
       <div className="p-4">
-        <h3 className="text-white font-semibold text-sm mb-1 truncate">{equipo.nombre}</h3>
-        <p className="text-slate-400 text-xs truncate">{equipo.marca} — {equipo.modelo}</p>
+        <h3 className="text-[var(--content-text)] font-semibold text-sm mb-1 truncate">{equipo.nombre}</h3>
+        <p className="text-[var(--content-muted)] text-xs truncate">{equipo.marca} — {equipo.modelo}</p>
 
-        <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-2 gap-2 text-xs">
+        <div className="mt-3 pt-3 border-t border-[var(--content-border)]/50 grid grid-cols-2 gap-2 text-xs">
           <div>
-            <span className="text-slate-500">Área</span>
-            <p className="text-slate-300 truncate">{equipo.area || '—'}</p>
+            <span className="text-[var(--content-muted)]">Área</span>
+            <p className="text-[var(--content-muted)] truncate">{equipo.area || '—'}</p>
           </div>
           <div>
-            <span className="text-slate-500">Serie</span>
-            <p className="text-slate-300 font-mono truncate">{equipo.serie}</p>
+            <span className="text-[var(--content-muted)]">Serie</span>
+            <p className="text-[var(--content-muted)] font-mono truncate">{equipo.serie}</p>
           </div>
         </div>
 

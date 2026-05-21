@@ -201,15 +201,15 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
   // ── Render ──────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 border border-slate-700/50 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92vh]">
+      <div className="bg-[var(--content-bg)] border border-[var(--content-border)]/50 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92vh]">
         {/* ── Zona Visual (izquierda) ── */}
-        <div className="md:w-1/2 p-4 bg-slate-950 border-r border-slate-800 flex flex-col">
+        <div className="md:w-1/2 p-4 bg-slate-950 border-r border-[var(--content-border)] flex flex-col">
           {/* Tabs Cámara / Archivo */}
-          <div className="flex gap-1 mb-4 bg-slate-900 rounded-lg p-1">
+          <div className="flex gap-1 mb-4 bg-[var(--content-bg)] rounded-lg p-1">
             <button
               onClick={() => { setMode('camera'); setPreview(null); setScanResult(null); }}
               className={`flex-1 py-2 px-3 rounded text-sm font-medium transition-colors ${
-                mode === 'camera' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                mode === 'camera' ? 'bg-emerald-600 text-white' : 'text-[var(--content-muted)] hover:text-white'
               }`}
             >
               📷 Cámara
@@ -217,7 +217,7 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
             <button
               onClick={() => { setMode('file'); setPreview(null); setScanResult(null); stopCamera(); }}
               className={`flex-1 py-2 px-3 rounded text-sm font-medium transition-colors ${
-                mode === 'file' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                mode === 'file' ? 'bg-emerald-600 text-white' : 'text-[var(--content-muted)] hover:text-white'
               }`}
             >
               📁 Archivo
@@ -230,7 +230,7 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
               <div className="relative w-full">
                 <video
                   ref={videoRef}
-                  className="w-full max-h-[55vh] rounded-lg bg-slate-800 object-contain"
+                  className="w-full max-h-[55vh] rounded-lg bg-[var(--content-surface)] object-contain"
                   playsInline muted
                 />
                 {streaming && (
@@ -246,12 +246,12 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
             )}
 
             {!preview && mode === 'camera' && cameraError && (
-              <div className="text-center text-slate-400 p-6">
+              <div className="text-center text-[var(--content-muted)] p-6">
                 <div className="text-4xl mb-3">⚠️</div>
                 <p className="text-sm mb-3">{cameraError}</p>
                 <button
                   onClick={() => setMode('file')}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm"
+                  className="px-4 py-2 bg-[var(--content-surface)] hover:bg-[var(--content-surface)] border border-[var(--content-border)] text-[var(--content-text)] rounded-lg text-sm"
                 >
                   Usar Archivo
                 </button>
@@ -260,11 +260,11 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
 
             {!preview && mode === 'file' && (
               <div
-                className="w-full h-64 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-slate-800/50 transition-all text-slate-400 group"
+                className="w-full h-64 border-2 border-dashed border-[var(--content-border)] rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-slate-800/50 transition-all text-[var(--content-muted)] group"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">📄</span>
-                <p className="font-medium text-slate-300">Click para seleccionar imagen</p>
+                <p className="font-medium text-[var(--content-muted)]">Click para seleccionar imagen</p>
                 <p className="text-xs mt-2">PNG · JPG · WEBP — máx 15 MB</p>
               </div>
             )}
@@ -278,7 +278,7 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
                 />
                 {scanning && (
                   <div className="absolute inset-0 bg-emerald-500/10 backdrop-blur-[2px] flex items-center justify-center border-t-2 border-b-2 border-emerald-400 animate-[scan_2s_ease-in-out_infinite]">
-                    <div className="flex bg-slate-900/90 text-emerald-400 px-4 py-2 rounded-full border border-emerald-500/50 shadow-emerald-500/20 shadow-lg items-center gap-2">
+                    <div className="flex bg-[var(--content-bg)]/90 text-emerald-400 px-4 py-2 rounded-full border border-emerald-500/50 shadow-emerald-500/20 shadow-lg items-center gap-2">
                       <span className="animate-spin relative flex h-3 w-3">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
@@ -289,7 +289,7 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
                 )}
                 <button
                   onClick={reintentar}
-                  className="mt-3 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors text-white"
+                  className="mt-3 px-4 py-2 bg-[var(--content-surface)] hover:bg-[var(--content-border)] rounded-lg text-sm transition-colors text-white"
                 >
                   ↺ Capturar otra
                 </button>
@@ -309,15 +309,15 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
         </div>
 
         {/* ── Zona Formulario Extraído (derecha) ── */}
-        <div className="md:w-1/2 p-4 flex flex-col bg-slate-900 overflow-hidden">
-          <div className="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+        <div className="md:w-1/2 p-4 flex flex-col bg-[var(--content-bg)] overflow-hidden">
+          <div className="flex justify-between items-center mb-4 border-b border-[var(--content-border)] pb-3">
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
                 <span className="text-emerald-400">✨</span> Extracción IMSS · v3
               </h3>
-              <p className="text-xs text-slate-500">Gemma 3:4b local · Gemini fallback · SIGAB-IMSS-OS-V3</p>
+              <p className="text-xs text-[var(--content-muted)]">Gemma 3:4b local · Gemini fallback · SIGAB-IMSS-OS-V3</p>
             </div>
-            <button onClick={onClose} className="text-slate-500 hover:text-white p-2">
+            <button onClick={onClose} className="text-[var(--content-muted)] hover:text-white p-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -326,9 +326,9 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
 
           <div className="flex-1 overflow-y-auto space-y-3 pr-2">
             {!file && !scanning && !scanResult && (
-              <div className="text-center text-slate-500 py-12">
+              <div className="text-center text-[var(--content-muted)] py-12">
                 <div className="text-5xl mb-3">🤖</div>
-                <p className="font-medium text-slate-400">Esperando captura…</p>
+                <p className="font-medium text-[var(--content-muted)]">Esperando captura…</p>
                 <p className="text-xs mt-2">
                   Asegúrate que la hoja esté bien iluminada y el banner <code className="text-emerald-400">SIGAB-IMSS-OS-V3</code> sea visible.
                 </p>
@@ -338,7 +338,7 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
             {scanning && (
               <div className="space-y-2 animate-pulse">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-9 bg-slate-800 rounded"></div>
+                  <div key={i} className="h-9 bg-[var(--content-surface)] rounded"></div>
                 ))}
               </div>
             )}
@@ -346,11 +346,11 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
             {scanResult && (
               <>
                 {/* Banner de motor + confianza */}
-                <div className="flex items-center justify-between bg-slate-950 border border-slate-700/50 rounded-lg px-3 py-2 mb-2">
-                  <span className="text-xs text-slate-400">
+                <div className="flex items-center justify-between bg-slate-950 border border-[var(--content-border)]/50 rounded-lg px-3 py-2 mb-2">
+                  <span className="text-xs text-[var(--content-muted)]">
                     Motor: <span className="text-emerald-400 font-mono">{scanResult.engine || 'gemma'}</span>
                   </span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-[var(--content-muted)]">
                     Confianza:{' '}
                     <span
                       className={`font-mono font-semibold ${
@@ -374,14 +374,14 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
                     const isLong = LONG_FIELDS.has(key);
                     return (
                       <div key={key}>
-                        <label className="block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wide">
+                        <label className="block text-xs font-medium text-[var(--content-muted)] mb-1 uppercase tracking-wide">
                           {label}
                         </label>
                         {isLong ? (
                           <textarea
                             value={val || ''}
                             onChange={(e) => updateField(key, e.target.value)}
-                            className="w-full bg-slate-950 border border-slate-700 text-emerald-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 h-20 resize-none"
+                            className="w-full bg-slate-950 border border-[var(--content-border)] text-emerald-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 h-20 resize-none"
                           />
                         ) : (
                           <input
@@ -389,7 +389,7 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
                             value={val ?? ''}
                             onChange={(e) => updateField(key, e.target.value)}
                             className={`w-full bg-slate-950 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 ${
-                              val ? 'border-emerald-500/30 text-emerald-300' : 'border-slate-700 text-slate-400'
+                              val ? 'border-emerald-500/30 text-emerald-300' : 'border-[var(--content-border)] text-[var(--content-muted)]'
                             }`}
                           />
                         )}
@@ -402,13 +402,13 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
 
                 {/* Refacciones extraídas (si las hay) */}
                 {Array.isArray(scanResult.refacciones) && scanResult.refacciones.length > 0 && (
-                  <div className="border-t border-slate-800 pt-2">
-                    <label className="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wide">
+                  <div className="border-t border-[var(--content-border)] pt-2">
+                    <label className="block text-xs font-medium text-[var(--content-muted)] mb-2 uppercase tracking-wide">
                       Refacciones detectadas ({scanResult.refacciones.length})
                     </label>
                     <ul className="space-y-1 text-xs">
                       {scanResult.refacciones.map((r, i) => (
-                        <li key={i} className="bg-slate-950 border border-slate-700 rounded px-2 py-1">
+                        <li key={i} className="bg-slate-950 border border-[var(--content-border)] rounded px-2 py-1">
                           {r.cantidad}× {r.descripcion} {r.folio ? `(${r.folio})` : ''}
                         </li>
                       ))}
@@ -419,10 +419,10 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
             )}
           </div>
 
-          <div className="pt-3 border-t border-slate-800 mt-3 flex justify-end gap-2">
+          <div className="pt-3 border-t border-[var(--content-border)] mt-3 flex justify-end gap-2">
             <button
               onClick={onClose}
-              className="px-3 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition text-sm"
+              className="px-3 py-2 bg-[var(--content-surface)] text-white rounded-lg hover:bg-[var(--content-border)] transition text-sm"
             >
               Cancelar
             </button>
