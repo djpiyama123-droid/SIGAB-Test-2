@@ -6,7 +6,7 @@ export default function ProtectedRoute({ allowedRoles }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-950 text-white">
+      <div className="flex items-center justify-center min-h-screen bg-[var(--content-bg)] text-white">
         Cargando...
       </div>
     );

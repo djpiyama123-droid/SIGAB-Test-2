@@ -25,8 +25,8 @@ const data = [
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900/90 border border-slate-700 p-3 rounded-xl backdrop-blur-md shadow-2xl">
-        <p className="text-slate-400 text-xs mb-1 font-medium">{label}</p>
+      <div className="bg-[var(--content-bg)]/90 border border-[var(--content-border)] p-3 rounded-xl backdrop-blur-md shadow-2xl">
+        <p className="text-[var(--content-muted)] text-xs mb-1 font-medium">{label}</p>
         <p className="text-emerald-400 font-bold text-sm">
           Salud: <span className="text-white">{payload[0].value}%</span>
         </p>

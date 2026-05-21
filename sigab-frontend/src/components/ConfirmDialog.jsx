@@ -24,7 +24,7 @@ export default function ConfirmDialog({
       onClick={onCancelar}
     >
       <div
-        className="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl max-w-md w-full p-6"
+        className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl shadow-2xl max-w-md w-full p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-4">
@@ -41,14 +41,14 @@ export default function ConfirmDialog({
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-white text-base font-semibold">{titulo}</h3>
-            <p className="text-slate-400 text-sm mt-1">{mensaje}</p>
+            <p className="text-[var(--content-muted)] text-sm mt-1">{mensaje}</p>
           </div>
         </div>
 
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={onCancelar}
-            className="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-medium transition-colors"
+            className="px-4 py-2 rounded-lg bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-text)] text-sm font-medium transition-colors"
           >
             {textoCancelar}
           </button>

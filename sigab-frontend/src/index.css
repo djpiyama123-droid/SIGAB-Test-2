@@ -4,22 +4,108 @@
 
 /* ── Tipografía global ── */
 body {
-  font-family: 'Lexend', 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Variables CSS — Design tokens de SIGAB ── */
-:root {
-  --color-primary:     #4F46E5;
-  --color-secondary:   #6366F1;
-  --color-accent:      #818CF8;
-  --color-glow:        rgba(79, 70, 229, 0.15);
-  --color-bg:          #0F172A;
-  --color-surface:     rgba(255, 255, 255, 0.04);
-  --color-border:      rgba(255, 255, 255, 0.08);
+/* ══════════════════════════════════════════════════════════
+   SISTEMA DE TEMAS — 3 modos seleccionables
+   ══════════════════════════════════════════════════════════ */
 
-  /* Z-index scale */
+/* Tema por defecto: Azul IMSS */
+:root,
+[data-theme="blue"] {
+  --sidebar-bg:        #006CB7;
+  --sidebar-text:      #fff;
+  --sidebar-border:    rgba(255,255,255,0.2);
+  --sidebar-active:    rgba(255,255,255,0.2);
+  --sidebar-hover:     rgba(255,255,255,0.12);
+  --content-bg:        #F8FAFC;
+  --content-surface:   #fff;
+  --content-border:    #E2E8F0;
+  --content-text:      #1E293B;
+  --content-muted:     #64748B;
+  --accent:            #006CB7;
+  --accent-dark:       #00497D;
+  --accent-light:      #DCEBF7;
+  --header-bg:         #fff;
+  --header-border:     #E2E8F0;
+  --header-text:       #1E293B;
+  --header-muted:      #64748B;
+  --bottom-nav-bg:     rgba(255,255,255,0.9);
+  --bottom-nav-border: #E2E8F0;
+  --bottom-nav-active: #006CB7;
+  --bottom-nav-muted:  #94A3B8;
+
+  --z-dropdown:     20;
+  --z-sticky:       30;
+  --z-overlay:      40;
+  --z-tooltip:      45;
+  --z-modal:        50;
+  --z-modal-nested: 60;
+  --z-confirm:      70;
+  --z-toast:        80;
+}
+
+/* Tema Verde SIGAH */
+[data-theme="green"] {
+  --sidebar-bg:        #059669;
+  --sidebar-text:      #fff;
+  --sidebar-border:    rgba(255,255,255,0.2);
+  --sidebar-active:    rgba(255,255,255,0.2);
+  --sidebar-hover:     rgba(255,255,255,0.12);
+  --content-bg:        #F8FAFC;
+  --content-surface:   #fff;
+  --content-border:    #E2E8F0;
+  --content-text:      #1E293B;
+  --content-muted:     #64748B;
+  --accent:            #059669;
+  --accent-dark:       #047857;
+  --accent-light:      #DCFCE7;
+  --header-bg:         #fff;
+  --header-border:     #E2E8F0;
+  --header-text:       #1E293B;
+  --header-muted:      #64748B;
+  --bottom-nav-bg:     rgba(255,255,255,0.9);
+  --bottom-nav-border: #E2E8F0;
+  --bottom-nav-active: #059669;
+  --bottom-nav-muted:  #94A3B8;
+
+  --z-dropdown:     20;
+  --z-sticky:       30;
+  --z-overlay:      40;
+  --z-tooltip:      45;
+  --z-modal:        50;
+  --z-modal-nested: 60;
+  --z-confirm:      70;
+  --z-toast:        80;
+}
+
+/* Tema Oscuro SIGAH */
+[data-theme="dark"] {
+  --sidebar-bg:        #0F172A;
+  --sidebar-text:      #fff;
+  --sidebar-border:    rgba(255,255,255,0.1);
+  --sidebar-active:    rgba(5,150,105,0.25);
+  --sidebar-hover:     rgba(255,255,255,0.07);
+  --content-bg:        #0F172A;
+  --content-surface:   #1E293B;
+  --content-border:    #334155;
+  --content-text:      #F1F5F9;
+  --content-muted:     #94A3B8;
+  --accent:            #059669;
+  --accent-dark:       #047857;
+  --accent-light:      rgba(5,150,105,0.15);
+  --header-bg:         #1E293B;
+  --header-border:     #334155;
+  --header-text:       #F1F5F9;
+  --header-muted:      #94A3B8;
+  --bottom-nav-bg:     rgba(15,23,42,0.92);
+  --bottom-nav-border: #334155;
+  --bottom-nav-active: #059669;
+  --bottom-nav-muted:  #64748B;
+
   --z-dropdown:     20;
   --z-sticky:       30;
   --z-overlay:      40;
@@ -32,24 +118,24 @@ body {
 
 /* ── Focus ring global — accesibilidad ── */
 *:focus-visible {
-  outline: 2px solid #6366F1;
+  outline: 2px solid var(--accent, #006CB7);
   outline-offset: 2px;
 }
 
-/* Scrollbar personalizado para modo oscuro */
+/* Scrollbar — responde al tema activo */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: var(--content-bg, #F8FAFC);
 }
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: var(--content-border, #CBD5E1);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: var(--content-muted, #64748B);
 }
 
 /* ═══════════════════════════════════════════════════════════

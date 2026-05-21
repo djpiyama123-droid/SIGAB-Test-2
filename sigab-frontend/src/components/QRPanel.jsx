@@ -79,14 +79,14 @@ export default function QRPanel({ equipo, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-      <div className="bg-slate-800 rounded-2xl w-full max-w-md border border-slate-700 overflow-hidden">
+      <div className="bg-[var(--content-surface)] rounded-2xl w-full max-w-md border border-[var(--content-border)] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-900/50">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--content-border)] bg-[var(--content-bg)]/50">
           <div>
-            <h2 className="text-sm font-bold text-white">Código QR</h2>
-            <p className="text-xs text-slate-500">{equipo.nombre}</p>
+            <h2 className="text-sm font-bold text-[var(--content-text)]">Código QR</h2>
+            <p className="text-xs text-[var(--content-muted)]">{equipo.nombre}</p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-700">✕</button>
+          <button onClick={onClose} className="text-[var(--content-muted)] hover:text-white p-1.5 rounded-lg hover:bg-[var(--content-border)]">✕</button>
         </div>
 
         <div className="p-6 space-y-5">
@@ -97,16 +97,16 @@ export default function QRPanel({ equipo, onClose }) {
             ) : (
               <div className="text-center space-y-3">
                 <div className="text-6xl opacity-30">📱</div>
-                <p className="text-slate-600 text-sm">Genera el QR para este equipo</p>
+                <p className="text-[var(--content-muted)] text-sm">Genera el QR para este equipo</p>
               </div>
             )}
           </div>
 
           {/* Token info */}
           {equipo.qr_token && (
-            <div className="bg-slate-900 rounded-lg p-3 border border-slate-700">
+            <div className="bg-[var(--content-bg)] rounded-lg p-3 border border-[var(--content-border)]">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-[10px] text-slate-500 uppercase tracking-widest">Token QR</span>
+                <span className="text-[10px] text-[var(--content-muted)] uppercase tracking-widest">Token QR</span>
                 <button
                   onClick={handleCopiarURL}
                   className="text-[10px] text-emerald-400 hover:text-emerald-300 font-medium"
@@ -114,10 +114,10 @@ export default function QRPanel({ equipo, onClose }) {
                   Copiar URL pública
                 </button>
               </div>
-              <p className="text-sm font-mono text-slate-300 break-all">
+              <p className="text-sm font-mono text-[var(--content-muted)] break-all">
                 {qrInfo?.qr_token || equipo.qr_token}
               </p>
-              <p className="text-[10px] text-slate-600 mt-1 break-all">
+              <p className="text-[10px] text-[var(--content-muted)] mt-1 break-all">
                 URL: {publicUrl}
               </p>
             </div>
@@ -148,7 +148,7 @@ export default function QRPanel({ equipo, onClose }) {
             <a
               href={qrUrl}
               download={`qr_${equipo.serie || equipo.id}.png`}
-              className="block w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-xl transition-colors text-center"
+              className="block w-full py-2.5 bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-white text-sm font-medium rounded-xl transition-colors text-center"
             >
               ⬇ Descargar QR PNG
             </a>
@@ -156,8 +156,8 @@ export default function QRPanel({ equipo, onClose }) {
         </div>
 
         {/* Footer tip */}
-        <div className="bg-slate-900/50 border-t border-slate-700 px-4 py-3">
-          <p className="text-[10px] text-slate-600 text-center leading-relaxed">
+        <div className="bg-[var(--content-bg)]/50 border-t border-[var(--content-border)] px-4 py-3">
+          <p className="text-[10px] text-[var(--content-muted)] text-center leading-relaxed">
             Al escanear el QR, cualquier persona puede ver la ficha pública del equipo
             sin necesidad de iniciar sesión. Ideal para impresión de etiquetas y auditorías.
           </p>

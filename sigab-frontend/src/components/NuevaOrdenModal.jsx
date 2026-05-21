@@ -53,15 +53,15 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
       {/* Modal */}
       <form
         onSubmit={handleCrear}
-        className="relative bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl"
+        className="relative bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Nueva Orden de Servicio</h2>
+          <h2 className="text-lg font-semibold text-[var(--content-text)]">Nueva Orden de Servicio</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-700"
+            className="text-[var(--content-muted)] hover:text-white transition-colors w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[var(--content-border)]"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
               <path d="M18 6L6 18M6 6l12 12" />
@@ -84,20 +84,20 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
             ['piso', 'Piso', 'text'],
           ].map(([k, label]) => (
             <div key={k}>
-              <label className="text-xs text-slate-400 block mb-1">{label}</label>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">{label}</label>
               <input
                 value={form[k]}
                 onChange={set(k)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-emerald-600"
+                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600"
               />
             </div>
           ))}
           <div>
-            <label className="text-xs text-slate-400 block mb-1">Tipo</label>
+            <label className="text-xs text-[var(--content-muted)] block mb-1">Tipo</label>
             <select
               value={form.tipo_mantenimiento}
               onChange={set('tipo_mantenimiento')}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white"
+              className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]"
             >
               {['correctivo', 'preventivo', 'instalacion', 'calibracion'].map((t) => (
                 <option key={t} value={t}>{t}</option>
@@ -105,11 +105,11 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
             </select>
           </div>
           <div>
-            <label className="text-xs text-slate-400 block mb-1">Prioridad</label>
+            <label className="text-xs text-[var(--content-muted)] block mb-1">Prioridad</label>
             <select
               value={form.prioridad}
               onChange={set('prioridad')}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white"
+              className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]"
             >
               {['baja', 'media', 'alta', 'critica'].map((p) => (
                 <option key={p} value={p}>{p}</option>
@@ -119,13 +119,13 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
         </div>
 
         <div>
-          <label className="text-xs text-slate-400 block mb-1">Falla reportada *</label>
+          <label className="text-xs text-[var(--content-muted)] block mb-1">Falla reportada *</label>
           <textarea
             required
             rows={3}
             value={form.falla_reportada}
             onChange={set('falla_reportada')}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-600"
+            className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600"
           />
         </div>
 
@@ -133,7 +133,7 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors"
+            className="px-4 py-2 text-sm text-[var(--content-muted)] hover:text-white transition-colors"
           >
             Cancelar
           </button>

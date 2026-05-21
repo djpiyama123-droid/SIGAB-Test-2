@@ -32,11 +32,11 @@ export default function Metrologia() {
     <div className="p-4 md:p-6 space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-[var(--content-text)] flex items-center gap-3">
             <ShieldCheck className="h-8 w-8 text-blue-500" />
             Metrología y Calibración
           </h1>
-          <p className="text-slate-400 mt-1">Control de exactitud y certificados de instrumentos de medición.</p>
+          <p className="text-[var(--content-muted)] mt-1">Control de exactitud y certificados de instrumentos de medición.</p>
         </div>
         <button
           onClick={() => toast('Registro de nueva calibración — disponible en la próxima fase del módulo', { icon: 'ℹ️' })}
@@ -47,9 +47,9 @@ export default function Metrologia() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-slate-800/50 border border-slate-700 p-6 rounded-2xl">
-          <p className="text-slate-400 text-sm">Equipos Calibrados</p>
-          <p className="text-3xl font-bold text-white mt-2">{calibraciones.length}</p>
+        <div className="bg-slate-800/50 border border-[var(--content-border)] p-6 rounded-2xl">
+          <p className="text-[var(--content-muted)] text-sm">Equipos Calibrados</p>
+          <p className="text-3xl font-bold text-[var(--content-text)] mt-2">{calibraciones.length}</p>
         </div>
         <div className="bg-orange-900/10 border border-orange-900/50 p-6 rounded-2xl">
           <p className="text-orange-400/80 text-sm">Próximos a Vencer (30d)</p>
@@ -63,16 +63,16 @@ export default function Metrologia() {
         </div>
       </div>
 
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-x-auto">
+      <div className="bg-[var(--content-bg)]/50 border border-[var(--content-border)] rounded-2xl overflow-x-auto">
         <table className="w-full text-left">
-          <thead className="bg-slate-900/80 border-b border-slate-800">
+          <thead className="bg-[var(--content-bg)]/80 border-b border-[var(--content-border)]">
             <tr>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Equipo / Serie</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Magnitud/Tipo</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Última</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Próxima</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-center">Estado</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">Certificado</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase">Equipo / Serie</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase">Magnitud/Tipo</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase">Última</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase">Próxima</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase text-center">Estado</th>
+              <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase text-right">Certificado</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
@@ -81,11 +81,11 @@ export default function Metrologia() {
               return (
                 <tr key={c.id} className="hover:bg-slate-800/30 transition-colors group">
                   <td className="px-6 py-4">
-                    <p className="font-bold text-white">{c.equipo_nombre}</p>
-                    <p className="text-[10px] text-slate-500 uppercase">{c.equipo_serie}</p>
+                    <p className="font-bold text-[var(--content-text)]">{c.equipo_nombre}</p>
+                    <p className="text-[10px] text-[var(--content-muted)] uppercase">{c.equipo_serie}</p>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-300">{c.tipo_medicion}</td>
-                  <td className="px-6 py-4 text-sm text-slate-400">{c.fecha_calibracion}</td>
+                  <td className="px-6 py-4 text-sm text-[var(--content-muted)]">{c.tipo_medicion}</td>
+                  <td className="px-6 py-4 text-sm text-[var(--content-muted)]">{c.fecha_calibracion}</td>
                   <td className={`px-6 py-4 text-sm font-bold ${isPast ? 'text-red-500' : 'text-emerald-500'}`}>
                     {c.proxima_calibracion}
                   </td>

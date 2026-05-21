@@ -41,7 +41,7 @@ export default function StatsCards({ resumen }) {
     yellow: 'bg-yellow-900/40 border-yellow-700 text-yellow-400',
     blue: 'bg-blue-900/40 border-blue-700 text-blue-400',
     red: 'bg-red-900/40 border-red-700 text-red-400',
-    slate: 'bg-slate-800 border-slate-700 text-slate-400',
+    slate: 'bg-[var(--content-surface)] border-[var(--content-border)] text-[var(--content-muted)]',
   };
 
   return (
@@ -49,7 +49,7 @@ export default function StatsCards({ resumen }) {
       {cards.map((card, i) => (
         <Link to={card.path} key={i}>
           <div className={`rounded-xl border p-4 transition-transform hover:scale-105 hover:shadow-lg cursor-pointer ${colorMap[card.color]}`}>
-            <div className="text-3xl font-bold text-white">{card.value}</div>
+            <div className="text-3xl font-bold text-[var(--content-text)]">{card.value}</div>
             <div className="text-sm mt-1">{card.label}</div>
           </div>
         </Link>
