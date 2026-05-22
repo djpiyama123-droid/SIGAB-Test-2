@@ -25,19 +25,23 @@ from services.reliability_service import obtener_metricas_fiabilidad
 
 router = APIRouter()
 
-_resumen_cache: TTLCache = TTLCache(maxsize=4, ttl=60)
+_resumen_cache: TTLCache = TTLCache(maxsize=64, ttl=60)  # 1 entrada por tenant; 64 tenants simultáneos
 _equipo_cache: TTLCache = TTLCache(maxsize=128, ttl=30)
 
 
 # ── Helpers ──────────────────────────────────────────────────────
 
-async def _get_resumen_db(conn) -> dict:
+async def _get_resumen_db(conn, tenant_id: int) -> dict:
     """Obtiene resumen rápido del dashboard para inyección de contexto.
 
-    Cacheado 60s — el dashboard cambia lentamente y en una conversación
-    de 3-5 turnos solo el primero hace queries.
+    Cacheado 60s por tenant — el dashboard cambia lentamente y en una
+    conversación de 3-5 turnos solo el primero hace queries.
+
+    La clave incluye tenant_id para prevenir cross-tenant data leak en
+    producción multi-tenant (SIGAH Fase 2+).
     """
-    cached = _resumen_cache.get("dashboard")
+    cache_key = f"dashboard:{tenant_id}"
+    cached = _resumen_cache.get(cache_key)
     if cached is not None:
         return cached
 
@@ -74,13 +78,18 @@ async def _get_resumen_db(conn) -> dict:
         "eventos_adversos_activos": tv_activos,
         "fecha_hoy": date.today().isoformat(),
     }
-    _resumen_cache["dashboard"] = resumen
+    _resumen_cache[cache_key] = resumen
     return resumen
 
 
-async def _get_equipo_contexto(conn, equipo_id: int) -> dict | None:
-    """Obtiene equipo + últimas 8 órdenes con cache TTL 30s."""
-    cached = _equipo_cache.get(equipo_id)
+async def _get_equipo_contexto(conn, equipo_id: int, tenant_id: int) -> dict | None:
+    """Obtiene equipo + últimas 8 órdenes con cache TTL 30s.
+
+    La clave incluye tenant_id para prevenir que el Hospital A recupere
+    datos cacheados de equipos del Hospital B (cross-tenant data leak).
+    """
+    cache_key = f"{tenant_id}:{equipo_id}"
+    cached = _equipo_cache.get(cache_key)
     if cached is not None:
         return cached
 
@@ -107,7 +116,7 @@ async def _get_equipo_contexto(conn, equipo_id: int) -> dict | None:
                     o[k] = v.isoformat()
 
     contexto = {"equipo": equipo, "historial_ordenes": list(ordenes)}
-    _equipo_cache[equipo_id] = contexto
+    _equipo_cache[cache_key] = contexto
     return contexto
 
 
@@ -144,13 +153,15 @@ async def copilot_chat(
     # Construir contexto
     contexto = {}
 
-    # Siempre incluir resumen general
-    resumen = await _get_resumen_db(conn)
+    tenant_id: int = user["tenant_id"]
+
+    # Siempre incluir resumen general (cacheado por tenant)
+    resumen = await _get_resumen_db(conn, tenant_id)
     contexto["resumen"] = resumen
 
-    # Contexto específico de equipo (cacheado 30s)
+    # Contexto específico de equipo (cacheado 30s por tenant)
     if equipo_id:
-        eq_ctx = await _get_equipo_contexto(conn, equipo_id)
+        eq_ctx = await _get_equipo_contexto(conn, equipo_id, tenant_id)
         if eq_ctx:
             contexto["equipo"] = eq_ctx["equipo"]
             contexto["historial_ordenes"] = eq_ctx["historial_ordenes"]
@@ -310,7 +321,7 @@ async def resumen_ejecutivo_ia(
     Genera un resumen ejecutivo narrativo del estado actual del SIGAB.
     Útil para el reporte matutino del Jefe de Conservación.
     """
-    datos = await _get_resumen_db(conn)
+    datos = await _get_resumen_db(conn, user["tenant_id"])
     prompt = gemma_service.prompt_resumen_diario(datos)
     resumen = await gemma_service.analizar_no_stream(prompt)
 
