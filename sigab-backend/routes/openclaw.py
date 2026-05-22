@@ -1,3 +1,29 @@
+"""
+routes/openclaw.py — Endpoints del Bot WhatsApp (OpenClaw/sigab-bot)
+
+ESTADO MULTI-TENANT: EXENTO (parcial) — pendiente de remediar en Fase 3.
+==========================================================================
+Todos los endpoints de este módulo son llamados por el bot de WhatsApp
+(sigab-bot) que se ejecuta en la red interna del hospital. NO usan JWT
+porque el bot no tiene sesión de usuario; la autenticación se basa en
+confianza de red (localhost:3000 / red interna Docker).
+
+RIESGO DE SEGURIDAD IDENTIFICADO (P1):
+  En un despliegue multi-tenant (SIGAH SaaS), si el bot de Hospital A pudiera
+  alcanzar estos endpoints vía red pública, leería y escribiría datos del
+  Hospital B sin restricción. Esto es un cross-tenant leak crítico.
+
+REMEDIACIÓN PENDIENTE (Fase 3 — antes del despliegue SaaS multi-tenant):
+  1. Crear un endpoint de "bot login" que reciba un `BOT_API_KEY` por hospital
+     y devuelva un JWT de corta vida con `tenant_id` del hospital.
+  2. Reemplazar `Depends(get_db)` por `Depends(get_current_tenant)` en todos
+     los endpoints del bot usando ese JWT.
+  3. Hasta entonces: asegurar con firewall que estos endpoints SOLO son
+     alcanzables desde la red interna (no exponer en el API Gateway público).
+
+Por estas razones los endpoints se marcan EXENTO-BOT: no se añade
+get_current_tenant porque no hay JWT disponible en la llamada del bot.
+"""
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from typing import Optional
 import aiomysql
