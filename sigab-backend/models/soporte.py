@@ -10,13 +10,18 @@ from models.orden_servicio import MATERIAL_OS as LSMaterial, EVIDENCIA_OS as OSE
 
 class AuditLog(SQLModel, table=True):
     __tablename__ = "log_auditoria_nom016"
-    
+
     id: Optional[int] = Field(
-        default=None, 
+        default=None,
         sa_column=Column(mysql.INTEGER(unsigned=True), primary_key=True, autoincrement=True)
     )
     usuario_id: int = Field(
         sa_column=Column(mysql.INTEGER(unsigned=True), sa.ForeignKey("usuarios.id"), nullable=False)
+    )
+    # Multi-tenant (Phase 1 migration) — cada hospital tiene su propia cadena NOM-016.
+    tenant_id: Optional[int] = Field(
+        default=None,
+        sa_column=Column(mysql.INTEGER(unsigned=True), sa.ForeignKey("hospitales.id"), nullable=True)
     )
     accion: str
     entidad: str
