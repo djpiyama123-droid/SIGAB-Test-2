@@ -3,6 +3,7 @@ from typing import Optional
 import aiomysql
 from config import get_db
 from auth.dependencies import get_current_user
+from auth.tenancy import get_current_tenant
 
 router = APIRouter()
 
@@ -11,19 +12,25 @@ router = APIRouter()
 async def listar_reservas(
     estado: Optional[str] = None,
     equipo_id: Optional[int] = None,
-    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     conn=Depends(get_db),
 ):
+    """Lista reservas del hospital del usuario autenticado.
+
+    La tabla `reservas` no tiene columna tenant_id — se ancla vía JOIN
+    con `equipos` que sí tiene tenant_id (patrón padre-hijo).
+    """
     async with conn.cursor(aiomysql.DictCursor) as cur:
+        # El JOIN equipos garantiza que solo se devuelven reservas del tenant.
         query = """
             SELECT r.*, e.nombre as equipo_nombre, e.serie as equipo_serie,
                    u.nombre as solicitante_nombre
             FROM reservas r
             JOIN equipos e ON r.equipo_id = e.id
             LEFT JOIN usuarios u ON r.solicitante_id = u.id
-            WHERE 1=1
+            WHERE e.tenant_id = %s
         """
-        params = []
+        params = [tenant_id]
 
         if estado:
             query += " AND r.estado = %s"
@@ -40,9 +47,23 @@ async def listar_reservas(
 
 
 @router.post("/")
-async def crear_reserva(data: dict, user: dict = Depends(get_current_user), conn=Depends(get_db)):
+async def crear_reserva(
+    data: dict,
+    tenant_id: int = Depends(get_current_tenant),
+    conn=Depends(get_db),
+):
+    """Crea una reserva. Verifica que el equipo objetivo pertenezca al tenant."""
     async with conn.cursor(aiomysql.DictCursor) as cur:
-        # Verificar conflictos
+        # Verificar ownership del equipo antes de crear la reserva.
+        # 404 (nunca 403) para no revelar existencia cross-tenant.
+        await cur.execute(
+            "SELECT id FROM equipos WHERE id = %s AND tenant_id = %s",
+            (data.get("equipo_id"), tenant_id),
+        )
+        if not await cur.fetchone():
+            raise HTTPException(status_code=404, detail="Equipo no encontrado")
+
+        # Verificar conflictos dentro del mismo tenant (el equipo ya está validado).
         await cur.execute(
             """SELECT id FROM reservas
                WHERE equipo_id = %s AND estado IN ('pendiente','activa')
@@ -74,10 +95,27 @@ async def crear_reserva(data: dict, user: dict = Depends(get_current_user), conn
 
 
 @router.put("/{reserva_id}/estado")
-async def cambiar_estado_reserva(reserva_id: int, data: dict, user: dict = Depends(get_current_user), conn=Depends(get_db)):
+async def cambiar_estado_reserva(
+    reserva_id: int,
+    data: dict,
+    tenant_id: int = Depends(get_current_tenant),
+    conn=Depends(get_db),
+):
+    """Cambia el estado de una reserva. Verifica ownership vía equipo."""
     estado = data.get("estado")
     if estado not in ("pendiente", "activa", "completada", "cancelada"):
         raise HTTPException(status_code=400, detail="Estado inválido")
+
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        # Verificar que la reserva pertenece a un equipo del tenant antes de mutar.
+        await cur.execute(
+            """SELECT r.id FROM reservas r
+               JOIN equipos e ON r.equipo_id = e.id
+               WHERE r.id = %s AND e.tenant_id = %s""",
+            (reserva_id, tenant_id),
+        )
+        if not await cur.fetchone():
+            raise HTTPException(status_code=404, detail="Reserva no encontrada")
 
     async with conn.cursor() as cur:
         await cur.execute(
