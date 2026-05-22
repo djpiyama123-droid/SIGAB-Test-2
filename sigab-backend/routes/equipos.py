@@ -32,6 +32,7 @@ from auth.dependencies import (
     get_current_user_optional,
     require_action,
 )
+from auth.tenancy import get_current_tenant
 from auth.permissions import (
     can,
     filter_equipo_publico,
@@ -91,26 +92,40 @@ from sqlmodel import func
 @router.get("/areas/catalogo")
 async def catalogo_areas(
     session: AsyncSession = Depends(get_async_session),
-    _user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    stmt_areas = select(Equipo.area).where(Equipo.area != None).distinct().order_by(Equipo.area)
+    stmt_areas = (
+        select(Equipo.area)
+        .where(Equipo.tenant_id == tenant_id, Equipo.area != None)
+        .distinct()
+        .order_by(Equipo.area)
+    )
     res_areas = await session.execute(stmt_areas)
     areas = res_areas.scalars().all()
 
-    stmt_pisos = select(Equipo.piso).where(Equipo.piso != None).distinct().order_by(Equipo.piso)
+    stmt_pisos = (
+        select(Equipo.piso)
+        .where(Equipo.tenant_id == tenant_id, Equipo.piso != None)
+        .distinct()
+        .order_by(Equipo.piso)
+    )
     res_pisos = await session.execute(stmt_pisos)
     pisos = res_pisos.scalars().all()
-    
+
     return {"areas": areas, "pisos": pisos}
 
 
 @router.get("/zonas/catalogo")
 async def catalogo_zonas(
     session: AsyncSession = Depends(get_async_session),
-    _user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     """Lista las zonas del mapa para el formulario de alta/edición de equipos."""
-    stmt = select(ZonasMapa).where(ZonasMapa.activa == True).order_by(ZonasMapa.orden, ZonasMapa.nombre)
+    stmt = (
+        select(ZonasMapa)
+        .where(ZonasMapa.tenant_id == tenant_id, ZonasMapa.activa == True)
+        .order_by(ZonasMapa.orden, ZonasMapa.nombre)
+    )
     res = await session.execute(stmt)
     zonas = res.scalars().all()
     return {"zonas": zonas}
@@ -120,15 +135,19 @@ async def catalogo_zonas(
 async def crear_equipo(
     data: dict,
     user: dict = Depends(require_action("create_equipo")),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Crea un nuevo equipo biomédico en el inventario."""
     if not data.get("nombre") or not data.get("serie"):
         raise HTTPException(status_code=400, detail="Nombre y serie son obligatorios")
 
+    # Defensivo: ignorar cualquier tenant_id que venga del cliente.
+    data.pop("tenant_id", None)
+
     # Crear instancia del modelo
-    nuevo_equipo = Equipo(**data)
-    
+    nuevo_equipo = Equipo(**data, tenant_id=tenant_id)
+
     # Valores por defecto y token
     if not nuevo_equipo.estado:
         nuevo_equipo.estado = "operativo"
@@ -138,14 +157,14 @@ async def crear_equipo(
         nuevo_equipo.pos_x = 50.0
     if nuevo_equipo.pos_y is None:
         nuevo_equipo.pos_y = 50.0
-    
+
     nuevo_equipo.qr_token = secrets.token_urlsafe(12)[:16]
 
     try:
         session.add(nuevo_equipo)
         await session.commit()
         await session.refresh(nuevo_equipo)
-        
+
         # Auditoría NOM-016
         await AuditService.log_event(
             usuario_id=user["id"],
@@ -167,11 +186,13 @@ from models.trazabilidad import Trazabilidad
 async def eliminar_equipo(
     equipo_id: int,
     user: dict = Depends(require_action("delete_equipo")),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Elimina un equipo del inventario (cascade a trazabilidad)."""
-    # Buscar equipo
-    equipo = await session.get(Equipo, equipo_id)
+    # Buscar equipo verificando ownership por tenant (404, nunca 403 — no revelar existencia cross-tenant)
+    stmt_eq = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt_eq)).scalar_one_or_none()
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
@@ -255,6 +276,7 @@ async def subir_imagen_equipo(
     equipo_id: int,
     file: UploadFile = File(...),
     user: dict = Depends(require_action("edit_equipo")),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Sube una imagen PNG/JPG y la asocia al equipo."""
@@ -284,8 +306,9 @@ async def subir_imagen_equipo(
     # URL servida vía /static
     url_publica = f"/static/uploads/equipos/{nombre_archivo}"
 
-    # Buscar equipo
-    equipo = await session.get(Equipo, equipo_id)
+    # Buscar equipo verificando ownership por tenant
+    stmt_eq = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt_eq)).scalar_one_or_none()
     if not equipo:
         os.remove(ruta_disco)
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
@@ -306,11 +329,25 @@ async def subir_imagen_equipo(
 
 
 @router.get("/{equipo_id}/historial")
-async def historial_equipo(equipo_id: int, session: AsyncSession = Depends(get_async_session)):
+async def historial_equipo(
+    equipo_id: int,
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_async_session),
+):
     """Devuelve historial completo de órdenes y traslados para el panel de Ficha Técnica."""
     from models.orden_servicio import EVIDENCIA_OS
-    
-    stmt_ordenes = select(OrdenServicio).where(OrdenServicio.equipo_id == equipo_id).order_by(OrdenServicio.fecha.desc(), OrdenServicio.id.desc()).limit(50)
+
+    # Verificar ownership antes de devolver historial
+    stmt_owner = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    if not (await session.execute(stmt_owner)).scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Equipo no encontrado")
+
+    stmt_ordenes = (
+        select(OrdenServicio)
+        .where(OrdenServicio.equipo_id == equipo_id, OrdenServicio.tenant_id == tenant_id)
+        .order_by(OrdenServicio.fecha.desc(), OrdenServicio.id.desc())
+        .limit(50)
+    )
     res_ordenes = await session.execute(stmt_ordenes)
     ordenes = res_ordenes.scalars().all()
 
@@ -328,14 +365,23 @@ async def historial_equipo(equipo_id: int, session: AsyncSession = Depends(get_a
         od["pdf_url"] = evidencias_map.get(o.id)
         ordenes_list.append(od)
 
-    stmt_traslados = select(Trazabilidad).where(Trazabilidad.equipo_id == equipo_id).order_by(Trazabilidad.fecha_movimiento.desc()).limit(50)
+    # Trazabilidad y PreventivoProgramado aún no tienen tenant_id en el modelo Python
+    # (se añadirá en Fase 1 migration). El filtro por equipo_id es suficiente aquí
+    # porque el ownership del equipo ya fue verificado arriba contra tenant_id.
+    stmt_traslados = (
+        select(Trazabilidad)
+        .where(Trazabilidad.equipo_id == equipo_id)
+        .order_by(Trazabilidad.fecha_movimiento.desc())
+        .limit(50)
+    )
     res_traslados = await session.execute(stmt_traslados)
     traslados = res_traslados.scalars().all()
 
-    stmt_preventivos = select(PreventivoProgramado).where(
-        PreventivoProgramado.equipo_id == equipo_id, 
-        PreventivoProgramado.activo == True
-    ).order_by(PreventivoProgramado.proxima_ejecucion.asc())
+    stmt_preventivos = (
+        select(PreventivoProgramado)
+        .where(PreventivoProgramado.equipo_id == equipo_id, PreventivoProgramado.activo == True)
+        .order_by(PreventivoProgramado.proxima_ejecucion.asc())
+    )
     res_preventivos = await session.execute(stmt_preventivos)
     preventivos = res_preventivos.scalars().all()
 
@@ -358,13 +404,14 @@ async def exportar_equipos_csv(
     marca: Optional[str] = None,
     zona_id: Optional[int] = None,
     clase_cofepris: Optional[str] = None,
-    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Exportar listado de equipos a CSV con los filtros aplicados."""
     query = select(Equipo)
-    
-    conditions = []
+
+    # Filtro de tenant SIEMPRE primero — nunca exportar datos cruzados.
+    conditions = [Equipo.tenant_id == tenant_id]
     if estado:
         conditions.append(Equipo.estado == estado)
     if area:
@@ -381,7 +428,7 @@ async def exportar_equipos_csv(
         conditions.append(Equipo.zona_id == zona_id)
     if clase_cofepris:
         conditions.append(Equipo.clase_cofepris == clase_cofepris)
-        
+
     if buscar:
         buscar = buscar.strip()
         search_filter = sa.or_(
@@ -395,9 +442,7 @@ async def exportar_equipos_csv(
         )
         conditions.append(search_filter)
 
-    if conditions:
-        query = query.where(sa.and_(*conditions))
-    
+    query = query.where(sa.and_(*conditions))
     query = query.order_by(Equipo.nombre)
     res = await session.execute(query)
     equipos = res.scalars().all()
@@ -454,13 +499,14 @@ async def listar_equipos(
     limit: int = 50,
     offset: int = 0,
     user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     query = select(Equipo)
     count_query = select(func.count()).select_from(Equipo)
-    
-    # Filtros dinámicos
-    conditions = []
+
+    # Filtro de tenant SIEMPRE primero — base inamovible de todo listado.
+    conditions = [Equipo.tenant_id == tenant_id]
     if estado:
         conditions.append(Equipo.estado == estado)
     if area:
@@ -488,7 +534,7 @@ async def listar_equipos(
                 Equipo.ubicacion.contains(buscar),
             )
         )
-    
+
     for cond in conditions:
         query = query.where(cond)
         count_query = count_query.where(cond)
@@ -524,11 +570,21 @@ async def listar_equipos(
     # Total count con los mismos filtros
     total = (await session.execute(count_query)).scalar()
 
-    # Catálogos únicos para filtros del frontend
-    stmt_marcas = select(Equipo.marca).distinct().order_by(Equipo.marca)
+    # Catálogos únicos para filtros del frontend — siempre restringidos al tenant.
+    stmt_marcas = (
+        select(Equipo.marca)
+        .where(Equipo.tenant_id == tenant_id)
+        .distinct()
+        .order_by(Equipo.marca)
+    )
     marcas_disponibles = (await session.execute(stmt_marcas)).scalars().all()
-    
-    stmt_tipos = select(Equipo.tipo_equipo).distinct().order_by(Equipo.tipo_equipo)
+
+    stmt_tipos = (
+        select(Equipo.tipo_equipo)
+        .where(Equipo.tenant_id == tenant_id)
+        .distinct()
+        .order_by(Equipo.tipo_equipo)
+    )
     tipos_disponibles = (await session.execute(stmt_tipos)).scalars().all()
 
     # Convert to dict and filter confidential
@@ -536,12 +592,14 @@ async def listar_equipos(
     if not can(user, "view_confidential"):
         equipos_list = [filter_equipo_publico(e) for e in equipos_list]
 
-    # Inyectar conteo de tickets abiertos (órdenes abiertas/en_progreso) por equipo
+    # Inyectar conteo de tickets abiertos (órdenes abiertas/en_progreso) por equipo.
+    # Doble filtro: equipo_ids (ya del tenant) + tenant_id explícito en ordenes (defensa en profundidad).
     if equipos_list:
         equipo_ids = [e["id"] for e in equipos_list]
         stmt_tickets = (
             select(OrdenServicio.equipo_id, func.count(OrdenServicio.id).label("cnt"))
             .where(
+                OrdenServicio.tenant_id == tenant_id,
                 OrdenServicio.equipo_id.in_(equipo_ids),
                 OrdenServicio.estado.in_(["abierta", "en_progreso"]),
             )
@@ -568,21 +626,32 @@ async def listar_equipos(
 async def obtener_equipo(
     equipo_id: int,
     user: Optional[dict] = Depends(get_current_user_optional),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
-    # Nota: v_dashboard_equipos es una vista, SQLModel puede mapearla si definimos el modelo,
-    # pero por ahora usamos Equipo directamente o hacemos un join.
-    # Dado que es AG-01, priorizamos el uso de modelos.
-    equipo = await session.get(Equipo, equipo_id)
+    # Buscar equipo filtrando por tenant_id — 404 si no pertenece a este hospital.
+    stmt_eq = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt_eq)).scalar_one_or_none()
 
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
-    stmt_ordenes = select(OrdenServicio).where(OrdenServicio.equipo_id == equipo_id).order_by(OrdenServicio.fecha.desc()).limit(10)
+    stmt_ordenes = (
+        select(OrdenServicio)
+        .where(OrdenServicio.equipo_id == equipo_id, OrdenServicio.tenant_id == tenant_id)
+        .order_by(OrdenServicio.fecha.desc())
+        .limit(10)
+    )
     res_ordenes = await session.execute(stmt_ordenes)
     ordenes = res_ordenes.scalars().all()
 
-    stmt_traslados = select(Trazabilidad).where(Trazabilidad.equipo_id == equipo_id).order_by(Trazabilidad.fecha_movimiento.desc()).limit(5)
+    # Trazabilidad filtrada por equipo_id (ownership ya verificado arriba).
+    stmt_traslados = (
+        select(Trazabilidad)
+        .where(Trazabilidad.equipo_id == equipo_id)
+        .order_by(Trazabilidad.fecha_movimiento.desc())
+        .limit(5)
+    )
     res_traslados = await session.execute(stmt_traslados)
     traslados = res_traslados.scalars().all()
 
@@ -604,10 +673,12 @@ async def actualizar_posicion(
     equipo_id: int,
     body: dict,
     user: dict = Depends(require_action("edit_equipo")),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Guarda nueva posición X/Y después de drag & drop en el mapa."""
-    equipo = await session.get(Equipo, equipo_id)
+    stmt_eq = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt_eq)).scalar_one_or_none()
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
@@ -625,12 +696,18 @@ async def actualizar_equipo(
     equipo_id: int,
     data: dict,
     user: dict = Depends(require_action("edit_equipo")),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Actualiza campos del equipo. Los campos permitidos dependen del rol."""
-    equipo = await session.get(Equipo, equipo_id)
+    # Verificar ownership por tenant antes de modificar.
+    stmt_eq = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt_eq)).scalar_one_or_none()
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
+
+    # Defensivo: nunca permitir que el cliente mueva el equipo a otro tenant.
+    data.pop("tenant_id", None)
 
     campos_permitidos = allowed_update_fields(user)
     updates = {k: v for k, v in data.items() if k in campos_permitidos}
@@ -686,13 +763,14 @@ async def actualizar_equipo(
 @router.get("/{equipo_id}/qr/info")
 async def obtener_info_qr(
     equipo_id: int,
-    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Devuelve el token y la URL canónica embebida en el QR del equipo.
     Usado por el frontend para mostrar exactamente la misma URL que se codifica
     en el PNG, sin divergencias basadas en window.location.origin."""
-    equipo = await session.get(Equipo, equipo_id)
+    stmt_eq = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt_eq)).scalar_one_or_none()
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
@@ -716,10 +794,12 @@ async def obtener_info_qr(
 async def generar_qr(
     equipo_id: int,
     user: dict = Depends(require_action("regenerar_qr")),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Genera un QR PNG para el equipo con token opaco."""
-    equipo = await session.get(Equipo, equipo_id)
+    stmt_eq = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt_eq)).scalar_one_or_none()
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
@@ -743,10 +823,12 @@ async def generar_qr(
 async def generar_etiqueta_qr(
     equipo_id: int,
     user: dict = Depends(require_action("regenerar_qr")),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Genera una etiqueta A6 imprimible (PDF) con QR + datos del equipo."""
-    equipo = await session.get(Equipo, equipo_id)
+    stmt_eq = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt_eq)).scalar_one_or_none()
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
@@ -770,6 +852,7 @@ async def generar_etiqueta_qr(
 async def validar_poka_yoke(
     data: dict,
     user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Implementa Triple Validación (Poka-Yoke): QR + Inventario + Serie."""
@@ -780,8 +863,10 @@ async def validar_poka_yoke(
     if not qr_token or not inventario or not serie:
         raise HTTPException(status_code=400, detail="Faltan datos para la triple validación")
 
-    # Buscar equipo por QR
-    stmt = select(Equipo).where(Equipo.qr_token == qr_token)
+    # Buscar equipo por QR y verificar que pertenece al tenant actual.
+    # El qr_token es globalmente único; el filtro por tenant_id es defensa adicional
+    # para evitar que un técnico de Hospital A valide equipos de Hospital B.
+    stmt = select(Equipo).where(Equipo.qr_token == qr_token, Equipo.tenant_id == tenant_id)
     res = await session.execute(stmt)
     equipo = res.scalar_one_or_none()
 
@@ -794,7 +879,7 @@ async def validar_poka_yoke(
         match_inventario = (equipo.inventario == inventario)
         match_serie = (equipo.serie == serie)
         es_valido = match_inventario and match_serie
-        
+
         if not es_valido:
             error_msg = f"Inconsistencia: Inventario={match_inventario}, Serie={match_serie}"
     else:
