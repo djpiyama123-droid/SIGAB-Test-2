@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import { useToast } from '../components/Toast';
 import { useSSE } from './useSSE';
 
 export function useDashboard() {
+  const toast = useToast();
   const [resumen, setResumen] = useState(null);
   const [equipos, setEquipos] = useState([]);
   const [alertas, setAlertas] = useState([]);

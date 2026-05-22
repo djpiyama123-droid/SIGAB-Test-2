@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
 import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import { useToast } from './Toast';
 
 export default function OCRScannerModal({ onClose, onConfirm }) {
+  const toast = useToast();
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [scanning, setScanning] = useState(false);

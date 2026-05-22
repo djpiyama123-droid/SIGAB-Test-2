@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { api } from '../api/sigab';
 import { QrCode, Printer, CheckCircle, Search, LayoutGrid, Sticker, Eye, ChevronDown, X, CheckSquare, Square } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import toast from 'react-hot-toast';
+import { useToast } from '../components/Toast';
 
 /* ─── IMSS Logo SVG Component (official eagle/serpent/hands emblem, monochrome) ─── */
 function IMSSLogo({ size = 28, className = '' }) {
@@ -104,6 +104,7 @@ function PreviewCard({ equipo, modo }) {
 }
 
 export default function QRBatch() {
+  const toast = useToast();
   const [equipos, setEquipos] = useState([]);
   const [seleccionados, setSeleccionados] = useState([]);
   const [loading, setLoading] = useState(true);

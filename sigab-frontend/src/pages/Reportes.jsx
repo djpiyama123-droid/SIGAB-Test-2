@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import { useToast } from '../components/Toast';
 
 function descargarBlob(blob, nombre) {
   const url = URL.createObjectURL(blob);
@@ -47,6 +47,7 @@ function StatBox({ label, value, color = 'slate' }) {
 }
 
 export default function Reportes() {
+  const toast = useToast();
   const [reporte, setReporte]   = useState(null);
   const [criticos, setCriticos] = useState([]);
   const [loading, setLoading]   = useState(true);

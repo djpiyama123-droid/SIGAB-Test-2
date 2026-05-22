@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
 import { TV_ESTADO_COLORS, TV_SEVERIDAD_COLORS, TV_TIPO_LABELS, TV_ESTADO_LABELS } from '../utils/constants';
-import toast from 'react-hot-toast';
+import { useToast } from './Toast';
 
 const TIMELINE_STEPS = ['reportado', 'en_investigacion', 'documentado', 'escalado_cofepris', 'cerrado'];
 const TIPO_EVIDENCIA_OPTS = ['foto_dispositivo', 'reporte_clinico', 'bitacora', 'comunicacion_fabricante', 'otro'];
 
 export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
+  const toast = useToast();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 

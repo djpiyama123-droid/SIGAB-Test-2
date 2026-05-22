@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
 import { ShieldCheck, RefreshCw, FileText, Verified, ShieldAlert } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { useToast } from '../components/Toast';
 
 const AuditPage = () => {
+  const toast = useToast();
   const [logs, setLogs] = useState([]);
   const [verification, setVerification] = useState(null);
   const [loading, setLoading] = useState(false);

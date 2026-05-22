@@ -11,7 +11,7 @@
  */
 import { useState, useCallback } from 'react';
 import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import { useToast } from './Toast';
 
 // ─── Paleta SIGAB ────────────────────────────────────────────────────────────
 const C = {
@@ -202,6 +202,7 @@ function CheckboxGrid({ campos, form, onChange }) {
 // ─── Componente principal ─────────────────────────────────────────────────────
 
 export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado, onCerrar }) {
+  const toast = useToast();
   const [form, setForm] = useState(estadoInicial);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState(null);

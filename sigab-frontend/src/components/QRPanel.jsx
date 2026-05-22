@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
+import { useToast } from './Toast';
 
 // Usa rutas relativas para respetar el proxy de Vite (baseURL = /api)
 // evitando hardcodear http://localhost:8000 (rompe en producción/remoto).
 const API_PREFIX = '/api';
 
 export default function QRPanel({ equipo, onClose }) {
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [qrUrl, setQrUrl] = useState(null);
   // URL canónica que realmente está codificada en el QR (viene del backend)

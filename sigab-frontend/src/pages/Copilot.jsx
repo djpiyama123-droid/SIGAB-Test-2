@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import { useToast } from '../components/Toast';
 
 // ── Iconos inline ─────────────────────────────────────────────────
 const IconIA = () => (
@@ -270,6 +270,7 @@ function VisionPanel({ onClose }) {
 
 // ── Página principal Copilot ──────────────────────────────────────
 export default function Copilot() {
+  const toast = useToast();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState(false);

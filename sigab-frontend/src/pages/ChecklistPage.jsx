@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
 import { ClipboardList, CheckSquare, Save, Search, History } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { useToast } from '../components/Toast';
 
 const ChecklistPage = () => {
+  const toast = useToast();
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [responses, setResponses] = useState({});

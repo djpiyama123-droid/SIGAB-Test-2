@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import { useToast } from './Toast';
 
 const TIPOS_EVENTO = [
   { value: 'muerte', label: 'Muerte' },
@@ -26,6 +26,7 @@ const ESTADO_POST = [
 ];
 
 export default function EventoAdversoModal({ onClose, onCreated }) {
+  const toast = useToast();
   const [paso, setPaso] = useState(1);
   const [equipos, setEquipos] = useState([]);
   const [buscaEquipo, setBuscaEquipo] = useState('');

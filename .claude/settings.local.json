@@ -1,6 +1,10 @@
 {
   "permissions": {
     "allow": [
+      "Bash(*)",
+      "Read(**)",
+      "Edit(**)",
+      "Write(**)",
       "Bash(find . -path */sigab-frontend/src* -name *.jsx)",
       "Bash(find . -path */sigab-backend* -name *.py)",
       "Bash(mysql -u sigab_user -psigab_pass_2026 sigab -e \"SHOW TABLES; DESCRIBE equipos;\")",
@@ -12,7 +16,51 @@
       "Bash(curl -s http://localhost:8000/api/dashboard/mapa)",
       "Bash(curl -s http://localhost:8000/api/dashboard/mapa -v)",
       "Bash(curl -s http://localhost:8000/api/dashboard/resumen)",
-      "Bash(wsl -d Ubuntu-24.04 bash -c \"ss -tlnp | grep 3306; mysql -u sigab_user -psigab_pass_2026 -e ''SELECT 1'' 2>&1 || echo ''MySQL not running''\")"
+      "Bash(wsl -d Ubuntu-24.04 bash -c \"ss -tlnp | grep 3306; mysql -u sigab_user -psigab_pass_2026 -e ''SELECT 1'' 2>&1 || echo ''MySQL not running''\")",
+      "Bash(git -C \"C:/Users/djpiy/Desktop/Bioingeneria/SIGAB\" config --get-all url.git@github.com:.insteadOf)",
+      "Bash(git -C \"C:/Users/djpiy/Desktop/Bioingeneria/SIGAB\" config --get remote.origin.url)",
+      "Bash(git -C \"C:/Users/djpiy/Desktop/Bioingeneria/SIGAB\" ls-remote origin HEAD)",
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(curl -s -o /dev/null -w \"GET /api/equipos/ → %{http_code}\\\\n\" https://sigab.129-121-100-147.sslip.io/api/equipos/)",
+      "Bash(curl -s -o /dev/null -w \"GET /api/dashboard/mapa → %{http_code}\\\\n\" https://sigab.129-121-100-147.sslip.io/api/dashboard/mapa)",
+      "Bash(curl -s -o /dev/null -w \"GET / \\(landing\\) → %{http_code}\\\\n\" https://sigab.129-121-100-147.sslip.io/)",
+      "Bash(ssh sigab-vps *)",
+      "Bash(python -c \"import sys; sys.path.insert\\(0, 'sigab-backend'\\); from services.pdf_service import generar_pdf_orden_v2_poka_yoke; pdf = generar_pdf_orden_v2_poka_yoke\\({'numero_orden':'OS-20260505-0042','tipo_mantenimiento':'correctivo','prioridad':'alta','falla_reportada':'No enciende monitor cardiaco','tecnico_nombre':'Ing. López'}, {'nombre':'Monitor Cardiaco Philips','marca':'Philips','modelo':'IntelliVue MX450','serie':'PH-987654321-A','area':'UCI Adultos','piso':'Piso 3','inventario_imss':'IMSS-12345'}, [{'cantidad':1,'descripcion':'Cable ECG 5 derivaciones'}]\\); print\\(f'PDF generated: {len\\(pdf\\)} bytes'\\); open\\('test_poka_yoke.pdf','wb'\\).write\\(pdf\\); print\\('Wrote test_poka_yoke.pdf'\\)\")",
+      "Bash(\"sigab-backend/venv/Scripts/python.exe\" -c \"import sys; sys.path.insert\\(0, 'sigab-backend'\\); from services.pdf_service import generar_pdf_orden_v2_poka_yoke; pdf = generar_pdf_orden_v2_poka_yoke\\({'numero_orden':'OS-20260505-0042','tipo_mantenimiento':'correctivo','prioridad':'alta','falla_reportada':'No enciende monitor cardiaco','tecnico_nombre':'Ing. Lopez'}, {'nombre':'Monitor Cardiaco Philips','marca':'Philips','modelo':'IntelliVue MX450','serie':'PH-987654321-A','area':'UCI Adultos','piso':'Piso 3','inventario_imss':'IMSS-12345'}, [{'cantidad':1,'descripcion':'Cable ECG 5 derivaciones'}]\\); open\\('test_poka_yoke.pdf','wb'\\).write\\(pdf\\); print\\(f'PDF generated: {len\\(pdf\\)} bytes  -> test_poka_yoke.pdf'\\)\")",
+      "Bash(py --version)",
+      "Bash(wsl bash *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(curl -s -I https://sigab.129-121-100-147.sslip.io/api/ordenes/1/pdf-fisico)",
+      "Bash(curl -s https://sigab.129-121-100-147.sslip.io/api/ordenes/1/pdf-fisico)",
+      "Bash(curl -s -I https://sigab.129-121-100-147.sslip.io/api/equipos/)",
+      "PowerShell(ssh -o BatchMode=yes -o ConnectTimeout=10 user@129.121.100.147 \"echo '=== UNAME ==='; uname -a; echo '=== LSCPU ==='; lscpu | head -25; echo '=== MEM ==='; free -h; echo '=== GPU ==='; nvidia-smi 2>/dev/null || echo 'NO GPU'; echo '=== DISK ==='; df -h / | tail -1\")",
+      "Bash(cat ~/.ssh/config 2>/dev/null || echo \"No SSH config found\")",
+      "Bash(ssh -o ConnectTimeout=10 -o BatchMode=yes sigab-vps \"echo OK && uname -a && free -h && df -h / && nproc\")",
+      "Read(//c/Users/djpiy/.claude/skills/notebooklm/**)",
+      "Bash(wsl -l -v)",
+      "Bash(wsl -e bash -c \"ls ~/.claude/skills/notebooklm/scripts/ 2>/dev/null || echo NOT_IN_WSL\")",
+      "Bash(scp \"C:/Users/djpiy/Desktop/Bioingeneria/SIGAB/HERMES_CONTEXT.md\" sigab-vps:/opt/sigab/HERMES_CONTEXT.md)",
+      "Bash(scp \"C:/Users/djpiy/Desktop/Bioingeneria/SIGAB/hermes_soul.md\" sigab-vps:/root/.hermes/SOUL.md)",
+      "Bash(docker --version)",
+      "Bash(ollama --version)",
+      "Bash(mysql --version)",
+      "Bash(docker compose *)",
+      "Bash(ollama list *)",
+      "Bash(wsl -e ollama list)",
+      "Bash(curl -s http://localhost:5173 -o /dev/null -w \"%{http_code}\")",
+      "Bash(netstat -tlnp)",
+      "Bash(curl -s --max-time 5 http://localhost:11434/api/tags)",
+      "Bash(curl *)",
+      "Bash(python3 -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\('desc:', r.get\\('description',''\\)\\); print\\('branch:', r.get\\('default_branch',''\\)\\)\")",
+      "Bash(python3 -c \"import sys,json; t=json.load\\(sys.stdin\\); [print\\(f['path']\\) for f in t.get\\('tree',[]\\) if f['type']=='blob' and f['path'].count\\('/'\\)<3]\")",
+      "Bash(python3 -c \"import sys,json; t=json.load\\(sys.stdin\\); [print\\(f['path']\\) for f in t.get\\('tree',[]\\) if f['type']=='blob' and f['path'].count\\('/'\\)<2]\")",
+      "Bash(git clone *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, indent=2\\)\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('name:', d.get\\('name'\\)\\); print\\('version:', d.get\\('version'\\)\\); print\\('desc:', d.get\\('description',''\\)[:80]\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('version:', d.get\\('version','?'\\)\\)\")"
     ]
   },
   "plugins": [
@@ -23,6 +71,46 @@
       "version": "2.5.0",
       "stack": "react",
       "project": "SIGAB — Sistema Integral de Gestión de Activos Biomédicos"
+    },
+    {
+      "name": "ECC",
+      "source": ".claude/skills/ECC",
+      "description": "Harness-native operator system — 232 skills, 60 agentes, hooks, rules, MCP conventions y workflows para Claude Code. Incluye Hermes operator, security scanning y research-first development.",
+      "version": "2.0.0-rc.1",
+      "install_required": "npx ecc-install --profile minimal --target claude  (o ./install.sh en ECC/)",
+      "repo": "https://github.com/affaan-m/ECC"
+    },
+    {
+      "name": "superpowers",
+      "source": ".claude/skills/superpowers",
+      "description": "Metodología de desarrollo agentic — 14 skills activas: TDD, debugging, subagent-driven-development, brainstorming, dispatching-parallel-agents, writing-plans, code-review y más.",
+      "version": "5.1.0",
+      "install_required": "/plugin install superpowers@claude-plugins-official  (o /plugin marketplace add obra/superpowers-marketplace)",
+      "repo": "https://github.com/obra/superpowers"
+    },
+    {
+      "name": "claude-mem",
+      "source": ".claude/skills/claude-mem",
+      "description": "Compresión y persistencia de contexto entre sesiones — captura todo lo que hace el agente, comprime con IA e inyecta contexto relevante en sesiones futuras. Node ≥18.",
+      "version": "13.2.0",
+      "install_required": "npx claude-mem install  (en el directorio .claude/skills/claude-mem/)",
+      "repo": "https://github.com/thedotmack/claude-mem"
+    },
+    {
+      "name": "mempalace",
+      "source": ".claude/skills/mempalace",
+      "description": "Sistema de memoria AI con 19 herramientas MCP — mine proyectos y conversaciones en un palacio de búsqueda. Auto-save hooks. Requiere mempalace-mcp CLI instalado.",
+      "version": "3.3.5",
+      "install_required": "npm install -g mempalace-mcp  (luego /plugin install mempalace)",
+      "repo": "https://github.com/mempalace/mempalace"
+    },
+    {
+      "name": "spec-kit",
+      "source": ".claude/skills/spec-kit",
+      "description": "Spec-Driven Development toolkit — especificaciones ejecutables que generan implementaciones. CLI specify-cli vía uv. Soporta Claude Code, Cursor, Copilot.",
+      "version": "0.8.12.dev0",
+      "install_required": "uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@latest",
+      "repo": "https://github.com/github/spec-kit"
     }
   ]
 }

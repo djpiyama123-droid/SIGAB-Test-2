@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
 import { Users, GraduationCap, Calendar, Plus, ChevronRight } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { useToast } from '../components/Toast';
 
 export default function Capacitaciones() {
+  const toast = useToast();
   const [capacitaciones, setCapacitaciones] = useState([]);
   const [loading, setLoading] = useState(true);
 
