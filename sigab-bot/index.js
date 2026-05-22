@@ -19,8 +19,9 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import axios from 'axios';
 import cors from 'cors';
-import { handleCommand } from './commands.js';
+import { handleCommand, handleImageCommand } from './commands.js';
 import { initScheduler } from './scheduler.js';
+import { initBotAuth, getAuthHeaders } from './auth.js';
 
 // ── Configuración ──────────────────────────────────────────
 const GRUPO_BIOMEDICOS = 'Residentes de biomedica 2025';
@@ -66,6 +67,7 @@ async function startBot() {
     }
     if (connection === 'open') {
       console.log('🟢 WhatsApp Bot Conectado');
+      await initBotAuth();
       await resolverGrupo();
       initScheduler(sendToGroup);
     }
@@ -96,7 +98,7 @@ async function startBot() {
             timestamp: msg.messageTimestamp,
             data: buffer.toString('base64'),
             mimetype: msg.message.audioMessage.mimetype
-          });
+          }, { headers: getAuthHeaders() });
           console.log('✅ Voice note reenviada a FastAPI');
         } catch (err) {
           console.error('❌ Error procesando voice note:', err.message);
@@ -117,7 +119,7 @@ async function startBot() {
           body: text,
           timestamp: msg.messageTimestamp,
           isGroup
-        });
+        }, { headers: getAuthHeaders() });
       } catch (err) {
         console.warn('⚠️ Webhook a FastAPI falló:', err.message);
       }
