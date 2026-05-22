@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional
 import aiomysql
 from config import get_db
-from auth.dependencies import get_current_user
+from auth.dependencies import get_current_user, get_current_tenant
 
 router = APIRouter()
 
@@ -24,17 +24,18 @@ async def listar_preventivos(
     equipo_id: Optional[int] = None,
     user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     query = select(
-        PreventivoProgramado, 
-        Equipo.nombre.label("equipo_nombre"), 
+        PreventivoProgramado,
+        Equipo.nombre.label("equipo_nombre"),
         Equipo.serie.label("equipo_serie"),
-        Equipo.marca.label("equipo_marca"), 
+        Equipo.marca.label("equipo_marca"),
         Equipo.area.label("equipo_area"),
         Usuario.nombre.label("tecnico_nombre")
     ).join(Equipo, PreventivoProgramado.equipo_id == Equipo.id)\
      .outerjoin(Usuario, PreventivoProgramado.tecnico_asignado_id == Usuario.id)\
-     .where(PreventivoProgramado.activo == True)
+     .where(PreventivoProgramado.activo == True, PreventivoProgramado.tenant_id == tenant_id)
     
     if vencidos is True:
         query = query.where(PreventivoProgramado.proxima_ejecucion <= date.today())
@@ -61,10 +62,12 @@ async def listar_preventivos(
 
 @router.post("/")
 async def crear_preventivo(
-    data: dict, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    data: dict,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
+    data["tenant_id"] = tenant_id
     nuevo_pp = PreventivoProgramado(**data)
     if not nuevo_pp.frecuencia_dias:
         nuevo_pp.frecuencia_dias = 90
@@ -78,11 +81,13 @@ async def crear_preventivo(
 
 @router.put("/{prev_id}/ejecutar")
 async def marcar_ejecutado(
-    prev_id: int, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    prev_id: int,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    pp = await session.get(PreventivoProgramado, prev_id)
+    stmt = select(PreventivoProgramado).where(PreventivoProgramado.id == prev_id, PreventivoProgramado.tenant_id == tenant_id)
+    pp = (await session.execute(stmt)).scalar_one_or_none()
     if not pp:
         raise HTTPException(status_code=404, detail="Preventivo no encontrado")
 

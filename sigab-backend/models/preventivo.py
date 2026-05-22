@@ -24,4 +24,5 @@ class PreventivoProgramado(SQLModel, table=True):
     )
     descripcion_procedimiento: Optional[str] = Field(default=None, sa_column=Column(mysql.TEXT))
     activo: bool = Field(default=True)
+    tenant_id: int = Field(default=1, index=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)

@@ -36,3 +36,4 @@ class Trazabilidad(SQLModel, table=True):
         sa_column=Column(mysql.DATETIME, nullable=False, index=True)
     )
     notas: Optional[str] = Field(default=None, sa_column=Column(mysql.TEXT))
+    tenant_id: int = Field(default=1, index=True)

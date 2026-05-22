@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from typing import Optional
 import aiomysql
 from config import get_db
-from auth.dependencies import get_current_user
+from auth.dependencies import get_current_user, get_current_tenant
 
 router = APIRouter()
 
@@ -22,9 +22,12 @@ async def listar_alertas(
     limit: int = 50,
     user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    query = select(Alerta, Equipo.nombre.label("equipo_nombre"), Equipo.serie.label("equipo_serie")).outerjoin(Equipo, Alerta.equipo_id == Equipo.id)
-    
+    query = select(Alerta, Equipo.nombre.label("equipo_nombre"), Equipo.serie.label("equipo_serie"))\
+            .outerjoin(Equipo, Alerta.equipo_id == Equipo.id)\
+            .where(Alerta.tenant_id == tenant_id)
+
     if leida is not None:
         query = query.where(Alerta.leida == leida)
     if tipo:
@@ -57,12 +60,11 @@ async def listar_alertas(
 
 @router.get("/pendientes")
 async def alertas_pendientes(
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    # Nota: v_alertas_pendientes es una vista. Podemos seleccionarla directamente vía raw SQL o mapearla.
-    # Por ahora usamos select(Alerta) filtrando por leida=False.
-    stmt = select(Alerta).where(Alerta.leida == False).limit(50)
+    stmt = select(Alerta).where(Alerta.leida == False, Alerta.tenant_id == tenant_id).limit(50)
     res = await session.execute(stmt)
     alertas = res.scalars().all()
     return {"alertas": alertas, "total": len(alertas)}
@@ -70,11 +72,13 @@ async def alertas_pendientes(
 
 @router.put("/{alerta_id}/leer")
 async def marcar_leida(
-    alerta_id: int, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    alerta_id: int,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    alerta = await session.get(Alerta, alerta_id)
+    stmt = select(Alerta).where(Alerta.id == alerta_id, Alerta.tenant_id == tenant_id)
+    alerta = (await session.execute(stmt)).scalar_one_or_none()
     if alerta:
         alerta.leida = True
         await session.commit()
@@ -83,10 +87,11 @@ async def marcar_leida(
 
 @router.put("/leer-todas")
 async def marcar_todas_leidas(
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    stmt = update(Alerta).where(Alerta.leida == False).values(leida=True)
+    stmt = update(Alerta).where(Alerta.leida == False, Alerta.tenant_id == tenant_id).values(leida=True)
     await session.execute(stmt)
     await session.commit()
     return {"ok": True}

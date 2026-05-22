@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional
 import aiomysql
 from config import get_db
-from auth.dependencies import get_current_user
+from auth.dependencies import get_current_user, get_current_tenant
 
 router = APIRouter()
 
@@ -23,9 +23,12 @@ async def listar_trazabilidad(
     limit: int = 50,
     user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    query = select(Trazabilidad, Equipo.nombre.label("equipo_nombre"), Equipo.serie.label("equipo_serie")).join(Equipo, Trazabilidad.equipo_id == Equipo.id)
-    
+    query = select(Trazabilidad, Equipo.nombre.label("equipo_nombre"), Equipo.serie.label("equipo_serie"))\
+            .join(Equipo, Trazabilidad.equipo_id == Equipo.id)\
+            .where(Trazabilidad.tenant_id == tenant_id)
+
     if equipo_id:
         query = query.where(Trazabilidad.equipo_id == equipo_id)
 
@@ -46,11 +49,15 @@ async def listar_trazabilidad(
 
 @router.get("/equipo/{equipo_id}")
 async def trazabilidad_equipo(
-    equipo_id: int, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    equipo_id: int,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    query = select(Trazabilidad, Usuario.nombre.label("usuario_nombre")).outerjoin(Usuario, Trazabilidad.usuario_id == Usuario.id).where(Trazabilidad.equipo_id == equipo_id).order_by(Trazabilidad.fecha_movimiento.desc())
+    query = select(Trazabilidad, Usuario.nombre.label("usuario_nombre"))\
+            .outerjoin(Usuario, Trazabilidad.usuario_id == Usuario.id)\
+            .where(Trazabilidad.equipo_id == equipo_id, Trazabilidad.tenant_id == tenant_id)\
+            .order_by(Trazabilidad.fecha_movimiento.desc())
     
     result = await session.execute(query)
     rows = result.all()
@@ -66,12 +73,13 @@ async def trazabilidad_equipo(
 
 @router.post("/")
 async def registrar_movimiento(
-    data: dict, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    data: dict,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    # Obtener equipo
-    equipo = await session.get(Equipo, data["equipo_id"])
+    stmt = select(Equipo).where(Equipo.id == data["equipo_id"], Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt)).scalar_one_or_none()
     if not equipo:
         return {"ok": False, "mensaje": "Equipo no encontrado"}
 
@@ -84,7 +92,8 @@ async def registrar_movimiento(
         piso_destino=data.get("piso_destino"),
         motivo=data.get("motivo"),
         usuario_id=data.get("usuario_id") or user["id"],
-        notas=data.get("notas")
+        notas=data.get("notas"),
+        tenant_id=tenant_id,
     )
     
     session.add(nuevo_mov)
