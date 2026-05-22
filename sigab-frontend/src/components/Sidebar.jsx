@@ -2,8 +2,11 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { NAV_ITEMS } from '../utils/constants';
 import * as Lucide from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Sidebar({ onClose }) {
+  const { user } = useAuth();
+  const isSuperAdmin = user?.rol === 'superadmin';
   return (
     <aside
       className="h-full w-64 flex flex-col"
@@ -89,6 +92,45 @@ export default function Sidebar({ onClose }) {
             <span className="truncate">{item.label}</span>
           </NavLink>
         ))}
+        {/* ── Sección SIGAH Global — solo superadmin ── */}
+        {isSuperAdmin && (
+          <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
+            <p
+              className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest"
+              style={{ color: 'rgba(255,255,255,0.45)' }}
+            >
+              SIGAH Global
+            </p>
+            <NavLink
+              to="/admin-global"
+              onClick={() => onClose?.()}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
+              style={({ isActive }) => ({
+                background: isActive ? 'var(--sidebar-active)' : 'transparent',
+                color: 'var(--sidebar-text)',
+                border: isActive ? '1px solid rgba(255,255,255,0.25)' : '1px solid transparent',
+                opacity: isActive ? 1 : 0.8,
+              })}
+              onMouseEnter={(e) => {
+                if (!e.currentTarget.classList.contains('active')) {
+                  e.currentTarget.style.background = 'var(--sidebar-hover)';
+                  e.currentTarget.style.opacity = '1';
+                }
+              }}
+              onMouseLeave={(e) => {
+                const link = e.currentTarget;
+                const isActive = link.getAttribute('aria-current') === 'page';
+                if (!isActive) {
+                  link.style.background = 'transparent';
+                  link.style.opacity = '0.8';
+                }
+              }}
+            >
+              <Lucide.Building2 className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">Panel Admin</span>
+            </NavLink>
+          </div>
+        )}
       </nav>
 
       {/* ── Footer ── */}
