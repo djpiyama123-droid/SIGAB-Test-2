@@ -2,13 +2,19 @@ from fastapi import APIRouter, Depends, HTTPException
 import aiomysql
 from config import get_db
 from auth.dependencies import get_current_user
+from auth.tenancy import get_current_tenant
 from services.audit_service import AuditService
 
 router = APIRouter()
 
 @router.get("/templates")
 async def get_checklist_templates(conn=Depends(get_db)):
-    """Obtiene plantillas de checklists NOM-016."""
+    """Obtiene plantillas de checklists NOM-016.
+
+    EXENTO de filtro tenant: la tabla nom016_checklists contiene definiciones
+    estáticas de plantillas compartidas globalmente (configuración del sistema,
+    no datos operativos). Es de solo lectura y no expone información por hospital.
+    """
     async with conn.cursor(aiomysql.DictCursor) as cur:
         await cur.execute("SELECT * FROM nom016_checklists")
         return await cur.fetchall()
@@ -17,6 +23,7 @@ async def get_checklist_templates(conn=Depends(get_db)):
 async def save_checklist_result(
     data: dict,
     user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     conn=Depends(get_db)
 ):
     """Guarda el resultado de un checklist NOM-016 y lo registra en auditoría."""
@@ -30,12 +37,12 @@ async def save_checklist_result(
 
     async with conn.cursor() as cur:
         await cur.execute(
-            """INSERT INTO nom016_resultados (checklist_id, usuario_id, area_id, resultados, observaciones)
-               VALUES (%s, %s, %s, %s, %s)""",
-            (checklist_id, user["id"], area_id, resultados, observaciones)
+            """INSERT INTO nom016_resultados (checklist_id, usuario_id, area_id, resultados, observaciones, tenant_id)
+               VALUES (%s, %s, %s, %s, %s, %s)""",
+            (checklist_id, user["id"], area_id, resultados, observaciones, tenant_id)
         )
         res_id = cur.lastrowid
-        
+
         # Registrar en Auditoría NOM-016 inalterable
         await AuditService.log_event(
             usuario_id=user["id"],
@@ -51,29 +58,31 @@ async def save_checklist_result(
 async def get_results(
     limit: int = 50,
     area_id: int = None,
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     conn=Depends(get_db)
 ):
-    """Lista resultados de auditorías NOM-016 previas."""
+    """Lista resultados de auditorías NOM-016 previas del hospital actual."""
     async with conn.cursor(aiomysql.DictCursor) as cur:
         query = """SELECT r.*, c.nombre as checklist_nombre, u.nombre as usuario_nombre, l.nombre as area_nombre
                    FROM nom016_resultados r
                    JOIN nom016_checklists c ON r.checklist_id = c.id
                    JOIN usuarios u ON r.usuario_id = u.id
                    LEFT JOIN ubicaciones l ON r.area_id = l.id
-                   WHERE 1=1"""
-        params = []
+                   WHERE r.tenant_id = %s"""
+        params = [tenant_id]
         if area_id:
             query += " AND r.area_id = %s"
             params.append(area_id)
-            
+
         query += " ORDER BY r.fecha_ejecucion DESC LIMIT %s"
         params.append(limit)
-        
+
         await cur.execute(query, params)
         res = await cur.fetchall()
-        
+
     for r in res:
         if hasattr(r["fecha_ejecucion"], "isoformat"):
             r["fecha_ejecucion"] = r["fecha_ejecucion"].isoformat()
-            
+
     return res
