@@ -5,7 +5,11 @@
  * HGR No.1 IMSS Tijuana — 100% On-Premise
  */
 
-const API = 'http://localhost:8000/api/openclaw';
+import { getAuthHeaders } from './auth.js';
+
+const API = process.env.SIGAB_BACKEND_URL
+  ? `${process.env.SIGAB_BACKEND_URL}/api/openclaw`
+  : 'http://localhost:8000/api/openclaw';
 
 const EMOJI_ESTADO = {
   operativo:        '🟢',
@@ -60,7 +64,7 @@ async function cmdEquipo(query) {
 
   try {
     // Intenta por serie exacta primero
-    let res = await fetch(`${API}/estado-equipo/${encodeURIComponent(query)}`);
+    let res = await fetch(`${API}/estado-equipo/${encodeURIComponent(query)}`, { headers: getAuthHeaders() });
     let json = await res.json();
 
     if (json.ok && json.equipo) {
@@ -68,7 +72,7 @@ async function cmdEquipo(query) {
     }
 
     // Búsqueda general
-    res = await fetch(`${API}/buscar-equipo?q=${encodeURIComponent(query)}`);
+    res = await fetch(`${API}/buscar-equipo?q=${encodeURIComponent(query)}`, { headers: getAuthHeaders() });
     json = await res.json();
 
     if (!json.ok || !json.resultados?.length) {
@@ -132,7 +136,7 @@ async function cmdTicket(texto, sender) {
 
     const res = await fetch(`${API}/ticket`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...getAuthHeaders() },
       body: params.toString(),
     });
     const json = await res.json();
@@ -164,7 +168,7 @@ Estados válidos: operativo, en_mantenimiento, fuera_servicio, en_traslado, baja
 
   try {
     // Buscar equipo
-    const searchRes = await fetch(`${API}/buscar-equipo?q=${encodeURIComponent(serie)}`);
+    const searchRes = await fetch(`${API}/buscar-equipo?q=${encodeURIComponent(serie)}`, { headers: getAuthHeaders() });
     const searchJson = await searchRes.json();
     if (!searchJson.ok || !searchJson.resultados?.length) {
       return `❌ Equipo "${serie}" no encontrado`;
@@ -172,10 +176,9 @@ Estados válidos: operativo, en_mantenimiento, fuera_servicio, en_traslado, baja
 
     const equipo = searchJson.resultados[0];
 
-    // Actualizar via OpenClaw endpoint directo
-    const updateRes = await fetch(`http://localhost:8000/api/openclaw/cambiar-estado`, {
+    const updateRes = await fetch(`${API}/cambiar-estado`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...getAuthHeaders() },
       body: new URLSearchParams({ equipo_serie: serie, nuevo_estado: estado }).toString(),
     });
     const updateJson = await updateRes.json();
@@ -203,7 +206,7 @@ async function cmdTraslado(args) {
   try {
     const res = await fetch(`${API}/traslado`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...getAuthHeaders() },
       body: new URLSearchParams({
         equipo_serie: serie,
         area_destino: destino,
@@ -221,7 +224,7 @@ async function cmdTraslado(args) {
 // ── Alertas ────────────────────────────────────────────────
 async function cmdAlertas() {
   try {
-    const res = await fetch(`${API}/alertas-pendientes`);
+    const res = await fetch(`${API}/alertas-pendientes`, { headers: getAuthHeaders() });
     const json = await res.json();
 
     if (!json.ok || json.total === 0) return '✅ Sin alertas pendientes';
@@ -240,7 +243,7 @@ async function cmdAlertas() {
 // ── Reporte Diario ─────────────────────────────────────────
 async function cmdReporte() {
   try {
-    const res = await fetch(`${API}/reporte-diario`);
+    const res = await fetch(`${API}/reporte-diario`, { headers: getAuthHeaders() });
     const json = await res.json();
 
     if (!json.ok) return '❌ Error generando reporte';
@@ -278,7 +281,7 @@ async function cmdPdf(serie) {
 
   try {
     const url = `${API}/equipo-pdf/${encodeURIComponent(serie)}`;
-    const res = await fetch(url);
+    const res = await fetch(url, { headers: getAuthHeaders() });
     if (!res.ok) {
        const json = await res.json();
        return `❌ Error: ${json.mensaje || 'No se pudo generar el PDF'}`;
@@ -308,7 +311,7 @@ async function cmdEmail(args) {
   try {
     const res = await fetch(`${API}/enviar-reporte`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...getAuthHeaders() },
       body: new URLSearchParams({ serie, email }).toString(),
     });
     const json = await res.json();
@@ -325,7 +328,7 @@ async function cmdAI(mensaje) {
   try {
     const res = await fetch(`${API}/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ mensaje }),
     });
     const json = await res.json();
@@ -369,14 +372,13 @@ El sistema usará IA para leer las casillas automáticamente. ✅`;
     // Modo: /casillas serie [serie] → buscar orden abierta del equipo
     if (argsTrimmed.toLowerCase().startsWith('serie ')) {
       const serie = argsTrimmed.slice(6).trim();
-      const searchRes = await fetch(`http://localhost:8000/api/openclaw/buscar-equipo?q=${encodeURIComponent(serie)}`);
+      const searchRes = await fetch(`${API}/buscar-equipo?q=${encodeURIComponent(serie)}`, { headers: getAuthHeaders() });
       const searchJson = await searchRes.json();
       if (!searchJson.ok || !searchJson.resultados?.length) {
         return `❌ Equipo con serie "${serie}" no encontrado en SIGAH`;
       }
       const equipoId = searchJson.resultados[0].id;
 
-      // Crear OS automática para el equipo
       const osParams = new URLSearchParams({
         equipo_serie: serie,
         tipo_mantenimiento: 'correctivo',
@@ -384,9 +386,9 @@ El sistema usará IA para leer las casillas automáticamente. ✅`;
         origen: 'whatsapp_foto',
         prioridad: 'media',
       });
-      const osRes = await fetch('http://localhost:8000/api/openclaw/ticket', {
+      const osRes = await fetch(`${API}/ticket`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...getAuthHeaders() },
         body: osParams.toString(),
       });
       const osJson = await osRes.json();
@@ -408,6 +410,7 @@ El sistema usará IA para leer las casillas automáticamente. ✅`;
 
       const ocrRes = await fetch(`${CASILLAS_API}/ocr/${ordenId}`, {
         method: 'POST',
+        headers: getAuthHeaders(),
         body: fd,
       });
 
@@ -512,7 +515,7 @@ async function cmdProveedor(serie) {
   if (!serie) return '❌ Uso: */proveedor* _serie_';
 
   try {
-    const res = await fetch(`${API}/estado-equipo/${encodeURIComponent(serie)}`);
+    const res = await fetch(`${API}/estado-equipo/${encodeURIComponent(serie)}`, { headers: getAuthHeaders() });
     const json = await res.json();
 
     if (!json.ok || !json.equipo) return `❌ Equipo "${serie}" no encontrado`;
