@@ -25,6 +25,7 @@ import Metrologia from './pages/Metrologia';
 import Capacitaciones from './pages/Capacitaciones';
 import QRBatch from './pages/QRBatch';
 import QRScanner from './pages/QRScanner';
+import AdminGlobal from './pages/AdminGlobal';
 
 export default function App() {
   return (
@@ -39,6 +40,13 @@ export default function App() {
           <Route path="/tv" element={<TVDashboard />} />
           <Route path="/analitica" element={<Layout><Analitica /></Layout>} />
           
+          {/* Rutas Protegidas — SuperAdmin */}
+          <Route element={<ProtectedRoute allowedRoles={['superadmin']} />}>
+            <Route path="/" element={<Layout />}>
+              <Route path="admin-global" element={<AdminGlobal />} />
+            </Route>
+          </Route>
+
           {/* Rutas Protegidas */}
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Layout />}>
