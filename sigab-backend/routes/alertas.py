@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional
 import aiomysql
 from config import get_db
 from auth.dependencies import get_current_user
+from auth.tenancy import get_current_tenant
 
 router = APIRouter()
 
@@ -15,23 +16,37 @@ from models.alerta import Alerta
 from models.equipo import Equipo
 
 
+# Nota de arquitectura — Alerta.tenant_id pendiente (Fase 1 migration).
+# Mientras no exista la columna, filtramos por JOIN con Equipo cuando la
+# alerta tiene equipo_id. Alertas sin equipo_id (sistema/globales) son
+# ignoradas en listados tenant — se expondrán en el panel SuperAdmin.
+
+
 @router.get("/")
 async def listar_alertas(
     leida: Optional[bool] = None,
     tipo: Optional[str] = None,
     limit: int = 50,
     user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
-    query = select(Alerta, Equipo.nombre.label("equipo_nombre"), Equipo.serie.label("equipo_serie")).outerjoin(Equipo, Alerta.equipo_id == Equipo.id)
-    
+    # JOIN con Equipo para filtrar por tenant — Alerta aún no tiene tenant_id.
+    # outerjoin → inner join explícito para que sólo retornemos alertas
+    # asociadas a un equipo del tenant; alertas huérfanas (sin equipo) quedan
+    # fuera del listado del tenant hasta que se añada tenant_id a la tabla.
+    query = (
+        select(Alerta, Equipo.nombre.label("equipo_nombre"), Equipo.serie.label("equipo_serie"))
+        .join(Equipo, Alerta.equipo_id == Equipo.id)
+        .where(Equipo.tenant_id == tenant_id)
+    )
+
     if leida is not None:
         query = query.where(Alerta.leida == leida)
     if tipo:
         query = query.where(Alerta.tipo == tipo)
 
     # Ordenar por prioridad (critica > alta > media > baja) y fecha
-    # Usamos case para replicar el orden específico
     query = query.order_by(
         sa.case(
             (Alerta.prioridad == "critica", 1),
@@ -41,10 +56,10 @@ async def listar_alertas(
         ),
         Alerta.created_at.desc()
     ).limit(limit)
-    
+
     result = await session.execute(query)
     rows = result.all()
-    
+
     alertas_list = []
     for alerta, eq_nombre, eq_serie in rows:
         d = alerta.model_dump()
@@ -57,12 +72,17 @@ async def listar_alertas(
 
 @router.get("/pendientes")
 async def alertas_pendientes(
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_async_session),
 ):
-    # Nota: v_alertas_pendientes es una vista. Podemos seleccionarla directamente vía raw SQL o mapearla.
-    # Por ahora usamos select(Alerta) filtrando por leida=False.
-    stmt = select(Alerta).where(Alerta.leida == False).limit(50)
+    # Filtrar alertas pendientes del tenant via JOIN con Equipo.
+    stmt = (
+        select(Alerta)
+        .join(Equipo, Alerta.equipo_id == Equipo.id)
+        .where(Alerta.leida == False, Equipo.tenant_id == tenant_id)
+        .limit(50)
+    )
     res = await session.execute(stmt)
     alertas = res.scalars().all()
     return {"alertas": alertas, "total": len(alertas)}
@@ -70,23 +90,43 @@ async def alertas_pendientes(
 
 @router.put("/{alerta_id}/leer")
 async def marcar_leida(
-    alerta_id: int, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    alerta_id: int,
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_async_session),
 ):
-    alerta = await session.get(Alerta, alerta_id)
-    if alerta:
-        alerta.leida = True
-        await session.commit()
+    # Verificar que la alerta pertenece al tenant antes de mutar.
+    # Retornamos 404 (nunca 403) para no revelar existencia cross-tenant.
+    stmt = (
+        select(Alerta)
+        .join(Equipo, Alerta.equipo_id == Equipo.id)
+        .where(Alerta.id == alerta_id, Equipo.tenant_id == tenant_id)
+    )
+    alerta = (await session.execute(stmt)).scalar_one_or_none()
+    if not alerta:
+        raise HTTPException(status_code=404, detail="Alerta no encontrada")
+    alerta.leida = True
+    await session.commit()
     return {"ok": True}
 
 
 @router.put("/leer-todas")
 async def marcar_todas_leidas(
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_async_session),
 ):
-    stmt = update(Alerta).where(Alerta.leida == False).values(leida=True)
-    await session.execute(stmt)
-    await session.commit()
+    # UPDATE masivo sólo sobre alertas del tenant — via subquery de equipos.
+    # Alerta.equipo_id → Equipo.tenant_id para acotar el UPDATE.
+    equipo_ids_stmt = select(Equipo.id).where(Equipo.tenant_id == tenant_id)
+    equipo_ids = (await session.execute(equipo_ids_stmt)).scalars().all()
+
+    if equipo_ids:
+        stmt = (
+            update(Alerta)
+            .where(Alerta.leida == False, Alerta.equipo_id.in_(equipo_ids))
+            .values(leida=True)
+        )
+        await session.execute(stmt)
+        await session.commit()
     return {"ok": True}
