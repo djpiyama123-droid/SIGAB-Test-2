@@ -279,20 +279,3 @@ export function SigabTable({ columns, rows, empty = 'Sin registros' }) {
   );
 }
 
-// ──────────────────────────────────────────────────────────────────
-// Toast helpers (estilo unificado para react-hot-toast)
-// ──────────────────────────────────────────────────────────────────
-
-export const sigabToastOptions = {
-  duration: 4000,
-  style: {
-    fontFamily: "'Open Sans', system-ui, sans-serif",
-    background: '#FFFFFF',
-    color: '#0E2D43',
-    border: '1px solid #D4E5F0',
-    borderRadius: '10px',
-    boxShadow: '0 4px 12px rgba(14,45,67,0.10)',
-  },
-  success: { iconTheme: { primary: '#1E8449', secondary: '#FFFFFF' } },
-  error:   { iconTheme: { primary: '#B0341C', secondary: '#FFFFFF' } },
-};

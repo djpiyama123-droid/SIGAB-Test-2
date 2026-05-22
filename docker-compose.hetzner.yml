@@ -1,0 +1,111 @@
+version: '3.8'
+
+# ================================================================
+# SIGAH — Docker Compose para Hetzner Cloud (CX32)
+# Servidor único: Nginx reverse-proxy + Frontend + Backend + MySQL
+# Uso: docker compose -f docker-compose.hetzner.yml up -d --build
+# ================================================================
+
+services:
+
+  # ── MySQL 8.0 ──────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: sigah-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE:      ${MYSQL_DATABASE:-sigab_db}
+      MYSQL_USER:          ${MYSQL_USER:-sigab_user}
+      MYSQL_PASSWORD:      ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/sigab_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --event-scheduler=ON
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1",
+             "-u", "${MYSQL_USER:-sigab_user}", "-p${MYSQL_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - sigah_internal
+
+  # ── FastAPI Backend ─────────────────────────────────────────────
+  backend:
+    build:
+      context: ./sigab-backend
+      dockerfile: Dockerfile
+    container_name: sigah-backend
+    restart: unless-stopped
+    environment:
+      SIGAB_DB_HOST:           db
+      SIGAB_DB_PORT:           3306
+      SIGAB_DB_USER:           ${MYSQL_USER:-sigab_user}
+      SIGAB_DB_PASS:           ${MYSQL_PASSWORD}
+      SIGAB_DB_NAME:           ${MYSQL_DATABASE:-sigab_db}
+      SIGAB_JWT_SECRET:        ${SECRET_KEY}
+      SIGAB_JWT_ALGORITHM:     ${ALGORITHM:-HS256}
+      SIGAB_JWT_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      SIGAB_UPLOAD_DIR:        /app/static/uploads
+      SIGAB_PUBLIC_BASE_URL:   ${SIGAB_PUBLIC_BASE_URL:-https://localhost}
+      SIGAB_OLLAMA_HOST:       ${OLLAMA_HOST:-http://localhost:11434}
+      SIGAB_DISABLE_COPILOT:   ${SIGAB_DISABLE_COPILOT:-0}
+    volumes:
+      - uploads_data:/app/static/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import urllib.request,sys; sys.exit(0 if urllib.request.urlopen(\"http://localhost:8000/health\",timeout=3).status==200 else 1)'"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - sigah_internal
+
+  # ── Frontend React (build estático servido por nginx) ───────────
+  frontend:
+    build:
+      context: ./sigab-frontend
+      dockerfile: Dockerfile
+    container_name: sigah-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - sigah_internal
+
+  # ── Nginx reverse-proxy (punto de entrada público) ───────────────
+  nginx:
+    image: nginx:alpine
+    container_name: sigah-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx-hetzner.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro       # certificados TLS (Certbot los escribe aquí)
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - sigah_internal
+
+volumes:
+  mysql_data:
+    name: sigah_mysql_data
+  uploads_data:
+    name: sigah_uploads
+
+networks:
+  sigah_internal:
+    name: sigah_internal
