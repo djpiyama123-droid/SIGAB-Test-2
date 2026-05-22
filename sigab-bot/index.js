@@ -21,6 +21,7 @@ import axios from 'axios';
 import cors from 'cors';
 import { handleCommand, handleImageCommand } from './commands.js';
 import { initScheduler } from './scheduler.js';
+import { initBotAuth, getAuthHeaders } from './auth.js';
 
 // ── Configuración ──────────────────────────────────────────
 const GRUPO_BIOMEDICOS    = process.env.GRUPO_BIOMEDICOS || 'Residentes de biomedica 2025';
@@ -208,8 +209,13 @@ async function startBot() {
       }
     }
     if (connection === 'open') {
+<<<<<<< HEAD
       console.log(`🟢 SIGAH Bot conectado. Buscando grupo "${GRUPO_BIOMEDICOS}"...`);
       await botLogin();
+=======
+      console.log('🟢 WhatsApp Bot Conectado');
+      await initBotAuth();
+>>>>>>> b1001f1 (feat(bot): autenticación JWT via bot-login — auth.js + headers en commands/index)
       await resolverGrupo();
       initScheduler(sendToGroup);
       await notificarSupervisores(
@@ -240,10 +246,19 @@ async function startBot() {
             from: senderJid, pushName: senderName, type: 'audio',
             timestamp: msg.messageTimestamp,
             data: buffer.toString('base64'),
+<<<<<<< HEAD
             mimetype: msg.message.audioMessage.mimetype,
             isGroup, grupoJid: isGroup ? remoteJid : null,
           });
         } catch (err) { console.error('❌ Error audio:', err.message); }
+=======
+            mimetype: msg.message.audioMessage.mimetype
+          }, { headers: getAuthHeaders() });
+          console.log('✅ Voice note reenviada a FastAPI');
+        } catch (err) {
+          console.error('❌ Error procesando voice note:', err.message);
+        }
+>>>>>>> b1001f1 (feat(bot): autenticación JWT via bot-login — auth.js + headers en commands/index)
         continue;
       }
 
@@ -271,6 +286,7 @@ async function startBot() {
       // Audit log a FastAPI
       try {
         await axios.post(FASTAPI_WEBHOOK_URL, {
+<<<<<<< HEAD
           from: senderJid, pushName: senderName, type: 'text',
           body: text, timestamp: msg.messageTimestamp,
           isGroup, grupoJid: isGroup ? remoteJid : null,
@@ -281,6 +297,17 @@ async function startBot() {
         const response = await handleCommand(text, senderName);
         if (response) await sock.sendMessage(remoteJid, typeof response === 'string' ? { text: response } : response);
         continue;
+=======
+          from: remoteJid,
+          pushName: msg.pushName,
+          type: 'text',
+          body: text,
+          timestamp: msg.messageTimestamp,
+          isGroup
+        }, { headers: getAuthHeaders() });
+      } catch (err) {
+        console.warn('⚠️ Webhook a FastAPI falló:', err.message);
+>>>>>>> b1001f1 (feat(bot): autenticación JWT via bot-login — auth.js + headers en commands/index)
       }
 
       // Texto libre del grupo → intake pasivo
