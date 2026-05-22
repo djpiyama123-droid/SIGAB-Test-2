@@ -23,6 +23,7 @@ from datetime import datetime, date
 import sqlalchemy as sa
 from config import get_db, UPLOAD_DIR
 from auth.dependencies import get_current_user, require_action
+from auth.tenancy import get_current_tenant
 from services.pdf_service import generar_pdf_orden, generar_pdf_orden_v2_poka_yoke
 try:
     from services.ocr_service import parsear_reporte_ocr
@@ -59,10 +60,16 @@ async def listar_ordenes(
     limit: int = 50,
     offset: int = 0,
     user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
-    query = select(OrdenServicio, Equipo.nombre.label("equipo_nombre_rel")).outerjoin(Equipo, OrdenServicio.equipo_id == Equipo.id)
-    
+    # Filtro de tenant SIEMPRE en OrdenServicio y en el JOIN de Equipo — defensa en profundidad.
+    query = (
+        select(OrdenServicio, Equipo.nombre.label("equipo_nombre_rel"))
+        .outerjoin(Equipo, (OrdenServicio.equipo_id == Equipo.id) & (Equipo.tenant_id == tenant_id))
+        .where(OrdenServicio.tenant_id == tenant_id)
+    )
+
     if estado:
         query = query.where(OrdenServicio.estado == estado)
     if tipo:
@@ -133,11 +140,16 @@ async def listar_archivos_historicos(
 
 @router.get("/{orden_id}")
 async def obtener_orden(
-    orden_id: int, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    orden_id: int,
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_async_session),
 ):
-    orden = await session.get(OrdenServicio, orden_id)
+    # Verificar ownership por tenant — 404 si la orden no pertenece a este hospital.
+    stmt_ord = select(OrdenServicio).where(
+        OrdenServicio.id == orden_id, OrdenServicio.tenant_id == tenant_id
+    )
+    orden = (await session.execute(stmt_ord)).scalar_one_or_none()
     if not orden:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
 
@@ -154,24 +166,29 @@ async def obtener_orden(
 
 @router.post("/")
 async def crear_orden(
-    data: dict, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    data: dict,
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_async_session),
 ):
-    # Generar número de orden: OS-YYYYMMDD-XXXX
+    # Generar número de orden: OS-YYYYMMDD-XXXX (contador por año, dentro del tenant).
     hoy = date.today()
     stmt_count = select(func.count()).select_from(OrdenServicio).where(
-        sa.extract('year', OrdenServicio.fecha) == hoy.year
+        OrdenServicio.tenant_id == tenant_id,
+        sa.extract('year', OrdenServicio.fecha) == hoy.year,
     )
     res_count = await session.execute(stmt_count)
     n = res_count.scalar() + 1
     numero = f"OS-{hoy.strftime('%Y%m%d')}-{n:04d}"
 
+    # Defensivo: ignorar tenant_id que pueda venir del cliente.
+    data.pop("tenant_id", None)
+
     # Crear objeto Orden
     # Quitamos materiales de la data para no fallar en el constructor si no están en el modelo
     materiales_data = data.pop("materiales", [])
-    
-    orden = OrdenServicio(**data)
+
+    orden = OrdenServicio(**data, tenant_id=tenant_id)
     orden.numero_orden = numero
     orden.fecha = hoy
     
@@ -193,14 +210,18 @@ async def crear_orden(
 
 @router.put("/{orden_id}/cerrar")
 async def cerrar_orden(
-    orden_id: int, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    orden_id: int,
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_async_session),
 ):
-    orden = await session.get(OrdenServicio, orden_id)
+    stmt_ord = select(OrdenServicio).where(
+        OrdenServicio.id == orden_id, OrdenServicio.tenant_id == tenant_id
+    )
+    orden = (await session.execute(stmt_ord)).scalar_one_or_none()
     if not orden:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
-        
+
     orden.estado = 'cerrada'
     orden.closed_at = datetime.utcnow()
     await session.commit()
@@ -209,16 +230,20 @@ async def cerrar_orden(
 
 @router.put("/{orden_id}/estado")
 async def cambiar_estado_orden(
-    orden_id: int, 
-    data: dict, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    orden_id: int,
+    data: dict,
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_async_session),
 ):
     estado = data.get("estado")
     if estado not in ("abierta", "en_progreso", "cerrada", "cancelada"):
         raise HTTPException(status_code=400, detail="Estado inválido")
 
-    orden = await session.get(OrdenServicio, orden_id)
+    stmt_ord = select(OrdenServicio).where(
+        OrdenServicio.id == orden_id, OrdenServicio.tenant_id == tenant_id
+    )
+    orden = (await session.execute(stmt_ord)).scalar_one_or_none()
     if not orden:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
 
@@ -237,9 +262,17 @@ async def subir_evidencia(
     descripcion: str = "",
     file: UploadFile = File(...),
     user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Sube una foto (antes, despues, etc) como evidencia de la orden."""
+    # Verificar ownership por tenant antes de aceptar el archivo.
+    stmt_ord = select(OrdenServicio).where(
+        OrdenServicio.id == orden_id, OrdenServicio.tenant_id == tenant_id
+    )
+    if not (await session.execute(stmt_ord)).scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Orden no encontrada")
+
     ext = file.filename.split(".")[-1].lower()
     extensiones_validas = {"png", "jpg", "jpeg", "webp", "pdf"}
     if ext not in extensiones_validas:
@@ -271,10 +304,14 @@ async def finalizar_orden(
     orden_id: int,
     data: dict,
     user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Cierra la orden añadiendo condiciones finales, reporte y conformidad."""
-    orden = await session.get(OrdenServicio, orden_id)
+    stmt_ord = select(OrdenServicio).where(
+        OrdenServicio.id == orden_id, OrdenServicio.tenant_id == tenant_id
+    )
+    orden = (await session.execute(stmt_ord)).scalar_one_or_none()
     if not orden:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
 
@@ -319,6 +356,7 @@ async def escanear_os_imss(
     file: UploadFile = File(...),
     auto_create: bool = False,
     user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """
@@ -340,10 +378,12 @@ async def escanear_os_imss(
     if len(img_bytes) > 15 * 1024 * 1024:
         raise HTTPException(status_code=413, detail="Imagen excede 15 MB")
 
-    # Cargar catálogo de series para fuzzy match (corrección de caracteres OCR)
+    # Cargar catálogo de series del tenant para fuzzy match (corrección de caracteres OCR).
     series_catalogo: list[str] = []
     try:
-        series_q = await session.execute(select(Equipo.serie).where(Equipo.serie.isnot(None)))
+        series_q = await session.execute(
+            select(Equipo.serie).where(Equipo.tenant_id == tenant_id, Equipo.serie.isnot(None))
+        )
         series_catalogo = [s for s in series_q.scalars().all() if s]
     except Exception:
         pass
@@ -364,16 +404,21 @@ async def escanear_os_imss(
     # ── Crear OS en estado 'pendiente_validacion' ──────────────────
     mapped = map_to_orden_servicio(extracted)
 
-    # Folio: usar el extraído si parece válido (OS-YYYYMMDD-XXXX), si no auto-generar
+    # Folio: usar el extraído si parece válido (OS-YYYYMMDD-XXXX), si no auto-generar.
+    # Contador de folios es por año, dentro del tenant.
     numero = mapped.get("numero_orden")
     if not numero or not (isinstance(numero, str) and numero.startswith("OS-") and len(numero) >= 12):
         hoy = date.today()
         stmt_count = select(func.count()).select_from(OrdenServicio).where(
-            sa.extract('year', OrdenServicio.fecha) == hoy.year
+            OrdenServicio.tenant_id == tenant_id,
+            sa.extract('year', OrdenServicio.fecha) == hoy.year,
         )
         n = (await session.execute(stmt_count)).scalar() + 1
         numero = f"OS-{hoy.strftime('%Y%m%d')}-{n:04d}"
     mapped["numero_orden"] = numero
+
+    # Defensivo: ignorar tenant_id del payload extraído.
+    mapped.pop("tenant_id", None)
 
     # Convertir tiempo_real_min → tiempo_real_hrs (Decimal)
     if "tiempo_real_min" in mapped:
@@ -405,14 +450,16 @@ async def escanear_os_imss(
     mapped["estado"] = "pendiente_validacion"
     mapped["origen"] = "scan_imss"
 
-    # Resolver equipo_id a partir de equipo_serie si existe
+    # Resolver equipo_id a partir de equipo_serie — filtrado por tenant para no cruzar hospitales.
     if mapped.get("equipo_serie"):
-        eq_stmt = select(Equipo.id).where(Equipo.serie == mapped["equipo_serie"])
+        eq_stmt = select(Equipo.id).where(
+            Equipo.serie == mapped["equipo_serie"], Equipo.tenant_id == tenant_id
+        )
         eq_id = (await session.execute(eq_stmt)).scalar_one_or_none()
         if eq_id:
             mapped["equipo_id"] = eq_id
 
-    orden = OrdenServicio(**mapped)
+    orden = OrdenServicio(**mapped, tenant_id=tenant_id)
     session.add(orden)
     await session.commit()
     await session.refresh(orden)
@@ -460,10 +507,14 @@ async def escanear_os_imss(
 async def descargar_pdf_orden(
     orden_id: int,
     user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Genera y descarga el PDF de la Orden de Servicio."""
-    orden = await session.get(OrdenServicio, orden_id)
+    stmt_ord = select(OrdenServicio).where(
+        OrdenServicio.id == orden_id, OrdenServicio.tenant_id == tenant_id
+    )
+    orden = (await session.execute(stmt_ord)).scalar_one_or_none()
     if not orden:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
 
@@ -476,28 +527,34 @@ async def descargar_pdf_orden(
     evidencias = res_ev.scalars().all()
 
     # ── Datos extra para que el PDF llene la mitad inferior ────────
-    # (a) Tipo de equipo desde la tabla equipos para escoger el checklist correcto
+    # (a) Tipo de equipo desde la tabla equipos — filtrado por tenant.
     tipo_equipo = None
     if orden.equipo_id:
         eq_row = await session.execute(
-            select(Equipo.tipo_equipo).where(Equipo.id == orden.equipo_id)
+            select(Equipo.tipo_equipo).where(
+                Equipo.id == orden.equipo_id, Equipo.tenant_id == tenant_id
+            )
         )
         tipo_equipo = eq_row.scalar_one_or_none()
 
-    # (b) Historial breve: últimas 5 OS cerradas del mismo equipo (excluyendo la actual)
+    # (b) Historial breve: últimas 5 OS del mismo equipo, dentro del tenant.
     historial_breve = []
     if orden.equipo_id:
         stmt_hist = (
             select(OrdenServicio)
-            .where(OrdenServicio.equipo_id == orden.equipo_id)
-            .where(OrdenServicio.id != orden_id)
+            .where(
+                OrdenServicio.tenant_id == tenant_id,
+                OrdenServicio.equipo_id == orden.equipo_id,
+                OrdenServicio.id != orden_id,
+            )
             .order_by(OrdenServicio.fecha.desc())
             .limit(5)
         )
         res_hist = await session.execute(stmt_hist)
         historial_breve = [h.model_dump() for h in res_hist.scalars().all()]
 
-    # (c) Próximo preventivo programado (si la tabla existe)
+    # (c) Próximo preventivo programado (si la tabla existe).
+    # El equipo_id ya está verificado en el tenant actual — la query no cruza tenants.
     proximo_preventivo = None
     if orden.equipo_id:
         try:
@@ -505,10 +562,10 @@ async def descargar_pdf_orden(
             r = await session.execute(
                 sa_text(
                     "SELECT tipo_preventivo, proxima_ejecucion FROM preventivos_programados "
-                    "WHERE equipo_id = :eq AND activo = 1 "
+                    "WHERE equipo_id = :eq AND tenant_id = :tid AND activo = 1 "
                     "ORDER BY proxima_ejecucion ASC LIMIT 1"
                 ),
-                {"eq": orden.equipo_id},
+                {"eq": orden.equipo_id, "tid": tenant_id},
             )
             row = r.mappings().first()
             if row:
@@ -543,6 +600,7 @@ async def descargar_pdf_orden(
 async def descargar_pdf_fisico_poka_yoke(
     orden_id: int,
     user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Genera el PDF de la OS en formato físico Poka-Yoke v2.0 imprimible.
@@ -556,14 +614,20 @@ async def descargar_pdf_fisico_poka_yoke(
     Es útil tanto para imprimir en blanco (técnico llena a mano en campo) como
     para regenerar con datos finales pre-rellenados sobre el formato.
     """
-    orden = await session.get(OrdenServicio, orden_id)
+    stmt_ord = select(OrdenServicio).where(
+        OrdenServicio.id == orden_id, OrdenServicio.tenant_id == tenant_id
+    )
+    orden = (await session.execute(stmt_ord)).scalar_one_or_none()
     if not orden:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
 
-    # Datos del equipo (si la orden está vinculada a uno)
+    # Datos del equipo — filtrado por tenant para no exponer datos cruzados.
     equipo_dict = {}
     if orden.equipo_id:
-        equipo = await session.get(Equipo, orden.equipo_id)
+        stmt_eq = select(Equipo).where(
+            Equipo.id == orden.equipo_id, Equipo.tenant_id == tenant_id
+        )
+        equipo = (await session.execute(stmt_eq)).scalar_one_or_none()
         if equipo:
             equipo_dict = equipo.model_dump()
 
