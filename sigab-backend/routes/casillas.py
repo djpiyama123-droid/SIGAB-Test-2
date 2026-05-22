@@ -11,7 +11,7 @@ Endpoints:
 """
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import select, func
 from datetime import datetime, timezone
 import json
 import base64
@@ -22,6 +22,8 @@ from database import get_async_session as get_session
 from models.orden_casillas import OrdenCasillas, CasillasCreate, CasillasRead
 from models.orden_servicio import OrdenServicio
 from services.sse_service import sse_manager
+from auth.dependencies import get_current_user
+from auth.tenancy import get_current_tenant
 
 router = APIRouter(prefix="/api/casillas", tags=["Casillas CENEVAL (Conservación)"])
 logger = logging.getLogger(__name__)
@@ -35,15 +37,24 @@ logger = logging.getLogger(__name__)
 async def upsert_casillas(
     orden_id: int,
     data: CasillasCreate,
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_session),
 ):
-    # Verificar que la OS existe
-    orden = await session.get(OrdenServicio, orden_id)
+    # Verificar que la OS existe y pertenece al tenant (404, nunca 403)
+    stmt_os = select(OrdenServicio).where(
+        OrdenServicio.id == orden_id,
+        OrdenServicio.tenant_id == tenant_id,
+    )
+    orden = (await session.execute(stmt_os)).scalar_one_or_none()
     if not orden:
         raise HTTPException(status_code=404, detail=f"Orden {orden_id} no encontrada")
 
-    # Upsert: buscar si ya existe
-    stmt = select(OrdenCasillas).where(OrdenCasillas.orden_id == orden_id)
+    # Upsert: buscar si ya existe, filtrado también por tenant_id
+    stmt = select(OrdenCasillas).where(
+        OrdenCasillas.orden_id == orden_id,
+        OrdenCasillas.tenant_id == tenant_id,
+    )
     result = await session.execute(stmt)
     casillas = result.scalars().first()
 
@@ -57,6 +68,7 @@ async def upsert_casillas(
     else:
         casillas = OrdenCasillas(
             orden_id=orden_id,
+            tenant_id=tenant_id,
             **data.model_dump(),
             created_at=now,
             updated_at=now,
@@ -94,9 +106,14 @@ async def upsert_casillas(
 @router.get("/{orden_id}", response_model=CasillasRead)
 async def get_casillas(
     orden_id: int,
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_session),
 ):
-    stmt = select(OrdenCasillas).where(OrdenCasillas.orden_id == orden_id)
+    stmt = select(OrdenCasillas).where(
+        OrdenCasillas.orden_id == orden_id,
+        OrdenCasillas.tenant_id == tenant_id,
+    )
     result = await session.execute(stmt)
     casillas = result.scalars().first()
     if not casillas:
@@ -144,13 +161,20 @@ No incluyas explicaciones. Solo el JSON."""
 async def ocr_casillas(
     orden_id: int,
     foto: UploadFile = File(..., description="Foto del formato físico CENEVAL"),
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_session),
 ):
     """
     Recibe la foto del formato físico y usa Gemini Vision para detectar casillas marcadas.
     Guarda automáticamente el resultado como casillas de la orden.
     """
-    orden = await session.get(OrdenServicio, orden_id)
+    # Verificar que la OS existe y pertenece al tenant (404, nunca 403)
+    stmt_os = select(OrdenServicio).where(
+        OrdenServicio.id == orden_id,
+        OrdenServicio.tenant_id == tenant_id,
+    )
+    orden = (await session.execute(stmt_os)).scalar_one_or_none()
     if not orden:
         raise HTTPException(status_code=404, detail=f"Orden {orden_id} no encontrada")
 
@@ -207,8 +231,8 @@ async def ocr_casillas(
         logger.error(f"OCR Gemini falló: {e}")
         raise HTTPException(status_code=502, detail=f"Error en OCR: {str(e)}")
 
-    # Guardar usando upsert existente
-    return await upsert_casillas(orden_id, casillas_data, session)
+    # Guardar usando upsert existente (ya autenticado y con tenant verificado)
+    return await upsert_casillas(orden_id, casillas_data, user, tenant_id, session)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -216,9 +240,13 @@ async def ocr_casillas(
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.get("/resumen/dominio")
-async def resumen_por_dominio(session: AsyncSession = Depends(get_session)):
+async def resumen_por_dominio(
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_session),
+):
     """Retorna conteo de órdenes activas por dominio y estado_final para widgets del Dashboard."""
-    stmt = select(OrdenCasillas)
+    stmt = select(OrdenCasillas).where(OrdenCasillas.tenant_id == tenant_id)
     result = await session.execute(stmt)
     todas = result.scalars().all()
 

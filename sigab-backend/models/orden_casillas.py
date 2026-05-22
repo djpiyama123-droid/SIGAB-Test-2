@@ -134,6 +134,15 @@ class OrdenCasillas(SQLModel, table=True):
         sa_column=Column(mysql.DATETIME, nullable=False),
     )
 
+    # ── Multi-tenant (Phase 1 migration) ─────────────────────────────────
+    tenant_id: int = Field(
+        sa_column=Column(
+            mysql.INTEGER(unsigned=True),
+            sa.ForeignKey("hospitales.id"),
+            nullable=False,
+        )
+    )
+
     # ── Relación back hacia OrdenServicio ─────────────────────────────────
     orden: Optional["OrdenServicio"] = Relationship(back_populates="casillas")
 
