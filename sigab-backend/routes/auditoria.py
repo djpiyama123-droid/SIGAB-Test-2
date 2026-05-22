@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 import aiomysql
 from config import get_db
-from auth.dependencies import get_current_user, require_roles
+from auth.dependencies import get_current_user, get_current_tenant, require_roles
 from services.audit_service import AuditService
 
 router = APIRouter()
@@ -9,7 +9,7 @@ router = APIRouter()
 from sqlmodel import select, desc
 from sqlmodel.ext.asyncio.session import AsyncSession
 from database import get_async_session
-from auth.dependencies import get_current_user, require_roles
+from auth.dependencies import get_current_user, get_current_tenant, require_roles
 from services.audit_service import AuditService
 from models.soporte import AuditLog
 from models.usuario import Usuario
@@ -21,11 +21,13 @@ async def get_audit_log(
     limit: int = 100,
     offset: int = 0,
     user: dict = Depends(require_roles(["admin", "supervisor"])),
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    """Obtiene el log de auditoría NOM-016."""
+    """Obtiene el log de auditoría NOM-016 del hospital."""
     stmt = select(AuditLog, Usuario.nombre.label("usuario_nombre"))\
            .outerjoin(Usuario, AuditLog.usuario_id == Usuario.id)\
+           .where(AuditLog.tenant_id == tenant_id)\
            .order_by(desc(AuditLog.id))\
            .limit(limit).offset(offset)
     
