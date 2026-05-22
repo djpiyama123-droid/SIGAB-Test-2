@@ -19,6 +19,7 @@ from datetime import datetime
 from io import BytesIO
 from config import get_db
 from auth.dependencies import get_current_user
+from auth.tenancy import get_current_tenant
 from services.reporte_pdf_service import generar_pdf_reporte_diario, generar_pdf_historial
 from services.reporte_excel_service import generar_excel_reporte_diario, generar_excel_historial
 
@@ -26,27 +27,39 @@ router = APIRouter()
 
 
 @router.get("/diario")
-async def reporte_diario(user: dict = Depends(get_current_user), conn=Depends(get_db)):
+async def reporte_diario(
+    tenant_id: int = Depends(get_current_tenant),
+    user: dict = Depends(get_current_user),
+    conn=Depends(get_db),
+):
     async with conn.cursor(aiomysql.DictCursor) as cur:
         await cur.execute(
-            "SELECT COUNT(*) as total FROM ordenes_servicio WHERE DATE(created_at) = CURDATE()"
+            "SELECT COUNT(*) as total FROM ordenes_servicio WHERE DATE(created_at) = CURDATE() AND tenant_id = %s",
+            (tenant_id,),
         )
         os_hoy = (await cur.fetchone())["total"]
 
         await cur.execute(
-            "SELECT COUNT(*) as total FROM ordenes_servicio WHERE estado IN ('abierta','en_progreso')"
+            "SELECT COUNT(*) as total FROM ordenes_servicio WHERE estado IN ('abierta','en_progreso') AND tenant_id = %s",
+            (tenant_id,),
         )
         os_abiertas = (await cur.fetchone())["total"]
 
-        await cur.execute("SELECT estado, COUNT(*) as total FROM equipos GROUP BY estado")
+        await cur.execute(
+            "SELECT estado, COUNT(*) as total FROM equipos WHERE tenant_id = %s GROUP BY estado",
+            (tenant_id,),
+        )
         equipos_estado = await cur.fetchall()
 
         await cur.execute(
             """SELECT pp.tipo_preventivo, pp.proxima_ejecucion, e.nombre, e.serie
                FROM preventivos_programados pp
                JOIN equipos e ON pp.equipo_id = e.id
-               WHERE pp.proxima_ejecucion <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND pp.activo = TRUE
-               ORDER BY pp.proxima_ejecucion ASC"""
+               WHERE pp.proxima_ejecucion <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                 AND pp.activo = TRUE
+                 AND pp.tenant_id = %s
+               ORDER BY pp.proxima_ejecucion ASC""",
+            (tenant_id,),
         )
         preventivos_semana = await cur.fetchall()
 
@@ -60,14 +73,23 @@ async def reporte_diario(user: dict = Depends(get_current_user), conn=Depends(ge
 
 
 @router.get("/equipos-criticos")
-async def equipos_criticos(user: dict = Depends(get_current_user), conn=Depends(get_db)):
+async def equipos_criticos(
+    tenant_id: int = Depends(get_current_tenant),
+    user: dict = Depends(get_current_user),
+    conn=Depends(get_db),
+):
     async with conn.cursor(aiomysql.DictCursor) as cur:
         await cur.execute(
             """SELECT e.*,
-                      (SELECT COUNT(*) FROM ordenes_servicio os WHERE os.equipo_id = e.id AND os.estado IN ('abierta','en_progreso')) as tickets_abiertos
+                      (SELECT COUNT(*) FROM ordenes_servicio os
+                       WHERE os.equipo_id = e.id
+                         AND os.estado IN ('abierta','en_progreso')
+                         AND os.tenant_id = %s) as tickets_abiertos
                FROM equipos e
-               WHERE e.estado IN ('fuera_servicio','en_mantenimiento') OR e.criticidad = 'alta'
-               ORDER BY FIELD(e.estado,'fuera_servicio','en_mantenimiento','operativo'), e.nombre"""
+               WHERE e.tenant_id = %s
+                 AND (e.estado IN ('fuera_servicio','en_mantenimiento') OR e.criticidad = 'alta')
+               ORDER BY FIELD(e.estado,'fuera_servicio','en_mantenimiento','operativo'), e.nombre""",
+            (tenant_id, tenant_id),
         )
         equipos = await cur.fetchall()
 
@@ -78,6 +100,7 @@ async def equipos_criticos(user: dict = Depends(get_current_user), conn=Depends(
 async def historial_ordenes(
     mes: int = None,
     anio: int = None,
+    tenant_id: int = Depends(get_current_tenant),
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
 ):
@@ -91,18 +114,19 @@ async def historial_ordenes(
             """SELECT os.*, e.nombre as equipo_nombre_rel
                FROM ordenes_servicio os
                LEFT JOIN equipos e ON os.equipo_id = e.id
-               WHERE MONTH(os.fecha) = %s AND YEAR(os.fecha) = %s
+               WHERE os.tenant_id = %s
+                 AND MONTH(os.fecha) = %s AND YEAR(os.fecha) = %s
                ORDER BY os.fecha DESC""",
-            (mes, anio),
+            (tenant_id, mes, anio),
         )
         ordenes = await cur.fetchall()
 
         await cur.execute(
             """SELECT tipo_mantenimiento, COUNT(*) as total
                FROM ordenes_servicio
-               WHERE MONTH(fecha) = %s AND YEAR(fecha) = %s
+               WHERE tenant_id = %s AND MONTH(fecha) = %s AND YEAR(fecha) = %s
                GROUP BY tipo_mantenimiento""",
-            (mes, anio),
+            (tenant_id, mes, anio),
         )
         resumen = await cur.fetchall()
 
@@ -111,33 +135,46 @@ async def historial_ordenes(
 
 # ── Exportación PDF ───────────────────────────────────────────
 
-async def _get_datos_diario(conn):
-    """Reutiliza las mismas queries que /diario."""
+async def _get_datos_diario(conn, tenant_id: int):
+    """Reutiliza las mismas queries que /diario, filtradas por tenant."""
     async with conn.cursor(aiomysql.DictCursor) as cur:
         await cur.execute(
-            "SELECT COUNT(*) as total FROM ordenes_servicio WHERE DATE(created_at) = CURDATE()"
+            "SELECT COUNT(*) as total FROM ordenes_servicio WHERE DATE(created_at) = CURDATE() AND tenant_id = %s",
+            (tenant_id,),
         )
         os_hoy = (await cur.fetchone())["total"]
         await cur.execute(
-            "SELECT COUNT(*) as total FROM ordenes_servicio WHERE estado IN ('abierta','en_progreso')"
+            "SELECT COUNT(*) as total FROM ordenes_servicio WHERE estado IN ('abierta','en_progreso') AND tenant_id = %s",
+            (tenant_id,),
         )
         os_abiertas = (await cur.fetchone())["total"]
-        await cur.execute("SELECT estado, COUNT(*) as total FROM equipos GROUP BY estado")
+        await cur.execute(
+            "SELECT estado, COUNT(*) as total FROM equipos WHERE tenant_id = %s GROUP BY estado",
+            (tenant_id,),
+        )
         equipos_estado = await cur.fetchall()
         await cur.execute(
             """SELECT pp.tipo_preventivo, pp.proxima_ejecucion, e.nombre, e.serie
                FROM preventivos_programados pp
                JOIN equipos e ON pp.equipo_id = e.id
-               WHERE pp.proxima_ejecucion <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND pp.activo = TRUE
-               ORDER BY pp.proxima_ejecucion ASC"""
+               WHERE pp.proxima_ejecucion <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                 AND pp.activo = TRUE
+                 AND pp.tenant_id = %s
+               ORDER BY pp.proxima_ejecucion ASC""",
+            (tenant_id,),
         )
         preventivos = await cur.fetchall()
         await cur.execute(
             """SELECT e.*,
-                      (SELECT COUNT(*) FROM ordenes_servicio os WHERE os.equipo_id = e.id AND os.estado IN ('abierta','en_progreso')) as tickets_abiertos
+                      (SELECT COUNT(*) FROM ordenes_servicio os
+                       WHERE os.equipo_id = e.id
+                         AND os.estado IN ('abierta','en_progreso')
+                         AND os.tenant_id = %s) as tickets_abiertos
                FROM equipos e
-               WHERE e.estado IN ('fuera_servicio','en_mantenimiento') OR e.criticidad = 'alta'
-               ORDER BY FIELD(e.estado,'fuera_servicio','en_mantenimiento','operativo'), e.nombre"""
+               WHERE e.tenant_id = %s
+                 AND (e.estado IN ('fuera_servicio','en_mantenimiento') OR e.criticidad = 'alta')
+               ORDER BY FIELD(e.estado,'fuera_servicio','en_mantenimiento','operativo'), e.nombre""",
+            (tenant_id, tenant_id),
         )
         criticos = await cur.fetchall()
     datos = {
@@ -150,32 +187,37 @@ async def _get_datos_diario(conn):
     return datos, criticos
 
 
-async def _get_datos_historial(mes, anio, conn):
-    """Reutiliza las mismas queries que /historial."""
+async def _get_datos_historial(mes, anio, conn, tenant_id: int):
+    """Reutiliza las mismas queries que /historial, filtradas por tenant."""
     async with conn.cursor(aiomysql.DictCursor) as cur:
         await cur.execute(
             """SELECT os.*, e.nombre as equipo_nombre_rel
                FROM ordenes_servicio os
                LEFT JOIN equipos e ON os.equipo_id = e.id
-               WHERE MONTH(os.fecha) = %s AND YEAR(os.fecha) = %s
+               WHERE os.tenant_id = %s
+                 AND MONTH(os.fecha) = %s AND YEAR(os.fecha) = %s
                ORDER BY os.fecha DESC""",
-            (mes, anio),
+            (tenant_id, mes, anio),
         )
         ordenes = await cur.fetchall()
         await cur.execute(
             """SELECT tipo_mantenimiento, COUNT(*) as total
                FROM ordenes_servicio
-               WHERE MONTH(fecha) = %s AND YEAR(fecha) = %s
+               WHERE tenant_id = %s AND MONTH(fecha) = %s AND YEAR(fecha) = %s
                GROUP BY tipo_mantenimiento""",
-            (mes, anio),
+            (tenant_id, mes, anio),
         )
         resumen = await cur.fetchall()
     return ordenes, resumen
 
 
 @router.get("/diario/pdf")
-async def reporte_diario_pdf(user: dict = Depends(get_current_user), conn=Depends(get_db)):
-    datos, criticos = await _get_datos_diario(conn)
+async def reporte_diario_pdf(
+    tenant_id: int = Depends(get_current_tenant),
+    user: dict = Depends(get_current_user),
+    conn=Depends(get_db),
+):
+    datos, criticos = await _get_datos_diario(conn, tenant_id)
     pdf_bytes = generar_pdf_reporte_diario(datos, criticos)
     fecha = datos["fecha"]
     return Response(
@@ -186,8 +228,12 @@ async def reporte_diario_pdf(user: dict = Depends(get_current_user), conn=Depend
 
 
 @router.get("/diario/excel")
-async def reporte_diario_excel(user: dict = Depends(get_current_user), conn=Depends(get_db)):
-    datos, criticos = await _get_datos_diario(conn)
+async def reporte_diario_excel(
+    tenant_id: int = Depends(get_current_tenant),
+    user: dict = Depends(get_current_user),
+    conn=Depends(get_db),
+):
+    datos, criticos = await _get_datos_diario(conn, tenant_id)
     xlsx_bytes = generar_excel_reporte_diario(datos, criticos)
     fecha = datos["fecha"]
     return Response(
@@ -201,6 +247,7 @@ async def reporte_diario_excel(user: dict = Depends(get_current_user), conn=Depe
 async def historial_pdf(
     mes: int = None,
     anio: int = None,
+    tenant_id: int = Depends(get_current_tenant),
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
 ):
@@ -208,7 +255,7 @@ async def historial_pdf(
         mes = datetime.now().month
     if not anio:
         anio = datetime.now().year
-    ordenes, resumen = await _get_datos_historial(mes, anio, conn)
+    ordenes, resumen = await _get_datos_historial(mes, anio, conn, tenant_id)
     pdf_bytes = generar_pdf_historial(mes, anio, ordenes, resumen)
     return Response(
         content=pdf_bytes,
@@ -221,6 +268,7 @@ async def historial_pdf(
 async def historial_excel(
     mes: int = None,
     anio: int = None,
+    tenant_id: int = Depends(get_current_tenant),
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
 ):
@@ -228,7 +276,7 @@ async def historial_excel(
         mes = datetime.now().month
     if not anio:
         anio = datetime.now().year
-    ordenes, _ = await _get_datos_historial(mes, anio, conn)
+    ordenes, _ = await _get_datos_historial(mes, anio, conn, tenant_id)
     xlsx_bytes = generar_excel_historial(mes, anio, ordenes)
     return Response(
         content=xlsx_bytes,
