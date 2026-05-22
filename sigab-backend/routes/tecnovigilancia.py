@@ -26,7 +26,7 @@ import json
 import secrets
 from datetime import datetime
 from config import get_db, UPLOAD_DIR
-from auth.dependencies import get_current_user
+from auth.dependencies import get_current_user, get_current_tenant
 from services.tecnovigilancia_pdf_service import generar_pdf_nom240
 from services.alerta_service import AlertaService
 
@@ -70,15 +70,16 @@ async def listar_eventos(
     offset: int = 0,
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     async with conn.cursor(aiomysql.DictCursor) as cur:
         query = """
             SELECT te.*, u.nombre as reportante_nombre
             FROM tecnovigilancia_eventos te
             LEFT JOIN usuarios u ON te.reportado_por_id = u.id
-            WHERE 1=1
+            WHERE te.tenant_id = %s
         """
-        params = []
+        params = [tenant_id]
 
         if estado:
             query += " AND te.estado = %s"
@@ -116,6 +117,7 @@ async def obtener_evento(
     evento_id: int,
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     async with conn.cursor(aiomysql.DictCursor) as cur:
         await cur.execute(
@@ -125,8 +127,8 @@ async def obtener_evento(
                FROM tecnovigilancia_eventos te
                LEFT JOIN usuarios rep ON te.reportado_por_id = rep.id
                LEFT JOIN usuarios inv ON te.investigador_id = inv.id
-               WHERE te.id = %s""",
-            (evento_id,),
+               WHERE te.id = %s AND te.tenant_id = %s""",
+            (evento_id, tenant_id),
         )
         evento = await cur.fetchone()
         if not evento:
@@ -150,6 +152,7 @@ async def crear_evento(
     data: dict,
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     equipo_id = data.get("equipo_id")
     if not equipo_id:
@@ -162,16 +165,17 @@ async def crear_evento(
         raise HTTPException(status_code=400, detail="severidad es obligatorio")
 
     async with conn.cursor(aiomysql.DictCursor) as cur:
-        # Snapshot del dispositivo
-        await cur.execute("SELECT * FROM equipos WHERE id = %s", (equipo_id,))
+        # Snapshot del dispositivo (validar que pertenece al tenant)
+        await cur.execute("SELECT * FROM equipos WHERE id = %s AND tenant_id = %s", (equipo_id, tenant_id))
         equipo = await cur.fetchone()
         if not equipo:
             raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
-        # Generar numero_reporte: TV-HGR1-YYYYMMDD-NNNN
+        # Generar numero_reporte: TV-HGR1-YYYYMMDD-NNNN (secuencia por tenant)
         hoy = datetime.now().strftime("%Y%m%d")
         await cur.execute(
-            "SELECT COUNT(*)+1 as n FROM tecnovigilancia_eventos WHERE DATE(created_at) = CURDATE()"
+            "SELECT COUNT(*)+1 as n FROM tecnovigilancia_eventos WHERE DATE(created_at) = CURDATE() AND tenant_id = %s",
+            (tenant_id,),
         )
         n = (await cur.fetchone())["n"]
         numero_reporte = f"TV-HGR1-{hoy}-{n:04d}"
@@ -184,8 +188,8 @@ async def crear_evento(
                 tipo_evento, severidad, fecha_evento, lugar_evento,
                 descripcion_evento, consecuencia_clinica, accion_correctiva,
                 paciente_sexo, paciente_edad, dispositivo_estado_post,
-                reportado_por_id)
-               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                reportado_por_id, tenant_id)
+               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
             (
                 numero_reporte,
                 equipo_id,
@@ -206,6 +210,7 @@ async def crear_evento(
                 data.get("paciente_edad"),
                 data.get("dispositivo_estado_post"),
                 user["id"],
+                tenant_id,
             ),
         )
         evento_id = cur.lastrowid
@@ -247,10 +252,11 @@ async def cambiar_estado(
     data: dict,
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     nuevo_estado = data.get("estado")
     async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT estado FROM tecnovigilancia_eventos WHERE id = %s", (evento_id,))
+        await cur.execute("SELECT estado FROM tecnovigilancia_eventos WHERE id = %s AND tenant_id = %s", (evento_id, tenant_id))
         row = await cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Evento no encontrado")
@@ -281,9 +287,10 @@ async def investigar_evento(
     data: dict,
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT * FROM tecnovigilancia_eventos WHERE id = %s", (evento_id,))
+        await cur.execute("SELECT * FROM tecnovigilancia_eventos WHERE id = %s AND tenant_id = %s", (evento_id, tenant_id))
         evento = await cur.fetchone()
         if not evento:
             raise HTTPException(status_code=404, detail="Evento no encontrado")
@@ -329,9 +336,10 @@ async def escalar_cofepris(
     data: dict,
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT estado FROM tecnovigilancia_eventos WHERE id = %s", (evento_id,))
+        await cur.execute("SELECT estado FROM tecnovigilancia_eventos WHERE id = %s AND tenant_id = %s", (evento_id, tenant_id))
         evento = await cur.fetchone()
         if not evento:
             raise HTTPException(status_code=404, detail="Evento no encontrado")
@@ -383,9 +391,10 @@ async def cerrar_evento(
     data: dict,
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT estado FROM tecnovigilancia_eventos WHERE id = %s", (evento_id,))
+        await cur.execute("SELECT estado FROM tecnovigilancia_eventos WHERE id = %s AND tenant_id = %s", (evento_id, tenant_id))
         evento = await cur.fetchone()
         if not evento:
             raise HTTPException(status_code=404, detail="Evento no encontrado")
@@ -453,6 +462,7 @@ async def descargar_pdf_nom240(
     evento_id: int,
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     async with conn.cursor(aiomysql.DictCursor) as cur:
         await cur.execute(
@@ -462,8 +472,8 @@ async def descargar_pdf_nom240(
                FROM tecnovigilancia_eventos te
                LEFT JOIN usuarios rep ON te.reportado_por_id = rep.id
                LEFT JOIN usuarios inv ON te.investigador_id = inv.id
-               WHERE te.id = %s""",
-            (evento_id,),
+               WHERE te.id = %s AND te.tenant_id = %s""",
+            (evento_id, tenant_id),
         )
         evento = await cur.fetchone()
         if not evento:

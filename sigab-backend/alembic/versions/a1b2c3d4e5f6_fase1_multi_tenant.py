@@ -24,6 +24,7 @@ TENANT_TABLES = [
     'alertas', 'refacciones_almacen', 'metrologia_calibracion',
     'capacitaciones', 'poka_yoke_logs', 'audit_logs', 'log_actividad',
     'reservas', 'zonas_mapa', 'orden_casillas', 'ubicaciones',
+    'tecnovigilancia_eventos',
 ]
 
 
