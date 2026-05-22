@@ -1,38 +1,93 @@
-name: Deploy SIGAB → VPS Bluehost
+name: CI/CD — SIGAH → Hetzner Cloud
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  deploy:
-    name: Deploy to VPS
+
+  # ── Job 1: Tests del backend ─────────────────────────────────────
+  test:
+    name: Backend Tests (pytest)
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test_root_pass
+          MYSQL_DATABASE:      sigab_test
+          MYSQL_USER:          sigab_user
+          MYSQL_PASSWORD:      test_pass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u sigab_user -ptest_pass"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      SIGAB_DB_HOST:            127.0.0.1
+      SIGAB_DB_PORT:            3306
+      SIGAB_DB_USER:            sigab_user
+      SIGAB_DB_PASS:            test_pass
+      SIGAB_DB_NAME:            sigab_test
+      SIGAB_JWT_SECRET:         REDACTED_CI_SECRET
+      SIGAB_JWT_ALGORITHM:      HS256
+      SIGAB_JWT_EXPIRE_MINUTES: 60
+      SIGAB_DISABLE_COPILOT:    1
+
     steps:
-      - name: SSH deploy al VPS
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
         with:
-          host: 129.121.100.147
-          username: root
-          password: ${{ secrets.VPS_ROOT_PASS }}
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: sigab-backend/requirements.txt
+
+      - name: Instalar dependencias
+        working-directory: sigab-backend
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar pytest
+        working-directory: sigab-backend
+        run: pytest tests/ -v --tb=short
+
+  # ── Job 2: Deploy a Hetzner (solo en push a main) ─────────────────
+  deploy:
+    name: Deploy to Hetzner Cloud
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: SSH deploy a Hetzner
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host:        ${{ secrets.HETZNER_HOST }}
+          username:    ${{ secrets.HETZNER_USER }}
+          key:         ${{ secrets.HETZNER_SSH_KEY }}
           script: |
             set -e
-            cd /opt/sigab
+            cd /opt/sigah
 
-            # Traer últimos cambios
-            git pull origin main 2>/dev/null || git pull origin master 2>/dev/null
+            echo ">>> Traer últimos cambios del repositorio..."
+            git pull origin main
 
-            # Reconstruir y reiniciar contenedores si cambiaron
-            docker compose --env-file .env up -d --build
+            echo ">>> Reconstruir y reiniciar contenedores..."
+            docker compose -f docker-compose.hetzner.yml --env-file .env up -d --build
 
-            # Rebuild frontend si cambió
-            cd sigab-frontend
-            npm ci --silent
-            npm run build
-            cd ..
+            echo ">>> Verificar estado de los servicios..."
+            docker compose -f docker-compose.hetzner.yml ps
 
-            # Recargar Nginx para tomar el nuevo dist/
-            nginx -t && systemctl reload nginx
+            echo ">>> Health check del backend..."
+            sleep 10
+            curl -sf http://localhost:8000/health || (echo "Backend health check FALLIDO" && exit 1)
 
-            echo "SIGAB actualizado: $(date)"
+            echo "Deploy completado: $(date)"
