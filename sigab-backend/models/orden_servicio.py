@@ -35,10 +35,20 @@ class EVIDENCIA_OS(SQLModel, table=True):
 
 class OrdenServicio(SQLModel, table=True):
     __tablename__ = "ordenes_servicio"
-    
+
     id: Optional[int] = Field(
-        default=None, 
+        default=None,
         sa_column=Column(mysql.INTEGER(unsigned=True), primary_key=True, autoincrement=True)
+    )
+    # Multi-tenant SIGAH — agregado por la migración a1b2c3d4e5f6 (Fase 1).
+    # Cada OS pertenece a un único hospital (tenant). NOT NULL, FK a hospitales.id.
+    tenant_id: int = Field(
+        sa_column=Column(
+            mysql.INTEGER(unsigned=True),
+            sa.ForeignKey("hospitales.id", ondelete="RESTRICT"),
+            nullable=False,
+            index=True,
+        ),
     )
     numero_orden: str = Field(unique=True, index=True)
     tipo_formato: str = Field(default="correctivo_corto")
