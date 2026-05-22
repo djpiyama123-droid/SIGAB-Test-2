@@ -1,30 +1,28 @@
 """
 routes/openclaw.py — Endpoints del Bot WhatsApp (OpenClaw/sigab-bot)
 
-ESTADO MULTI-TENANT: EXENTO (parcial) — pendiente de remediar en Fase 3.
-==========================================================================
-Todos los endpoints de este módulo son llamados por el bot de WhatsApp
-(sigab-bot) que se ejecuta en la red interna del hospital. NO usan JWT
-porque el bot no tiene sesión de usuario; la autenticación se basa en
-confianza de red (localhost:3000 / red interna Docker).
+SEGURIDAD: Estos endpoints son exclusivos para sigab-bot (red interna Docker).
+==============================================================================
+Antes de Fase 4 (Hetzner): asegurarse de que nginx NO exponga /openclaw/
+externamente. El único endpoint público de este módulo es /bot-login.
 
-RIESGO DE SEGURIDAD IDENTIFICADO (P1):
-  En un despliegue multi-tenant (SIGAH SaaS), si el bot de Hospital A pudiera
-  alcanzar estos endpoints vía red pública, leería y escribiría datos del
-  Hospital B sin restricción. Esto es un cross-tenant leak crítico.
+FLUJO DE AUTENTICACIÓN BOT (implementado):
+  1. El bot llama a POST /api/openclaw/bot-login con su BOT_API_KEY por hospital.
+  2. El servidor verifica la clave contra BOT_API_KEYS (env var JSON) y emite
+     un JWT efímero (24 h) con tenant_id del hospital y rol=bot.
+  3. El bot usa ese JWT en Authorization: Bearer <token> para todas sus llamadas
+     subsecuentes a /api/openclaw/*.
+  4. get_current_tenant extrae tenant_id del JWT y aísla los datos por hospital.
 
-REMEDIACIÓN PENDIENTE (Fase 3 — antes del despliegue SaaS multi-tenant):
-  1. Crear un endpoint de "bot login" que reciba un `BOT_API_KEY` por hospital
-     y devuelva un JWT de corta vida con `tenant_id` del hospital.
-  2. Reemplazar `Depends(get_db)` por `Depends(get_current_tenant)` en todos
-     los endpoints del bot usando ese JWT.
-  3. Hasta entonces: asegurar con firewall que estos endpoints SOLO son
-     alcanzables desde la red interna (no exponer en el API Gateway público).
+ESTADO DE MIGRACIÓN A JWT (Fase 3 en curso):
+  Los endpoints marcados "EXENTO-BOT" aún usan Depends(get_db) sin JWT — son
+  seguros hoy porque están bloqueados por nginx en red interna. La migración
+  completa a Depends(get_current_tenant) se realiza en la Fase 3 del roadmap.
 
-Por estas razones los endpoints se marcan EXENTO-BOT: no se añade
-get_current_tenant porque no hay JWT disponible en la llamada del bot.
+BOT_API_KEYS debe definirse en .env con una clave única por hospital:
+  BOT_API_KEYS={"hgr1-tijuana": "CAMBIAR_POR_CLAVE_SEGURA"}
 """
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Body, Depends, UploadFile, File, Form, HTTPException
 from typing import Optional
 import aiomysql
 import json
@@ -39,6 +37,7 @@ from services.reporte_pdf_service import generar_pdf_reporte_diario
 from services.mail_service import enviar_reporte_email
 from services import gemma_service
 from fastapi.responses import Response, JSONResponse
+from auth.bot_auth import verify_bot_api_key, create_bot_token, BOT_TOKEN_TTL_HOURS
 
 try:
     from services.imss_os_extractor import extract_imss_os, map_to_orden_servicio
@@ -47,6 +46,35 @@ except Exception:
     _IMSS_EXTRACTOR_AVAILABLE = False
 
 router = APIRouter()
+
+
+@router.post("/bot-login", tags=["OpenClaw"])
+async def bot_login(api_key: str = Body(..., embed=True)):
+    """Autentica al bot de WhatsApp con su API key de hospital y devuelve un JWT efímero.
+
+    El JWT resultante tiene tenant_id del hospital y rol=bot. Debe enviarse en
+    Authorization: Bearer <token> en todas las llamadas subsecuentes al bot.
+
+    La clave se configura por hospital en la variable de entorno BOT_API_KEYS
+    (JSON string: {"slug-hospital": "clave-secreta"}).
+
+    Devuelve 401 si la clave no es válida o el hospital no existe en la DB.
+    No revela qué parte de la validación falló (slug o clave) para evitar
+    enumeración.
+    """
+    hospital_id = await verify_bot_api_key(api_key)
+    if not hospital_id:
+        raise HTTPException(
+            status_code=401,
+            detail="API key inválida o hospital no autorizado",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    token = create_bot_token(hospital_id)
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "expires_in": BOT_TOKEN_TTL_HOURS * 3600,
+    }
 
 
 @router.post("/ticket")
