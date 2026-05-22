@@ -20,6 +20,7 @@ from cachetools import TTLCache
 
 from config import get_db, GEMMA_MODEL
 from auth.dependencies import get_current_user
+from auth.tenancy import get_current_tenant
 from services import gemma_service
 from services.reliability_service import obtener_metricas_fiabilidad
 
@@ -46,24 +47,36 @@ async def _get_resumen_db(conn, tenant_id: int) -> dict:
         return cached
 
     async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT estado, COUNT(*) as total FROM equipos GROUP BY estado")
+        # Todas las queries filtran por tenant_id para aislamiento multi-tenant.
+        await cur.execute(
+            "SELECT estado, COUNT(*) as total FROM equipos WHERE tenant_id = %s GROUP BY estado",
+            (tenant_id,),
+        )
         estados = await cur.fetchall()
 
         await cur.execute(
-            "SELECT COUNT(*) as total FROM ordenes_servicio WHERE estado IN ('abierta','en_progreso')"
+            "SELECT COUNT(*) as total FROM ordenes_servicio WHERE tenant_id = %s AND estado IN ('abierta','en_progreso')",
+            (tenant_id,),
         )
         tickets = (await cur.fetchone())["total"]
 
-        await cur.execute("SELECT COUNT(*) as total FROM alertas WHERE leida = FALSE")
+        await cur.execute(
+            "SELECT COUNT(*) as total FROM alertas WHERE tenant_id = %s AND leida = FALSE",
+            (tenant_id,),
+        )
         alertas = (await cur.fetchone())["total"]
 
         await cur.execute(
-            "SELECT COUNT(*) as total FROM preventivos_programados WHERE proxima_ejecucion <= CURDATE() AND activo = TRUE"
+            """SELECT COUNT(*) as total FROM preventivos_programados pp
+               JOIN equipos e ON pp.equipo_id = e.id
+               WHERE e.tenant_id = %s AND pp.proxima_ejecucion <= CURDATE() AND pp.activo = TRUE""",
+            (tenant_id,),
         )
         vencidos = (await cur.fetchone())["total"]
 
         await cur.execute(
-            "SELECT COUNT(*) as total FROM tecnovigilancia_eventos WHERE estado NOT IN ('cerrado','cancelado')"
+            "SELECT COUNT(*) as total FROM tecnovigilancia_eventos WHERE tenant_id = %s AND estado NOT IN ('cerrado','cancelado')",
+            (tenant_id,),
         )
         try:
             tv_activos = (await cur.fetchone())["total"]
@@ -94,7 +107,12 @@ async def _get_equipo_contexto(conn, equipo_id: int, tenant_id: int) -> dict | N
         return cached
 
     async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT * FROM equipos WHERE id = %s", (equipo_id,))
+        # Filtrar por tenant_id además de id — 404 implícito si el equipo
+        # no pertenece al hospital del usuario (no se revela existencia cross-tenant).
+        await cur.execute(
+            "SELECT * FROM equipos WHERE id = %s AND tenant_id = %s",
+            (equipo_id, tenant_id),
+        )
         equipo = await cur.fetchone()
         if not equipo:
             return None
@@ -105,9 +123,9 @@ async def _get_equipo_contexto(conn, equipo_id: int, tenant_id: int) -> dict | N
         await cur.execute(
             """SELECT numero_orden, tipo_mantenimiento, estado, fecha,
                       falla_reportada, closed_at
-               FROM ordenes_servicio WHERE equipo_id = %s
+               FROM ordenes_servicio WHERE equipo_id = %s AND tenant_id = %s
                ORDER BY fecha DESC LIMIT 8""",
-            (equipo_id,),
+            (equipo_id, tenant_id),
         )
         ordenes = await cur.fetchall()
         for o in ordenes:
@@ -132,7 +150,7 @@ async def estado_ollama(user: dict = Depends(get_current_user)):
 @router.post("/chat")
 async def copilot_chat(
     data: dict,
-    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     conn=Depends(get_db),
 ):
     """
@@ -150,10 +168,8 @@ async def copilot_chat(
     if not messages:
         raise HTTPException(status_code=400, detail="messages es requerido")
 
-    # Construir contexto
+    # Construir contexto (tenant_id proviene de get_current_tenant — fuente de verdad)
     contexto = {}
-
-    tenant_id: int = user["tenant_id"]
 
     # Siempre incluir resumen general (cacheado por tenant)
     resumen = await _get_resumen_db(conn, tenant_id)
@@ -188,7 +204,7 @@ async def copilot_chat(
 @router.post("/diagnostico")
 async def diagnostico_falla(
     data: dict,
-    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     conn=Depends(get_db),
 ):
     """
@@ -214,7 +230,11 @@ async def diagnostico_falla(
 
     if equipo_id:
         async with conn.cursor(aiomysql.DictCursor) as cur:
-            await cur.execute("SELECT * FROM equipos WHERE id = %s", (equipo_id,))
+            # Filtrar por tenant_id — no revelar equipos de otros hospitales.
+            await cur.execute(
+                "SELECT * FROM equipos WHERE id = %s AND tenant_id = %s",
+                (equipo_id, tenant_id),
+            )
             eq = await cur.fetchone()
             if eq:
                 for k, v in eq.items():
@@ -227,9 +247,9 @@ async def diagnostico_falla(
 
                 await cur.execute(
                     """SELECT tipo_mantenimiento, falla_reportada, estado, fecha
-                       FROM ordenes_servicio WHERE equipo_id = %s
+                       FROM ordenes_servicio WHERE equipo_id = %s AND tenant_id = %s
                        ORDER BY fecha DESC LIMIT 5""",
-                    (equipo_id,),
+                    (equipo_id, tenant_id),
                 )
                 ordenes = await cur.fetchall()
                 for o in ordenes:
@@ -257,7 +277,7 @@ async def diagnostico_falla(
 @router.post("/causa-raiz")
 async def sugerir_causa_raiz(
     data: dict,
-    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     conn=Depends(get_db),
 ):
     """
@@ -280,8 +300,10 @@ async def sugerir_causa_raiz(
 
     if evento_id:
         async with conn.cursor(aiomysql.DictCursor) as cur:
+            # Filtrar por tenant_id — no revelar eventos de otros hospitales.
             await cur.execute(
-                "SELECT * FROM tecnovigilancia_eventos WHERE id = %s", (evento_id,)
+                "SELECT * FROM tecnovigilancia_eventos WHERE id = %s AND tenant_id = %s",
+                (evento_id, tenant_id),
             )
             ev = await cur.fetchone()
             if ev:
@@ -314,14 +336,14 @@ async def sugerir_causa_raiz(
 
 @router.get("/resumen-ia")
 async def resumen_ejecutivo_ia(
-    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
     conn=Depends(get_db),
 ):
     """
     Genera un resumen ejecutivo narrativo del estado actual del SIGAB.
     Útil para el reporte matutino del Jefe de Conservación.
     """
-    datos = await _get_resumen_db(conn, user["tenant_id"])
+    datos = await _get_resumen_db(conn, tenant_id)
     prompt = gemma_service.prompt_resumen_diario(datos)
     resumen = await gemma_service.analizar_no_stream(prompt)
 
