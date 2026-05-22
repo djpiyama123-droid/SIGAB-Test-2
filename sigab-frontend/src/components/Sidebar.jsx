@@ -1,9 +1,11 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { NAV_ITEMS } from '../utils/constants';
+import { useAuth } from '../context/AuthContext';
 import * as Lucide from 'lucide-react';
 
 export default function Sidebar({ onClose }) {
+  const { user } = useAuth();
   return (
     <aside className="h-full w-64 bg-slate-950 border-r border-slate-800 flex flex-col">
       {/* ── Logo ── */}
@@ -58,6 +60,27 @@ export default function Sidebar({ onClose }) {
           </NavLink>
         ))}
       </nav>
+
+      {/* ── SuperAdmin Panel — solo visible para rol superadmin ── */}
+      {user?.rol === 'superadmin' && (
+        <div className="px-3 py-2 border-t border-slate-800">
+          <p className="text-xs text-slate-600 uppercase tracking-wider px-3 mb-1">SIGAH Global</p>
+          <NavLink
+            to="/admin-global"
+            onClick={() => onClose?.()}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                isActive
+                  ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`
+            }
+          >
+            <Lucide.Building2 className="w-4 h-4 flex-shrink-0" />
+            <span>Panel SuperAdmin</span>
+          </NavLink>
+        </div>
+      )}
 
       {/* ── Footer ── */}
       <div className="p-4 border-t border-slate-800">

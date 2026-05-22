@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { ToastProvider } from './components/Toast';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
@@ -23,11 +23,12 @@ import Metrologia from './pages/Metrologia';
 import Capacitaciones from './pages/Capacitaciones';
 import QRBatch from './pages/QRBatch';
 import QRScanner from './pages/QRScanner';
+import SuperAdmin from './pages/SuperAdmin';
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Toaster position="top-right" toastOptions={{ style: { background: '#1e293b', color: '#fff' } }} />
+    <ToastProvider>
+      <AuthProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -54,10 +55,12 @@ export default function App() {
               <Route path="metrologia" element={<Metrologia />} />
               <Route path="capacitaciones" element={<Capacitaciones />} />
               <Route path="qrbatch" element={<QRBatch />} />
+              <Route path="admin-global" element={<SuperAdmin />} />
             </Route>
           </Route>
         </Routes>
       </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
