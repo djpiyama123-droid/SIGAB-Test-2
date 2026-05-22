@@ -27,6 +27,7 @@ import secrets
 from datetime import datetime
 from config import get_db, UPLOAD_DIR
 from auth.dependencies import get_current_user
+from auth.tenancy import get_current_tenant
 from services.tecnovigilancia_pdf_service import generar_pdf_nom240
 from services.alerta_service import AlertaService
 
@@ -68,6 +69,7 @@ async def listar_eventos(
     busqueda: Optional[str] = None,
     limit: int = 50,
     offset: int = 0,
+    tenant_id: int = Depends(get_current_tenant),
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
 ):
@@ -76,9 +78,9 @@ async def listar_eventos(
             SELECT te.*, u.nombre as reportante_nombre
             FROM tecnovigilancia_eventos te
             LEFT JOIN usuarios u ON te.reportado_por_id = u.id
-            WHERE 1=1
+            WHERE te.tenant_id = %s
         """
-        params = []
+        params = [tenant_id]
 
         if estado:
             query += " AND te.estado = %s"
@@ -114,6 +116,7 @@ async def listar_eventos(
 @router.get("/{evento_id}")
 async def obtener_evento(
     evento_id: int,
+    tenant_id: int = Depends(get_current_tenant),
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
 ):
@@ -125,8 +128,8 @@ async def obtener_evento(
                FROM tecnovigilancia_eventos te
                LEFT JOIN usuarios rep ON te.reportado_por_id = rep.id
                LEFT JOIN usuarios inv ON te.investigador_id = inv.id
-               WHERE te.id = %s""",
-            (evento_id,),
+               WHERE te.id = %s AND te.tenant_id = %s""",
+            (evento_id, tenant_id),
         )
         evento = await cur.fetchone()
         if not evento:
@@ -148,6 +151,7 @@ async def obtener_evento(
 @router.post("/")
 async def crear_evento(
     data: dict,
+    tenant_id: int = Depends(get_current_tenant),
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
 ):
@@ -162,33 +166,38 @@ async def crear_evento(
         raise HTTPException(status_code=400, detail="severidad es obligatorio")
 
     async with conn.cursor(aiomysql.DictCursor) as cur:
-        # Snapshot del dispositivo
-        await cur.execute("SELECT * FROM equipos WHERE id = %s", (equipo_id,))
+        # Snapshot del dispositivo — verificar ownership por tenant
+        await cur.execute(
+            "SELECT * FROM equipos WHERE id = %s AND tenant_id = %s",
+            (equipo_id, tenant_id),
+        )
         equipo = await cur.fetchone()
         if not equipo:
             raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
-        # Generar numero_reporte: TV-HGR1-YYYYMMDD-NNNN
+        # Generar numero_reporte: TV-HGR1-YYYYMMDD-NNNN (scoped al tenant)
         hoy = datetime.now().strftime("%Y%m%d")
         await cur.execute(
-            "SELECT COUNT(*)+1 as n FROM tecnovigilancia_eventos WHERE DATE(created_at) = CURDATE()"
+            "SELECT COUNT(*)+1 as n FROM tecnovigilancia_eventos WHERE DATE(created_at) = CURDATE() AND tenant_id = %s",
+            (tenant_id,),
         )
         n = (await cur.fetchone())["n"]
         numero_reporte = f"TV-HGR1-{hoy}-{n:04d}"
 
         await cur.execute(
             """INSERT INTO tecnovigilancia_eventos
-               (numero_reporte, equipo_id,
+               (numero_reporte, equipo_id, tenant_id,
                 dispositivo_nombre, dispositivo_marca, dispositivo_modelo,
                 dispositivo_serie, dispositivo_lote, dispositivo_registro_sanitario,
                 tipo_evento, severidad, fecha_evento, lugar_evento,
                 descripcion_evento, consecuencia_clinica, accion_correctiva,
                 paciente_sexo, paciente_edad, dispositivo_estado_post,
                 reportado_por_id)
-               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
             (
                 numero_reporte,
                 equipo_id,
+                tenant_id,
                 equipo["nombre"],
                 equipo["marca"],
                 equipo["modelo"],
@@ -212,16 +221,22 @@ async def crear_evento(
 
         # ── 1. Alerta Crítica Automática para Severidad Alta ────────────────
         if data["severidad"] in ("critica", "grave"):
-            # Poner equipo fuera de servicio automáticamente
-            await cur.execute("UPDATE equipos SET estado = 'fuera_servicio' WHERE id = %s", (equipo_id,))
-            
+            # Poner equipo fuera de servicio automáticamente (scoped al tenant)
+            await cur.execute(
+                "UPDATE equipos SET estado = 'fuera_servicio' WHERE id = %s AND tenant_id = %s",
+                (equipo_id, tenant_id),
+            )
+
             # Crear Alerta
             mensaje_alerta = f"EVENTO ADVERSO {data['severidad'].upper()}: {equipo['nombre']} - {data['descripcion_evento'][:100]}... [{numero_reporte}]"
-            # Buscamos al jefe de conservación para la alerta
-            await cur.execute("SELECT id FROM usuarios WHERE rol = 'jefe_conservacion' AND activo = TRUE LIMIT 1")
+            # Buscamos al jefe de conservación para la alerta (scoped al tenant)
+            await cur.execute(
+                "SELECT id FROM usuarios WHERE rol = 'jefe_conservacion' AND activo = TRUE AND tenant_id = %s LIMIT 1",
+                (tenant_id,),
+            )
             j_row = await cur.fetchone()
             jefe_id = j_row["id"] if j_row else user["id"]
-            
+
             await AlertaService.crear_alerta(
                 cur,
                 tipo="evento_adverso",
@@ -245,12 +260,16 @@ async def crear_evento(
 async def cambiar_estado(
     evento_id: int,
     data: dict,
+    tenant_id: int = Depends(get_current_tenant),
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
 ):
     nuevo_estado = data.get("estado")
     async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT estado FROM tecnovigilancia_eventos WHERE id = %s", (evento_id,))
+        await cur.execute(
+            "SELECT estado FROM tecnovigilancia_eventos WHERE id = %s AND tenant_id = %s",
+            (evento_id, tenant_id),
+        )
         row = await cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Evento no encontrado")
@@ -264,8 +283,8 @@ async def cambiar_estado(
             )
 
         await cur.execute(
-            "UPDATE tecnovigilancia_eventos SET estado = %s WHERE id = %s",
-            (nuevo_estado, evento_id),
+            "UPDATE tecnovigilancia_eventos SET estado = %s WHERE id = %s AND tenant_id = %s",
+            (nuevo_estado, evento_id, tenant_id),
         )
         await _log_actividad(
             cur, "tecnovigilancia_eventos", evento_id, "UPDATE",
@@ -279,11 +298,15 @@ async def cambiar_estado(
 async def investigar_evento(
     evento_id: int,
     data: dict,
+    tenant_id: int = Depends(get_current_tenant),
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
 ):
     async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT * FROM tecnovigilancia_eventos WHERE id = %s", (evento_id,))
+        await cur.execute(
+            "SELECT * FROM tecnovigilancia_eventos WHERE id = %s AND tenant_id = %s",
+            (evento_id, tenant_id),
+        )
         evento = await cur.fetchone()
         if not evento:
             raise HTTPException(status_code=404, detail="Evento no encontrado")
@@ -303,13 +326,14 @@ async def investigar_evento(
                SET hallazgos = %s, causa_raiz = %s,
                    investigador_id = %s, fecha_investigacion = NOW(),
                    estado = %s
-               WHERE id = %s""",
+               WHERE id = %s AND tenant_id = %s""",
             (
                 data.get("hallazgos"),
                 data.get("causa_raiz"),
                 user["id"],
                 nuevo_estado,
                 evento_id,
+                tenant_id,
             ),
         )
         await _log_actividad(
@@ -327,11 +351,15 @@ async def investigar_evento(
 async def escalar_cofepris(
     evento_id: int,
     data: dict,
+    tenant_id: int = Depends(get_current_tenant),
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
 ):
     async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT estado FROM tecnovigilancia_eventos WHERE id = %s", (evento_id,))
+        await cur.execute(
+            "SELECT estado, numero_reporte, equipo_id FROM tecnovigilancia_eventos WHERE id = %s AND tenant_id = %s",
+            (evento_id, tenant_id),
+        )
         evento = await cur.fetchone()
         if not evento:
             raise HTTPException(status_code=404, detail="Evento no encontrado")
@@ -349,8 +377,8 @@ async def escalar_cofepris(
                    enviado_cofepris = TRUE,
                    fecha_envio_cofepris = NOW(),
                    folio_cofepris = %s
-               WHERE id = %s""",
-            (folio, evento_id),
+               WHERE id = %s AND tenant_id = %s""",
+            (folio, evento_id, tenant_id),
         )
         await _log_actividad(
             cur, "tecnovigilancia_eventos", evento_id, "UPDATE",
@@ -358,13 +386,16 @@ async def escalar_cofepris(
             {"estado": "documentado"},
             {"estado": "escalado_cofepris", "folio_cofepris": folio},
         )
-        
+
         # ── 2. Alerta de Escalado a COFEPRIS ────────────────────────────────
         mensaje_escalado = f"ESCALADO A COFEPRIS: {evento['numero_reporte']} - Folio: {folio or 'pendiente'}"
-        await cur.execute("SELECT id FROM usuarios WHERE rol = 'jefe_conservacion' AND activo = TRUE LIMIT 1")
+        await cur.execute(
+            "SELECT id FROM usuarios WHERE rol = 'jefe_conservacion' AND activo = TRUE AND tenant_id = %s LIMIT 1",
+            (tenant_id,),
+        )
         jefe = await cur.fetchone()
         jefe_id = jefe["id"] if jefe else user["id"]
-        
+
         await AlertaService.crear_alerta(
             cur,
             tipo="evento_adverso",
@@ -381,11 +412,15 @@ async def escalar_cofepris(
 async def cerrar_evento(
     evento_id: int,
     data: dict,
+    tenant_id: int = Depends(get_current_tenant),
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
 ):
     async with conn.cursor(aiomysql.DictCursor) as cur:
-        await cur.execute("SELECT estado FROM tecnovigilancia_eventos WHERE id = %s", (evento_id,))
+        await cur.execute(
+            "SELECT estado FROM tecnovigilancia_eventos WHERE id = %s AND tenant_id = %s",
+            (evento_id, tenant_id),
+        )
         evento = await cur.fetchone()
         if not evento:
             raise HTTPException(status_code=404, detail="Evento no encontrado")
@@ -401,8 +436,8 @@ async def cerrar_evento(
         await cur.execute(
             """UPDATE tecnovigilancia_eventos
                SET estado = 'cerrado', conclusion = %s, fecha_cierre = NOW()
-               WHERE id = %s""",
-            (conclusion, evento_id),
+               WHERE id = %s AND tenant_id = %s""",
+            (conclusion, evento_id, tenant_id),
         )
         await _log_actividad(
             cur, "tecnovigilancia_eventos", evento_id, "UPDATE",
@@ -420,6 +455,7 @@ async def subir_evidencia(
     tipo: str = "otro",
     descripcion: str = "",
     file: UploadFile = File(...),
+    tenant_id: int = Depends(get_current_tenant),
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
 ):
@@ -428,15 +464,23 @@ async def subir_evidencia(
     if ext not in extensiones_validas:
         raise HTTPException(status_code=400, detail=f"Extensi\u00f3n no permitida: {ext}")
 
-    filename = f"tv_{evento_id}_{secrets.token_hex(6)}.{ext}"
-    filepath = os.path.join(UPLOAD_DIR, filename)
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        # Verificar ownership antes de aceptar el archivo
+        await cur.execute(
+            "SELECT id FROM tecnovigilancia_eventos WHERE id = %s AND tenant_id = %s",
+            (evento_id, tenant_id),
+        )
+        if not await cur.fetchone():
+            raise HTTPException(status_code=404, detail="Evento no encontrado")
 
-    with open(filepath, "wb") as f:
-        f.write(await file.read())
+        filename = f"tv_{evento_id}_{secrets.token_hex(6)}.{ext}"
+        filepath = os.path.join(UPLOAD_DIR, filename)
 
-    file_url = f"/static/uploads/{filename}"
+        with open(filepath, "wb") as f:
+            f.write(await file.read())
 
-    async with conn.cursor() as cur:
+        file_url = f"/static/uploads/{filename}"
+
         await cur.execute(
             """INSERT INTO tecnovigilancia_evidencias
                (evento_id, ruta_archivo, tipo, descripcion, subido_por_id)
@@ -451,6 +495,7 @@ async def subir_evidencia(
 @router.get("/{evento_id}/pdf")
 async def descargar_pdf_nom240(
     evento_id: int,
+    tenant_id: int = Depends(get_current_tenant),
     user: dict = Depends(get_current_user),
     conn=Depends(get_db),
 ):
@@ -462,8 +507,8 @@ async def descargar_pdf_nom240(
                FROM tecnovigilancia_eventos te
                LEFT JOIN usuarios rep ON te.reportado_por_id = rep.id
                LEFT JOIN usuarios inv ON te.investigador_id = inv.id
-               WHERE te.id = %s""",
-            (evento_id,),
+               WHERE te.id = %s AND te.tenant_id = %s""",
+            (evento_id, tenant_id),
         )
         evento = await cur.fetchone()
         if not evento:
