@@ -22,7 +22,7 @@ import secrets
 from datetime import datetime, date
 import sqlalchemy as sa
 from config import get_db, UPLOAD_DIR
-from auth.dependencies import get_current_user, require_action
+from auth.dependencies import get_current_user, get_current_tenant, require_action
 from services.pdf_service import generar_pdf_orden
 try:
     from services.ocr_service import parsear_reporte_ocr
@@ -50,9 +50,10 @@ async def listar_ordenes(
     offset: int = 0,
     user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    query = select(OrdenServicio, Equipo.nombre.label("equipo_nombre_rel")).outerjoin(Equipo, OrdenServicio.equipo_id == Equipo.id)
-    
+    query = select(OrdenServicio, Equipo.nombre.label("equipo_nombre_rel")).outerjoin(Equipo, OrdenServicio.equipo_id == Equipo.id).where(OrdenServicio.tenant_id == tenant_id)
+
     if estado:
         query = query.where(OrdenServicio.estado == estado)
     if tipo:
@@ -123,11 +124,13 @@ async def listar_archivos_historicos(
 
 @router.get("/{orden_id}")
 async def obtener_orden(
-    orden_id: int, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    orden_id: int,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    orden = await session.get(OrdenServicio, orden_id)
+    stmt = select(OrdenServicio).where(OrdenServicio.id == orden_id, OrdenServicio.tenant_id == tenant_id)
+    orden = (await session.execute(stmt)).scalar_one_or_none()
     if not orden:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
 
@@ -144,23 +147,23 @@ async def obtener_orden(
 
 @router.post("/")
 async def crear_orden(
-    data: dict, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    data: dict,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    # Generar número de orden: OS-YYYYMMDD-XXXX
+    # Generar número de orden: OS-YYYYMMDD-XXXX (secuencia por tenant)
     hoy = date.today()
     stmt_count = select(func.count()).select_from(OrdenServicio).where(
-        sa.extract('year', OrdenServicio.fecha) == hoy.year
+        sa.extract('year', OrdenServicio.fecha) == hoy.year,
+        OrdenServicio.tenant_id == tenant_id,
     )
     res_count = await session.execute(stmt_count)
     n = res_count.scalar() + 1
     numero = f"OS-{hoy.strftime('%Y%m%d')}-{n:04d}"
 
-    # Crear objeto Orden
-    # Quitamos materiales de la data para no fallar en el constructor si no están en el modelo
     materiales_data = data.pop("materiales", [])
-    
+    data["tenant_id"] = tenant_id
     orden = OrdenServicio(**data)
     orden.numero_orden = numero
     orden.fecha = hoy
@@ -183,11 +186,13 @@ async def crear_orden(
 
 @router.put("/{orden_id}/cerrar")
 async def cerrar_orden(
-    orden_id: int, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    orden_id: int,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    orden = await session.get(OrdenServicio, orden_id)
+    stmt = select(OrdenServicio).where(OrdenServicio.id == orden_id, OrdenServicio.tenant_id == tenant_id)
+    orden = (await session.execute(stmt)).scalar_one_or_none()
     if not orden:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
         
@@ -199,16 +204,18 @@ async def cerrar_orden(
 
 @router.put("/{orden_id}/estado")
 async def cambiar_estado_orden(
-    orden_id: int, 
-    data: dict, 
-    user: dict = Depends(get_current_user), 
-    session: AsyncSession = Depends(get_async_session)
+    orden_id: int,
+    data: dict,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     estado = data.get("estado")
     if estado not in ("abierta", "en_progreso", "cerrada", "cancelada"):
         raise HTTPException(status_code=400, detail="Estado inválido")
 
-    orden = await session.get(OrdenServicio, orden_id)
+    stmt = select(OrdenServicio).where(OrdenServicio.id == orden_id, OrdenServicio.tenant_id == tenant_id)
+    orden = (await session.execute(stmt)).scalar_one_or_none()
     if not orden:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
 
@@ -262,9 +269,11 @@ async def finalizar_orden(
     data: dict,
     user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     """Cierra la orden añadiendo condiciones finales, reporte y conformidad."""
-    orden = await session.get(OrdenServicio, orden_id)
+    stmt = select(OrdenServicio).where(OrdenServicio.id == orden_id, OrdenServicio.tenant_id == tenant_id)
+    orden = (await session.execute(stmt)).scalar_one_or_none()
     if not orden:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
 
@@ -309,9 +318,11 @@ async def descargar_pdf_orden(
     orden_id: int,
     user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     """Genera y descarga el PDF de la Orden de Servicio."""
-    orden = await session.get(OrdenServicio, orden_id)
+    stmt = select(OrdenServicio).where(OrdenServicio.id == orden_id, OrdenServicio.tenant_id == tenant_id)
+    orden = (await session.execute(stmt)).scalar_one_or_none()
     if not orden:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
 

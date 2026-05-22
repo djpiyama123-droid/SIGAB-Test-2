@@ -7,12 +7,13 @@ from config import JWT_SECRET, JWT_ALG, ACCESS_TTL_MIN, REFRESH_TTL_DAYS
 
 
 def create_access_token(user: dict[str, Any]) -> str:
-    """user debe tener al menos id, rol, matricula."""
+    """user debe tener al menos id, rol, matricula, hospital_id."""
     now = datetime.now(timezone.utc)
     payload = {
         "sub": str(user["id"]),
         "rol": user.get("rol"),
         "matricula": user.get("matricula"),
+        "hospital_id": user.get("hospital_id", 1),
         "type": "access",
         "iat": int(now.timestamp()),
         "exp": int((now + timedelta(minutes=ACCESS_TTL_MIN)).timestamp()),

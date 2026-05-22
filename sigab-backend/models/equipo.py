@@ -48,3 +48,4 @@ class Equipo(SQLModel, table=True):
     fecha_compra: Optional[date] = None
     numero_contrato_servicio: Optional[str] = None
     qr_token: Optional[str] = Field(default=None, index=True)
+    tenant_id: int = Field(default=1, index=True)

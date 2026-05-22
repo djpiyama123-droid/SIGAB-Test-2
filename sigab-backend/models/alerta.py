@@ -28,6 +28,7 @@ class Alerta(SQLModel, table=True):
         default=None, 
         sa_column=Column(mysql.INTEGER(unsigned=True), sa.ForeignKey("usuarios.id"))
     )
+    tenant_id: int = Field(default=1, index=True)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(mysql.DATETIME, nullable=False)

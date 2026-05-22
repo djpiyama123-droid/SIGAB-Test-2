@@ -75,6 +75,31 @@ def require_roles(*roles: str):
     return _checker
 
 
+async def get_current_tenant(
+    user: dict = Depends(get_current_user),
+) -> int:
+    """Extrae hospital_id del JWT del usuario autenticado. Úsalo en Fase 2 para filtrar queries."""
+    hospital_id = user.get("hospital_id")
+    if not hospital_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Usuario sin hospital asignado. Contacta al administrador.",
+        )
+    return int(hospital_id)
+
+
+async def require_superadmin(
+    user: dict = Depends(get_current_user),
+) -> dict:
+    """Exige rol superadmin (panel global SIGAH). Bloquea acceso a usuarios de hospital."""
+    if user.get("rol") != "superadmin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acceso restringido al panel SuperAdmin SIGAH.",
+        )
+    return user
+
+
 def require_action(action: str):
     """Factory: exige que el rol del user tenga permiso para `action`."""
     from auth.permissions import can

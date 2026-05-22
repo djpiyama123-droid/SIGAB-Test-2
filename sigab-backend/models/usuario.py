@@ -23,6 +23,7 @@ class Usuario(SQLModel, table=True):
     )
     must_change_password: bool = Field(default=True)
     activo: bool = Field(default=True)
+    hospital_id: int = Field(default=1, index=True)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(mysql.DATETIME, nullable=False)

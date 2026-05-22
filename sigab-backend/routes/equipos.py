@@ -26,6 +26,7 @@ from config import get_db, UPLOAD_DIR, MAX_UPLOAD_MB, PUBLIC_BASE_URL
 from auth.dependencies import (
     get_current_user,
     get_current_user_optional,
+    get_current_tenant,
     require_action,
 )
 from auth.permissions import (
@@ -87,26 +88,26 @@ from sqlmodel import func
 @router.get("/areas/catalogo")
 async def catalogo_areas(
     session: AsyncSession = Depends(get_async_session),
-    _user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    stmt_areas = select(Equipo.area).where(Equipo.area != None).distinct().order_by(Equipo.area)
+    stmt_areas = select(Equipo.area).where(Equipo.area != None, Equipo.tenant_id == tenant_id).distinct().order_by(Equipo.area)
     res_areas = await session.execute(stmt_areas)
     areas = res_areas.scalars().all()
 
-    stmt_pisos = select(Equipo.piso).where(Equipo.piso != None).distinct().order_by(Equipo.piso)
+    stmt_pisos = select(Equipo.piso).where(Equipo.piso != None, Equipo.tenant_id == tenant_id).distinct().order_by(Equipo.piso)
     res_pisos = await session.execute(stmt_pisos)
     pisos = res_pisos.scalars().all()
-    
+
     return {"areas": areas, "pisos": pisos}
 
 
 @router.get("/zonas/catalogo")
 async def catalogo_zonas(
     session: AsyncSession = Depends(get_async_session),
-    _user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    """Lista las zonas del mapa para el formulario de alta/edición de equipos."""
-    stmt = select(ZonasMapa).where(ZonasMapa.activa == True).order_by(ZonasMapa.orden, ZonasMapa.nombre)
+    """Lista las zonas del mapa filtradas por hospital."""
+    stmt = select(ZonasMapa).where(ZonasMapa.activa == True, ZonasMapa.tenant_id == tenant_id).order_by(ZonasMapa.orden, ZonasMapa.nombre)
     res = await session.execute(stmt)
     zonas = res.scalars().all()
     return {"zonas": zonas}
@@ -117,12 +118,13 @@ async def crear_equipo(
     data: dict,
     user: dict = Depends(require_action("create_equipo")),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    """Crea un nuevo equipo biomédico en el inventario."""
+    """Crea un nuevo equipo biomédico en el inventario del hospital."""
     if not data.get("nombre") or not data.get("serie"):
         raise HTTPException(status_code=400, detail="Nombre y serie son obligatorios")
 
-    # Crear instancia del modelo
+    data["tenant_id"] = tenant_id
     nuevo_equipo = Equipo(**data)
     
     # Valores por defecto y token
@@ -164,10 +166,11 @@ async def eliminar_equipo(
     equipo_id: int,
     user: dict = Depends(require_action("delete_equipo")),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    """Elimina un equipo del inventario (cascade a trazabilidad)."""
-    # Buscar equipo
-    equipo = await session.get(Equipo, equipo_id)
+    """Elimina un equipo del inventario del hospital (cascade a trazabilidad)."""
+    stmt = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt)).scalar_one_or_none()
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
@@ -214,6 +217,7 @@ async def subir_imagen_equipo(
     file: UploadFile = File(...),
     user: dict = Depends(require_action("edit_equipo")),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     """Sube una imagen PNG/JPG y la asocia al equipo."""
     extensiones_validas = {".png", ".jpg", ".jpeg", ".webp"}
@@ -242,8 +246,8 @@ async def subir_imagen_equipo(
     # URL servida vía /static
     url_publica = f"/static/uploads/equipos/{nombre_archivo}"
 
-    # Buscar equipo
-    equipo = await session.get(Equipo, equipo_id)
+    stmt_eq = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt_eq)).scalar_one_or_none()
     if not equipo:
         os.remove(ruta_disco)
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
@@ -321,9 +325,10 @@ async def listar_equipos(
     offset: int = 0,
     user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    query = select(Equipo)
-    count_query = select(func.count()).select_from(Equipo)
+    query = select(Equipo).where(Equipo.tenant_id == tenant_id)
+    count_query = select(func.count()).select_from(Equipo).where(Equipo.tenant_id == tenant_id)
     
     # Filtros dinámicos
     conditions = []
@@ -391,10 +396,10 @@ async def listar_equipos(
     total = (await session.execute(count_query)).scalar()
 
     # Catálogos únicos para filtros del frontend
-    stmt_marcas = select(Equipo.marca).distinct().order_by(Equipo.marca)
+    stmt_marcas = select(Equipo.marca).where(Equipo.tenant_id == tenant_id).distinct().order_by(Equipo.marca)
     marcas_disponibles = (await session.execute(stmt_marcas)).scalars().all()
-    
-    stmt_tipos = select(Equipo.tipo_equipo).distinct().order_by(Equipo.tipo_equipo)
+
+    stmt_tipos = select(Equipo.tipo_equipo).where(Equipo.tenant_id == tenant_id).distinct().order_by(Equipo.tipo_equipo)
     tipos_disponibles = (await session.execute(stmt_tipos)).scalars().all()
 
     # Convert to dict and filter confidential
@@ -435,11 +440,10 @@ async def obtener_equipo(
     equipo_id: int,
     user: Optional[dict] = Depends(get_current_user_optional),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    # Nota: v_dashboard_equipos es una vista, SQLModel puede mapearla si definimos el modelo,
-    # pero por ahora usamos Equipo directamente o hacemos un join.
-    # Dado que es AG-01, priorizamos el uso de modelos.
-    equipo = await session.get(Equipo, equipo_id)
+    stmt = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt)).scalar_one_or_none()
 
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
@@ -471,9 +475,11 @@ async def actualizar_posicion(
     body: dict,
     user: dict = Depends(require_action("edit_equipo")),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     """Guarda nueva posición X/Y después de drag & drop en el mapa."""
-    equipo = await session.get(Equipo, equipo_id)
+    stmt = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt)).scalar_one_or_none()
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
@@ -492,9 +498,11 @@ async def actualizar_equipo(
     data: dict,
     user: dict = Depends(require_action("edit_equipo")),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     """Actualiza campos del equipo. Los campos permitidos dependen del rol."""
-    equipo = await session.get(Equipo, equipo_id)
+    stmt = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt)).scalar_one_or_none()
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
@@ -530,11 +538,11 @@ async def obtener_info_qr(
     equipo_id: int,
     user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
-    """Devuelve el token y la URL canónica embebida en el QR del equipo.
-    Usado por el frontend para mostrar exactamente la misma URL que se codifica
-    en el PNG, sin divergencias basadas en window.location.origin."""
-    equipo = await session.get(Equipo, equipo_id)
+    """Devuelve el token y URL canónica del QR. Siempre refleja el mismo URL que el PNG."""
+    stmt = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt)).scalar_one_or_none()
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
@@ -559,9 +567,11 @@ async def generar_qr(
     equipo_id: int,
     user: dict = Depends(require_action("regenerar_qr")),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     """Genera un QR PNG para el equipo con token opaco."""
-    equipo = await session.get(Equipo, equipo_id)
+    stmt = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt)).scalar_one_or_none()
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
@@ -586,9 +596,11 @@ async def generar_etiqueta_qr(
     equipo_id: int,
     user: dict = Depends(require_action("regenerar_qr")),
     session: AsyncSession = Depends(get_async_session),
+    tenant_id: int = Depends(get_current_tenant),
 ):
     """Genera una etiqueta A6 imprimible (PDF) con QR + datos del equipo."""
-    equipo = await session.get(Equipo, equipo_id)
+    stmt = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt)).scalar_one_or_none()
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 

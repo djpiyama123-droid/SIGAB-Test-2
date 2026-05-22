@@ -86,6 +86,8 @@ class OrdenServicio(SQLModel, table=True):
     no_contrato: Optional[str] = None
     reporta_nombre: Optional[str] = None
     
+    tenant_id: int = Field(default=1, index=True)
+
     # Estado del ticket
     estado: str = Field(default="abierta", index=True)
     prioridad: str = Field(default="media")
