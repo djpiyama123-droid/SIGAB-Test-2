@@ -16,7 +16,7 @@ VPS_IP="129.121.100.147"
 VPS_USER="root"
 REMOTE_DIR="/opt/sigab"
 SSH_KEY="$HOME/.ssh/sigah_bluehost"
-BRANCH="${SIGAH_BRANCH:-main}"
+BRANCH="${SIGAH_BRANCH:-feat/sileo-toasts-hermes-context}"
 FLAG="${1:-}"
 
 # ── Verificar SSH key ────────────────────────────────────────
@@ -77,7 +77,7 @@ $SSH "cd $REMOTE_DIR && git fetch origin && git checkout $BRANCH && git pull ori
 # ── Paso 2: Rebuild servicios necesarios ────────────────────
 if [ "$CHANGED_BACKEND" = "1" ]; then
   echo "[2/3] Rebuilding backend..."
-  $SSH "cd $REMOTE_DIR && docker compose build sigab-backend && docker compose up -d sigab-backend"
+  $SSH "cd $REMOTE_DIR && docker compose build backend && docker compose up -d backend"
 fi
 
 if [ "$CHANGED_FRONTEND" = "1" ]; then
@@ -99,7 +99,7 @@ sleep 2
 STATUS=$($SSH "curl -sf http://localhost:8000/health || echo 'FAIL'")
 if [ "$STATUS" = "FAIL" ]; then
   echo "[WARN] Backend no responde. Revisa con:"
-  echo "  ssh -i $SSH_KEY root@$VPS_IP 'docker compose logs sigab-backend --tail=50'"
+  echo "  ssh -i $SSH_KEY root@$VPS_IP 'docker compose logs backend --tail=50'"
 else
   echo "[OK] Backend: $STATUS"
 fi
