@@ -86,7 +86,8 @@ if [ "$CHANGED_FRONTEND" = "1" ]; then
     cd sigab-frontend && \
     npm ci --prefer-offline && \
     npm run build && \
-    nginx -t && systemctl reload nginx"
+    docker exec sigab-frontend nginx -t && \
+    docker exec sigab-frontend nginx -s reload"
 fi
 
 if [ "$CHANGED_BACKEND" = "0" ] && [ "$CHANGED_FRONTEND" = "0" ]; then
