@@ -1,38 +1,99 @@
-name: Deploy SIGAB → VPS Bluehost
+name: Deploy SIGAH → VPS Bluehost
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Forzar rebuild completo (backend + frontend)'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   deploy:
-    name: Deploy to VPS
+    name: Deploy to VPS Bluehost
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      - name: SSH deploy al VPS
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Checkout (para detectar qué cambió)
+        uses: actions/checkout@v4
         with:
-          host: 129.121.100.147
+          fetch-depth: 2
+
+      - name: Detectar cambios
+        id: changes
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "ALL")
+          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+          if echo "$CHANGED" | grep -q "sigab-backend/"; then
+            echo "backend=true" >> $GITHUB_OUTPUT
+          else
+            echo "backend=false" >> $GITHUB_OUTPUT
+          fi
+          if echo "$CHANGED" | grep -q "sigab-frontend/"; then
+            echo "frontend=true" >> $GITHUB_OUTPUT
+          else
+            echo "frontend=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy via SSH (key auth)
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          FORCE_REBUILD: ${{ inputs.force_rebuild }}
+          BACKEND_CHANGED: ${{ steps.changes.outputs.backend }}
+          FRONTEND_CHANGED: ${{ steps.changes.outputs.frontend }}
+        with:
+          host: ${{ secrets.VPS_IP }}
           username: root
-          password: ${{ secrets.VPS_ROOT_PASS }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: FORCE_REBUILD,BACKEND_CHANGED,FRONTEND_CHANGED
           script: |
             set -e
             cd /opt/sigab
 
+            echo "=== SIGAH Deploy $(date) ==="
+            echo "  Backend changed: $BACKEND_CHANGED"
+            echo "  Frontend changed: $FRONTEND_CHANGED"
+            echo "  Force rebuild: $FORCE_REBUILD"
+
             # Traer últimos cambios
-            git pull origin main 2>/dev/null || git pull origin master 2>/dev/null
+            git fetch origin && git checkout main && git pull origin main
 
-            # Reconstruir y reiniciar contenedores si cambiaron
-            docker compose --env-file .env up -d --build
+            # Rebuild backend si cambió (o force)
+            if [ "$BACKEND_CHANGED" = "true" ] || [ "$FORCE_REBUILD" = "true" ]; then
+              echo "--- Rebuilding backend ---"
+              docker compose --env-file .env build sigab-backend
+              docker compose --env-file .env up -d sigab-backend
+            fi
 
-            # Rebuild frontend si cambió
-            cd sigab-frontend
-            npm ci --silent
-            npm run build
-            cd ..
+            # Rebuild frontend si cambió (o force)
+            if [ "$FRONTEND_CHANGED" = "true" ] || [ "$FORCE_REBUILD" = "true" ]; then
+              echo "--- Rebuilding frontend ---"
+              cd sigab-frontend
+              npm ci --prefer-offline --silent
+              npm run build
+              cd ..
+              nginx -t && systemctl reload nginx
+            fi
 
-            # Recargar Nginx para tomar el nuevo dist/
-            nginx -t && systemctl reload nginx
+            # Health check
+            sleep 3
+            STATUS=$(curl -sf http://localhost:8000/health || echo "FAIL")
+            if [ "$STATUS" = "FAIL" ]; then
+              echo "[ERROR] Backend no responde después del deploy"
+              docker compose logs sigab-backend --tail=30
+              exit 1
+            fi
+            echo "=== Deploy completado. Backend: $STATUS ==="
 
-            echo "SIGAB actualizado: $(date)"
+      - name: Notificar resultado
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "Deploy exitoso a http://${{ secrets.VPS_IP }}"
+          else
+            echo "Deploy fallido. Revisar logs arriba."
+          fi
