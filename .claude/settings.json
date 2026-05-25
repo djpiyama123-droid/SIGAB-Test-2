@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /mnt/c/Users/djpiy/Desktop/Bioingeneria/SIGAB/scripts/save_session_to_obsidian.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "mcpServers": {
+    "obsidian-mcp": {
+      "command": "npx",
+      "args": ["obsidian-claude-code-mcp"],
+      "env": {
+        "OBSIDIAN_VAULT_PATH": "/mnt/c/Users/djpiy/Documents/Obsidian/SIGAH-KB"
+      }
+    }
+  }
+}
