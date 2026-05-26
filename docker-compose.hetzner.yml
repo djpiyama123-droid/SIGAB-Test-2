@@ -15,12 +15,12 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE:      ${MYSQL_DATABASE:-sigab_db}
-      MYSQL_USER:          ${MYSQL_USER:-sigab_user}
+      MYSQL_DATABASE:      ${MYSQL_DATABASE:-sigah_db}
+      MYSQL_USER:          ${MYSQL_USER:-sigah_user}
       MYSQL_PASSWORD:      ${MYSQL_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./database/sigab_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./database/sigah_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
     command: >
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
@@ -28,7 +28,7 @@ services:
       --event-scheduler=ON
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1",
-             "-u", "${MYSQL_USER:-sigab_user}", "-p${MYSQL_PASSWORD}"]
+             "-u", "${MYSQL_USER:-sigah_user}", "-p${MYSQL_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -39,23 +39,23 @@ services:
   # ── FastAPI Backend ─────────────────────────────────────────────
   backend:
     build:
-      context: ./sigab-backend
+      context: ./sigah-backend
       dockerfile: Dockerfile
     container_name: sigah-backend
     restart: unless-stopped
     environment:
-      SIGAB_DB_HOST:           db
-      SIGAB_DB_PORT:           3306
-      SIGAB_DB_USER:           ${MYSQL_USER:-sigab_user}
-      SIGAB_DB_PASS:           ${MYSQL_PASSWORD}
-      SIGAB_DB_NAME:           ${MYSQL_DATABASE:-sigab_db}
-      SIGAB_JWT_SECRET:        ${SECRET_KEY}
-      SIGAB_JWT_ALGORITHM:     ${ALGORITHM:-HS256}
-      SIGAB_JWT_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
-      SIGAB_UPLOAD_DIR:        /app/static/uploads
-      SIGAB_PUBLIC_BASE_URL:   ${SIGAB_PUBLIC_BASE_URL:-https://localhost}
-      SIGAB_OLLAMA_HOST:       ${OLLAMA_HOST:-http://localhost:11434}
-      SIGAB_DISABLE_COPILOT:   ${SIGAB_DISABLE_COPILOT:-0}
+      SIGAH_DB_HOST:           db
+      SIGAH_DB_PORT:           3306
+      SIGAH_DB_USER:           ${MYSQL_USER:-sigah_user}
+      SIGAH_DB_PASS:           ${MYSQL_PASSWORD}
+      SIGAH_DB_NAME:           ${MYSQL_DATABASE:-sigah_db}
+      SIGAH_JWT_SECRET:        ${SECRET_KEY}
+      SIGAH_JWT_ALGORITHM:     ${ALGORITHM:-HS256}
+      SIGAH_JWT_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      SIGAH_UPLOAD_DIR:        /app/static/uploads
+      SIGAH_PUBLIC_BASE_URL:   ${SIGAH_PUBLIC_BASE_URL:-https://localhost}
+      SIGAH_OLLAMA_HOST:       ${OLLAMA_HOST:-http://localhost:11434}
+      SIGAH_DISABLE_COPILOT:   ${SIGAH_DISABLE_COPILOT:-0}
     volumes:
       - uploads_data:/app/static/uploads
     depends_on:
@@ -73,7 +73,7 @@ services:
   # ── Frontend React (build estático servido por nginx) ───────────
   frontend:
     build:
-      context: ./sigab-frontend
+      context: ./sigah-frontend
       dockerfile: Dockerfile
     container_name: sigah-frontend
     restart: unless-stopped

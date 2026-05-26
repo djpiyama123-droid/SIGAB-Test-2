@@ -9,8 +9,8 @@ Reproduce el escenario del log:
 Antes del patch quirúrgico → IntegrityError (1048: ubicacion no puede ser NULL).
 Después del patch         → 200 OK, ubicacion derivada de area · piso.
 
-Ubicación sugerida: sigab-backend/tests/test_equipos_ubicacion.py
-Ejecutar con:        cd sigab-backend && pytest tests/test_equipos_ubicacion.py -v
+Ubicación sugerida: sigah-backend/tests/test_equipos_ubicacion.py
+Ejecutar con:        cd sigah-backend && pytest tests/test_equipos_ubicacion.py -v
 """
 import pytest
 from httpx import AsyncClient

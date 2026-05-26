@@ -1,5 +1,5 @@
 /**
- * SIGAB Bot — Tareas Programadas (node-cron)
+ * SIGAH Bot — Tareas Programadas (node-cron)
  * Se ejecuta dentro de la Lenovo ThinkCentre 24/7.
  * 
  * Horarios:
@@ -18,7 +18,7 @@ let sendToGroup = null; // Se inyecta desde index.js
 
 export function initScheduler(sendFn) {
   sendToGroup = sendFn;
-  console.log('⏰ Scheduler SIGAB iniciado');
+  console.log('⏰ Scheduler SIGAH iniciado');
 
   // ── 07:00 — Reporte matutino ──
   cron.schedule('0 7 * * 1-6', async () => {
@@ -87,7 +87,7 @@ export function initScheduler(sendFn) {
 
       const criticas = json.alertas?.filter(a => a.prioridad === 'critica') || [];
       if (criticas.length > 0) {
-        let msg = `🚨 *ALERTA CRÍTICA SIGAB*\n\n`;
+        let msg = `🚨 *ALERTA CRÍTICA SIGAH*\n\n`;
         criticas.slice(0, 3).forEach(a => {
           msg += `• ${a.mensaje?.slice(0, 80)}\n`;
         });

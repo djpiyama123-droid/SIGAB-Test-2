@@ -8,7 +8,7 @@ Tests:
 5. GET /api/equipos/zonas/catalogo sin token → 401
 6. GET /api/equipos/public/{qr} SIGUE sin auth (regresión inversa: no rompemos QR público)
 
-Asume fixtures en sigab-backend/tests/conftest.py:
+Asume fixtures en sigah-backend/tests/conftest.py:
 - `client`            (TestClient o httpx.AsyncClient)
 - `auth_headers_biomedico`  (dict con header Authorization válido)
 - `equipo_existente`  (objeto Equipo con qr_token poblado)

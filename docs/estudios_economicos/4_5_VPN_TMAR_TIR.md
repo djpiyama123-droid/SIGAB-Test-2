@@ -12,10 +12,10 @@ $$
 |---|---:|---|
 | Tasa libre de riesgo (CETES 28 días) | 9.25 % | Banxico — abril 2026 |
 | Prima de riesgo | 8.75 % | Rango "nuevo mercado" 8-15 % según PDF Prof. Piña |
-| **TMAR** | **18.00 %** | Piso mínimo de rentabilidad exigida al proyecto SIGAB |
+| **TMAR** | **18.00 %** | Piso mínimo de rentabilidad exigida al proyecto SIGAH |
 
 **Justificación de la prima de 8.75 %.**
-SIGAB entra en la categoría **"nuevo mercado"** (HealthTech B2G en México tiene baja penetración de software on-premise auditado). Se elige el extremo bajo del rango (8-15 %) por las siguientes ventajas atenuantes:
+SIGAH entra en la categoría **"nuevo mercado"** (HealthTech B2G en México tiene baja penetración de software on-premise auditado). Se elige el extremo bajo del rango (8-15 %) por las siguientes ventajas atenuantes:
 - El software es una extensión natural del flujo normativo NOM-016 existente (reduce riesgo de adopción).
 - El cliente ancla (HGR No. 1 Tijuana) ya validó el prototipo en fase de pruebas.
 - La operación 100 % on-premise elimina el riesgo de compliance con la LFPDPPP.
@@ -126,7 +126,7 @@ Si los hospitales nuevos por año son 2, 3, 5, 7, 9 (en lugar de 3, 5, 7, 9, 11)
 
 ## 4.5.7 Conclusión ejecutiva
 
-El análisis financiero indica con claridad que **el proyecto SIGAB es viable e invertible**:
+El análisis financiero indica con claridad que **el proyecto SIGAH es viable e invertible**:
 
 - **VPN positivo** de $493,187 MXN a TMAR del 18 %.
 - **TIR del 32.58 %**, que supera la TMAR por 14.6 puntos.
@@ -140,5 +140,5 @@ La regla de decisión formal del PDF del Prof. Piña (VPN > 0 ∧ TIR > TMAR) se
 ### Referencias
 - PDF de clase: `TMAR_VPN_TIR.pdf` — Prof. Piña, Taller de Emprendimiento 2026.
 - PDF de clase: `EDO_RESULTADOS_PROFORMA.pdf` — Prof. Piña.
-- Documento base: `SIGAB_Estrategia_FinancieraV2.md`.
-- Modelo financiero: `SIGAB_Modelo_Financiero.xlsx`.
+- Documento base: `SIGAH_Estrategia_FinancieraV2.md`.
+- Modelo financiero: `SIGAH_Modelo_Financiero.xlsx`.

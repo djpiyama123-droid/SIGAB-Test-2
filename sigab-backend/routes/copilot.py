@@ -1,5 +1,5 @@
 """
-SIGAB Copilot Router — IA Local Biomédica con Gemma/Ollama
+SIGAH Copilot Router — IA Local Biomédica con Gemma/Ollama
 
 Endpoints:
   GET  /estado          → verifica Ollama + modelo disponible
@@ -340,7 +340,7 @@ async def resumen_ejecutivo_ia(
     conn=Depends(get_db),
 ):
     """
-    Genera un resumen ejecutivo narrativo del estado actual del SIGAB.
+    Genera un resumen ejecutivo narrativo del estado actual del SIGAH.
     Útil para el reporte matutino del Jefe de Conservación.
     """
     datos = await _get_resumen_db(conn, tenant_id)

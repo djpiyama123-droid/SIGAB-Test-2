@@ -54,7 +54,7 @@ async def process_whatsapp_ai(data: dict):
         bot_url = "http://localhost:3000/send"
         
         if ticket_id:
-            msg = (f"✅ *Ticket SIGAB Generado*\n\n"
+            msg = (f"✅ *Ticket SIGAH Generado*\n\n"
                    f"ID: {ticket_id}\n"
                    f"Falla: {final_state['falla']}\n"
                    f"Prioridad: {final_state['prioridad']}\n\n"
@@ -75,7 +75,7 @@ async def process_whatsapp_ai(data: dict):
 @router.post("/whatsapp/webhook")
 async def whatsapp_webhook(data: dict, background_tasks: BackgroundTasks):
     """
-    Webhook para el sigab-bot.
+    Webhook para el sigah-bot.
     """
     background_tasks.add_task(process_whatsapp_ai, data)
     return {"status": "processing"}

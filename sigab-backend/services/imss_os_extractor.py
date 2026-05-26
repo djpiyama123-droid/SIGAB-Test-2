@@ -8,7 +8,7 @@ Path de uso:
   POST /api/ordenes/scan-imss            (cámara web / archivo)
   POST /api/openclaw/scan-os              (foto desde WhatsApp via bot)
 
-El prompt verifica el banner 'SIGAB-IMSS-OS-V3' impreso en el footer
+El prompt verifica el banner 'SIGAH-IMSS-OS-V3' impreso en el footer
 de la plantilla orden-servicio-v3-imss.html.
 
 Post-procesamiento (`normalize_extracted`):
@@ -43,10 +43,10 @@ logger = logging.getLogger(__name__)
 
 # ─────────────────────────────────────────────────────────────────
 # Prompt IMSS-aware. Diseñado para ser estricto: si la imagen no es
-# el formato SIGAB-IMSS-OS-V3, devuelve un error explícito.
+# el formato SIGAH-IMSS-OS-V3, devuelve un error explícito.
 # ─────────────────────────────────────────────────────────────────
 PROMPT_IMSS_OS = """Eres un OCR especializado en formatos del Instituto Mexicano del Seguro Social.
-Esta imagen contiene una ORDEN DE SERVICIO del HGR No.1 IMSS Tijuana, formato SIGAB-IMSS-OS-V3.
+Esta imagen contiene una ORDEN DE SERVICIO del HGR No.1 IMSS Tijuana, formato SIGAH-IMSS-OS-V3.
 La hoja tiene rejillas de casillas monospace (una letra/dígito por celda) y checkboxes
 (▢ vacío, ✓/✗/■/X marcado).
 
@@ -88,7 +88,7 @@ Reglas:
 - Las casillas-grid se leen carácter por carácter, izquierda a derecha.
 - Los checkboxes con cualquier marca (✓, ✗, ■, X) cuentan como TRUE.
 - Si la cabecera no contiene 'INSTITUTO MEXICANO DEL SEGURO SOCIAL', devuelve {"error":"no_es_formato_imss"}.
-- Si NO encuentras el banner 'SIGAB-IMSS-OS-V3' al pie, devuelve confianza_global ≤ 0.5.
+- Si NO encuentras el banner 'SIGAH-IMSS-OS-V3' al pie, devuelve confianza_global ≤ 0.5.
 - confianza_global es tu propia estimación 0.0–1.0 sobre la legibilidad global.
 - poka_yoke_validaciones es un array de 5 bools en orden: [QR, ubicación, causa_raíz, refacciones, regreso_operación].
 - refacciones es un array (puede ser []).

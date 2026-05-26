@@ -1,7 +1,7 @@
-# SIGAB — Claude Code Project Context
+# SIGAH — Claude Code Project Context
 
 ## Proyecto
-**Sistema Integral de Gestión de Activos Biomédicos (SIGAB) V2.0**
+**Sistema Integral de Gestión de Activos Biomédicos (SIGAH) V2.0**
 Hospital General Regional No.1 IMSS Tijuana | On-Premise | NOM-016 / NOM-240 / ISO-13485
 
 ## Stack Tecnológico
@@ -16,21 +16,21 @@ Hospital General Regional No.1 IMSS Tijuana | On-Premise | NOM-016 / NOM-240 / I
 **Stack target**: React 19 + Vite + Tailwind CSS
 
 Invocar esta skill cuando se trabaje en:
-- Páginas en `sigab-frontend/src/pages/` (Dashboard, Equipos, Ordenes, Tecnovigilancia, Copilot, etc.)
-- Componentes en `sigab-frontend/src/components/`
+- Páginas en `sigah-frontend/src/pages/` (Dashboard, Equipos, Ordenes, Tecnovigilancia, Copilot, etc.)
+- Componentes en `sigah-frontend/src/components/`
 - Mejoras visuales, rediseño, accesibilidad, responsive
 - Nuevos módulos con UI (formularios, tablas, modales, cards, charts)
 
-**Paleta SIGAB recomendada**: Medical/Clinical — azul IMSS (#006CB7), verde biomédico (emerald-600), alertas (amber/red)
+**Paleta SIGAH recomendada**: Medical/Clinical — azul IMSS (#006CB7), verde biomédico (emerald-600), alertas (amber/red)
 **Estilo base**: Minimalism + Dark Mode compatible, componentes con Tailwind utility classes
 **Tipografía**: Inter (UI) + Source Sans Pro (data tables)
 
 ## Estructura del Proyecto
 ```
-sigab-backend/      # FastAPI routes, services, models
-sigab-frontend/     # React pages, components, hooks
+sigah-backend/      # FastAPI routes, services, models
+sigah-frontend/     # React pages, components, hooks
 migrations/         # SQL migrations (001-006)
-sigab-bot/          # Bot de notificaciones
+sigah-bot/          # Bot de notificaciones
 .claude/skills/     # Skills instaladas (ui-ux-pro-max)
 ```
 
@@ -41,7 +41,7 @@ sigab-bot/          # Bot de notificaciones
 4. Mantenimiento Preventivo (preventivos.py / Preventivos.jsx)
 5. Alertas + Dashboard KPIs (dashboard.py / Dashboard.jsx)
 6. Tecnovigilancia NOM-240 (tecnovigilancia.py / Tecnovigilancia.jsx)
-7. SIGAB Copilot IA Local (copilot.py / Copilot.jsx)
+7. SIGAH Copilot IA Local (copilot.py / Copilot.jsx)
 8. Trazabilidad NOM-016 (trazabilidad.py / Trazabilidad.jsx)
 9. Reportes PDF/Excel (reportes.py / Reportes.jsx)
 

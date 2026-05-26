@@ -1,4 +1,4 @@
-# 🚀 SIGAB — Arranque Rápido Asus TUF · Café Quijarro
+# 🚀 SIGAH — Arranque Rápido Asus TUF · Café Quijarro
 
 **Ejecuta estos comandos EN ORDEN en la Asus TUF. Copia-pega, uno por uno.**
 
@@ -7,10 +7,10 @@
 ## 1. Abrir terminal y posicionarse en el proyecto
 
 ```bash
-cd ~/sigab
+cd ~/sigah
 # (o la ruta donde tengas el repo — usa `ls` para verificar)
 ls
-# Debes ver: sigab-backend/ sigab-frontend/ sigab-bot/ migrations/ docker-compose.yml
+# Debes ver: sigah-backend/ sigah-frontend/ sigah-bot/ migrations/ docker-compose.yml
 ```
 
 ---
@@ -38,9 +38,9 @@ docker compose up -d
 ```
 
 Esto arranca los 4 contenedores:
-- `mysql-sigab` (puerto 3306)
-- `sigab-backend` (FastAPI · puerto 8000)
-- `sigab-frontend` (React + Vite · puerto 5173)
+- `mysql-sigah` (puerto 3306)
+- `sigah-backend` (FastAPI · puerto 8000)
+- `sigah-frontend` (React + Vite · puerto 5173)
 - `ollama-gemma` (IA local · puerto 11434)
 
 Espera **60-90 segundos** a que todo levante.
@@ -82,7 +82,7 @@ O simplemente: abre **Chrome** y ve a `http://localhost:5173`
 
 ```
 Matrícula: ADMIN001
-Password : sigab_admin_2026
+Password : sigah_admin_2026
 ```
 
 Pulsa **Enter** → debes aterrizar en el Dashboard con KPIs.
@@ -102,7 +102,7 @@ Pulsa **Enter** → debes aterrizar en el Dashboard con KPIs.
 ## 8. Carga de datos demo (si la BD está vacía)
 
 ```bash
-docker exec sigab-backend python -m scripts.seed_demo
+docker exec sigah-backend python -m scripts.seed_demo
 # Debe cargar: ~25 equipos, 10 órdenes, 5 preventivos, 3 alertas
 ```
 
@@ -117,9 +117,9 @@ Recarga el Dashboard (Ctrl+Shift+R) y confirma que ves equipos.
 | `docker: command not found` | Abrir Docker Desktop |
 | Puerto 5173 ocupado | `docker compose down && docker compose up -d` |
 | Frontend no carga (blanco) | Esperar 30 s más, refrescar con Ctrl+Shift+R |
-| Backend `{"status":"error"}` | `docker compose restart sigab-backend` |
+| Backend `{"status":"error"}` | `docker compose restart sigah-backend` |
 | Ollama lento (>10 s) | Normal en primer query; después responde en 2-3 s |
-| MySQL error de login | `docker compose restart mysql-sigab` y esperar 20 s |
+| MySQL error de login | `docker compose restart mysql-sigah` y esperar 20 s |
 | Todo rompe | `docker compose down && docker compose up -d` (reset limpio, 90 s) |
 
 ---
@@ -147,7 +147,7 @@ Recarga el Dashboard (Ctrl+Shift+R) y confirma que ves equipos.
 docker compose logs -f --tail=50
 
 # Solo backend
-docker logs sigab-backend --tail 30
+docker logs sigah-backend --tail 30
 
 # Reset suave (sin perder datos)
 docker compose restart

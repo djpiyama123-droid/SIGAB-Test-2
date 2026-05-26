@@ -30,7 +30,7 @@ def generate_qr_label_a6_pdf(equipo: dict, url: str) -> bytes:
 
     Layout:
       - Encabezado: HOSPITAL GENERAL REGIONAL #1 IMSS TIJUANA
-      - Subtítulo: SIGAB · Activo Biomédico
+      - Subtítulo: SIGAH · Activo Biomédico
       - QR grande centrado
       - Nombre del equipo (grande)
       - Marca / modelo
@@ -49,7 +49,7 @@ def generate_qr_label_a6_pdf(equipo: dict, url: str) -> bytes:
     c.setFont("Helvetica", 7)
     c.drawCentredString(width / 2, height - margin - 18, "IMSS · TIJUANA, B.C.")
     c.setFont("Helvetica-Bold", 8)
-    c.drawCentredString(width / 2, height - margin - 30, "SIGAB · Activo Biomédico")
+    c.drawCentredString(width / 2, height - margin - 30, "SIGAH · Activo Biomédico")
 
     # Línea separadora
     c.setLineWidth(0.5)

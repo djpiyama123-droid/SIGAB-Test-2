@@ -1,6 +1,6 @@
 // ============================================================
 // HospitalMap.jsx — Mapa Interactivo de Activos Biomédicos
-// SIGAB — Hospital General Regional No. 1 IMSS Tijuana
+// SIGAH — Hospital General Regional No. 1 IMSS Tijuana
 // ============================================================
 import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';

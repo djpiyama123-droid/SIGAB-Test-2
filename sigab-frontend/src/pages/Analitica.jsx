@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import { Zap, TrendingUp, TrendingDown, Clock, ShieldCheck, Activity, Brain, AlertTriangle } from 'lucide-react';
 import toast from '../lib/toast';
 

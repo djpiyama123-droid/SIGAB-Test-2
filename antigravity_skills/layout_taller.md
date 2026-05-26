@@ -1,7 +1,7 @@
-# Skill: Diseño Conceptual del Taller de Integración SIGAB
+# Skill: Diseño Conceptual del Taller de Integración SIGAH
 
 ## Goal
-Generar el diseño conceptual y espacial completo del Taller de Integración SIGAB, especificando sus 4 áreas divisorias obligatorias (Desarrollo, Gestión, Pruebas y Soporte Técnico), incluyendo distribución física, equipamiento mínimo por área, flujo de trabajo entre áreas, y criterios de diseño para un entorno on-premise hospitalario bajo restricción de consumo energético de 15 vatios en el servidor de producción.
+Generar el diseño conceptual y espacial completo del Taller de Integración SIGAH, especificando sus 4 áreas divisorias obligatorias (Desarrollo, Gestión, Pruebas y Soporte Técnico), incluyendo distribución física, equipamiento mínimo por área, flujo de trabajo entre áreas, y criterios de diseño para un entorno on-premise hospitalario bajo restricción de consumo energético de 15 vatios en el servidor de producción.
 
 ## Instructions
 
@@ -15,7 +15,7 @@ Generar el diseño conceptual y espacial completo del Taller de Integración SIG
 2. **4 Áreas Obligatorias — Especificación Detallada**
 
    **Área 1 — DESARROLLO (30% del espacio)**
-   - Función: Programación del backend FastAPI, frontend React, mantenimiento del SIGAB core
+   - Función: Programación del backend FastAPI, frontend React, mantenimiento del SIGAH core
    - Equipamiento mínimo: 2 workstations (16 GB RAM, SSD NVMe), 2 monitores duales, servidor de desarrollo local (Lenovo M720q o equivalente), switch gestionable 8 puertos
    - Mobiliario: escritorios anti-estática, sillas ergonómicas, pizarrón blanco para arquitectura
    - Conectividad: VLAN de desarrollo aislada de producción
@@ -25,17 +25,17 @@ Generar el diseño conceptual y espacial completo del Taller de Integración SIG
    - Función: Administración del sistema, capacitación de usuarios, reportes NOM-016/NOM-240, coordinación con dirección hospitalaria
    - Equipamiento mínimo: 1 workstation administrativa, impresora láser A4, impresora de etiquetas (para QR en formato A6), scanner de documentos
    - Mobiliario: escritorio ejecutivo, mesa de reuniones para 4 personas, pantalla de presentación 55"
-   - Herramientas: Dashboard SIGAB en modo TV (TVDashboard.jsx), generación de reportes PDF/Excel
+   - Herramientas: Dashboard SIGAH en modo TV (TVDashboard.jsx), generación de reportes PDF/Excel
 
    **Área 3 — PRUEBAS (35% del espacio)**
-   - Función: Validación de equipos biomédicos antes del alta en SIGAB, prueba del flujo Poka-Yoke completo (QR → NII → Serie), integración de escáneres Zebra, pruebas de carga y rendimiento
+   - Función: Validación de equipos biomédicos antes del alta en SIGAH, prueba del flujo Poka-Yoke completo (QR → NII → Serie), integración de escáneres Zebra, pruebas de carga y rendimiento
    - Equipamiento mínimo: Mesa de trabajo anti-estática (2m × 1m), escáner inalámbrico 2D Zebra (modelo DS2208 o similar), tablet Android para pruebas de UI móvil, multímetro, analizador de redes eléctrica (para equipos clase I COFEPRIS), banco de pruebas con equipos biomédicos de muestra
    - Conectividad: Punto de acceso WiFi dedicado para pruebas de escaneo inalámbrico
    - Iluminación: Mínimo 500 lux (lectura de etiquetas y códigos QR)
 
    **Área 4 — SOPORTE TÉCNICO (15% del espacio)**
-   - Función: Reparación de equipos biomédicos de bajo nivel, atención a incidencias del sistema SIGAB, primera línea de soporte para personal hospitalario
-   - Equipamiento mínimo: Mesa de trabajo con tornillo de banco, herramientas de electrónica básica, osciloscopio, fuente de poder regulable, armario de piezas etiquetadas con QR SIGAB
+   - Función: Reparación de equipos biomédicos de bajo nivel, atención a incidencias del sistema SIGAH, primera línea de soporte para personal hospitalario
+   - Equipamiento mínimo: Mesa de trabajo con tornillo de banco, herramientas de electrónica básica, osciloscopio, fuente de poder regulable, armario de piezas etiquetadas con QR SIGAH
    - Acceso: Puerta directa al pasillo hospitalario (entrada de equipos sin interrumpir áreas de desarrollo)
    - Almacenamiento: Rack de 4U para servidor de producción (Lenovo M720q) con UPS de 650VA
 
@@ -44,7 +44,7 @@ Generar el diseño conceptual y espacial completo del Taller de Integración SIG
    ```
    [Entrada física] → SOPORTE (recepción, diagnóstico)
         ↓
-   PRUEBAS (alta en SIGAB, validación Poka-Yoke, QR generado)
+   PRUEBAS (alta en SIGAH, validación Poka-Yoke, QR generado)
         ↓
    GESTIÓN (aprobación administrativa, asignación de servicio hospitalario)
         ↓

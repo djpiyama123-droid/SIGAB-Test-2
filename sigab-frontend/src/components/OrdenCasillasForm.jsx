@@ -10,10 +10,10 @@
  *   onCerrar      — callback para cerrar el modal
  */
 import { useState, useCallback } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import toast from '../lib/toast';
 
-// ─── Paleta SIGAB ────────────────────────────────────────────────────────────
+// ─── Paleta SIGAH ────────────────────────────────────────────────────────────
 const C = {
   cobalt: '#1B3A5C',
   teal: '#0D9488',
@@ -498,7 +498,7 @@ function HojaFisicaCeneval({ form, ordenId, equipoData }) {
         <div style={{ textAlign: 'right', fontSize: '10px' }}>
           <div>No. Orden: <strong>{ordenId || '________'}</strong></div>
           <div>Fecha: <strong>{new Date().toLocaleDateString('es-MX')}</strong></div>
-          <div>Sistema SIGAB v1.0</div>
+          <div>Sistema SIGAH v1.0</div>
         </div>
       </div>
 

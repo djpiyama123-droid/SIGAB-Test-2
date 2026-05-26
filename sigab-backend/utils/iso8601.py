@@ -1,6 +1,6 @@
 """
 Utilidades para manejo de timestamps ISO 8601.
-Todos los timestamps en SIGAB deben ser inmutables y en formato ISO.
+Todos los timestamps en SIGAH deben ser inmutables y en formato ISO.
 """
 
 from datetime import datetime, timezone

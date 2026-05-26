@@ -36,7 +36,7 @@ export default function TVDashboard() {
       <div className="h-screen w-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-emerald-400 text-lg font-semibold">SIGAB</p>
+          <p className="text-emerald-400 text-lg font-semibold">SIGAH</p>
           <p className="text-slate-500 text-sm">Cargando Dashboard...</p>
         </div>
       </div>
@@ -53,7 +53,7 @@ export default function TVDashboard() {
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-xl font-black">S</div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">SIGAB</h1>
+            <h1 className="text-xl font-bold tracking-tight">SIGAH</h1>
             <p className="text-xs text-slate-500">Sistema Integral de Gestión de Activos Biomédicos</p>
           </div>
         </div>

@@ -1,6 +1,6 @@
 # Brief de rediseño — Dos artefactos SIGAH
 
-> **Para qué sirve este archivo:** condensa todo lo que necesitas pegarle a Claude Design para regenerar dos documentos clave del proyecto, con la calidad visual del primer rediseño que ya hicimos pero esta vez con tu información real y los contenidos curados del archivo `SIGAB_Demo_Retroalimentacion_2026-05-13.docx` que recuperaste.
+> **Para qué sirve este archivo:** condensa todo lo que necesitas pegarle a Claude Design para regenerar dos documentos clave del proyecto, con la calidad visual del primer rediseño que ya hicimos pero esta vez con tu información real y los contenidos curados del archivo `SIGAH_Demo_Retroalimentacion_2026-05-13.docx` que recuperaste.
 >
 > **Cómo usarlo:** abre Claude (web, Cowork o Code), pega el bloque **PROMPT** correspondiente y al final el bloque **CONTENIDO**. Claude regenera el artefacto como widget visual, HTML o `.docx` según le pidas.
 
@@ -25,7 +25,7 @@
 | **Nombre del artefacto** | `SIGAH_Documento_Ejecutivo_Inversionistas_v2.{html,docx,widget}` |
 | **Audiencia primaria** | Comité Colegiado de Inversionistas — Universidad Xochicalco |
 | **Audiencia secundaria** | Ing. Carlos Ramírez Oswaldo (co-fundador propuesto) |
-| **Objetivo** | Presentar SIGAH como empresa SaaS B2B con el caso de éxito SIGAB validado en HGR No.1 y solicitar la cofundación / inversión inicial |
+| **Objetivo** | Presentar SIGAH como empresa SaaS B2B con el caso de éxito SIGAH validado en HGR No.1 y solicitar la cofundación / inversión inicial |
 | **Estilo** | Minimalista, escaneable, pocos números pero contundentes |
 | **Extensión sugerida** | 4–5 secciones, una sola pantalla scrolleable (web) o 4 páginas (PDF/Word) |
 | **Formato target** | Widget Claude Design (web) o `.html` imprimible a PDF carta |
@@ -162,7 +162,7 @@ CONTENIDO LITERAL (úsalo tal cual, no cambies números ni nombres):
 **Bloque de cierre (fondo azul claro, centrado):**
 
 > ### Documento listo para ejecución
-> SIGAH evoluciona el éxito validado de SIGAB en HGR No.1 hacia una empresa SaaS escalable, regulada y rentable.
+> SIGAH evoluciona el éxito validado de SIGAH en HGR No.1 hacia una empresa SaaS escalable, regulada y rentable.
 > Próximo paso: confirmar co-fundación y constituir la S. de R.L. de C.V.
 
 **Bloque de firma (dos columnas):**
@@ -185,7 +185,7 @@ CONTENIDO LITERAL (úsalo tal cual, no cambies números ni nombres):
 | **Nombre del artefacto** | `SIGAH_Demo_Retroalimentacion_v2.{docx,html,widget}` |
 | **Audiencia** | Ing. Carlos Oswaldo + Jefe de Servicio + equipo técnico del Depto. de Conservación del hospital cliente |
 | **Objetivo** | Estructurar la sesión de demo (Parte A) y la encuesta de necesidades (Parte B) para validar SIGAH antes del onboarding de cada hospital |
-| **Diferencias vs versión SIGAB anterior** | (1) Refleja la arquitectura multi-tenant. (2) Incluye módulos nuevos (SuperAdmin, predictivo, facturación SaaS). (3) Adapta preguntas para contexto SaaS / multi-hospital. (4) Diseño más limpio, menos saturado. |
+| **Diferencias vs versión SIGAH anterior** | (1) Refleja la arquitectura multi-tenant. (2) Incluye módulos nuevos (SuperAdmin, predictivo, facturación SaaS). (3) Adapta preguntas para contexto SaaS / multi-hospital. (4) Diseño más limpio, menos saturado. |
 | **Formato target** | `.docx` editable para que el facilitador lo imprima y lo llene en la sesión, o widget interactivo si se llena digitalmente |
 
 ## 2.2 Prompt para pegar en Claude Design

@@ -1,5 +1,5 @@
 """
-Router SIGAB: Casillas CENEVAL para Conservación
+Router SIGAH: Casillas CENEVAL para Conservación
 Maneja el formulario de casillas tipo hoja de respuestas (binary checkboxes)
 para los tres dominios: Médico, Polivalente, A/C/Infraestructura.
 
@@ -136,7 +136,7 @@ CAMPOS_CENEVAL = [
 ]
 
 PROMPT_OCR = """Eres un sistema de lectura de hojas de respuestas CENEVAL para mantenimiento hospitalario.
-Analiza esta imagen de un formulario de Orden de Servicio SIGAB con casillas.
+Analiza esta imagen de un formulario de Orden de Servicio SIGAH con casillas.
 Identifica qué casillas están marcadas (círculo relleno, palomita, X o tachado).
 
 Devuelve SOLO un JSON válido con los siguientes campos (1 si está marcado, 0 si no):

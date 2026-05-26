@@ -1,9 +1,9 @@
-"""Crea o actualiza el usuario admin inicial para SIGAB.
+"""Crea o actualiza el usuario admin inicial para SIGAH.
 
-Uso (desde el directorio sigab-backend):
+Uso (desde el directorio sigah-backend):
     ./venv/bin/python scripts/seed_admin.py
 o con env vars:
-    SIGAB_ADMIN_MATRICULA=ADMIN001 SIGAB_ADMIN_PASSWORD=mi_clave \
+    SIGAH_ADMIN_MATRICULA=ADMIN001 SIGAH_ADMIN_PASSWORD=mi_clave \
       ./venv/bin/python scripts/seed_admin.py
 """
 import asyncio
@@ -18,10 +18,10 @@ from auth.password import hash_password
 from config import DB_CONFIG
 
 
-MATRICULA = os.getenv("SIGAB_ADMIN_MATRICULA", "ADMIN001")
-PASSWORD = os.getenv("SIGAB_ADMIN_PASSWORD", "sigab_admin_2026")
-NOMBRE = os.getenv("SIGAB_ADMIN_NOMBRE", "Administrador SIGAB")
-EMAIL = os.getenv("SIGAB_ADMIN_EMAIL", "admin@hgr1.imss.gob.mx")
+MATRICULA = os.getenv("SIGAH_ADMIN_MATRICULA", "ADMIN001")
+PASSWORD = os.getenv("SIGAH_ADMIN_PASSWORD", "sigah_admin_2026")
+NOMBRE = os.getenv("SIGAH_ADMIN_NOMBRE", "Administrador SIGAH")
+EMAIL = os.getenv("SIGAH_ADMIN_EMAIL", "admin@hgr1.imss.gob.mx")
 
 
 async def main():

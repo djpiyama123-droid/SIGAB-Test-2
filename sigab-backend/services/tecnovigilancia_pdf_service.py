@@ -287,7 +287,7 @@ def generar_pdf_nom240(evento: dict, evidencias: list) -> bytes:
     c.setFont("Helvetica", 7)
     c.setFillGray(0.5)
     c.drawCentredString(width / 2, 30,
-                        "Documento generado por SIGAB — ISO 8601 / NOM-240-SSA1-2012")
+                        "Documento generado por SIGAH — ISO 8601 / NOM-240-SSA1-2012")
     c.drawCentredString(width / 2, 20,
                         "Sistema Integral de Gestion de Activos Biomedicos — HGR No.1 IMSS Tijuana")
 

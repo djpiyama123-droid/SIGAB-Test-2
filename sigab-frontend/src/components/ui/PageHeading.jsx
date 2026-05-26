@@ -1,6 +1,6 @@
 /**
  * PageHeading — Encabezado estándar de página con icono, título, subtítulo y acciones.
- * Usa el acento indigo de SIGAB.
+ * Usa el acento indigo de SIGAH.
  */
 export default function PageHeading({ icon: Icon, title, subtitle, actions, badge }) {
   return (

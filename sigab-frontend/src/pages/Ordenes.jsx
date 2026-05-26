@@ -1,6 +1,6 @@
 /**
  * @module pages/Ordenes
- * @description Gestión de Órdenes de Servicio (OS) del sistema SIGAB.
+ * @description Gestión de Órdenes de Servicio (OS) del sistema SIGAH.
  *
  * Funcionalidades:
  * - Listado con filtros por estado (abierta/en_progreso/cerrada) y tipo
@@ -9,12 +9,12 @@
  * - Modal de detalle completo (OrdenDetalleModal)
  * - Integración con Casillas CENEVAL (OrdenCasillasForm)
  *
- * @requires api/sigab — Cliente HTTP centralizado
+ * @requires api/sigah — Cliente HTTP centralizado
  * @requires components/OrdenDetalleModal — Vista detallada de la OS
  * @requires components/OrdenCasillasForm — Formulario CENEVAL
  */
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import OrdenDetalleModal from '../components/OrdenDetalleModal';
 import OrdenCasillasForm from '../components/OrdenCasillasForm';
 import OCRScannerModal from '../components/OCRScannerModal';

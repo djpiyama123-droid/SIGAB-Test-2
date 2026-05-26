@@ -1,4 +1,4 @@
-"""Autenticación para el bot de WhatsApp (sigab-bot).
+"""Autenticación para el bot de WhatsApp (sigah-bot).
 
 Flujo de seguridad
 ------------------

@@ -1,4 +1,4 @@
-# SIGAB — Reporte de Análisis de Riesgos (FMEA) y Viabilidad Técnica
+# SIGAH — Reporte de Análisis de Riesgos (FMEA) y Viabilidad Técnica
 
 > Análisis de estabilidad, puntos de falla potenciales y métricas de viabilidad operativa para el despliegue On-Premise en el Hospital General Regional No. 1 — IMSS Tijuana.
 
@@ -12,7 +12,7 @@ El siguiente análisis identifica los posibles riesgos arquitectónicos y operat
 |---|-------------------------|-------|-------------------|-----------------------------------------|
 | **1** | **Fallo de Hardware (Disco Duro)** en el Servidor Lenovo ThinkCentre M720q | **ALTO** | Pérdida total de inventarios, órdenes de servicio y bitácoras de auditoría NOM-016. | Implementar un `cronjob` (script programado) que realice un `mysqldump` diario y lo sincronice a un disco de red del hospital (NAS) o OneDrive del Jefe de Conservación. |
 | **2** | **Saturación de Memoria RAM (OOM - Out of Memory)** | **ALTO** | Caída del sistema. El servidor cuenta con 8GB de RAM. El modelo Gemma 4B en Ollama consume ~4-5GB, dejando poco margen para MySQL, FastAPI y Node.js durante picos de uso. | Configurar al menos 8GB/16GB de memoria de intercambio (Swap file) en Ubuntu WSL2. Limitar requests concurrentes a Ollama a 1 a la vez mediante semáforos en FastAPI. |
-| **3** | **Desconexión del Bot de WhatsApp** | **MEDIO** | Los técnicos no podrán abrir órdenes vía WhatsApp, perdiendo el canal principal de reporte remoto. | La librería local de WhatsApp (Baileys/whatsapp-web.js) depende de un celular emparejado. Asegurar que el celular "host" de la línea SIGAB siempre tenga batería e internet. Configurar `pm2` para auto-reinicio del servicio ante caídas breves. |
+| **3** | **Desconexión del Bot de WhatsApp** | **MEDIO** | Los técnicos no podrán abrir órdenes vía WhatsApp, perdiendo el canal principal de reporte remoto. | La librería local de WhatsApp (Baileys/whatsapp-web.js) depende de un celular emparejado. Asegurar que el celular "host" de la línea SIGAH siempre tenga batería e internet. Configurar `pm2` para auto-reinicio del servicio ante caídas breves. |
 | **4** | **Caída de la Red LAN Hospitalaria** | **MEDIO** | Los celulares de los técnicos perderán conexión a la IP del servidor On-Premise al escanear los Códigos QR. | Configurar el ThinkCentre para que emita su propia red Wi-Fi compartida (Access Point de emergencia) o distribuir radios walkie-talkie como backup de comunicación temporal. |
 | **5** | **Dependencia de la API de Gemini (OCR en la nube)** | **BAJO** | El escaneo de reportes físicos (casillas CENEVAL) no funcionará si IMSS restringe internet de salida o si la API de Google falla. | El sistema tiene captura manual como fallback nativo (el usuario puede llenar las casillas usando la interfaz de botones web). |
 
@@ -37,7 +37,7 @@ El siguiente análisis identifica los posibles riesgos arquitectónicos y operat
 
 ## 3. Conclusión de Viabilidad Operativa
 
-El proyecto **SIGAB v2.0 es altamente viable** para su instalación y puesta en producción en el HGR No. 1 IMSS. 
+El proyecto **SIGAH v2.0 es altamente viable** para su instalación y puesta en producción en el HGR No. 1 IMSS. 
 
 ### Puntos Fuertes que garantizan viabilidad:
 1. **Compliance Normativo**: Al ejecutarse en un esquema 100% On-Premise, se respeta estrictamente la privacidad de los datos hospitalarios y se cumple con la NOM-016 (Auditoría Criptográfica Hash) y la NOM-240 (Tecnovigilancia).

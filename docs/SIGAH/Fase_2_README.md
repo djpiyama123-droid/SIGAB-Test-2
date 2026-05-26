@@ -10,9 +10,9 @@
 
 | Archivo | Propósito |
 |---------|-----------|
-| `sigab-backend/routes/_examples_tenant_pattern.py` | **Plantilla canónica**. 9 ejemplos cubriendo LIST, GET, POST, PUT, DELETE, dashboard, ruta pública, ruta SuperAdmin y relación padre-hijo. + 5 anti-patrones explícitos. No se monta en `main.py`, sirve solo de referencia. |
-| `sigab-backend/tests/test_tenant_isolation.py` | Suite pytest de 7 pruebas que validan la promesa: ningún hospital ve datos de otro. TDD — fallan hasta que el refactor está hecho. |
-| `sigab-backend/alembic/versions/b1c2d3e4f5a6_phase_3_superadmin_nullable_tenant.py` | Migración complementaria que vuelve `usuarios.tenant_id` nullable para el rol `superadmin_sigah`, con CHECK constraint. Se aplica en Fase 3, está lista. |
+| `sigah-backend/routes/_examples_tenant_pattern.py` | **Plantilla canónica**. 9 ejemplos cubriendo LIST, GET, POST, PUT, DELETE, dashboard, ruta pública, ruta SuperAdmin y relación padre-hijo. + 5 anti-patrones explícitos. No se monta en `main.py`, sirve solo de referencia. |
+| `sigah-backend/tests/test_tenant_isolation.py` | Suite pytest de 7 pruebas que validan la promesa: ningún hospital ve datos de otro. TDD — fallan hasta que el refactor está hecho. |
+| `sigah-backend/alembic/versions/b1c2d3e4f5a6_phase_3_superadmin_nullable_tenant.py` | Migración complementaria que vuelve `usuarios.tenant_id` nullable para el rol `superadmin_sigah`, con CHECK constraint. Se aplica en Fase 3, está lista. |
 
 ---
 
@@ -74,20 +74,20 @@ Total: **20 archivos**, ~80–120 endpoints por revisar.
 
 ### 4.1 Pre-requisitos
 
-- BD `sigab_test` levantada (ya existe en `docker-compose`).
-- Migración Fase 1 aplicada en `sigab_test`:
+- BD `sigah_test` levantada (ya existe en `docker-compose`).
+- Migración Fase 1 aplicada en `sigah_test`:
   ```bash
-  SIGAB_TEST=true alembic upgrade a1b2c3d4e5f6
+  SIGAH_TEST=true alembic upgrade a1b2c3d4e5f6
   ```
-- (Opcional, para test 7) Migración Fase 3 aplicada en `sigab_test`:
+- (Opcional, para test 7) Migración Fase 3 aplicada en `sigah_test`:
   ```bash
-  SIGAB_TEST=true alembic upgrade b1c2d3e4f5a6
+  SIGAH_TEST=true alembic upgrade b1c2d3e4f5a6
   ```
 
 ### 4.2 Ejecución
 
 ```bash
-cd sigab-backend
+cd sigah-backend
 pytest tests/test_tenant_isolation.py -v
 ```
 

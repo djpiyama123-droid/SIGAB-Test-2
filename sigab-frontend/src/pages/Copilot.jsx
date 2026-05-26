@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import toast from '../lib/toast';
 
 // ── Iconos inline ─────────────────────────────────────────────────
@@ -314,7 +314,7 @@ export default function Copilot() {
   useEffect(() => {
     setMessages([{
       role: 'assistant',
-      content: `¡Hola! Soy **SIGAB Copilot**, tu asistente de IA biomédica local.
+      content: `¡Hola! Soy **SIGAH Copilot**, tu asistente de IA biomédica local.
 
 Estoy potenciado por **Gemma** ejecutándose directamente en el servidor del HGR No.1 — sin dependencias de nube, 100% on-premise.
 
@@ -510,7 +510,7 @@ Puedo ayudarte con:
         <div>
           <h1 className="text-2xl font-bold text-[var(--content-text)] flex items-center gap-2">
             <span className="text-2xl">✦</span>
-            SIGAB Copilot
+            SIGAH Copilot
           </h1>
           <p className="text-sm text-[var(--content-muted)] mt-0.5 flex items-center gap-2">
             Asistente biomédico · IA local on-premise
@@ -537,7 +537,7 @@ Puedo ayudarte con:
         <div className="mb-4 bg-orange-900/20 border border-orange-500/40 rounded-xl p-4 text-sm flex-shrink-0">
           <p className="text-orange-300 font-semibold">Ollama no detectado</p>
           <p className="text-orange-400/80 text-xs mt-1">
-            Para usar SIGAB Copilot, instala Ollama en el servidor (Lenovo ThinkCentre) y ejecuta:
+            Para usar SIGAH Copilot, instala Ollama en el servidor (Lenovo ThinkCentre) y ejecuta:
           </p>
           <code className="block mt-2 bg-black/30 rounded p-2 text-xs text-orange-200 font-mono">
             ollama serve &amp;&amp; ollama pull gemma3:4b
@@ -666,7 +666,7 @@ Puedo ayudarte con:
               <span className="text-sm font-semibold text-[var(--content-text)]">Resumen Ejecutivo IA</span>
             </div>
             <p className="text-xs text-[var(--content-muted)]">
-              Gemma analiza el estado actual del SIGAB y genera un resumen narrativo para el jefe.
+              Gemma analiza el estado actual del SIGAH y genera un resumen narrativo para el jefe.
             </p>
             <button onClick={generarResumenIA} disabled={cargandoResumen}
               className="w-full py-1.5 bg-emerald-700/50 hover:bg-emerald-700 border border-emerald-600/40 text-emerald-300 text-xs font-semibold rounded-lg transition-colors disabled:opacity-50">

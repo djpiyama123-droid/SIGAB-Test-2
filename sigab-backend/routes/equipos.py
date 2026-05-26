@@ -480,7 +480,7 @@ async def exportar_equipos_csv(
     return StreamingResponse(
         iter_csv(),
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename=inventario_sigab_{fecha_str}.csv"}
+        headers={"Content-Disposition": f"attachment; filename=inventario_sigah_{fecha_str}.csv"}
     )
 
 

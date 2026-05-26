@@ -1,7 +1,7 @@
 """
-routes/openclaw.py — Endpoints del Bot WhatsApp (OpenClaw/sigab-bot)
+routes/openclaw.py — Endpoints del Bot WhatsApp (OpenClaw/sigah-bot)
 
-SEGURIDAD: Estos endpoints son exclusivos para sigab-bot (red interna Docker).
+SEGURIDAD: Estos endpoints son exclusivos para sigah-bot (red interna Docker).
 ==============================================================================
 Antes de Fase 4 (Hetzner): asegurarse de que nginx NO exponga /openclaw/
 externamente. El único endpoint público de este módulo es /bot-login.
@@ -367,8 +367,8 @@ async def get_equipo_pdf(serie: str, conn=Depends(get_db)):
                  "piso": equipo["piso"],
                  "tipo_mantenimiento": "CONSULTA",
                  "falla_reportada": "Consulta de estatus vía WhatsApp Bot",
-                 "descripcion_servicio": "Reporte generado automáticamente por SIGAB Copilot.",
-                 "tecnico_nombre": "SIGAB Bot",
+                 "descripcion_servicio": "Reporte generado automáticamente por SIGAH Copilot.",
+                 "tecnico_nombre": "SIGAH Bot",
                  "fecha": datetime.now().strftime("%Y-%m-%d")
              }
              materiales = []
@@ -398,8 +398,8 @@ async def api_enviar_reporte(
     
     pdf_bytes = res.body
     
-    asunto = f"Reporte Técnico SIGAB - Equipo {serie}"
-    cuerpo = f"Se adjunta el reporte técnico solicitado del equipo con serie {serie}.\nGenerado automáticamente por SIGAB."
+    asunto = f"Reporte Técnico SIGAH - Equipo {serie}"
+    cuerpo = f"Se adjunta el reporte técnico solicitado del equipo con serie {serie}.\nGenerado automáticamente por SIGAH."
     
     exito = enviar_reporte_email(email, asunto, cuerpo, f"Reporte_{serie}.pdf", pdf_bytes)
     
@@ -417,7 +417,7 @@ async def ai_chat_bot(data: dict):
         return {"ok": False, "mensaje": "Falta mensaje"}
     
     # Prompt simplificado para el bot
-    prompt = f"Actúa como SIGAB Assistant, un experto en bioingeniería en el IMSS. Responde de forma concisa al siguiente mensaje: {mensaje}"
+    prompt = f"Actúa como SIGAH Assistant, un experto en bioingeniería en el IMSS. Responde de forma concisa al siguiente mensaje: {mensaje}"
     
     try:
         respuesta = await gemma_service.consultar_gemma_no_streaming(prompt)
@@ -448,7 +448,7 @@ async def escanear_os_whatsapp(
     conn=Depends(get_db),
 ):
     """
-    Recibe una foto de OS IMSS (formato SIGAB-IMSS-OS-V3) desde el bot OpenClaw
+    Recibe una foto de OS IMSS (formato SIGAH-IMSS-OS-V3) desde el bot OpenClaw
     de WhatsApp. Ejecuta el extractor IMSS y, por defecto (auto_create=true),
     crea la Orden de Servicio en estado 'pendiente_validacion'.
 
@@ -479,7 +479,7 @@ async def escanear_os_whatsapp(
     if extracted.get("error") == "no_es_formato_imss":
         return {
             "ok": False,
-            "mensaje": "La foto no parece una OS IMSS. Asegúrate que el formato tenga la cabecera del IMSS y el código SIGAB-IMSS-OS-V3 al pie.",
+            "mensaje": "La foto no parece una OS IMSS. Asegúrate que el formato tenga la cabecera del IMSS y el código SIGAH-IMSS-OS-V3 al pie.",
         }
     if extracted.get("error") == "extraction_failed":
         return {
@@ -596,6 +596,6 @@ async def escanear_os_whatsapp(
         "estado": "pendiente_validacion",
         "engine": extracted.get("engine"),
         "confianza": extracted.get("confianza_global"),
-        "mensaje": f"OS {numero} creada. Confianza extracción: {(extracted.get('confianza_global') or 0)*100:.0f}%. Requiere validación en SIGAB.",
+        "mensaje": f"OS {numero} creada. Confianza extracción: {(extracted.get('confianza_global') or 0)*100:.0f}%. Requiere validación en SIGAH.",
     }
 

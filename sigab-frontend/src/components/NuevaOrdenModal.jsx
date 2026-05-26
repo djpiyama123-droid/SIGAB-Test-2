@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 
 /**
  * NuevaOrdenModal — Modal reutilizable para crear Órdenes de Servicio.

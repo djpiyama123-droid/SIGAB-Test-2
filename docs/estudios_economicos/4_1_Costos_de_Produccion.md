@@ -1,14 +1,14 @@
 # 4.1 Costos de Producción
 
 ## Proyecto
-**SIGAB — Sistema Integral de Gestión de Activos Biomédicos**
+**SIGAH — Sistema Integral de Gestión de Activos Biomédicos**
 Modelo Asset-Light (Estrategia 2): despliegue único + licencia anual on-premise.
 
 ---
 
 ## 4.1.1 Clasificación de costos
 
-Los costos de producción de SIGAB se clasifican en dos categorías:
+Los costos de producción de SIGAH se clasifican en dos categorías:
 
 **Costos variables** — escalan con el número de hospitales clientes. Incluyen:
 - Soporte técnico L1 y L2 (40% del revenue anual).
@@ -62,7 +62,7 @@ Los costos de producción de SIGAB se clasifican en dos categorías:
 ## 4.1.5 Interpretación
 
 - El **margen bruto proyectado se mantiene en 60 %** a lo largo del horizonte porque los costos variables son proporcionales al ingreso.
-- Los costos fijos crecen en saltos discretos conforme SIGAB contrata personal para absorber más clientes; este escalamiento es deliberado y responde al ramp-up comercial 3 → 5 → 7 → 9 → 11 hospitales nuevos por año.
+- Los costos fijos crecen en saltos discretos conforme SIGAH contrata personal para absorber más clientes; este escalamiento es deliberado y responde al ramp-up comercial 3 → 5 → 7 → 9 → 11 hospitales nuevos por año.
 - El apalancamiento operativo se vuelve favorable a partir del Año 3, cuando los ingresos por licencia recurrente superan el crecimiento de los costos fijos.
 
-> **Nota metodológica:** el porcentaje variable del 40 % es conservador. Empresas SaaS maduras en salud operan con costos variables del 20-30 %, pero durante los primeros 5 años SIGAB absorbe gastos de campo y soporte L2 intensivo típicos de una adopción B2G.
+> **Nota metodológica:** el porcentaje variable del 40 % es conservador. Empresas SaaS maduras en salud operan con costos variables del 20-30 %, pero durante los primeros 5 años SIGAH absorbe gastos de campo y soporte L2 intensivo típicos de una adopción B2G.

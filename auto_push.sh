@@ -1,6 +1,6 @@
 #!/bin/bash
 # ================================================================
-# SIGAB — Push automático a GitHub
+# SIGAH — Push automático a GitHub
 # Uso: bash auto_push.sh "mensaje de commit"
 # ================================================================
 set -e

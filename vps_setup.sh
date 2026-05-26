@@ -1,11 +1,11 @@
 #!/bin/bash
 # ================================================================
-# SIGAB — Setup completo en VPS Ubuntu
+# SIGAH — Setup completo en VPS Ubuntu
 # Se ejecuta REMOTAMENTE desde deploy_to_vps.sh
 # ================================================================
 set -e
 
-REMOTE_DIR="/opt/sigab"
+REMOTE_DIR="/opt/sigah"
 cd "${REMOTE_DIR}"
 
 log() { echo ""; echo "━━━ $1"; }
@@ -56,10 +56,10 @@ ollama pull gemma3:4b || echo "[WARN] No se pudo descargar gemma3:4b — Copilot
 
 # ── FASE 3: Build del frontend React ────────────────────────
 log "FASE 3: Compilando frontend React"
-cd "${REMOTE_DIR}/sigab-frontend"
+cd "${REMOTE_DIR}/sigah-frontend"
 npm ci --silent
 npm run build
-echo "Frontend compilado en: ${REMOTE_DIR}/sigab-frontend/dist/"
+echo "Frontend compilado en: ${REMOTE_DIR}/sigah-frontend/dist/"
 cd "${REMOTE_DIR}"
 
 # ── FASE 4: Docker Compose (MySQL + Backend) ─────────────────
@@ -82,12 +82,12 @@ done
 
 # ── FASE 5: Nginx ────────────────────────────────────────────
 log "FASE 5: Configurando Nginx"
-cat > /etc/nginx/sites-available/sigab << 'NGINXEOF'
+cat > /etc/nginx/sites-available/sigah << 'NGINXEOF'
 server {
     listen 80;
     server_name _;
 
-    root /opt/sigab/sigab-frontend/dist;
+    root /opt/sigah/sigah-frontend/dist;
     index index.html;
 
     # React SPA — todas las rutas sirven index.html
@@ -119,7 +119,7 @@ server {
 }
 NGINXEOF
 
-ln -sf /etc/nginx/sites-available/sigab /etc/nginx/sites-enabled/sigab
+ln -sf /etc/nginx/sites-available/sigah /etc/nginx/sites-enabled/sigah
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
 systemctl enable nginx
@@ -135,11 +135,11 @@ VPS_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
 
 echo ""
 echo "╔══════════════════════════════════════════════════════╗"
-echo "║          SIGAB DESPLEGADO EXITOSAMENTE               ║"
+echo "║          SIGAH DESPLEGADO EXITOSAMENTE               ║"
 echo "╠══════════════════════════════════════════════════════╣"
 echo "║  Frontend: http://${VPS_IP}/                    "
 echo "║  API:      http://${VPS_IP}/api/docs            "
 echo "║  Health:   http://${VPS_IP}/api/health          "
 echo "╠══════════════════════════════════════════════════════╣"
-echo "║  Admin:    ADMIN001 / sigab_admin_2026               ║"
+echo "║  Admin:    ADMIN001 / sigah_admin_2026               ║"
 echo "╚══════════════════════════════════════════════════════╝"

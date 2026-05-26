@@ -214,12 +214,12 @@ module.exports = {
 
 ---
 
-## 8. Co-uso con la instancia SIGAB en HGR No.1
+## 8. Co-uso con la instancia SIGAH en HGR No.1
 
-La instancia desplegada en HGR No.1 conserva el nombre **SIGAB** en su UI por convivencia con el hospital. Eso no rompe la marca SIGAH:
+La instancia desplegada en HGR No.1 conserva el nombre **SIGAH** en su UI por convivencia con el hospital. Eso no rompe la marca SIGAH:
 
-- SIGAB queda como **la primera tenant de SIGAH** — es la prueba viviente, no una marca competidora.
-- En materiales comerciales se menciona "SIGAB en HGR No.1" como caso de éxito de SIGAH.
+- SIGAH queda como **la primera tenant de SIGAH** — es la prueba viviente, no una marca competidora.
+- En materiales comerciales se menciona "SIGAH en HGR No.1" como caso de éxito de SIGAH.
 - Cuando convenga, esa instancia puede migrar al branding SIGAH (cambio de logo y nombre en UI), pero no es bloqueante para vender a otros hospitales.
 
 ---

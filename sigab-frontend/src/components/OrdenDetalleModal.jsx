@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import OCRScannerModal from './OCRScannerModal';
 import { useToast } from './Toast';
 
@@ -39,7 +39,7 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
           datos.causa_raiz ? `Causa raíz: ${datos.causa_raiz}` : null,
         ].filter(Boolean).join('\n\n') || f.condiciones_encontradas,
         observaciones: [datos.observaciones, refsTexto && `Refacciones:\n${refsTexto}`].filter(Boolean).join('\n\n') || f.observaciones,
-        condicion_final: f.condicion_final || 'Equipo entregado en operación. Validado por SIGAB-IMSS-OS-V3.',
+        condicion_final: f.condicion_final || 'Equipo entregado en operación. Validado por SIGAH-IMSS-OS-V3.',
         recibe_conformidad_nombre: datos.recibe_nombre || f.recibe_conformidad_nombre,
       }));
     } else {

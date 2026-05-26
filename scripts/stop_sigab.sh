@@ -1,13 +1,13 @@
 #!/bin/bash
 # ================================================================
-# SIGAB — Script de detención
+# SIGAH — Script de detención
 # ================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 LOG_DIR="$PROJECT_DIR/logs"
 
-echo "Deteniendo SIGAB..."
+echo "Deteniendo SIGAH..."
 
 [[ -f "$LOG_DIR/backend.pid" ]]  && kill "$(cat "$LOG_DIR/backend.pid")" 2>/dev/null  && echo "  Backend detenido"
 [[ -f "$LOG_DIR/frontend.pid" ]] && kill "$(cat "$LOG_DIR/frontend.pid")" 2>/dev/null && echo "  Frontend detenido"
@@ -16,8 +16,8 @@ echo "Deteniendo SIGAB..."
 # Cleanup extra
 pkill -f "uvicorn main:app" 2>/dev/null || true
 pkill -f "vite" 2>/dev/null || true
-pkill -f "sigab-bot" 2>/dev/null || true
+pkill -f "sigah-bot" 2>/dev/null || true
 
 rm -f "$LOG_DIR"/*.pid
 
-echo "SIGAB detenido."
+echo "SIGAH detenido."

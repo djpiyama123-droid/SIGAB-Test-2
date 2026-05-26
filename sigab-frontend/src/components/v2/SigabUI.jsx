@@ -1,21 +1,21 @@
 /**
- * sigab-frontend/src/components/v2/SigabUI.jsx
+ * sigah-frontend/src/components/v2/SigahUI.jsx
  *
- * Componentes homologados para identidad SIGAB v2 — miércoles 6-may.
+ * Componentes homologados para identidad SIGAH v2 — miércoles 6-may.
  * Solo CSS/JSX/Tailwind. Cero llamadas backend, cero side-effects.
  *
  * Usar como reemplazo *gradual* de los actuales botones/cards/modales/spinners.
  * Cada componente acepta `className` adicional y reenvía props nativas.
  *
  * Convenciones:
- *   - Tipografía: Montserrat (titulos via clase `font-sigabHead`), Open Sans (cuerpo `font-sigabBody`).
+ *   - Tipografía: Montserrat (titulos via clase `font-sigahHead`), Open Sans (cuerpo `font-sigahBody`).
  *   - Cobalt #1B4F72 = primario   (`bg-cobalt-700`, `text-cobalt-700`)
  *   - Teal   #2E86AB = acento     (`bg-teal2-500`, `text-teal2-500`)
  *   - Padding card 24px, modal 28px (variables CSS).
  *   - Radio sm=6, md=10, lg=16.
  *   - Focus ring teal opaco al 45%.
  *
- * Aplicación: copiar a sigab-frontend/src/components/v2/SigabUI.jsx tal cual.
+ * Aplicación: copiar a sigah-frontend/src/components/v2/SigahUI.jsx tal cual.
  * El archivo es nuevo, no choca con nada existente.
  */
 import React from 'react';
@@ -26,7 +26,7 @@ import React from 'react';
 
 const BTN_BASE =
   'inline-flex items-center justify-center gap-2 ' +
-  'font-sigabBody font-semibold ' +
+  'font-sigahBody font-semibold ' +
   'rounded-md transition-colors duration-150 ' +
   'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal2-500/45 ' +
   'disabled:opacity-50 disabled:cursor-not-allowed';
@@ -47,10 +47,10 @@ const BTN_VARIANTS = {
   ghost:
     'bg-transparent text-cobalt-700 hover:bg-cobalt-50 active:bg-cobalt-100',
   danger:
-    'bg-[color:var(--sigab-danger)] text-white hover:brightness-95 active:brightness-90',
+    'bg-[color:var(--sigah-danger)] text-white hover:brightness-95 active:brightness-90',
 };
 
-export function SigabButton({
+export function SigahButton({
   variant = 'primary',
   size = 'md',
   loading = false,
@@ -69,7 +69,7 @@ export function SigabButton({
       aria-busy={loading || undefined}
       {...rest}
     >
-      {loading ? <SigabSpinner size="sm" /> : iconLeft}
+      {loading ? <SigahSpinner size="sm" /> : iconLeft}
       <span>{children}</span>
       {!loading && iconRight}
     </button>
@@ -82,7 +82,7 @@ export function SigabButton({
 
 const SPIN_SIZES = { sm: 'h-4 w-4', md: 'h-6 w-6', lg: 'h-10 w-10' };
 
-export function SigabSpinner({ size = 'md', label, className = '' }) {
+export function SigahSpinner({ size = 'md', label, className = '' }) {
   return (
     <span
       role="status"
@@ -103,12 +103,12 @@ export function SigabSpinner({ size = 'md', label, className = '' }) {
           strokeLinecap="round"
         />
       </svg>
-      {label ? <span className="font-sigabBody text-sm text-cobalt-700">{label}</span> : null}
+      {label ? <span className="font-sigahBody text-sm text-cobalt-700">{label}</span> : null}
     </span>
   );
 }
 
-export function SigabSkeleton({ className = '', lines = 3 }) {
+export function SigahSkeleton({ className = '', lines = 3 }) {
   return (
     <div className={`space-y-2 ${className}`} aria-hidden="true">
       {Array.from({ length: lines }).map((_, i) => (
@@ -126,28 +126,28 @@ export function SigabSkeleton({ className = '', lines = 3 }) {
 // Card (cabecera + cuerpo + pie homologados)
 // ──────────────────────────────────────────────────────────────────
 
-export function SigabCard({ title, action, footer, children, className = '' }) {
+export function SigahCard({ title, action, footer, children, className = '' }) {
   return (
     <section
       className={
-        'sigab-v2 bg-white rounded-[var(--sigab-radius-lg)] ' +
-        'border border-cobalt-100 shadow-[var(--sigab-shadow-sm)] ' +
+        'sigah-v2 bg-white rounded-[var(--sigah-radius-lg)] ' +
+        'border border-cobalt-100 shadow-[var(--sigah-shadow-sm)] ' +
         className
       }
     >
       {(title || action) && (
         <header className="flex items-center justify-between px-6 py-4 border-b border-cobalt-100">
           {title && (
-            <h3 className="font-sigabHead text-lg font-semibold text-cobalt-700 leading-tight">
+            <h3 className="font-sigahHead text-lg font-semibold text-cobalt-700 leading-tight">
               {title}
             </h3>
           )}
           {action}
         </header>
       )}
-      <div className="px-6 py-5 font-sigabBody text-cobalt-900">{children}</div>
+      <div className="px-6 py-5 font-sigahBody text-cobalt-900">{children}</div>
       {footer && (
-        <footer className="px-6 py-3 border-t border-cobalt-100 bg-cobalt-50/50 rounded-b-[var(--sigab-radius-lg)]">
+        <footer className="px-6 py-3 border-t border-cobalt-100 bg-cobalt-50/50 rounded-b-[var(--sigah-radius-lg)]">
           {footer}
         </footer>
       )}
@@ -163,7 +163,7 @@ export function SigabCard({ title, action, footer, children, className = '' }) {
 // Foco se devuelve al elemento que abrió el modal mediante el `aria-modal`.
 //
 
-export function SigabModal({
+export function SigahModal({
   open,
   title,
   children,
@@ -181,30 +181,30 @@ export function SigabModal({
     <div
       role="dialog"
       aria-modal="true"
-      aria-labelledby="sigab-modal-title"
-      className="sigab-v2 fixed inset-0 z-[var(--z-modal)] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-cobalt-900/40 backdrop-blur-[2px]"
+      aria-labelledby="sigah-modal-title"
+      className="sigah-v2 fixed inset-0 z-[var(--z-modal)] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-cobalt-900/40 backdrop-blur-[2px]"
       onClick={(e) => e.target === e.currentTarget && onCancel?.()}
       onKeyDown={(e) => e.key === 'Escape' && onCancel?.()}
     >
       <div
         className={
-          `bg-white w-full ${widths[size]} rounded-t-[var(--sigab-radius-lg)] sm:rounded-[var(--sigab-radius-lg)] ` +
-          'shadow-[var(--sigab-shadow-lg)] flex flex-col max-h-[95vh] sm:max-h-[90vh] animate-slide-up'
+          `bg-white w-full ${widths[size]} rounded-t-[var(--sigah-radius-lg)] sm:rounded-[var(--sigah-radius-lg)] ` +
+          'shadow-[var(--sigah-shadow-lg)] flex flex-col max-h-[95vh] sm:max-h-[90vh] animate-slide-up'
         }
       >
         <header className="px-7 py-4 border-b border-cobalt-100">
-          <h2 id="sigab-modal-title" className="font-sigabHead text-xl font-semibold text-cobalt-700">
+          <h2 id="sigah-modal-title" className="font-sigahHead text-xl font-semibold text-cobalt-700">
             {title}
           </h2>
         </header>
-        <div className="px-7 py-5 overflow-y-auto font-sigabBody text-cobalt-900">{children}</div>
-        <footer className="px-7 py-4 border-t border-cobalt-100 bg-cobalt-50/40 flex justify-end gap-3 rounded-b-[var(--sigab-radius-lg)]">
-          <SigabButton variant="ghost" onClick={onCancel} disabled={loading}>
+        <div className="px-7 py-5 overflow-y-auto font-sigahBody text-cobalt-900">{children}</div>
+        <footer className="px-7 py-4 border-t border-cobalt-100 bg-cobalt-50/40 flex justify-end gap-3 rounded-b-[var(--sigah-radius-lg)]">
+          <SigahButton variant="ghost" onClick={onCancel} disabled={loading}>
             {cancelLabel}
-          </SigabButton>
-          <SigabButton variant={confirmVariant} onClick={onConfirm} loading={loading}>
+          </SigahButton>
+          <SigahButton variant={confirmVariant} onClick={onConfirm} loading={loading}>
             {confirmLabel}
-          </SigabButton>
+          </SigahButton>
         </footer>
       </div>
     </div>
@@ -222,11 +222,11 @@ const ESTADO_STYLES = {
   baja:             'bg-slate-100 text-[var(--content-muted)] border-slate-200',
 };
 
-export function SigabEstadoBadge({ estado }) {
+export function SigahEstadoBadge({ estado }) {
   const cls = ESTADO_STYLES[estado] || ESTADO_STYLES.baja;
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full border text-xs font-sigabBody font-semibold ${cls}`}
+      className={`inline-flex items-center px-2 py-0.5 rounded-full border text-xs font-sigahBody font-semibold ${cls}`}
     >
       {estado.replace('_', ' ')}
     </span>
@@ -237,10 +237,10 @@ export function SigabEstadoBadge({ estado }) {
 // Tabla responsive con scroll horizontal a 1366/768/375
 // ──────────────────────────────────────────────────────────────────
 
-export function SigabTable({ columns, rows, empty = 'Sin registros' }) {
+export function SigahTable({ columns, rows, empty = 'Sin registros' }) {
   return (
-    <div className="sigab-v2 w-full overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
-      <table className="min-w-full divide-y divide-cobalt-100 font-sigabBody">
+    <div className="sigah-v2 w-full overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
+      <table className="min-w-full divide-y divide-cobalt-100 font-sigahBody">
         <thead className="bg-cobalt-50/60">
           <tr>
             {columns.map((c) => (

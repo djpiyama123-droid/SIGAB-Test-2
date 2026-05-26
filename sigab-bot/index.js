@@ -1,6 +1,6 @@
 /**
  * ════════════════════════════════════════════════════════════
- * SIGAB Bot — WhatsApp Agent (Baileys)
+ * SIGAH Bot — WhatsApp Agent (Baileys)
  * 100% Local, 0 APIs de paga, on-premise en Lenovo ThinkCentre
  * ════════════════════════════════════════════════════════════
  */
@@ -24,7 +24,7 @@ import { initScheduler } from './scheduler.js';
 
 // ── Configuración ──────────────────────────────────────────
 const GRUPO_BIOMEDICOS = 'Residentes de biomedica 2025';
-const AUTH_DIR = './auth_sigab';
+const AUTH_DIR = './auth_sigah';
 const FASTAPI_WEBHOOK_URL = process.env.WHATSAPP_WEBHOOK_URL || 'http://localhost:8000/api/v1/events/whatsapp/webhook';
 const BOT_PORT = process.env.BOT_PORT || 3000;
 
@@ -49,13 +49,13 @@ async function startBot() {
     },
     logger,
     printQRInTerminal: false,
-    browser: ['SIGAB-Bot', 'Chrome', '125.0.0'],
+    browser: ['SIGAH-Bot', 'Chrome', '125.0.0'],
   });
 
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
     if (qr) {
-      console.log('--- SIGAB BOT QR CODE ---');
+      console.log('--- SIGAH BOT QR CODE ---');
       qrTerminal.generate(qr, { small: true });
     }
     if (connection === 'close') {

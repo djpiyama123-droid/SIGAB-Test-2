@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Users, DollarSign, Hospital, ShieldCheck, RefreshCw } from 'lucide-react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import toast from '../components/Toast';
 import GlassCard from '../components/ui/GlassCard';
 import PageHeading from '../components/ui/PageHeading';

@@ -135,7 +135,7 @@ def generar_pdf_reporte_diario(datos: dict, criticos: list) -> bytes:
     # ── Pie ──
     c.setFont("Helvetica", 8)
     c.setFillColor(_GRIS)
-    c.drawString(margin, margin, f"Generado el {datetime.now().strftime('%Y-%m-%d %H:%M')} — SIGAB")
+    c.drawString(margin, margin, f"Generado el {datetime.now().strftime('%Y-%m-%d %H:%M')} — SIGAH")
     c.setFillColorRGB(0, 0, 0)
 
     c.showPage()
@@ -196,7 +196,7 @@ def generar_pdf_historial(mes: int, anio: int, ordenes: list, resumen: list) -> 
 
     c.setFont("Helvetica", 8)
     c.setFillColor(_GRIS)
-    c.drawString(margin, margin, f"Generado el {datetime.now().strftime('%Y-%m-%d %H:%M')} — SIGAB")
+    c.drawString(margin, margin, f"Generado el {datetime.now().strftime('%Y-%m-%d %H:%M')} — SIGAH")
     c.setFillColorRGB(0, 0, 0)
 
     c.showPage()

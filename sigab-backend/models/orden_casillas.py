@@ -1,5 +1,5 @@
 """
-Modelo SIGAB: OrdenCasillas — Sistema tipo CENEVAL para Conservación
+Modelo SIGAH: OrdenCasillas — Sistema tipo CENEVAL para Conservación
 Dominio: Equipos Médicos, Polivalentes, Aires Acondicionados / Infraestructura
 El personal de Conservación llena UNA hoja para los tres dominios.
 Una fila por orden de servicio (one-to-one con ordenes_servicio).

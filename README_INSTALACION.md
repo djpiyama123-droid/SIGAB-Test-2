@@ -1,4 +1,4 @@
-# SIGAB — Guía de Instalación en Ubuntu (desde cero)
+# SIGAH — Guía de Instalación en Ubuntu (desde cero)
 
 ## Requisitos del sistema
 - **Ubuntu 22.04/24.04** (LTS recomendado)
@@ -11,11 +11,11 @@
 ## Opción A: Instalación automática (recomendada)
 
 ```bash
-# 1. Copiar la carpeta SIGAB al servidor
+# 1. Copiar la carpeta SIGAH al servidor
 # (USB, SCP, o git clone)
 
 # 2. Entrar a la carpeta y ejecutar el script
-cd ~/SIGAB
+cd ~/SIGAH
 chmod +x setup.sh
 ./setup.sh
 ```
@@ -40,15 +40,15 @@ sudo systemctl start mysql
 sudo systemctl enable mysql
 
 # Configurar contraseña de root
-sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'sigab_root_2026';"
+sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'sigah_root_2026';"
 
 # Crear usuario y base de datos
-sudo mysql -u root -psigab_root_2026 -e "
-CREATE DATABASE IF NOT EXISTS sigab CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+sudo mysql -u root -psigah_root_2026 -e "
+CREATE DATABASE IF NOT EXISTS sigah CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS dummyequipomedicoimss CHARACTER SET utf8mb3;
-CREATE USER IF NOT EXISTS 'sigab_user'@'localhost' IDENTIFIED BY 'sigab_pass_2026';
-GRANT ALL PRIVILEGES ON sigab.* TO 'sigab_user'@'localhost';
-GRANT ALL PRIVILEGES ON dummyequipomedicoimss.* TO 'sigab_user'@'localhost';
+CREATE USER IF NOT EXISTS 'sigah_user'@'localhost' IDENTIFIED BY 'sigah_pass_2026';
+GRANT ALL PRIVILEGES ON sigah.* TO 'sigah_user'@'localhost';
+GRANT ALL PRIVILEGES ON dummyequipomedicoimss.* TO 'sigah_user'@'localhost';
 FLUSH PRIVILEGES;
 "
 ```
@@ -56,19 +56,19 @@ FLUSH PRIVILEGES;
 ### 3. Importar esquemas y datos
 
 ```bash
-cd ~/SIGAB
+cd ~/SIGAH
 
-# Esquema SIGAB (crea tablas del sistema)
-mysql -u sigab_user -psigab_pass_2026 sigab < database/sigab_schema_fresh.sql
+# Esquema SIGAH (crea tablas del sistema)
+mysql -u sigah_user -psigah_pass_2026 sigah < database/sigah_schema_fresh.sql
 
 # Migraciones adicionales (mapa, QR, etc.)
-mysql -u sigab_user -psigab_pass_2026 sigab < database/migrations/004_mapa_interactivo.sql
-mysql -u sigab_user -psigab_pass_2026 sigab < database/migrations/004_seed_hgr1.sql
+mysql -u sigah_user -psigah_pass_2026 sigah < database/migrations/004_mapa_interactivo.sql
+mysql -u sigah_user -psigah_pass_2026 sigah < database/migrations/004_seed_hgr1.sql
 
 # BD real del hospital (datos de equipos)
-mysql -u sigab_user -psigab_pass_2026 dummyequipomedicoimss < BaseDeDatosV2_190326.sql
+mysql -u sigah_user -psigah_pass_2026 dummyequipomedicoimss < BaseDeDatosV2_190326.sql
 
-# Migrar datos reales a SIGAB
+# Migrar datos reales a SIGAH
 pip3 install pymysql
 python3 database/migrate_real_data.py
 ```
@@ -85,7 +85,7 @@ npm -v
 ### 5. Instalar dependencias del frontend
 
 ```bash
-cd ~/SIGAB/sigab-frontend
+cd ~/SIGAH/sigah-frontend
 npm install
 ```
 
@@ -94,7 +94,7 @@ npm install
 ```bash
 sudo apt install -y python3 python3-pip python3-venv
 
-cd ~/SIGAB/sigab-backend
+cd ~/SIGAH/sigah-backend
 python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
@@ -112,18 +112,18 @@ pip install fastapi==0.115.0 uvicorn[standard]==0.30.0 aiomysql==0.2.0 \
 
 ### 7. Configurar variables de entorno
 
-Crear archivo `.env` en `~/SIGAB/sigab-backend/`:
+Crear archivo `.env` en `~/SIGAH/sigah-backend/`:
 
 ```bash
-cat > ~/SIGAB/sigab-backend/.env << 'EOF'
-SIGAB_DB_HOST=127.0.0.1
-SIGAB_DB_PORT=3306
-SIGAB_DB_USER=sigab_user
-SIGAB_DB_PASS=sigab_pass_2026
-SIGAB_DB_NAME=sigab
-SIGAB_SSL_DISABLED=true
-SIGAB_JWT_SECRET=demo-hgr1-2026-secreto-cambiar-en-produccion
-SIGAB_PUBLIC_BASE_URL=http://localhost:5173
+cat > ~/SIGAH/sigah-backend/.env << 'EOF'
+SIGAH_DB_HOST=127.0.0.1
+SIGAH_DB_PORT=3306
+SIGAH_DB_USER=sigah_user
+SIGAH_DB_PASS=sigah_pass_2026
+SIGAH_DB_NAME=sigah
+SIGAH_SSL_DISABLED=true
+SIGAH_JWT_SECRET=demo-hgr1-2026-secreto-cambiar-en-produccion
+SIGAH_PUBLIC_BASE_URL=http://localhost:5173
 EOF
 ```
 
@@ -131,14 +131,14 @@ EOF
 
 **Terminal 1 — Backend:**
 ```bash
-cd ~/SIGAB/sigab-backend
+cd ~/SIGAH/sigah-backend
 source venv/bin/activate
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 **Terminal 2 — Frontend:**
 ```bash
-cd ~/SIGAB/sigab-frontend
+cd ~/SIGAH/sigah-frontend
 npm run dev
 ```
 
@@ -153,7 +153,7 @@ Abrir en el navegador:
 ## Opción C: Docker Compose (si Docker está instalado)
 
 ```bash
-cd ~/SIGAB
+cd ~/SIGAH
 
 # Instalar Docker (si no está)
 curl -fsSL https://get.docker.com | sudo sh
@@ -194,5 +194,5 @@ ip addr show | grep "inet " | grep -v 127.0.0.1
 
 ---
 
-**SIGAB v1.0.0** — Sistema Integral de Gestión de Activos Biomédicos
+**SIGAH v1.0.0** — Sistema Integral de Gestión de Activos Biomédicos
 HGR No.1 IMSS Tijuana — Bioingeniería Xochicalco

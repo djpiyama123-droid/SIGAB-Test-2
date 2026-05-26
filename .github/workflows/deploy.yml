@@ -22,27 +22,27 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: test_root_pass
-          MYSQL_DATABASE:      sigab_test
-          MYSQL_USER:          sigab_user
+          MYSQL_DATABASE:      sigah_test
+          MYSQL_USER:          sigah_user
           MYSQL_PASSWORD:      test_pass
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -u sigab_user -ptest_pass"
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u sigah_user -ptest_pass"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
 
     env:
-      SIGAB_DB_HOST:            127.0.0.1
-      SIGAB_DB_PORT:            3306
-      SIGAB_DB_USER:            sigab_user
-      SIGAB_DB_PASS:            test_pass
-      SIGAB_DB_NAME:            sigab_test
-      SIGAB_JWT_SECRET:         ci-test-secret-no-usar-en-produccion
-      SIGAB_JWT_ALGORITHM:      HS256
-      SIGAB_JWT_EXPIRE_MINUTES: 60
-      SIGAB_DISABLE_COPILOT:    1
+      SIGAH_DB_HOST:            127.0.0.1
+      SIGAH_DB_PORT:            3306
+      SIGAH_DB_USER:            sigah_user
+      SIGAH_DB_PASS:            test_pass
+      SIGAH_DB_NAME:            sigah_test
+      SIGAH_JWT_SECRET:         ci-test-secret-no-usar-en-produccion
+      SIGAH_JWT_ALGORITHM:      HS256
+      SIGAH_JWT_EXPIRE_MINUTES: 60
+      SIGAH_DISABLE_COPILOT:    1
 
     steps:
       - name: Checkout (para detectar qué cambió)
@@ -55,12 +55,12 @@ jobs:
         run: |
           CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "ALL")
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
-          if echo "$CHANGED" | grep -q "sigab-backend/"; then
+          if echo "$CHANGED" | grep -q "sigah-backend/"; then
             echo "backend=true" >> $GITHUB_OUTPUT
           else
             echo "backend=false" >> $GITHUB_OUTPUT
           fi
-          if echo "$CHANGED" | grep -q "sigab-frontend/"; then
+          if echo "$CHANGED" | grep -q "sigah-frontend/"; then
             echo "frontend=true" >> $GITHUB_OUTPUT
           else
             echo "frontend=false" >> $GITHUB_OUTPUT
@@ -92,14 +92,14 @@ jobs:
             # Rebuild backend si cambió (o force)
             if [ "$BACKEND_CHANGED" = "true" ] || [ "$FORCE_REBUILD" = "true" ]; then
               echo "--- Rebuilding backend ---"
-              docker compose --env-file .env build sigab-backend
-              docker compose --env-file .env up -d sigab-backend
+              docker compose --env-file .env build sigah-backend
+              docker compose --env-file .env up -d sigah-backend
             fi
 
             # Rebuild frontend si cambió (o force)
             if [ "$FRONTEND_CHANGED" = "true" ] || [ "$FORCE_REBUILD" = "true" ]; then
               echo "--- Rebuilding frontend ---"
-              cd sigab-frontend
+              cd sigah-frontend
               npm ci --prefer-offline --silent
               npm run build
               cd ..
@@ -111,7 +111,7 @@ jobs:
             STATUS=$(curl -sf http://localhost:8000/health || echo "FAIL")
             if [ "$STATUS" = "FAIL" ]; then
               echo "[ERROR] Backend no responde después del deploy"
-              docker compose logs sigab-backend --tail=30
+              docker compose logs sigah-backend --tail=30
               exit 1
             fi
             echo "=== Deploy completado. Backend: $STATUS ==="

@@ -125,7 +125,7 @@ export default function QRScanner() {
         </button>
         <div>
           <h1 className="text-white font-semibold text-base">Escanear QR de Equipo</h1>
-          <p className="text-slate-500 text-xs">Sistema SIGAB — HGR No.1 IMSS</p>
+          <p className="text-slate-500 text-xs">Sistema SIGAH — HGR No.1 IMSS</p>
         </div>
       </div>
 

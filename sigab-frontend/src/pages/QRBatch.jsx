@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import { QrCode, Printer, CheckCircle, Search, LayoutGrid, Sticker, Eye, ChevronDown, X, CheckSquare, Square } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from '../lib/toast';
@@ -57,7 +57,7 @@ function EtiquetaCarta({ equipo }) {
 
       {/* Footer */}
       <div className="qr-label-footer">
-        <span>SIGAB</span>
+        <span>SIGAH</span>
         <span>•</span>
         <span>Activo Biomédico</span>
       </div>
@@ -88,7 +88,7 @@ function EtiquetaZebra({ equipo }) {
         <p className="qr-zebra-nombre">{equipo.nombre}</p>
         <p className="qr-zebra-serie">{equipo.serie}</p>
         <p className="qr-zebra-ubicacion">{equipo.area}</p>
-        <p className="qr-zebra-sigab">SIGAB</p>
+        <p className="qr-zebra-sigah">SIGAH</p>
       </div>
     </div>
   );

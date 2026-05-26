@@ -2,7 +2,7 @@
 
 **Ventana operativa:** Viernes 17-abr 17:00 h → Lunes 20-abr 08:00 h
 **Entorno:** ThinkCentre M720q en oficina de Conservación, Clínica 1, HGR No.1 IMSS Tijuana
-**Objetivo:** Capturar al menos **30 eventos reales** (órdenes, preventivos, alertas, tecnovigilancia) vía OpenClaw para demostrar en la presentación del **martes 21-abr** que SIGAB opera con datos de producción reales, no simulados.
+**Objetivo:** Capturar al menos **30 eventos reales** (órdenes, preventivos, alertas, tecnovigilancia) vía OpenClaw para demostrar en la presentación del **martes 21-abr** que SIGAH opera con datos de producción reales, no simulados.
 
 ---
 
@@ -80,7 +80,7 @@
 
 - [ ] ThinkCentre responde al ping.
 - [ ] Los 4 contenedores Docker siguen `running`: `docker compose ps`.
-- [ ] MySQL acepta conexiones: `docker exec mysql-sigab mysqladmin ping`.
+- [ ] MySQL acepta conexiones: `docker exec mysql-sigah mysqladmin ping`.
 - [ ] Ollama responde con modelos cargados: `curl localhost:11434/api/tags`.
 - [ ] Backend `/health` → `{"status":"ok"}`.
 - [ ] Frontend carga en <2 s desde una máquina del hospital.
@@ -95,8 +95,8 @@
 
 ### 3.3 Logs y errores
 
-- [ ] `docker logs sigab-backend --since 72h | grep -i error` → <5 errores (NO críticos).
-- [ ] `docker logs sigab-bot --since 72h | grep -i error` → <5 errores.
+- [ ] `docker logs sigah-backend --since 72h | grep -i error` → <5 errores (NO críticos).
+- [ ] `docker logs sigah-bot --since 72h | grep -i error` → <5 errores.
 - [ ] Ningún contenedor reiniciado inesperadamente: `docker events --since 72h`.
 - [ ] Logs de audit trail completos para NOM-016.
 
@@ -110,7 +110,7 @@
 
 ## 4. Auditoría funcional (lunes 10:00 → 12:00 h)
 
-### 4.1 Flujo OpenClaw (WhatsApp → SIGAB)
+### 4.1 Flujo OpenClaw (WhatsApp → SIGAH)
 
 - [ ] Tomar foto nueva de orden de servicio → enviar → validar que aparece en <90 s.
 - [ ] Enviar audio nuevo 15 s → validar transcripción + clasificación.
@@ -214,7 +214,7 @@ Si los 5 criterios pasan → el **martes 21-abr** el proyecto se presenta como u
 
 | Rol | Nombre | Teléfono | Horario |
 |---|---|---|---|
-| Líder técnico SIGAB | Gustavo Aguilar | +52 664 ___ ____ | 24/7 |
+| Líder técnico SIGAH | Gustavo Aguilar | +52 664 ___ ____ | 24/7 |
 | Interlocutor clínico | Ing. Carlos Oswaldo | (pendiente) | 08:00-20:00 |
 | Informática IMSS guardia | (a confirmar el viernes) | — | 24/7 |
 | Soporte Lenovo (hardware) | — | 01-800-083-4916 | Lunes 08:00 |

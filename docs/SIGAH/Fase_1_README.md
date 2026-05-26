@@ -12,19 +12,19 @@
 
 | Archivo | Propósito |
 |---------|-----------|
-| `sigab-backend/alembic/versions/a1b2c3d4e5f6_phase_1_multitenancy_init.py` | Migración: crea tabla `hospitales`, inserta tenant por defecto (HGR No.1), agrega `tenant_id` a 19 tablas, backfill, FKs e índices. |
-| `sigab-backend/models/hospital.py` | Modelo SQLModel del tenant. |
-| `sigab-backend/models/tenancy.py` | Mixin `TenantMixin` para nuevos modelos que se creen después. |
-| `sigab-backend/auth/tenancy.py` | Dependencias FastAPI `get_current_tenant`, `get_current_tenant_optional` y `require_superadmin`. |
+| `sigah-backend/alembic/versions/a1b2c3d4e5f6_phase_1_multitenancy_init.py` | Migración: crea tabla `hospitales`, inserta tenant por defecto (HGR No.1), agrega `tenant_id` a 19 tablas, backfill, FKs e índices. |
+| `sigah-backend/models/hospital.py` | Modelo SQLModel del tenant. |
+| `sigah-backend/models/tenancy.py` | Mixin `TenantMixin` para nuevos modelos que se creen después. |
+| `sigah-backend/auth/tenancy.py` | Dependencias FastAPI `get_current_tenant`, `get_current_tenant_optional` y `require_superadmin`. |
 
 ### 1.2 Código modificado
 
 | Archivo | Cambio |
 |---------|--------|
-| `sigab-backend/auth/jwt_handler.py` | `create_access_token` ahora incluye `tenant_id` en el payload si el user lo trae. |
-| `sigab-backend/models/usuario.py` | Agregado `tenant_id` (FK → `hospitales.id`). |
-| `sigab-backend/models/equipo.py` | Agregado `tenant_id` (FK → `hospitales.id`). Ejemplo canónico. |
-| `sigab-backend/alembic/env.py` | Import de `Hospital` para autogenerate. |
+| `sigah-backend/auth/jwt_handler.py` | `create_access_token` ahora incluye `tenant_id` en el payload si el user lo trae. |
+| `sigah-backend/models/usuario.py` | Agregado `tenant_id` (FK → `hospitales.id`). |
+| `sigah-backend/models/equipo.py` | Agregado `tenant_id` (FK → `hospitales.id`). Ejemplo canónico. |
+| `sigah-backend/alembic/env.py` | Import de `Hospital` para autogenerate. |
 
 ### 1.3 Lo que falta y por qué quedó pendiente
 
@@ -61,14 +61,14 @@ No se tocaron en este scaffold para no inflar el PR. Cada uno requiere agregar 8
 - **Snapshot Hetzner tomado AHORA MISMO**, antes de tocar nada (Hetzner Console → server → Snapshots → Take Snapshot).
 - **Dump completo de la BD** descargado a otro lugar:
   ```bash
-  mysqldump -u root -p sigab > sigab_pre_fase1_$(date +%Y%m%d_%H%M).sql
+  mysqldump -u root -p sigah > sigah_pre_fase1_$(date +%Y%m%d_%H%M).sql
   ```
 - Rama git con esta fase: `git checkout -b sigah-saas` (si aún no existe).
 
 ### 2.2 Verificar el árbol actual de migraciones
 
 ```bash
-cd sigab-backend
+cd sigah-backend
 source venv/bin/activate   # o el entorno que estés usando
 alembic history --verbose
 ```
@@ -113,7 +113,7 @@ SELECT id, slug, razon_social, estado_suscripcion FROM hospitales;
 -- 2. Todas las tablas del dominio tienen tenant_id
 SELECT TABLE_NAME, COLUMN_NAME
 FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_SCHEMA = 'sigab' AND COLUMN_NAME = 'tenant_id'
+WHERE TABLE_SCHEMA = 'sigah' AND COLUMN_NAME = 'tenant_id'
 ORDER BY TABLE_NAME;
 -- Esperado: 20 filas (las 19 listadas en la migración + hospitales no, pero
 -- el resto sí)
@@ -127,7 +127,7 @@ UNION ALL SELECT 'usuarios', COUNT(*) FROM usuarios WHERE tenant_id IS NULL;
 -- 4. Los índices compuestos existen
 SELECT TABLE_NAME, INDEX_NAME, GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX)
 FROM INFORMATION_SCHEMA.STATISTICS
-WHERE TABLE_SCHEMA = 'sigab' AND INDEX_NAME LIKE 'ix_%_tenant%'
+WHERE TABLE_SCHEMA = 'sigah' AND INDEX_NAME LIKE 'ix_%_tenant%'
 GROUP BY TABLE_NAME, INDEX_NAME
 ORDER BY TABLE_NAME, INDEX_NAME;
 -- Esperado: ix_<tabla>_tenant_id en todas + los 7 compuestos definidos.
@@ -136,7 +136,7 @@ ORDER BY TABLE_NAME, INDEX_NAME;
 ### 2.6 Smoke test del backend
 
 ```bash
-cd sigab-backend
+cd sigah-backend
 uvicorn main:app --reload --port 8001
 ```
 
@@ -158,7 +158,7 @@ La migración tiene `downgrade()` completo: quita índices, FKs, columnas y la t
 Si el downgrade falla por alguna razón (raro), restaurar desde el snapshot de Hetzner o el dump:
 
 ```bash
-mysql -u root -p sigab < sigab_pre_fase1_<timestamp>.sql
+mysql -u root -p sigah < sigah_pre_fase1_<timestamp>.sql
 ```
 
 ---

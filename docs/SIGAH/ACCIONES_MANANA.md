@@ -21,12 +21,12 @@
 Abre Windows Terminal en la carpeta del repo:
 
 ```powershell
-cd C:\Users\djpiy\Desktop\Bioingeneria\SIGAB
+cd C:\Users\djpiy\Desktop\Bioingeneria\SIGAH
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 .\scripts\setup_claude_code_sigah.ps1
 ```
 
-El script hace 6 cosas: verifica Node, instala Claude Code CLI, clona y copia 14 skills oficiales de Anthropic a `~/.claude/skills/`, anexa SSH a `~/.ssh/config`, genera llave `sigab_bluehost_ed25519`, prepara `connections.json` de la skill mysql.
+El script hace 6 cosas: verifica Node, instala Claude Code CLI, clona y copia 14 skills oficiales de Anthropic a `~/.claude/skills/`, anexa SSH a `~/.ssh/config`, genera llave `sigah_bluehost_ed25519`, prepara `connections.json` de la skill mysql.
 
 **Verifica al final del script:**
 
@@ -42,7 +42,7 @@ claude --version                # debe responder
 
 ```powershell
 # 2.1 Copiar la llave pública al portapapeles
-type $env:USERPROFILE\.ssh\sigab_bluehost_ed25519.pub | Set-Clipboard
+type $env:USERPROFILE\.ssh\sigah_bluehost_ed25519.pub | Set-Clipboard
 ```
 
 Entra al VPS Bluehost una vez (con tu método actual: cPanel SSH, o `ssh root@129.121.100.147` con password) y pega:
@@ -58,7 +58,7 @@ chmod 600 ~/.ssh/authorized_keys
 Prueba sin password:
 
 ```powershell
-ssh sigab-bluehost   # debe entrar directo, sin pedirte password
+ssh sigah-bluehost   # debe entrar directo, sin pedirte password
 ```
 
 ---
@@ -88,7 +88,7 @@ Configurar DNS (registros A) apuntando a la IP del CX32 de Hetzner — ver runbo
 ## 5 · Arrancar Claude Code y validar el contexto (10 min)
 
 ```powershell
-cd C:\Users\djpiy\Desktop\Bioingeneria\SIGAB
+cd C:\Users\djpiy\Desktop\Bioingeneria\SIGAH
 git pull
 claude
 ```
@@ -111,14 +111,14 @@ Dos terminales:
 
 ```powershell
 # Terminal A: backend
-cd sigab-backend
+cd sigah-backend
 .\venv\Scripts\Activate.ps1
 uvicorn main:app --reload --port 8000
 ```
 
 ```powershell
 # Terminal B: frontend
-cd sigab-frontend
+cd sigah-frontend
 npm install      # solo la primera vez
 npm run dev      # corre en http://localhost:5173
 ```
@@ -185,10 +185,10 @@ Anótalas en una nota para no olvidar:
 | Síntoma | Fix rápido |
 |---------|-----------|
 | Setup script falla en el paso de Node | Instala Node LTS desde nodejs.org y vuelve a correrlo. |
-| `ssh sigab-bluehost` pide password | Edita `~/.ssh/config`, reemplaza `<USUARIO_BLUEHOST>` por `root` (o el usuario real). |
-| `npm run dev` falla con módulos no encontrados | `cd sigab-frontend && rm -rf node_modules && npm install`. |
+| `ssh sigah-bluehost` pide password | Edita `~/.ssh/config`, reemplaza `<USUARIO_BLUEHOST>` por `root` (o el usuario real). |
+| `npm run dev` falla con módulos no encontrados | `cd sigah-frontend && rm -rf node_modules && npm install`. |
 | Playwright dice "Chromium not installed" | Dentro de la skill `webapp-testing` corre `playwright install chromium`. |
-| Claude Code no ve las 12 skills del proyecto | Estás fuera del repo. `cd C:\Users\djpiy\Desktop\Bioingeneria\SIGAB && claude`. |
+| Claude Code no ve las 12 skills del proyecto | Estás fuera del repo. `cd C:\Users\djpiy\Desktop\Bioingeneria\SIGAH && claude`. |
 | Te bloqueaste con cualquier cosa | Abre `docs/SIGAH/WORKBOOK_MAESTRO_SIGAH.md` §11 (troubleshooting). |
 
 ---
@@ -198,7 +198,7 @@ Anótalas en una nota para no olvidar:
 Al final del día, una buena jornada se mide así:
 
 - ☐ Asus TUF queda configurado: Claude Code + 26 skills + SSH funcionando.
-- ☐ Llave SSH pegada en VPS Bluehost: `ssh sigab-bluehost` sin password.
+- ☐ Llave SSH pegada en VPS Bluehost: `ssh sigah-bluehost` sin password.
 - ☐ Cuenta Hetzner creada + servidor `sigah-staging` provisionado.
 - ☐ Citas SAT agendadas para los dos.
 - ☐ Walkthrough Playwright del frontend ejecutado y reporte generado.

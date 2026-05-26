@@ -1,6 +1,6 @@
 #!/bin/bash
 # ================================================================
-# SIGAB — Deploy completo a VPS Bluehost
+# SIGAH — Deploy completo a VPS Bluehost
 # Uso (primera vez / setup completo):
 #   bash deploy_to_vps.sh
 #
@@ -13,7 +13,7 @@ set -e
 
 VPS_IP="129.121.100.147"
 VPS_USER="root"
-REMOTE_DIR="/opt/sigab"
+REMOTE_DIR="/opt/sigah"
 SSH_KEY="$HOME/.ssh/sigah_bluehost"
 
 # ── Detectar método de autenticación ───────────────────────
@@ -53,26 +53,26 @@ echo "╚═══════════════════════�
 echo ""
 
 # ── Crear .env para VPS ──────────────────────────────────────
-cat > /tmp/sigab_vps.env << EOF
-DB_USER=sigab_user
+cat > /tmp/sigah_vps.env << EOF
+DB_USER=sigah_user
 DB_PASS=${DB_PASS}
-DB_NAME=sigab
+DB_NAME=sigah
 DB_ROOT_PASS=${DB_ROOT_PASS}
-SIGAB_JWT_SECRET=${JWT_SECRET}
-SIGAB_PUBLIC_BASE_URL=http://${VPS_IP}
-SIGAB_CORS_EXTRA=http://${VPS_IP},http://${VPS_IP}:80
-SIGAB_OLLAMA_HOST=http://host-gateway:11434
-SIGAB_GEMMA_MODEL=gemma3:4b
-SIGAB_DISABLE_COPILOT=0
+SIGAH_JWT_SECRET=${JWT_SECRET}
+SIGAH_PUBLIC_BASE_URL=http://${VPS_IP}
+SIGAH_CORS_EXTRA=http://${VPS_IP},http://${VPS_IP}:80
+SIGAH_OLLAMA_HOST=http://host-gateway:11434
+SIGAH_GEMMA_MODEL=gemma3:4b
+SIGAH_DISABLE_COPILOT=0
 EOF
 
 echo "[1/4] Transfiriendo proyecto al VPS..."
 $SSH "mkdir -p ${REMOTE_DIR}"
 rsync -az --progress \
-  --exclude='sigab-backend/venv' \
-  --exclude='sigab-frontend/node_modules' \
-  --exclude='sigab-frontend/dist' \
-  --exclude='sigab-frontend/.vite' \
+  --exclude='sigah-backend/venv' \
+  --exclude='sigah-frontend/node_modules' \
+  --exclude='sigah-frontend/dist' \
+  --exclude='sigah-frontend/.vite' \
   --exclude='*.log' \
   --exclude='.git' \
   --exclude='logs/' \
@@ -81,8 +81,8 @@ rsync -az --progress \
   "${VPS_USER}@${VPS_IP}:${REMOTE_DIR}/"
 
 echo "[2/4] Copiando variables de entorno..."
-$SCP /tmp/sigab_vps.env "${VPS_USER}@${VPS_IP}:${REMOTE_DIR}/.env"
-rm /tmp/sigab_vps.env
+$SCP /tmp/sigah_vps.env "${VPS_USER}@${VPS_IP}:${REMOTE_DIR}/.env"
+rm /tmp/sigah_vps.env
 
 echo "[3/4] Ejecutando setup en el VPS (5-10 min primera vez)..."
 $SSH "bash ${REMOTE_DIR}/vps_setup.sh 2>&1"
@@ -96,6 +96,6 @@ echo "  Health:   http://${VPS_IP}/api/health"
 echo ""
 echo "  Credenciales admin:"
 echo "    Matrícula: ADMIN001"
-echo "    Password:  sigab_admin_2026"
+echo "    Password:  sigah_admin_2026"
 echo ""
 echo "  Para deploys rápidos del día a día: bash quick_deploy.sh"

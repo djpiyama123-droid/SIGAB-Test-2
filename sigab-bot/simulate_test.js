@@ -1,7 +1,7 @@
 import { handleCommand } from './commands.js';
 
 async function test() {
-    console.log("🏥 SIMULACIÓN DE RESPUESTA SIGAB BOT (LOCAL)\n");
+    console.log("🏥 SIMULACIÓN DE RESPUESTA SIGAH BOT (LOCAL)\n");
 
     const commands = [
         { text: "/ayuda", sender: "Gustavo" },

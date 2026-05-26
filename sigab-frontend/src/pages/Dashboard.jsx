@@ -1,6 +1,6 @@
 /**
  * @module pages/Dashboard
- * @description Centro de Control principal del sistema SIGAB.
+ * @description Centro de Control principal del sistema SIGAH.
  *
  * Muestra KPIs en tiempo real vía SSE (Server-Sent Events):
  * - Total de equipos, operativos, fallas críticas, mantenimiento pendiente
@@ -69,7 +69,7 @@ export default function Dashboard() {
             />
             <Activity className="absolute inset-0 m-auto h-8 w-8 text-emerald-500 animate-pulse" />
           </div>
-          <p className="text-[var(--content-muted)] font-medium animate-pulse">Iniciando SIGAB Engine...</p>
+          <p className="text-[var(--content-muted)] font-medium animate-pulse">Iniciando SIGAH Engine...</p>
         </motion.div>
       </div>
     );
@@ -129,7 +129,7 @@ export default function Dashboard() {
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tight flex items-center gap-2 flex-wrap">
               <span>CENTRO DE CONTROL</span>
-              <span className="text-emerald-500">SIGAB</span>
+              <span className="text-emerald-500">SIGAH</span>
             </h1>
             <p className="text-[var(--content-muted)] text-sm md:text-base font-medium mt-1">
               HGR No.1 — IMSS | <span className="text-emerald-500/80">Monitor Biotecnológico en Tiempo Real</span>
