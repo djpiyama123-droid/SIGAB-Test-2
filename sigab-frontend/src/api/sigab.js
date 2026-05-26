@@ -170,6 +170,7 @@ export const api = {
   // ── Reservas ──────────────────────────────────────────────
   getReservas: () => client.get('/reservas'),
   crearReserva: (data) => client.post('/reservas', data),
+  cambiarEstadoReserva: (id, data) => client.put(`/reservas/${id}/estado`, data),
 
   // ── Reportes ──────────────────────────────────────────────
   getReporteDiario: () => client.get('/reportes/diario'),
@@ -221,15 +222,21 @@ export const api = {
   // ── Almacén de Refacciones ─────────────────────────────────
   getAlmacen: (params = {}) => client.get('/almacen/', { params }),
   crearRefaccion: (data) => client.post('/almacen/', data),
-  ajustarStock: (id, data) => client.put(`/almacen/${id}/ajustar`, data),
+  ajustarStock: (id, data) => client.put(`/almacen/${id}/stock`, data),
 
   // ── Metrología y Calibración ───────────────────────────────
   getMetrologia: () => client.get('/metrologia/'),
   crearCalibracion: (data) => client.post('/metrologia/', data),
+  getMetrologiaVencidas: () => client.get('/metrologia/vencidas'),
 
   // ── Capacitación de Personal ───────────────────────────────
   getCapacitaciones: () => client.get('/capacitaciones/'),
   crearCapacitacion: (data) => client.post('/capacitaciones/', data),
+
+  // ── SuperAdmin SIGAH ──────────────────────────────────────
+  getAdminStats: () => client.get('/admin/stats'),
+  getAdminHospitales: () => client.get('/admin/hospitales'),
+  getAdminActividad: () => client.get('/admin/actividad-reciente'),
 
   // ── Auditoría NOM-016 ──────────────────────────────────────
   getAuditLogs: () => client.get('/auditoria/'),

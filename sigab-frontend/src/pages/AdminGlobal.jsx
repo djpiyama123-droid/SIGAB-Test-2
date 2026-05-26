@@ -1,41 +1,11 @@
-import React from 'react';
-import { Building2, Users, DollarSign, Hospital, Activity, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Building2, Users, DollarSign, Hospital, ShieldCheck, RefreshCw } from 'lucide-react';
+import { api } from '../api/sigab';
+import toast from '../components/Toast';
 import GlassCard from '../components/ui/GlassCard';
 import PageHeading from '../components/ui/PageHeading';
 import TableWrapper from '../components/ui/TableWrapper';
 
-// ─── Datos mockeados ──────────────────────────────────────────────────────────
-// TODO: conectar a /api/admin/stats
-const statsMock = {
-  total_hospitales: 1,
-  hospitales_activos: 1,
-  mrr_mxn: 2500,
-  usuarios_totales: 8,
-};
-
-// TODO: GET /api/admin/hospitales
-const hospitalesMock = [
-  {
-    id: 1,
-    nombre: 'HGR No.1 IMSS Tijuana',
-    slug: 'hgr1-tijuana',
-    estado_suscripcion: 'activo',
-    num_usuarios: 8,
-    activo_desde: '2024-01-15',
-  },
-];
-
-// TODO: GET /api/admin/actividad-reciente
-const actividadMock = [
-  { id: 1, hospital: 'HGR No.1 IMSS Tijuana', accion: 'usuario login', tiempo: 'hace 5 min' },
-  { id: 2, hospital: 'HGR No.1 IMSS Tijuana', accion: 'orden de servicio creada #OS-2024-0118', tiempo: 'hace 22 min' },
-  { id: 3, hospital: 'HGR No.1 IMSS Tijuana', accion: 'mantenimiento preventivo completado', tiempo: 'hace 1 h' },
-  { id: 4, hospital: 'HGR No.1 IMSS Tijuana', accion: 'nuevo equipo registrado (Monitor Mindray)', tiempo: 'hace 3 h' },
-  { id: 5, hospital: 'HGR No.1 IMSS Tijuana', accion: 'reporte PDF exportado', tiempo: 'hace 5 h' },
-];
-// ─────────────────────────────────────────────────────────────────────────────
-
-// Mapa de colores de estado de suscripción
 const SUSCRIPCION_BADGE = {
   activo: {
     dot: 'bg-emerald-500',
@@ -75,7 +45,7 @@ function KPICard({ icon: Icon, label, value, colorClass }) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--content-muted)]">{label}</p>
-          <p className={`mt-1.5 text-2xl font-bold ${colorClass ?? 'text-[var(--content-text)]'}`}>{value}</p>
+          <p className={`mt-1.5 text-2xl font-bold ${colorClass ?? 'text-[var(--content-text)]'}`}>{value ?? '—'}</p>
         </div>
         <div className={`p-2.5 rounded-xl ${colorClass ? 'bg-current/10' : 'bg-slate-500/10'}`}
           style={{ backgroundColor: 'rgba(0,108,183,0.12)' }}>
@@ -86,17 +56,77 @@ function KPICard({ icon: Icon, label, value, colorClass }) {
   );
 }
 
+function formatRelative(isoString) {
+  if (!isoString) return '—';
+  const diff = Date.now() - new Date(isoString).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'hace un momento';
+  if (min < 60) return `hace ${min} min`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `hace ${h} h`;
+  return `hace ${Math.floor(h / 24)} d`;
+}
+
 export default function AdminGlobal() {
+  const [stats, setStats] = useState(null);
+  const [hospitales, setHospitales] = useState([]);
+  const [actividad, setActividad] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [forbidden, setForbidden] = useState(false);
+
+  const cargar = async () => {
+    setLoading(true);
+    setForbidden(false);
+    try {
+      const [statsRes, hosp, act] = await Promise.all([
+        api.getAdminStats(),
+        api.getAdminHospitales(),
+        api.getAdminActividad(),
+      ]);
+      setStats(statsRes);
+      setHospitales(hosp.hospitales ?? hosp ?? []);
+      setActividad(act.actividad ?? act ?? []);
+    } catch (err) {
+      if (err.response?.status === 403) {
+        setForbidden(true);
+        toast.error('Acceso restringido: se requiere rol superadmin_sigah');
+      } else {
+        toast.error('Error al cargar panel admin');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    cargar();
+  }, []);
+
   return (
     <div className="p-6 space-y-8">
-
       {/* ── Sección 1: Header ── */}
-      <PageHeading
-        icon={ShieldCheck}
-        title="Panel SuperAdmin SIGAH"
-        subtitle="Gestión global de hospitales y suscripciones"
-        badge="SUPER ADMIN"
-      />
+      <div className="flex items-start justify-between">
+        <PageHeading
+          icon={ShieldCheck}
+          title="Panel SuperAdmin SIGAH"
+          subtitle="Gestión global de hospitales y suscripciones"
+          badge="SUPER ADMIN"
+        />
+        <button
+          onClick={cargar}
+          disabled={loading}
+          className="flex items-center gap-2 text-sm px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700 transition-all disabled:opacity-40"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          Actualizar
+        </button>
+      </div>
+
+      {forbidden && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl px-5 py-4 text-amber-400 text-sm">
+          ⚠️ Los datos mostrados son de ejemplo. Este panel requiere el rol <code className="font-mono bg-amber-500/10 px-1 rounded">superadmin_sigah</code>.
+        </div>
+      )}
 
       {/* ── Sección 2: KPIs globales ── */}
       <section aria-label="KPIs globales">
@@ -107,25 +137,25 @@ export default function AdminGlobal() {
           <KPICard
             icon={Hospital}
             label="Total Hospitales"
-            value={statsMock.total_hospitales}
+            value={stats?.total_hospitales ?? '—'}
             colorClass="text-blue-400"
           />
           <KPICard
             icon={Building2}
             label="Hospitales Activos"
-            value={statsMock.hospitales_activos}
+            value={stats?.hospitales_activos ?? '—'}
             colorClass="text-emerald-400"
           />
           <KPICard
             icon={DollarSign}
             label="MRR"
-            value={`$${statsMock.mrr_mxn.toLocaleString('es-MX')} MXN`}
+            value={stats?.mrr_mxn != null ? `$${Number(stats.mrr_mxn).toLocaleString('es-MX')} MXN` : '—'}
             colorClass="text-amber-400"
           />
           <KPICard
             icon={Users}
             label="Usuarios Totales"
-            value={statsMock.usuarios_totales}
+            value={stats?.total_usuarios ?? stats?.usuarios_totales ?? '—'}
             colorClass="text-slate-300"
           />
         </div>
@@ -151,45 +181,58 @@ export default function AdminGlobal() {
               </tr>
             </thead>
             <tbody>
-              {hospitalesMock.map((h) => (
-                <tr
-                  key={h.id}
-                  style={{ borderBottom: '1px solid var(--content-border)' }}
-                  className="transition-colors hover:bg-white/[0.03]"
-                >
-                  <td className="px-4 py-3.5 font-medium text-[var(--content-text)]">
-                    {h.nombre}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <code className="text-xs font-mono px-1.5 py-0.5 rounded bg-slate-500/15 text-slate-300">
-                      {h.slug}
-                    </code>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <SuscripcionBadge estado={h.estado_suscripcion} />
-                  </td>
-                  <td className="px-4 py-3.5 text-[var(--content-muted)]">
-                    {h.num_usuarios}
-                  </td>
-                  <td className="px-4 py-3.5 text-[var(--content-muted)]">
-                    {new Date(h.activo_desde).toLocaleDateString('es-MX', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    {/* TODO: Fase 3 — implementar vista de detalle por tenant */}
-                    <button
-                      disabled
-                      title="Próximamente — Fase 3"
-                      className="text-xs px-3 py-1.5 rounded-lg border border-[var(--content-border)] text-[var(--content-muted)] opacity-50 cursor-not-allowed select-none"
-                    >
-                      Ver detalles
-                    </button>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-[var(--content-muted)] text-sm">
+                    Cargando...
                   </td>
                 </tr>
-              ))}
+              ) : hospitales.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-[var(--content-muted)] text-sm">
+                    Sin hospitales registrados.
+                  </td>
+                </tr>
+              ) : (
+                hospitales.map((h) => (
+                  <tr
+                    key={h.id}
+                    style={{ borderBottom: '1px solid var(--content-border)' }}
+                    className="transition-colors hover:bg-white/[0.03]"
+                  >
+                    <td className="px-4 py-3.5 font-medium text-[var(--content-text)]">{h.nombre}</td>
+                    <td className="px-4 py-3.5">
+                      <code className="text-xs font-mono px-1.5 py-0.5 rounded bg-slate-500/15 text-slate-300">
+                        {h.slug}
+                      </code>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <SuscripcionBadge estado={h.estado_suscripcion} />
+                    </td>
+                    <td className="px-4 py-3.5 text-[var(--content-muted)]">
+                      {h.num_usuarios ?? h.total_usuarios ?? '—'}
+                    </td>
+                    <td className="px-4 py-3.5 text-[var(--content-muted)]">
+                      {h.activo_desde
+                        ? new Date(h.activo_desde).toLocaleDateString('es-MX', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                          })
+                        : '—'}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <button
+                        disabled
+                        title="Próximamente — Fase 3"
+                        className="text-xs px-3 py-1.5 rounded-lg border border-[var(--content-border)] text-[var(--content-muted)] opacity-50 cursor-not-allowed"
+                      >
+                        Ver detalles
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </TableWrapper>
@@ -202,25 +245,30 @@ export default function AdminGlobal() {
         </h2>
         <GlassCard padding={false}>
           <ul className="divide-y divide-[var(--content-border)]">
-            {actividadMock.map((evento) => (
-              <li key={evento.id} className="flex items-start gap-3 px-5 py-3.5">
-                <div className="mt-1 flex-shrink-0 w-2 h-2 rounded-full bg-blue-400" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-[var(--content-text)]">
-                    <span className="font-medium">{evento.hospital}</span>
-                    {' '}—{' '}
-                    <span className="text-[var(--content-muted)]">{evento.accion}</span>
-                  </p>
-                </div>
-                <span className="flex-shrink-0 text-xs text-[var(--content-muted)] whitespace-nowrap">
-                  {evento.tiempo}
-                </span>
-              </li>
-            ))}
+            {loading ? (
+              <li className="px-5 py-4 text-sm text-[var(--content-muted)] text-center">Cargando actividad...</li>
+            ) : actividad.length === 0 ? (
+              <li className="px-5 py-4 text-sm text-[var(--content-muted)] text-center">Sin actividad reciente.</li>
+            ) : (
+              actividad.slice(0, 20).map((ev) => (
+                <li key={ev.id} className="flex items-start gap-3 px-5 py-3.5">
+                  <div className="mt-1 flex-shrink-0 w-2 h-2 rounded-full bg-blue-400" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-[var(--content-text)]">
+                      <span className="font-medium">{ev.hospital_nombre ?? ev.hospital ?? 'Sistema'}</span>
+                      {' '}—{' '}
+                      <span className="text-[var(--content-muted)]">{ev.accion}</span>
+                    </p>
+                  </div>
+                  <span className="flex-shrink-0 text-xs text-[var(--content-muted)] whitespace-nowrap">
+                    {ev.created_at ? formatRelative(ev.created_at) : ev.tiempo ?? ''}
+                  </span>
+                </li>
+              ))
+            )}
           </ul>
         </GlassCard>
       </section>
-
     </div>
   );
 }
