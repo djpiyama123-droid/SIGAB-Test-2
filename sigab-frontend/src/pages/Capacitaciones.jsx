@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
 import { Users, GraduationCap, Calendar, Plus, ChevronRight, X } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 // ─── Modal: Nuevo Registro de Capacitación ────────────────────────────────────
 function NuevoRegistroModal({ onClose, onSaved }) {

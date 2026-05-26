@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 function descargarBlob(blob, nombre) {
   const url = URL.createObjectURL(blob);

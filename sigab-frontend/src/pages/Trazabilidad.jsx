@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
 import { MapPin, ArrowRight, Plus, X } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 // ─── Modal: Registrar Traslado ────────────────────────────────────────────────
 function RegistrarTrasladoModal({ onClose, onSaved }) {

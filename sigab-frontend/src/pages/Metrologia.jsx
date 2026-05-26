@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigab';
 import { ShieldCheck, Calendar, AlertCircle, Plus, FileText, X } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 // ─── Modal: Nueva Calibración ─────────────────────────────────────────────────
 function NuevaCalibracionModal({ onClose, onSaved }) {

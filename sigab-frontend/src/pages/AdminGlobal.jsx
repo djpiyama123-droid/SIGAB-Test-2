@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Users, DollarSign, Hospital, Activity, ShieldCheck, RefreshCw } from 'lucide-react';
 import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 import GlassCard from '../components/ui/GlassCard';
 import PageHeading from '../components/ui/PageHeading';
 import TableWrapper from '../components/ui/TableWrapper';
