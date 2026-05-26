@@ -1,4 +1,4 @@
-# SIGAB — Knowledge Graph Report
+# SIGAH — Knowledge Graph Report
 **Generado**: 2026-05-25 | **Herramienta**: graphifyy (análisis manual + tree-sitter)
 
 ---
@@ -20,7 +20,7 @@
 ## Grafo de Módulos Backend
 
 ```
-sigab-backend/routes/
+sigah-backend/routes/
 ├── auth.py              [4 endpoints]   → JWT tokens, login, refresh
 ├── equipos.py           [16 endpoints]  ★ CORE — CRUD + estados + QR + imágenes
 ├── ordenes.py           [12 endpoints]  ★ CORE — OS + estados + asignación técnicos
@@ -57,7 +57,7 @@ sigab-backend/routes/
 ## Grafo de Páginas Frontend
 
 ```
-sigab-frontend/src/pages/
+sigah-frontend/src/pages/
 ├── Login.jsx            — Auth JWT
 ├── Dashboard.jsx        — KPIs + gráficas en tiempo real
 ├── Equipos.jsx          ★ — Inventario + QR + estados + filtros
@@ -115,9 +115,9 @@ El sistema está migrando a aislamiento multi-tenant por `hospital_id`:
 
 ```
 Docker Compose (local / VPS Bluehost)
-├── sigab-backend   → FastAPI :8000 (healthy)
-├── sigab-mysql     → MySQL 8.0 :3306 (healthy)
-├── sigab-frontend  → nginx :80
+├── sigah-backend   → FastAPI :8000 (healthy)
+├── sigah-mysql     → MySQL 8.0 :3306 (healthy)
+├── sigah-frontend  → nginx :80
 ├── openclaw        → Bot notificaciones :18789
 └── traefik         → Reverse proxy :80/:443
 ```
@@ -144,6 +144,6 @@ Docker Compose (local / VPS Bluehost)
 
 1. `CLAUDE.md` — instrucciones del proyecto
 2. `HERMES_CONTEXT.md` — contexto del sistema HERMES
-3. `sigab-frontend/DESIGN.md` — design system (para Google Stitch)
-4. `sigab-backend/routes/equipos.py` — módulo más complejo
+3. `sigah-frontend/DESIGN.md` — design system (para Google Stitch)
+4. `sigah-backend/routes/equipos.py` — módulo más complejo
 5. `.github/workflows/deploy.yml` — pipeline CI/CD

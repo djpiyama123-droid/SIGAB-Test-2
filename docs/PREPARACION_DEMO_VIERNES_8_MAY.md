@@ -1,18 +1,18 @@
 # Preparación Demo Directivos HGR No.1 — Viernes 8 May 2026
 
 **Audiencia**: Carlos Oswaldo Ramírez González (Jefe de Conservación), Salvador Soltero, equipo directivo
-**Sistema**: SIGAB v2.0 — https://sigab.129-121-100-147.sslip.io
+**Sistema**: SIGAH v2.0 — https://sigah.129-121-100-147.sslip.io
 
 ---
 
 ## Pre-flight Checklist (jueves noche / viernes mañana)
 
 ### Infraestructura VPS
-- [ ] VPS uptime: `ssh sigab-vps "uptime && docker ps"`
-- [ ] Todos los contenedores healthy: `sigab-backend`, `sigab-mysql`, `sigab-frontend`, `traefik`
-- [ ] HTTPS responde: `curl -I https://sigab.129-121-100-147.sslip.io`
-- [ ] API auth funciona: `curl -s https://sigab.129-121-100-147.sslip.io/api/equipos/` → debe retornar `401`
-- [ ] Health endpoint: `curl https://sigab.129-121-100-147.sslip.io/health` → `{"status":"ok"}`
+- [ ] VPS uptime: `ssh sigah-vps "uptime && docker ps"`
+- [ ] Todos los contenedores healthy: `sigah-backend`, `sigah-mysql`, `sigah-frontend`, `traefik`
+- [ ] HTTPS responde: `curl -I https://sigah.129-121-100-147.sslip.io`
+- [ ] API auth funciona: `curl -s https://sigah.129-121-100-147.sslip.io/api/equipos/` → debe retornar `401`
+- [ ] Health endpoint: `curl https://sigah.129-121-100-147.sslip.io/health` → `{"status":"ok"}`
 
 ### Funcionalidad Core
 - [ ] Login OK con cuenta demo (admin/admin123 o cuenta asignada)
@@ -32,7 +32,7 @@
 - [ ] PDF cierre: abrir OrdenDetalleModal → botón "📋 Físico" genera PDF Poka-Yoke
 - [ ] PDF cierre: botón "🖨️ PDF" genera carta de conformidad
 - [ ] Tecnovigilancia: registrar evento NOM-240
-- [ ] HTML imprimible: https://sigab.129-121-100-147.sslip.io/orden-servicio-v2.html
+- [ ] HTML imprimible: https://sigah.129-121-100-147.sslip.io/orden-servicio-v2.html
 
 ### Datos de Demo
 - [ ] Al menos 5 equipos registrados con estado variado (operativo/mantenimiento)
@@ -59,7 +59,7 @@
 4. **Mostrar**: actualizaciones en tiempo real tras crear OS en Escenario 1
 
 ### Escenario 3: PDF Poka-Yoke imprimible
-1. Ir a https://sigab.129-121-100-147.sslip.io/orden-servicio-v2.html
+1. Ir a https://sigah.129-121-100-147.sslip.io/orden-servicio-v2.html
 2. Mostrar formato físico: campo serie destacado (amarillo), checkboxes, bloque rojo validación
 3. Ctrl+P → preview de impresión en A4/Letter
 4. Mostrar PDF generado desde sistema: OrdenDetalleModal → "📋 Físico"
@@ -76,7 +76,7 @@
 ## Backup Plan (si VPS cae durante demo)
 
 ### Screenshots pre-grabados (tomar el jueves noche)
-Guardar en `~/Desktop/sigab-demo-backup/`:
+Guardar en `~/Desktop/sigah-demo-backup/`:
 - `dashboard-desktop.png` — KPIs, gráficas, mapa
 - `dashboard-mobile.png` — Bottom nav, FAB, mapa 375px
 - `ordenes-list.png` — Listado con filtros
@@ -99,7 +99,7 @@ Guardar en `~/Desktop/sigab-demo-backup/`:
 | ¿Dónde viven los datos? | MySQL 8.0 en el mismo servidor VPS (on-premise, sin cloud) |
 | ¿Cumple NOM-016? | Sí — audit trail en `log_actividad`, hash SHA-256 por entrada |
 | ¿Cumple NOM-240? | Sí — flujo completo de tecnovigilancia con escalado a COFEPRIS |
-| ¿Backup de datos? | Volumen Docker persistente + script `sigab_full_dump.sql` |
+| ¿Backup de datos? | Volumen Docker persistente + script `sigah_full_dump.sql` |
 | ¿Acceso mobile? | Sí — PWA-ready, bottom nav, FAB, responsive Tailwind CSS |
 | ¿IA integrada? | Copilot con Gemma 3:4b (Ollama local) + Gemini Vision API |
 | ¿PDF de OS? | Dos formatos: cierre digital + Poka-Yoke físico imprimible |
@@ -115,4 +115,4 @@ Guardar en `~/Desktop/sigab-demo-backup/`:
 
 ---
 
-*Generado: 2026-05-06 | SIGAB v2.0 | Branch: feature/pulido-vps-sem-4-8-may*
+*Generado: 2026-05-06 | SIGAH v2.0 | Branch: feature/pulido-vps-sem-4-8-may*

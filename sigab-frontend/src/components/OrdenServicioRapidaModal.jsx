@@ -3,7 +3,7 @@
 // Se invoca desde el botón "Abrir Orden de Servicio" en FichaTecnica
 // ============================================================
 import { useState } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import { useToast } from './Toast';
 
 export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) {

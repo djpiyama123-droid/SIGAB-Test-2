@@ -30,9 +30,9 @@ logs/
 Thumbs.db
 
 # Archivos binarios grandes — no versionar en git
-sigab-backend/static/uploads/FOTOSEQUIPO/
-sigab-backend/static/uploads/ORDENESIMSS/
-sigab-backend/static/uploads/equipos/
+sigah-backend/static/uploads/FOTOSEQUIPO/
+sigah-backend/static/uploads/ORDENESIMSS/
+sigah-backend/static/uploads/equipos/
 *.pdf
 *.jpg
 *.jpeg
@@ -54,8 +54,8 @@ desktop.ini
 *.db
 *.sqlite
 database/seed_data.sql
-database/sigab_schema.sql
-database/sigab_schema_fresh.sql
+database/sigah_schema.sql
+database/sigah_schema_fresh.sql
 database/migrate_real_data.py
 
 # Vite timestamp files
@@ -76,4 +76,4 @@ htmlcov/
 
 # Scratch / debug output
 scratch/
-sigab-backend/alembic_output.txt
+sigah-backend/alembic_output.txt

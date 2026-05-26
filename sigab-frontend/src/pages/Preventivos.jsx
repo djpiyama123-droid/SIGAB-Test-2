@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import { useToast } from '../components/Toast';
 
 function diasRestantes(fecha) {

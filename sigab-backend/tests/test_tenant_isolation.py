@@ -8,7 +8,7 @@ devuelva 404 (no 403 — no debe revelar existencia).
 
 Pre-requisitos
 --------------
-* Migración Fase 1 (a1b2c3d4e5f6) aplicada en sigab_test.
+* Migración Fase 1 (a1b2c3d4e5f6) aplicada en sigah_test.
 * (Opcional) Migración Fase 3 (b1c2d3e4f5a6) aplicada — sin ella los tests
   de SuperAdmin se saltan automáticamente.
 * Routes/equipos.py refactorizado con get_current_tenant. Mientras no lo
@@ -307,7 +307,7 @@ async def test_token_legacy_sin_tenant_id_rechazado(
 
 @pytest.mark.asyncio
 async def test_superadmin_no_puede_usar_rutas_tenant(client, test_session):
-    """Pre-requisito: migración Fase 3 (b1c2d3e4f5a6) aplicada en sigab_test.
+    """Pre-requisito: migración Fase 3 (b1c2d3e4f5a6) aplicada en sigah_test.
     Si no, el INSERT del SuperAdmin con tenant_id=NULL fallará por NOT NULL.
     """
     try:

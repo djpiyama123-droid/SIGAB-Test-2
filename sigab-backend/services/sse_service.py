@@ -1,5 +1,5 @@
 """
-SSE (Server-Sent Events) manager for SIGAB.
+SSE (Server-Sent Events) manager for SIGAH.
 Manages connected clients and broadcasts events.
 """
 

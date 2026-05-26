@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 
 /**
  * HistorialModal — Modal que muestra la timeline de trazabilidad de un equipo.

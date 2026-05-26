@@ -6,14 +6,14 @@
  *   📁 Archivo: <input type=file capture=environment> (fallback mobile / desktop).
  *
  * Después de capturar, llama a `api.scanImssOS(file, false)` que ejecuta:
- *   1. Gemma 3:4b local (Ollama) con prompt SIGAB-IMSS-OS-V3.
+ *   1. Gemma 3:4b local (Ollama) con prompt SIGAH-IMSS-OS-V3.
  *   2. Si confianza < 0.6 o falla, fallback a Gemini 1.5 Flash.
  *
  * El modal renderiza TODOS los campos detectados de forma editable. Al confirmar:
  *   - onConfirm(scanResult) entrega los datos al padre (que los pre-llena en el form).
  */
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import toast from '../lib/toast';
 
 // Etiquetas legibles en español para los campos extraídos por Gemma
@@ -315,7 +315,7 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
               <h3 className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
                 <span className="text-emerald-400">✨</span> Extracción IMSS · v3
               </h3>
-              <p className="text-xs text-[var(--content-muted)]">Gemma 3:4b local · Gemini fallback · SIGAB-IMSS-OS-V3</p>
+              <p className="text-xs text-[var(--content-muted)]">Gemma 3:4b local · Gemini fallback · SIGAH-IMSS-OS-V3</p>
             </div>
             <button onClick={onClose} className="text-[var(--content-muted)] hover:text-white p-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -330,7 +330,7 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
                 <div className="text-5xl mb-3">🤖</div>
                 <p className="font-medium text-[var(--content-muted)]">Esperando captura…</p>
                 <p className="text-xs mt-2">
-                  Asegúrate que la hoja esté bien iluminada y el banner <code className="text-emerald-400">SIGAB-IMSS-OS-V3</code> sea visible.
+                  Asegúrate que la hoja esté bien iluminada y el banner <code className="text-emerald-400">SIGAH-IMSS-OS-V3</code> sea visible.
                 </p>
               </div>
             )}

@@ -8,8 +8,8 @@ Provee:
   init_db             — Placeholder; las migraciones se manejan con Alembic/SQL
   
 Control de SSL:
-  SIGAB_SSL_DISABLED=true  → Sin SSL (desarrollo local / Docker)
-  SIGAB_SSL_DISABLED=false → Con SSL (producción HGR No. 1)
+  SIGAH_SSL_DISABLED=true  → Sin SSL (desarrollo local / Docker)
+  SIGAH_SSL_DISABLED=false → Con SSL (producción HGR No. 1)
 """
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -31,12 +31,12 @@ DATABASE_URL = f"mysql+asyncmy://{db_user}:{db_pass}@{db_host}:{db_port}/{db_nam
 # HGR No. 1 IMSS: SSL/TLS es obligatorio en entornos sensibles
 connect_args = {
     "ssl": {
-        "fake_ssl_logic": os.getenv("SIGAB_SSL_DISABLED", "true") == "false"
+        "fake_ssl_logic": os.getenv("SIGAH_SSL_DISABLED", "true") == "false"
     } 
 }
 
 # En modo desarrollo local, permitimos desactivar SSL si el contenedor MySQL no lo soporta
-if os.getenv("SIGAB_SSL_DISABLED", "true") == "true":
+if os.getenv("SIGAH_SSL_DISABLED", "true") == "true":
     engine = create_async_engine(DATABASE_URL, echo=False, future=True)
 else:
     engine = create_async_engine(DATABASE_URL, connect_args=connect_args, echo=False, future=True)

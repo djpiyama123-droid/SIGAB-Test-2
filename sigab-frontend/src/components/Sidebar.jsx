@@ -30,7 +30,7 @@ export default function Sidebar({ onClose }) {
               <span className="font-bold text-xs" style={{ color: 'var(--sidebar-text)' }}>S</span>
             </div>
             <h1 className="text-lg font-bold tracking-tight" style={{ color: 'var(--sidebar-text)' }}>
-              SIGAB
+              SIGAH
             </h1>
           </div>
           <p className="text-xs mt-0.5 ml-9" style={{ color: 'rgba(255,255,255,0.65)' }}>

@@ -1,6 +1,6 @@
 /**
- * SIGAB Bot — Router de comandos WhatsApp
- * Interpreta mensajes en español y ejecuta acciones contra la API de SIGAB.
+ * SIGAH Bot — Router de comandos WhatsApp
+ * Interpreta mensajes en español y ejecuta acciones contra la API de SIGAH.
  * 
  * HGR No.1 IMSS Tijuana — 100% On-Premise
  */
@@ -17,7 +17,7 @@ const EMOJI_ESTADO = {
 
 // ── Ayuda ──────────────────────────────────────────────────
 function cmdAyuda() {
-  return `🏥 *SIGAB Bot — Comandos*
+  return `🏥 *SIGAH Bot — Comandos*
 
 📋 */equipo* _[serie o nombre]_
    Consulta datos y estado de un equipo
@@ -138,7 +138,7 @@ async function cmdTicket(texto, sender) {
     const json = await res.json();
 
     if (json.ok) {
-      return `✅ *${json.numero_orden}* creado\n📋 ${texto.slice(0, 80)}\n📱 Se notificó al sistema SIGAB`;
+      return `✅ *${json.numero_orden}* creado\n📋 ${texto.slice(0, 80)}\n📱 Se notificó al sistema SIGAH`;
     }
     return `❌ Error: ${json.mensaje || 'No se pudo crear'}`;
   } catch (err) {
@@ -245,7 +245,7 @@ async function cmdReporte() {
 
     if (!json.ok) return '❌ Error generando reporte';
 
-    let msg = `📊 *Reporte SIGAB — ${json.fecha}*\n\n`;
+    let msg = `📊 *Reporte SIGAH — ${json.fecha}*\n\n`;
     msg += `📝 Órdenes nuevas hoy: *${json.ordenes_nuevas_hoy}*\n`;
     msg += `✅ Órdenes cerradas hoy: *${json.ordenes_cerradas_hoy}*\n`;
 
@@ -329,7 +329,7 @@ async function cmdAI(mensaje) {
       body: JSON.stringify({ mensaje }),
     });
     const json = await res.json();
-    if (json.ok) return `🤖 *SIGAB Copilot:*\n\n${json.respuesta}`;
+    if (json.ok) return `🤖 *SIGAH Copilot:*\n\n${json.respuesta}`;
     return null;
   } catch (err) {
     console.error('Error AI Bot:', err);
@@ -351,7 +351,7 @@ async function cmdCasillasOCR(mediaBuffer, mimeType, args) {
     return `📋 *Casillas CENEVAL — Instrucciones*
 
 Para registrar desde foto del formato físico:
-1. Toma foto clara del formato SIGAB relleno
+1. Toma foto clara del formato SIGAH relleno
 2. Envía la foto con caption: */casillas [número_orden]*
    Ej: _/casillas 123_
 
@@ -372,7 +372,7 @@ El sistema usará IA para leer las casillas automáticamente. ✅`;
       const searchRes = await fetch(`http://localhost:8000/api/openclaw/buscar-equipo?q=${encodeURIComponent(serie)}`);
       const searchJson = await searchRes.json();
       if (!searchJson.ok || !searchJson.resultados?.length) {
-        return `❌ Equipo con serie "${serie}" no encontrado en SIGAB`;
+        return `❌ Equipo con serie "${serie}" no encontrado en SIGAH`;
       }
       const equipoId = searchJson.resultados[0].id;
 
@@ -434,7 +434,7 @@ El sistema usará IA para leer las casillas automáticamente. ✅`;
       reply += `Estado final: ${ESTADO_EMOJI[casillas.estado_final] || ''} ${casillas.estado_final.replace('_', ' ')}\n`;
       if (casillas.observaciones_breves) reply += `Obs: _${casillas.observaciones_breves}_\n`;
       if (casillas.ocr_confianza) reply += `\n🎯 Confianza OCR: ${Math.round(casillas.ocr_confianza * 100)}%`;
-      reply += `\n\n_Datos guardados en SIGAB. Dashboard actualizado._`;
+      reply += `\n\n_Datos guardados en SIGAH. Dashboard actualizado._`;
 
       return reply;
     }
@@ -448,7 +448,7 @@ El sistema usará IA para leer las casillas automáticamente. ✅`;
   }
 }
 
-// ── Escanear OS IMSS desde foto (formato SIGAB-IMSS-OS-V3) ─────────────────
+// ── Escanear OS IMSS desde foto (formato SIGAH-IMSS-OS-V3) ─────────────────
 /**
  * Handler para fotos con caption "/escanear" (o sin caption — auto-detecta el banner).
  * Envía la imagen a POST /api/openclaw/scan-os, que ejecuta Gemma 3:4b → Gemini
@@ -459,8 +459,8 @@ async function cmdEscanearOS(mediaBuffer, mimeType, args, senderName) {
     return `📸 *Escanear Orden de Servicio IMSS*
 
 Para crear una OS automáticamente desde una foto:
-1. Imprime el formato desde SIGAB (Órdenes → "📄 Formato IMSS").
-2. Llena la hoja a mano (asegúrate que el banner *SIGAB-IMSS-OS-V3* esté visible al pie).
+1. Imprime el formato desde SIGAH (Órdenes → "📄 Formato IMSS").
+2. Llena la hoja a mano (asegúrate que el banner *SIGAH-IMSS-OS-V3* esté visible al pie).
 3. Envíame la foto con caption: */escanear*
 
 Yo usaré IA (Gemma local + Gemini fallback) para extraer:
@@ -471,7 +471,7 @@ Yo usaré IA (Gemma local + Gemini fallback) para extraer:
 ✅ Refacciones utilizadas
 ✅ Validaciones Poka-Yoke
 
-La OS quedará en estado *pendiente_validacion* para que la revises en SIGAB.`;
+La OS quedará en estado *pendiente_validacion* para que la revises en SIGAH.`;
   }
 
   try {
@@ -499,7 +499,7 @@ La OS quedará en estado *pendiente_validacion* para que la revises en SIGAB.`;
     reply += `🤖 Motor: ${engine}\n`;
     reply += `🎯 Confianza: ${conf}%\n`;
     reply += `📋 Estado: _pendiente_validacion_\n\n`;
-    reply += `Revisa la OS en SIGAB para validar los datos extraídos.`;
+    reply += `Revisa la OS en SIGAH para validar los datos extraídos.`;
     return reply;
   } catch (err) {
     console.error('cmdEscanearOS error:', err);

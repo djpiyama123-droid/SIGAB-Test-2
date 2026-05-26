@@ -1,9 +1,9 @@
 // ============================================================
 // EquipoForm.jsx — Modal para crear o editar un equipo biomédico
-// Soporta upload de PNG/JPG y se conecta al backend SIGAB
+// Soporta upload de PNG/JPG y se conecta al backend SIGAH
 // ============================================================
 import { useState, useEffect, useRef } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import { useToast } from './Toast';
 
 const TIPOS_EQUIPO = [

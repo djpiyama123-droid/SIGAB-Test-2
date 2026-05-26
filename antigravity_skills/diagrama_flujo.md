@@ -1,7 +1,7 @@
-# Skill: Generación de Diagrama de Flujo Operativo SIGAB
+# Skill: Generación de Diagrama de Flujo Operativo SIGAH
 
 ## Goal
-Generar un diagrama de flujo profesional y detallado que describa el ciclo de vida completo de un activo biomédico dentro del sistema SIGAB, articulando 4 etapas operativas y 5 pasos de implementación técnica. El diagrama debe vincular analíticamente cómo este flujo elimina la pérdida del 85% del tiempo productivo del personal de enfermería actualmente dedicado a la localización manual de equipos.
+Generar un diagrama de flujo profesional y detallado que describa el ciclo de vida completo de un activo biomédico dentro del sistema SIGAH, articulando 4 etapas operativas y 5 pasos de implementación técnica. El diagrama debe vincular analíticamente cómo este flujo elimina la pérdida del 85% del tiempo productivo del personal de enfermería actualmente dedicado a la localización manual de equipos.
 
 ## Instructions
 
@@ -21,8 +21,8 @@ Generar un diagrama de flujo profesional y detallado que describa el ciclo de vi
 
 3. **Argumento de Eficiencia (incluir como anotación destacada en el diagrama)**
    Redacta un bloque analítico que demuestre cómo este flujo mitiga directamente la pérdida del 85% del tiempo productivo:
-   - **Problema actual**: El personal de enfermería en hospitales sin SIGAB dedica en promedio 4.25 horas de una jornada de 5 horas a localizar equipos portátiles (ventiladores, bombas de infusión, monitores de signos vitales) de forma manual.
-   - **Solución SIGAB**: El escáner QR + mapa interactivo reduce la localización a <30 segundos por equipo, con disponibilidad 24/7.
+   - **Problema actual**: El personal de enfermería en hospitales sin SIGAH dedica en promedio 4.25 horas de una jornada de 5 horas a localizar equipos portátiles (ventiladores, bombas de infusión, monitores de signos vitales) de forma manual.
+   - **Solución SIGAH**: El escáner QR + mapa interactivo reduce la localización a <30 segundos por equipo, con disponibilidad 24/7.
    - **ROI de eficiencia**: Recuperación de 3.75 h/enfermera/turno → reorientadas a cuidado directo del paciente.
    - **Fuente contextual**: Referencia a estudios de AAMI (Association for the Advancement of Medical Instrumentation) sobre tiempo perdido en gestión de activos.
 
@@ -63,7 +63,7 @@ flowchart LR
 ## Constraints
 
 - NO inventar datos estadísticos. Usar únicamente los valores provistos: 85% tiempo perdido, 4.25 h/turno, $34,049.82 MXN OpEx.
-- El diagrama DEBE ser técnicamente correcto respecto al stack SIGAB: FastAPI + MySQL 8.0 + React + SSE.
+- El diagrama DEBE ser técnicamente correcto respecto al stack SIGAH: FastAPI + MySQL 8.0 + React + SSE.
 - El algoritmo Poka-Yoke de validación triple (QR + NII + Serie) es un DIFERENCIADOR COMPETITIVO — destacarlo visualmente como nodo central.
 - Los nombres de endpoints (`/api/equipos/validar`, `/api/v1/events/subscribe`) deben ser exactos.
 - Cumplir con terminología NOM-016-SSA3-2012 para gestión de activos de tecnología en salud.

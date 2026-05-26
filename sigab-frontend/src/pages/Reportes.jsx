@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import toast from '../lib/toast';
 
 function descargarBlob(blob, nombre) {

@@ -42,9 +42,9 @@
 - [ ] **2.3** Conectar teclado y mouse USB.
 - [ ] **2.4** Conectar cable Ethernet al punto de red asignado.
 - [ ] **2.5** Encender equipo → validar POST (logo Lenovo → arranque Ubuntu 22.04 LTS).
-- [ ] **2.6** Login con usuario `sigab_admin` (contraseña en gestor local de Gustavo).
+- [ ] **2.6** Login con usuario `sigah_admin` (contraseña en gestor local de Gustavo).
 - [ ] **2.7** Abrir terminal y ejecutar `ip addr show` — anotar la IP asignada (DHCP o fija).
-- [ ] **2.8** Ejecutar `ping 8.8.8.8 -c 4` — verificar conectividad externa (opcional; NO obligatorio porque SIGAB es on-premise).
+- [ ] **2.8** Ejecutar `ping 8.8.8.8 -c 4` — verificar conectividad externa (opcional; NO obligatorio porque SIGAH es on-premise).
 - [ ] **2.9** Ejecutar `ping <gateway_hospital>` — verificar conectividad interna al gateway del VLAN administrativo.
 
 **IP asignada al ThinkCentre en Clínica 1:** __________________________
@@ -53,24 +53,24 @@
 
 ---
 
-## 3. Arranque de la stack SIGAB (14:40 → 15:10 h)
+## 3. Arranque de la stack SIGAH (14:40 → 15:10 h)
 
-- [ ] **3.1** Ir a la carpeta del proyecto: `cd ~/sigab`
+- [ ] **3.1** Ir a la carpeta del proyecto: `cd ~/sigah`
 - [ ] **3.2** Validar variables de entorno: `cat .env | grep -v PASSWORD` (revisar DB, puertos, Ollama host).
 - [ ] **3.3** Levantar la stack completa: `docker compose up -d`
 - [ ] **3.4** Esperar 90 s y validar servicios arriba:
-  - [ ] **3.4.1** `docker compose ps` — los 4 servicios deben estar `running`: `sigab-backend`, `sigab-frontend`, `mysql-sigab`, `ollama-gemma`.
+  - [ ] **3.4.1** `docker compose ps` — los 4 servicios deben estar `running`: `sigah-backend`, `sigah-frontend`, `mysql-sigah`, `ollama-gemma`.
   - [ ] **3.4.2** `curl -s localhost:8000/health` → `{"status":"ok"}`
-  - [ ] **3.4.3** `curl -s localhost:5173` → HTML con `<title>SIGAB</title>`
+  - [ ] **3.4.3** `curl -s localhost:5173` → HTML con `<title>SIGAH</title>`
   - [ ] **3.4.4** `curl -s localhost:11434/api/tags` → lista de modelos Gemma.
-- [ ] **3.5** Validar migraciones MySQL ejecutadas: `docker exec mysql-sigab mysql -usigab -p -e "SHOW TABLES;" sigab` — deben aparecer las 18 tablas (equipos, ordenes, preventivos, alertas, tecnovigilancia, log_actividad, etc.).
-- [ ] **3.6** Cargar semilla de equipos de Clínica 1 (si no está precargada): `docker exec sigab-backend python -m scripts.seed_clinica1`
+- [ ] **3.5** Validar migraciones MySQL ejecutadas: `docker exec mysql-sigah mysql -usigah -p -e "SHOW TABLES;" sigah` — deben aparecer las 18 tablas (equipos, ordenes, preventivos, alertas, tecnovigilancia, log_actividad, etc.).
+- [ ] **3.6** Cargar semilla de equipos de Clínica 1 (si no está precargada): `docker exec sigah-backend python -m scripts.seed_clinica1`
 
 ---
 
 ## 4. Configuración de red interna y descubrimiento LAN (15:10 → 15:30 h)
 
-- [ ] **4.1** Asignar hostname: `sudo hostnamectl set-hostname sigab-clinica1`
+- [ ] **4.1** Asignar hostname: `sudo hostnamectl set-hostname sigah-clinica1`
 - [ ] **4.2** Configurar IP fija (coordinar con Informática IMSS):
   ```
   sudo nmcli con mod "Wired connection 1" ipv4.method manual \
@@ -85,9 +85,9 @@
   sudo ufw enable
   ```
 - [ ] **4.4** Desde la Asus, navegar a `http://<IP_FIJA>:5173` — validar que el dashboard abre y Carlos Oswaldo puede ver equipos.
-- [ ] **4.5** Crear usuario de Carlos Oswaldo en SIGAB (rol: admin_clinico):
+- [ ] **4.5** Crear usuario de Carlos Oswaldo en SIGAH (rol: admin_clinico):
   - Email: `coswaldo@imss.gob.mx` (confirmar)
-  - Password temporal: `SIGAB2026!` (forzar cambio en primer login)
+  - Password temporal: `SIGAH2026!` (forzar cambio en primer login)
   - Rol: `admin_clinico`
 
 ---
@@ -95,9 +95,9 @@
 ## 5. Integración WhatsApp OpenClaw (15:30 → 15:50 h)
 
 - [ ] **5.1** En la Asus de Gustavo, abrir WhatsApp Business (cuenta OpenClaw).
-- [ ] **5.2** Ejecutar `docker logs sigab-bot -f` en el ThinkCentre para ver el QR de enlace.
+- [ ] **5.2** Ejecutar `docker logs sigah-bot -f` en el ThinkCentre para ver el QR de enlace.
 - [ ] **5.3** Escanear QR desde WhatsApp Business → dispositivos vinculados → "Vincular dispositivo".
-- [ ] **5.4** Enviar mensaje de prueba: `"ping"` → OpenClaw debe responder `"pong — SIGAB v2.0 en línea"`.
+- [ ] **5.4** Enviar mensaje de prueba: `"ping"` → OpenClaw debe responder `"pong — SIGAH v2.0 en línea"`.
 - [ ] **5.5** Probar OCR con foto: tomar foto de una Orden de Servicio existente, enviarla al número OpenClaw con texto `"OS-PRUEBA"`. Validar en `http://<IP>:5173/ordenes` que aparece la orden nueva con datos extraídos por OCR + Gemma.
 - [ ] **5.6** Probar audio: mensaje de voz 10 s describiendo una falla. Validar transcripción y clasificación automática.
 
@@ -119,10 +119,10 @@
 
 - [ ] **7.1** Tomar foto del rack/oficina con el ThinkCentre instalado (evidencia).
 - [ ] **7.2** Tomar captura del Dashboard funcionando en el monitor de Conservación.
-- [ ] **7.3** Ejecutar backup inicial: `docker exec mysql-sigab mysqldump -usigab -p sigab > ~/backups/sigab_clinica1_init_$(date +%Y%m%d_%H%M).sql`
+- [ ] **7.3** Ejecutar backup inicial: `docker exec mysql-sigah mysqldump -usigah -p sigah > ~/backups/sigah_clinica1_init_$(date +%Y%m%d_%H%M).sql`
 - [ ] **7.4** Copiar backup a USB externo de Gustavo.
-- [ ] **7.5** Configurar cron de backup diario 02:00 h: `crontab -e` → `0 2 * * * /home/sigab_admin/scripts/backup_diario.sh`
-- [ ] **7.6** Probar conectividad SSH remota desde la Asus: `ssh sigab_admin@<IP_FIJA>` (para soporte de fin de semana).
+- [ ] **7.5** Configurar cron de backup diario 02:00 h: `crontab -e` → `0 2 * * * /home/sigah_admin/scripts/backup_diario.sh`
+- [ ] **7.6** Probar conectividad SSH remota desde la Asus: `ssh sigah_admin@<IP_FIJA>` (para soporte de fin de semana).
 - [ ] **7.7** Dejar el ThinkCentre **encendido y candado en oficina Conservación**.
 - [ ] **7.8** Confirmar con Carlos Oswaldo que la oficina permanece abierta sábado y domingo (personal de guardia).
 - [ ] **7.9** Intercambiar números de WhatsApp para incidencias del fin de semana.
@@ -136,7 +136,7 @@
 | IP fija asignada | |
 | Gateway del VLAN administrativo | |
 | DNS interno IMSS | |
-| Hostname final | `sigab-clinica1` |
+| Hostname final | `sigah-clinica1` |
 | MAC del ThinkCentre | |
 | Usuario admin creado para Carlos Oswaldo | `coswaldo` |
 | Hora de puesta en marcha | |

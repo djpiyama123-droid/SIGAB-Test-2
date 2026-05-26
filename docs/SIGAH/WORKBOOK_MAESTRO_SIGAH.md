@@ -11,14 +11,14 @@
 
 ```powershell
 # 1. Abre Windows Terminal (o PowerShell) en el Asus TUF A16.
-cd C:\Users\djpiy\Desktop\Bioingeneria\SIGAB
+cd C:\Users\djpiy\Desktop\Bioingeneria\SIGAH
 
 # 2. (Solo la primera vez) Corre el setup. En adelante puedes saltarlo.
 .\scripts\setup_claude_code_sigah.ps1
 
 # 3. (Opcional) Levanta el túnel SSH al VPS para que la skill mysql funcione.
 #    En una terminal aparte que dejas abierta toda la sesión:
-ssh -L 3306:127.0.0.1:3306 sigab-bluehost
+ssh -L 3306:127.0.0.1:3306 sigah-bluehost
 
 # 4. Sincroniza el repo
 git pull
@@ -42,10 +42,10 @@ Y arranca pidiendo lo que toque (ver §10 — "Estado actual y siguiente sprint"
 
 | Paso | Comando | Por qué |
 |------|---------|---------|
-| 1. Entrar al folder del repo | `cd C:\Users\djpiy\Desktop\Bioingeneria\SIGAB` | Para que Claude Code cargue `CLAUDE.md` y todas las skills del proyecto. |
+| 1. Entrar al folder del repo | `cd C:\Users\djpiy\Desktop\Bioingeneria\SIGAH` | Para que Claude Code cargue `CLAUDE.md` y todas las skills del proyecto. |
 | 2. Sincronizar cambios remotos | `git pull` | Tiene los pushes recientes de Carlos / del otro equipo. |
 | 3. Revisar la rama activa | `git status` y `git branch --show-current` | Para no commitear en la rama equivocada. La rama de trabajo SIGAH es `sigah-saas`. |
-| 4. Levantar el túnel SSH a MySQL del VPS (opcional) | `ssh -L 3306:127.0.0.1:3306 sigab-bluehost` | Solo si vas a usar la skill `mysql` para consultar la BD de SIGAB en tiempo real. |
+| 4. Levantar el túnel SSH a MySQL del VPS (opcional) | `ssh -L 3306:127.0.0.1:3306 sigah-bluehost` | Solo si vas a usar la skill `mysql` para consultar la BD de SIGAH en tiempo real. |
 | 5. Arrancar Claude Code | `claude` | Carga `CLAUDE.md` + las 12 skills del proyecto + los 67 agentes especializados. |
 | 6. Decirle qué quieres hacer | (lenguaje natural) | Ej: *"Activa Backend Architect y refactorizemos `routes/equipos.py` para multi-tenant"*. |
 
@@ -62,14 +62,14 @@ exit   # cierra el túnel SSH
 ## 3. Mapa del repositorio — dónde vive cada cosa
 
 ```
-C:\Users\djpiy\Desktop\Bioingeneria\SIGAB\
+C:\Users\djpiy\Desktop\Bioingeneria\SIGAH\
 │
 ├── CLAUDE.md                       ← Contexto del proyecto (Claude lo carga solo)
 ├── AGENTS.md                       ← Directriz de contextualización
 ├── README.md                       ← README rebrandeado a SIGAH
 ├── docker-compose.yml              ← Stack local (mysql + backend + frontend)
 │
-├── sigab-backend/                  ← FastAPI + SQLModel + MySQL
+├── sigah-backend/                  ← FastAPI + SQLModel + MySQL
 │   ├── main.py
 │   ├── auth/
 │   │   ├── jwt_handler.py          (extendido con tenant_id en Fase 1)
@@ -95,13 +95,13 @@ C:\Users\djpiy\Desktop\Bioingeneria\SIGAB\
 │       ├── conftest.py
 │       └── test_tenant_isolation.py ⭐ NUEVO Fase 2: suite cross-tenant
 │
-├── sigab-frontend/                 ← React 19 + Vite + Tailwind
+├── sigah-frontend/                 ← React 19 + Vite + Tailwind
 │   └── src/
 │       ├── pages/                  (Dashboard, Equipos, Ordenes, Copilot, ...)
 │       ├── components/
-│       └── api/sigab.js
+│       └── api/sigah.js
 │
-├── sigab-bot/                      ← Bot Telegram
+├── sigah-bot/                      ← Bot Telegram
 │
 ├── docs/SIGAH/                     ← TODOS los entregables estratégicos
 │   ├── WORKBOOK_MAESTRO_SIGAH.md   ← ESTE ARCHIVO
@@ -135,12 +135,12 @@ C:\Users\djpiy\Desktop\Bioingeneria\SIGAB\
 
 ## 4. Inventario completo de skills (26 totales)
 
-### 4.1 A nivel proyecto — `SIGAB/.claude/skills/` (12)
+### 4.1 A nivel proyecto — `SIGAH/.claude/skills/` (12)
 
 | # | Skill | Cuándo activarla |
 |---|-------|------------------|
 | 1 | `ui-ux-pro-max` | UI/UX para páginas React de SIGAH. Paleta médica, dark mode. |
-| 2 | `mysql` | Consultar la BD de SIGAB/SIGAH en lenguaje natural (read-only). |
+| 2 | `mysql` | Consultar la BD de SIGAH/SIGAH en lenguaje natural (read-only). |
 | 3 | `ccpm` | Romper un PRD en GitHub Issues y dejar que varios agentes trabajen en paralelo. |
 | 4 | `git-workflow` | Preparar PRs, resolver merge conflicts, limpiar ramas. |
 | 5 | `project-docs` | Auto-generar ARCHITECTURE.md / API_ENDPOINTS.md desde el código. |
@@ -162,7 +162,7 @@ C:\Users\djpiy\Desktop\Bioingeneria\SIGAB\
 
 Solo dilo en lenguaje natural dentro de Claude Code:
 
-> *"Activa la skill `webapp-testing` y dame screenshots de las 5 páginas principales del frontend SIGAB."*
+> *"Activa la skill `webapp-testing` y dame screenshots de las 5 páginas principales del frontend SIGAH."*
 
 > *"Usa `mysql` para listar los equipos del HGR No.1 que tengan más de 5 órdenes correctivas el último año."*
 
@@ -205,7 +205,7 @@ Catálogo completo en `.claude/agents/` (67 archivos `.md`). Capa de coordinaci�
 
 | Nombre | Para qué | IP / Host | Notas |
 |--------|----------|-----------|-------|
-| `sigab-bluehost` | VPS donde corre **SIGAB hoy** (legacy single-tenant). Cliente: HGR No.1 IMSS Tijuana. | `129.121.100.147` | 16 GB RAM, 8 vCPU, NVMe. URL: `https://sigab.129-121-100-147.sslip.io` |
+| `sigah-bluehost` | VPS donde corre **SIGAH hoy** (legacy single-tenant). Cliente: HGR No.1 IMSS Tijuana. | `129.121.100.147` | 16 GB RAM, 8 vCPU, NVMe. URL: `https://sigah.129-121-100-147.sslip.io` |
 | `sigah-staging` | Servidor en **Hetzner Cloud** para SIGAH SaaS multi-tenant (post Fase 0). | `<IP_HETZNER>` (por crear) | CX32 (4 vCPU, 8 GB, ~$150 MXN/mes). Ver `Runbook_Provisioning_Hetzner.md`. |
 | `sigah-prod` | Producción SIGAH (post Fase 6). | `<IP_PROD>` (futuro) | CX42 o superior. |
 
@@ -214,7 +214,7 @@ Catálogo completo en `.claude/agents/` (67 archivos `.md`). Capa de coordinaci�
 Después de correr el setup, los aliases ya están en `~/.ssh/config`:
 
 ```powershell
-ssh sigab-bluehost          # entra como root al VPS Bluehost
+ssh sigah-bluehost          # entra como root al VPS Bluehost
 ssh sigah-staging           # cuando exista el servidor Hetzner
 ```
 
@@ -224,13 +224,13 @@ Necesario para que la skill `mysql` pueda consultar la BD del VPS desde el Asus:
 
 ```powershell
 # Terminal aparte (déjala abierta toda la sesión)
-ssh -L 3306:127.0.0.1:3306 sigab-bluehost
+ssh -L 3306:127.0.0.1:3306 sigah-bluehost
 ```
 
 Si el puerto 3306 local está ocupado por tu MySQL local, usa otro puerto y ajústalo en `connections.json`:
 
 ```powershell
-ssh -L 3308:127.0.0.1:3306 sigab-bluehost
+ssh -L 3308:127.0.0.1:3306 sigah-bluehost
 ```
 
 ---
@@ -246,18 +246,18 @@ ssh -L 3308:127.0.0.1:3306 sigab-bluehost
 | Cuenta GitHub de Gustavo | Push al repo SIGAH, CCPM | ☑ Ya tienes |
 | e.firma SAT — Gustavo | Constituir la S. de R.L. (Fase 0 paso 1.1 del checklist) | ☐ Pendiente cita SAT |
 | e.firma SAT — Carlos | Constituir la S. de R.L. (Fase 0 paso 1.2) | ☐ Pendiente cita SAT |
-| Cuenta Bluehost | Acceso al cPanel del VPS actual de SIGAB | Verificar que tengas el password |
+| Cuenta Bluehost | Acceso al cPanel del VPS actual de SIGAH | Verificar que tengas el password |
 
-### 7.2 Servidor Bluehost (VPS SIGAB actual)
+### 7.2 Servidor Bluehost (VPS SIGAH actual)
 
 | Dato | Valor | Cómo obtener / dónde |
 |------|-------|----------------------|
 | Host | `129.121.100.147` | Ya en `~/.ssh/config` |
 | Usuario SSH | `root` (probable) | cPanel de Bluehost o `<USUARIO_BLUEHOST>` en config |
-| Llave SSH | `~/.ssh/sigab_bluehost_ed25519` | Generada por el script de setup |
+| Llave SSH | `~/.ssh/sigah_bluehost_ed25519` | Generada por el script de setup |
 | Password root MySQL | (en el VPS) | `grep PASSWORD docker-compose.yml` dentro del VPS, o el password que usaste al instalar |
-| Usuario MySQL read-only | `sigab_readonly` | Crear con: `CREATE USER 'sigab_readonly'@'localhost' IDENTIFIED BY '<pw>'; GRANT SELECT ON sigab.* TO 'sigab_readonly'@'localhost';` |
-| Bot Telegram token | `@sigab_imss_tj_bot` | En el VPS, env var del contenedor del bot |
+| Usuario MySQL read-only | `sigah_readonly` | Crear con: `CREATE USER 'sigah_readonly'@'localhost' IDENTIFIED BY '<pw>'; GRANT SELECT ON sigah.* TO 'sigah_readonly'@'localhost';` |
+| Bot Telegram token | `@sigah_imss_tj_bot` | En el VPS, env var del contenedor del bot |
 
 ### 7.3 Servidor Hetzner (cuando exista — Fase 0)
 
@@ -309,7 +309,7 @@ git push
 ### 8.2 Backend (FastAPI) — solo local
 
 ```powershell
-cd sigab-backend
+cd sigah-backend
 .\venv\Scripts\Activate.ps1               # o source venv/bin/activate en WSL
 uvicorn main:app --reload --port 8000
 ```
@@ -317,7 +317,7 @@ uvicorn main:app --reload --port 8000
 ### 8.3 Frontend (React + Vite) — solo local
 
 ```powershell
-cd sigab-frontend
+cd sigah-frontend
 npm run dev
 # Abre http://localhost:5173
 ```
@@ -325,7 +325,7 @@ npm run dev
 ### 8.4 Pruebas
 
 ```powershell
-cd sigab-backend
+cd sigah-backend
 pytest                                     # todos
 pytest tests/test_tenant_isolation.py -v   # solo aislamiento multi-tenant
 ```
@@ -333,7 +333,7 @@ pytest tests/test_tenant_isolation.py -v   # solo aislamiento multi-tenant
 ### 8.5 Migraciones Alembic
 
 ```powershell
-cd sigab-backend
+cd sigah-backend
 alembic history --verbose                  # ver árbol de migraciones
 alembic upgrade head --sql > /tmp/upgrade.sql   # dry-run (preview SQL)
 alembic upgrade head                       # aplicar todas
@@ -343,9 +343,9 @@ alembic downgrade -1                       # revertir la última
 ### 8.6 Túnel SSH para MySQL del VPS
 
 ```powershell
-ssh -L 3306:127.0.0.1:3306 sigab-bluehost      # mantén abierta
+ssh -L 3306:127.0.0.1:3306 sigah-bluehost      # mantén abierta
 # En otra terminal:
-mysql -h 127.0.0.1 -u sigab_readonly -p sigab  # entrar a la BD del VPS
+mysql -h 127.0.0.1 -u sigah_readonly -p sigah  # entrar a la BD del VPS
 ```
 
 ### 8.7 Docker (stack local completo)
@@ -378,7 +378,7 @@ docker compose down                        # apagar
 - ✅ Mockups visuales aprobados
 - ✅ Checklist operativo Fase 0
 - ✅ Runbook Hetzner + Marca SIGAH + Setup Claude Code para Asus TUF
-- ✅ Rebrand SIGAB→SIGAH en CLAUDE.md, AGENTS.md, README.md
+- ✅ Rebrand SIGAH→SIGAH en CLAUDE.md, AGENTS.md, README.md
 - ✅ Fase 1 scaffold: migración Alembic + modelo Hospital + TenantMixin + dependencia `get_current_tenant` + JWT extendido (NO aplicado)
 - ✅ Fase 3 prep: migración complementaria SuperAdmin (NO aplicada)
 - ✅ Fase 2 prep: plantilla canónica `_examples_tenant_pattern.py` + suite `test_tenant_isolation.py` + README + checklist 20 routes
@@ -414,11 +414,11 @@ docker compose down                        # apagar
 
 ---
 
-## 10. Migración SIGAB → SIGAH — vista consolidada
+## 10. Migración SIGAH → SIGAH — vista consolidada
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│  SIGAB (instancia HGR No.1 IMSS Tijuana)                          │
+│  SIGAH (instancia HGR No.1 IMSS Tijuana)                          │
 │  • On-premise · single-tenant · sigue corriendo sin cambios       │
 │  • Funciona como "cliente ancla" y caso de éxito de SIGAH         │
 └────────────────────────┬──────────────────────────────────────────┘
@@ -454,7 +454,7 @@ La skill `webapp-testing` (Anthropic, basada en Playwright) es la herramienta cl
 
 ### Pulir botones y flujos
 
-> *"Activa `webapp-testing`. Levanta el frontend local (npm run dev en `sigab-frontend/`). Recorre las 5 pantallas principales — Dashboard, Equipos, Órdenes, Preventivos, Tecnovigilancia. Verifica que cada botón visible responda con su acción esperada y reporta cuáles fallan o tienen feedback confuso."*
+> *"Activa `webapp-testing`. Levanta el frontend local (npm run dev en `sigah-frontend/`). Recorre las 5 pantallas principales — Dashboard, Equipos, Órdenes, Preventivos, Tecnovigilancia. Verifica que cada botón visible responda con su acción esperada y reporta cuáles fallan o tienen feedback confuso."*
 
 ### Validar el diseño intuitivo
 
@@ -476,7 +476,7 @@ La skill `webapp-testing` (Anthropic, basada en Playwright) es la herramienta cl
 ### Pre-requisitos
 
 ```powershell
-cd sigab-frontend
+cd sigah-frontend
 npm install
 npm run dev                    # backend corriendo en :8000, frontend en :5173
 
@@ -493,10 +493,10 @@ npm run dev                    # backend corriendo en :8000, frontend en :5173
 | Síntoma | Causa probable | Fix |
 |---------|----------------|-----|
 | `claude: command not found` al abrir terminal | El PATH no incluye la carpeta de npm globals | Cierra y reabre PowerShell; si persiste, agrega `npm config get prefix` al PATH del sistema. |
-| `Permission denied (publickey)` en `ssh sigab-bluehost` | La llave pública no está en `~/.ssh/authorized_keys` del VPS | Pegar el contenido de `~/.ssh/sigab_bluehost_ed25519.pub` en el VPS (ver §3.3 del Setup_ClaudeCode_AsusTUF.md). |
-| Skill `mysql` falla con `ECONNREFUSED 127.0.0.1:3306` | No hay túnel SSH activo, o el puerto local está ocupado | Levantar `ssh -L 3306:127.0.0.1:3306 sigab-bluehost` en otra terminal. Si 3306 está en uso, usar 3308 y editarlo en `connections.json`. |
-| `claude` arranca pero `/skills` muestra solo las del usuario | Estás corriendo `claude` fuera del repo SIGAH | `cd C:\Users\djpiy\Desktop\Bioingeneria\SIGAB` antes de correr `claude`. |
-| `alembic upgrade` falla con "no such table: hospitales" | No estás en la BD correcta | Verifica `DATABASE_URL` en `database.py` o en `.env` — apuntar a `sigah` (no `sigab` legacy). |
+| `Permission denied (publickey)` en `ssh sigah-bluehost` | La llave pública no está en `~/.ssh/authorized_keys` del VPS | Pegar el contenido de `~/.ssh/sigah_bluehost_ed25519.pub` en el VPS (ver §3.3 del Setup_ClaudeCode_AsusTUF.md). |
+| Skill `mysql` falla con `ECONNREFUSED 127.0.0.1:3306` | No hay túnel SSH activo, o el puerto local está ocupado | Levantar `ssh -L 3306:127.0.0.1:3306 sigah-bluehost` en otra terminal. Si 3306 está en uso, usar 3308 y editarlo en `connections.json`. |
+| `claude` arranca pero `/skills` muestra solo las del usuario | Estás corriendo `claude` fuera del repo SIGAH | `cd C:\Users\djpiy\Desktop\Bioingeneria\SIGAH` antes de correr `claude`. |
+| `alembic upgrade` falla con "no such table: hospitales" | No estás en la BD correcta | Verifica `DATABASE_URL` en `database.py` o en `.env` — apuntar a `sigah` (no `sigah` legacy). |
 | Tests fallan con `403 Forbidden` masivamente | Los tokens generados en tests no incluyen `tenant_id` | Asegúrate que `create_access_token` reciba `tenant_id` en el dict del user. Ver `tests/test_tenant_isolation.py` líneas 80-95. |
 | Backend funciona local pero el frontend no carga datos | CORS, URL del API o JWT vencido | Inspector del navegador: pestaña Network y Console. Si CORS, ajustar `main.py` (cors_origins). |
 | `git push` rechazado | Rama protegida o no tienes permisos | `git push -u origin sigah-saas` o crear PR si `main` está protegida. |

@@ -14,7 +14,7 @@ set -e
 
 VPS_IP="129.121.100.147"
 VPS_USER="root"
-REMOTE_DIR="/opt/sigab"
+REMOTE_DIR="/opt/sigah"
 SSH_KEY="$HOME/.ssh/sigah_bluehost"
 BRANCH="${SIGAH_BRANCH:-feat/sileo-toasts-hermes-context}"
 FLAG="${1:-}"
@@ -58,10 +58,10 @@ else
   fi
 
   CHANGED_FILES=$(git diff --name-only "$LAST_REMOTE" "$LOCAL_HEAD" 2>/dev/null || echo "UNKNOWN")
-  if echo "$CHANGED_FILES" | grep -q "sigab-backend/"; then
+  if echo "$CHANGED_FILES" | grep -q "sigah-backend/"; then
     CHANGED_BACKEND=1
   fi
-  if echo "$CHANGED_FILES" | grep -q "sigab-frontend/"; then
+  if echo "$CHANGED_FILES" | grep -q "sigah-frontend/"; then
     CHANGED_FRONTEND=1
   fi
   if [ "$CHANGED_BACKEND" = "0" ] && [ "$CHANGED_FRONTEND" = "0" ]; then
@@ -83,11 +83,11 @@ fi
 if [ "$CHANGED_FRONTEND" = "1" ]; then
   echo "[2/3] Rebuilding frontend..."
   $SSH "cd $REMOTE_DIR && \
-    cd sigab-frontend && \
+    cd sigah-frontend && \
     npm ci --prefer-offline && \
     npm run build && \
-    docker exec sigab-frontend nginx -t && \
-    docker exec sigab-frontend nginx -s reload"
+    docker exec sigah-frontend nginx -t && \
+    docker exec sigah-frontend nginx -s reload"
 fi
 
 if [ "$CHANGED_BACKEND" = "0" ] && [ "$CHANGED_FRONTEND" = "0" ]; then

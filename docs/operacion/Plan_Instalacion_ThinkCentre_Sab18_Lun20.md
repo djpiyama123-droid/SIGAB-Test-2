@@ -1,9 +1,9 @@
-# 🏥 SIGAB — Plan de Instalación ThinkCentre + Refactor Prototipo
+# 🏥 SIGAH — Plan de Instalación ThinkCentre + Refactor Prototipo
 ## Sábado 18 → Lunes 20 · abril 2026 · HGR No.1 IMSS Tijuana (Clínica 1)
 
-> **Autor:** Arquitecto de Software y Bioingeniero Senior del proyecto SIGAB
+> **Autor:** Arquitecto de Software y Bioingeniero Senior del proyecto SIGAH
 > **Destinatario:** Gustavo Aguilar Urias (ejecución) — Ing. Carlos Oswaldo (validación)
-> **Compromiso:** Dejar el mini servidor Lenovo ThinkCentre M720q en línea y el prototipo SIGAB V2.0 funcional el mismo sábado. Domingo: consolidar módulos. Lunes: ensayo general en el Ambigu. Martes: presentación oficial.
+> **Compromiso:** Dejar el mini servidor Lenovo ThinkCentre M720q en línea y el prototipo SIGAH V2.0 funcional el mismo sábado. Domingo: consolidar módulos. Lunes: ensayo general en el Ambigu. Martes: presentación oficial.
 
 ---
 
@@ -21,7 +21,7 @@
 ## 1. Pre-requisitos — lista a preparar ANTES de salir (sáb ≤ 09:30)
 
 ### 1.1 Hardware en mochila
-- [ ] Lenovo ThinkCentre M720q (mini PC, ya con Ubuntu 24.04 LTS + stack SIGAB preinstalado desde viernes)
+- [ ] Lenovo ThinkCentre M720q (mini PC, ya con Ubuntu 24.04 LTS + stack SIGAH preinstalado desde viernes)
 - [ ] Cable de poder + cable de corriente
 - [ ] Cable Ethernet Cat6 (≥ 2 m, reserva extra de 5 m)
 - [ ] Cable HDMI (para boot inicial)
@@ -29,20 +29,20 @@
 - [ ] Monitor portátil o acceso al monitor de la oficina
 - [ ] USB booteable Ubuntu 24.04 (respaldo si corrompe el SO)
 - [ ] USB 64 GB con imagen completa del stack (respaldo total)
-- [ ] Etiqueta impresa: `SIGAB-PROD · Serial: <#> · Ing. Biomédica · NO DESCONECTAR`
+- [ ] Etiqueta impresa: `SIGAH-PROD · Serial: <#> · Ing. Biomédica · NO DESCONECTAR`
 
 ### 1.2 Software ya listo en el ThinkCentre (verificar desde la Asus antes de salir)
 ```bash
 # Desde la Asus TUF, hacer ping al ThinkCentre (si estuvo prendido)
-ping -c 3 sigab-server.local
+ping -c 3 sigah-server.local
 
 # O verificar imagen local guardada
-ls -la ~/sigab/backups/sigab-production-image.tar.gz
+ls -la ~/sigah/backups/sigah-production-image.tar.gz
 ```
 
 ### 1.3 Credenciales a llevar (en papel, sobre sellado)
 - Password root ThinkCentre
-- Password DB MySQL (usuario `sigab_admin`)
+- Password DB MySQL (usuario `sigah_admin`)
 - Password usuario `ADMIN001` (para demo)
 - Token API del bot OpenClaw
 - SSID + password de la red LAN IMSS Conservación (si aplica)
@@ -69,7 +69,7 @@ ls -la ~/sigab/backups/sigab-production-image.tar.gz
 ☐ Ethernet Cat6 → switch del área de Conservación
 ☐ HDMI → monitor disponible
 ☐ Teclado + mouse USB
-☐ Etiqueta SIGAB-PROD pegada al chasis
+☐ Etiqueta SIGAH-PROD pegada al chasis
 ```
 
 ### 2.3 10:45–11:15 · Boot inicial + verificación BIOS
@@ -79,7 +79,7 @@ ls -la ~/sigab/backups/sigab-production-image.tar.gz
   - [ ] Arranque automático tras corte de luz: **BIOS → Power → After Power Loss → Power On**
   - [ ] Secure Boot: OFF (para Docker sin fricciones)
   - [ ] Arranque desde disco interno (NVMe) prioritario
-- Boot a Ubuntu. Login usuario `sigab`.
+- Boot a Ubuntu. Login usuario `sigah`.
 
 ### 2.4 11:15–11:45 · Configuración de red estática LAN IMSS
 
@@ -99,7 +99,7 @@ Pedir a TI IMSS (o confirmar con Carlos) estos datos:
 
 Configurar con netplan:
 ```bash
-sudo tee /etc/netplan/01-sigab-static.yaml > /dev/null <<'EOF'
+sudo tee /etc/netplan/01-sigah-static.yaml > /dev/null <<'EOF'
 network:
   version: 2
   renderer: networkd
@@ -113,7 +113,7 @@ network:
       nameservers:
         addresses: [172.16.40.10, 127.0.0.1]
 EOF
-sudo chmod 600 /etc/netplan/01-sigab-static.yaml
+sudo chmod 600 /etc/netplan/01-sigah-static.yaml
 sudo netplan apply
 
 # Verificar
@@ -123,8 +123,8 @@ ping -c 3 172.16.40.1   # gateway interno
 
 Definir hostname y hosts:
 ```bash
-sudo hostnamectl set-hostname sigab-server
-echo "172.16.40.50  sigab-server.imss.local sigab-server" | sudo tee -a /etc/hosts
+sudo hostnamectl set-hostname sigah-server
+echo "172.16.40.50  sigah-server.imss.local sigah-server" | sudo tee -a /etc/hosts
 ```
 
 Firewall (solo puertos necesarios dentro de la LAN):
@@ -142,7 +142,7 @@ sudo ufw status verbose
 
 ### 2.5 11:45–12:15 · Levantar el stack Docker
 ```bash
-cd ~/sigab
+cd ~/sigah
 docker compose down   # asegurar arranque limpio
 docker compose up -d
 docker compose ps     # los 4 contenedores en estado "healthy"
@@ -161,18 +161,18 @@ curl -s localhost:11434/api/tags | jq '.models[].name'    # espera gemma3
 
 **Ruta A — Excel/CSV del área (más probable):**
 ```bash
-# Colocar el archivo en ~/sigab/inbox/
-mkdir -p ~/sigab/inbox
-cp /media/usb/inventario_conservacion.xlsx ~/sigab/inbox/
+# Colocar el archivo en ~/sigah/inbox/
+mkdir -p ~/sigah/inbox
+cp /media/usb/inventario_conservacion.xlsx ~/sigah/inbox/
 
 # Ejecutar importador
-docker exec -it sigab-backend python -m scripts.import_inventario_imss \
+docker exec -it sigah-backend python -m scripts.import_inventario_imss \
     --input /app/inbox/inventario_conservacion.xlsx \
     --mode upsert \
     --dry-run
 
 # Si el dry-run luce bien:
-docker exec -it sigab-backend python -m scripts.import_inventario_imss \
+docker exec -it sigah-backend python -m scripts.import_inventario_imss \
     --input /app/inbox/inventario_conservacion.xlsx \
     --mode upsert
 ```
@@ -180,16 +180,16 @@ docker exec -it sigab-backend python -m scripts.import_inventario_imss \
 **Ruta B — BD remota (si el IMSS expone una):**
 ```bash
 # Configurar string de conexión readonly en .env
-echo "IMSS_SOURCE_DB_URL=mysql+pymysql://readonly:<pwd>@172.16.40.80:3306/conservacion" >> ~/sigab/.env
-docker compose restart sigab-backend
+echo "IMSS_SOURCE_DB_URL=mysql+pymysql://readonly:<pwd>@172.16.40.80:3306/conservacion" >> ~/sigah/.env
+docker compose restart sigah-backend
 
 # Importar
-docker exec -it sigab-backend python -m scripts.sync_from_imss_source
+docker exec -it sigah-backend python -m scripts.sync_from_imss_source
 ```
 
 Verificar en la BD local:
 ```bash
-docker exec -it mysql-sigab mysql -usigab_admin -p sigab \
+docker exec -it mysql-sigah mysql -usigah_admin -p sigah \
     -e "SELECT COUNT(*) as total, MAX(fecha_actualizacion) as ult FROM equipos;"
 ```
 
@@ -201,7 +201,7 @@ docker exec -it mysql-sigab mysql -usigab_admin -p sigab \
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│   🏥 SIGAB · Dashboard · HGR No.1 IMSS Tijuana               │ ← Header
+│   🏥 SIGAH · Dashboard · HGR No.1 IMSS Tijuana               │ ← Header
 ├──────────────────────────────────────────────────────────────┤
 │                                                              │
 │   [ MAPA DE ZONAS — 6 zonas con círculos de equipos ]        │ ← 1. Mapa interactivo
@@ -225,7 +225,7 @@ docker exec -it mysql-sigab mysql -usigab_admin -p sigab \
 └──────────────────────────────────────────────────────────────┘
 ```
 
-**Acción:** refactorizar `sigab-frontend/src/pages/Dashboard.jsx` + backend `routes/dashboard.py`. Código listo en la sección 5.
+**Acción:** refactorizar `sigah-frontend/src/pages/Dashboard.jsx` + backend `routes/dashboard.py`. Código listo en la sección 5.
 
 ### 2.9 16:30–17:30 · Túnel local bot WhatsApp
 
@@ -234,13 +234,13 @@ docker exec -it mysql-sigab mysql -usigab_admin -p sigab \
 **Arquitectura aprobada (sin exposición a internet):**
 - Un smartphone Android del área (línea IMSS) corre **whatsapp-web.js** vía Chromium headless.
 - El bot se conecta al teléfono por USB (ADB) usando `adb reverse tcp:3001 tcp:3001`.
-- Todos los mensajes caen al servicio `sigab-bot` que lee multimedia y las pasa a:
-  - `sigab-backend:/api/ocr/foto-orden` (para fotos — PaddleOCR local)
-  - `sigab-backend:/api/copilot/whatsapp-audio` (para audios — Whisper local)
+- Todos los mensajes caen al servicio `sigah-bot` que lee multimedia y las pasa a:
+  - `sigah-backend:/api/ocr/foto-orden` (para fotos — PaddleOCR local)
+  - `sigah-backend:/api/copilot/whatsapp-audio` (para audios — Whisper local)
 
 ```bash
 # En el ThinkCentre
-docker compose logs -f sigab-bot | grep "WhatsApp ready"
+docker compose logs -f sigah-bot | grep "WhatsApp ready"
 # Debe imprimir "WhatsApp client ready, phone=<número IMSS>"
 ```
 
@@ -264,10 +264,10 @@ Cargar los 200+ equipos reales (desde `inventario_conservacion.xlsx` del área).
 
 ### 2.11 18:30–19:00 · Cierre del día
 
-- [ ] Ejecutar respaldo incremental: `docker exec sigab-backend python -m scripts.backup_daily`
-- [ ] Confirmar que el servicio systemd `sigab.service` arranca en boot: `systemctl is-enabled sigab`
+- [ ] Ejecutar respaldo incremental: `docker exec sigah-backend python -m scripts.backup_daily`
+- [ ] Confirmar que el servicio systemd `sigah.service` arranca en boot: `systemctl is-enabled sigah`
 - [ ] Tomar foto final del equipo instalado y del Dashboard en monitor (evidencia)
-- [ ] Dejar un letrero físico: `NO APAGAR · SIGAB EN PILOTO · Contacto: Gustavo <cel>`
+- [ ] Dejar un letrero físico: `NO APAGAR · SIGAH EN PILOTO · Contacto: Gustavo <cel>`
 - [ ] Registrar salida en bitácora del área
 
 ---
@@ -288,7 +288,7 @@ Ver §4 para detalle — eliminación / fusión de 5 pantallas redundantes.
 ### 3.3 13:00–15:00 · Tests E2E con Playwright
 
 ```bash
-cd ~/sigab/sigab-frontend
+cd ~/sigah/sigah-frontend
 npx playwright test --project=chromium --reporter=line
 ```
 
@@ -336,22 +336,22 @@ Revisión de las **19 pantallas actuales** contra el alcance mínimo del prototi
 
 ```bash
 # Frontend
-cd ~/sigab/sigab-frontend/src/pages
+cd ~/sigah/sigah-frontend/src/pages
 git mv Analitica.jsx ../_deprecated/
 git mv Almacen.jsx ../_deprecated/
 git mv Capacitaciones.jsx ../_deprecated/
 
 # Backend — endpoints correspondientes
-cd ~/sigab/sigab-backend/routes
+cd ~/sigah/sigah-backend/routes
 # NO ELIMINAR los .py aún — comentar registro en main.py primero:
-# Editar sigab-backend/main.py y comentar:
+# Editar sigah-backend/main.py y comentar:
 #   # app.include_router(almacen.router, prefix="/api/almacen")
 #   # app.include_router(capacitaciones.router, prefix="/api/capacitaciones")
 ```
 
 ### 4.2 Sidebar — actualizar menú
 
-Editar `sigab-frontend/src/components/Sidebar.jsx`: dejar solo las 11 pantallas activas, agrupadas en 3 bloques:
+Editar `sigah-frontend/src/components/Sidebar.jsx`: dejar solo las 11 pantallas activas, agrupadas en 3 bloques:
 
 ```
 📊 OPERACIÓN
@@ -377,7 +377,7 @@ Editar `sigab-frontend/src/components/Sidebar.jsx`: dejar solo las 11 pantallas 
 ### 5.1 Backend — `routes/dashboard.py` (endpoint MTBF/MTTR + Recientes)
 
 ```python
-# sigab-backend/routes/dashboard.py
+# sigah-backend/routes/dashboard.py
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, and_, text
@@ -510,7 +510,7 @@ def equipos_recientes(
 ### 5.2 Backend — `schemas/dashboard.py`
 
 ```python
-# sigab-backend/schemas/dashboard.py
+# sigah-backend/schemas/dashboard.py
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional
@@ -567,7 +567,7 @@ class EquipoRecienteOut(BaseModel):
 ### 5.3 Frontend — `pages/Dashboard.jsx` (refactor v2)
 
 ```jsx
-// sigab-frontend/src/pages/Dashboard.jsx
+// sigah-frontend/src/pages/Dashboard.jsx
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import Layout from "../components/layout/Layout";
@@ -724,7 +724,7 @@ export default function Dashboard() {
 ### 5.4 Frontend — `components/cards/KpiCard.jsx`
 
 ```jsx
-// sigab-frontend/src/components/cards/KpiCard.jsx
+// sigah-frontend/src/components/cards/KpiCard.jsx
 const ACCENTS = {
   emerald: "border-emerald-500 bg-emerald-50 text-emerald-800",
   blue:    "border-imss-blue bg-blue-50 text-imss-blue",
@@ -747,7 +747,7 @@ export function KpiCard({ title, value, hint, accent = "blue" }) {
 ### 5.5 Frontend — `components/HospitalMap.jsx` (refuerzo para el mapa de zonas)
 
 ```jsx
-// sigab-frontend/src/components/HospitalMap.jsx
+// sigah-frontend/src/components/HospitalMap.jsx
 import { useNavigate } from "react-router-dom";
 
 const statusColor = (z) => {
@@ -895,7 +895,7 @@ Documento separado. Usar el **Guion Demo Carlos Oswaldo** + **Resumen Ejecutivo*
 
 | Criterio | Medición | Umbral |
 |---|---|---|
-| ThinkCentre responde | `ping sigab-server.imss.local` | 100% |
+| ThinkCentre responde | `ping sigah-server.imss.local` | 100% |
 | Dashboard accesible desde 3 PCs del área | HTTP 200 en 5173 | 100% |
 | Datos IMSS importados | `SELECT COUNT(*) FROM equipos` | ≥ 200 |
 | Órdenes por WhatsApp | Creadas sin intervención manual | ≥ 15 durante fin de semana |
@@ -927,7 +927,7 @@ Documento separado. Usar el **Guion Demo Carlos Oswaldo** + **Resumen Ejecutivo*
 
 ---
 
-> **Próximo hito tras este plan:** Martes 21 · Ambigu · presentación oficial SIGAB V2.0.
+> **Próximo hito tras este plan:** Martes 21 · Ambigu · presentación oficial SIGAH V2.0.
 > **Próximo hito del piloto:** Viernes 24 · evaluación 1 semana de operación con métricas reales.
 
 🤖 *Documento generado por Arquitecto IA — revisión humana requerida antes de ejecución.*

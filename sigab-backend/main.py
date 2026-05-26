@@ -1,5 +1,5 @@
 """
-main.py — Punto de entrada del backend SIGAB.
+main.py — Punto de entrada del backend SIGAH.
 
 Configura la aplicación FastAPI con:
 - Middleware CORS para comunicación con el frontend (puertos 5173/5174/3000)
@@ -9,7 +9,7 @@ Configura la aplicación FastAPI con:
 
 Ejecutar con: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
-Autor: Equipo SIGAB — Bioingeniería Xochicalco
+Autor: Equipo SIGAH — Bioingeniería Xochicalco
 Versión: 2.0.0
 """
 from fastapi import FastAPI
@@ -29,7 +29,7 @@ from routes import (
     ocr, events, casillas,
     admin as admin_routes,
 )
-_COPILOT_ON = os.getenv("SIGAB_DISABLE_COPILOT", "0") != "1"
+_COPILOT_ON = os.getenv("SIGAH_DISABLE_COPILOT", "0") != "1"
 if _COPILOT_ON:
     from routes import copilot
 
@@ -38,13 +38,13 @@ if _COPILOT_ON:
 async def lifespan(app: FastAPI):
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     os.makedirs("static/uploads", exist_ok=True)
-    print("SIGAB Backend iniciado — 100% Local")
+    print("SIGAH Backend iniciado — 100% Local")
     yield
-    print("SIGAB Backend detenido")
+    print("SIGAH Backend detenido")
 
 
 app = FastAPI(
-    title="SIGAB API",
+    title="SIGAH API",
     description="Sistema Integral de Gestión de Activos Biomédicos — HGR No.1 IMSS",
     version="1.0.0",
     lifespan=lifespan,
@@ -76,7 +76,7 @@ app.include_router(auditoria.router, prefix="/api/auditoria", tags=["Auditoría 
 app.include_router(checklists.router, prefix="/api/checklists", tags=["Checklists NOM-016"])
 app.include_router(tecnovigilancia.router, prefix="/api/tecnovigilancia", tags=["Tecnovigilancia NOM-240"])
 if _COPILOT_ON:
-    app.include_router(copilot.router, prefix="/api/copilot", tags=["SIGAB Copilot (IA Local)"])
+    app.include_router(copilot.router, prefix="/api/copilot", tags=["SIGAH Copilot (IA Local)"])
 app.include_router(almacen.router, prefix="/api/almacen", tags=["Gestión de Almacén"])
 app.include_router(metrologia.router, prefix="/api/metrologia", tags=["Metrología y Calibración"])
 app.include_router(capacitaciones.router, prefix="/api/capacitaciones", tags=["Capacitación de Personal"])
@@ -87,7 +87,7 @@ app.include_router(admin_routes.router, prefix="/api", tags=["SuperAdmin"])
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "sistema": "SIGAB", "modo": "on-premise"}
+    return {"status": "ok", "sistema": "SIGAH", "modo": "on-premise"}
 
 
 if __name__ == "__main__":

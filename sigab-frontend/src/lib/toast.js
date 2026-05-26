@@ -7,7 +7,7 @@
 //   import toast from '@/lib/toast';
 // (o el path relativo equivalente)
 //
-// Preserva el patron de SIGAB de reemplazar un toast por id:
+// Preserva el patron de SIGAH de reemplazar un toast por id:
 //   const tid = toast.loading('Guardando...');
 //   toast.success('Listo', { id: tid });   // descarta el loading y muestra success
 //
@@ -25,8 +25,8 @@
 // ============================================================
 import { sileo } from 'sileo';
 
-// Paleta SIGAB (azul IMSS, biomedico, alertas)
-const SIGAB_FILL = {
+// Paleta SIGAH (azul IMSS, biomedico, alertas)
+const SIGAH_FILL = {
   success: '#10b981', // emerald-500
   error: '#ef4444',   // red-500
   warning: '#f59e0b', // amber-500
@@ -58,19 +58,19 @@ function replaceIfNeeded(opts) {
 const toast = {
   success: (msg, opts) => {
     replaceIfNeeded(opts);
-    return sileo.success({ fill: SIGAB_FILL.success, ...normalize(msg, opts) });
+    return sileo.success({ fill: SIGAH_FILL.success, ...normalize(msg, opts) });
   },
   error: (msg, opts) => {
     replaceIfNeeded(opts);
-    return sileo.error({ fill: SIGAB_FILL.error, duration: opts?.duration ?? 6000, ...normalize(msg, opts) });
+    return sileo.error({ fill: SIGAH_FILL.error, duration: opts?.duration ?? 6000, ...normalize(msg, opts) });
   },
   info: (msg, opts) => {
     replaceIfNeeded(opts);
-    return sileo.info({ fill: SIGAB_FILL.info, ...normalize(msg, opts) });
+    return sileo.info({ fill: SIGAH_FILL.info, ...normalize(msg, opts) });
   },
   warning: (msg, opts) => {
     replaceIfNeeded(opts);
-    return sileo.warning({ fill: SIGAB_FILL.warning, ...normalize(msg, opts) });
+    return sileo.warning({ fill: SIGAH_FILL.warning, ...normalize(msg, opts) });
   },
   // Alias para compatibilidad con codigo existente que usa toast.warn
   warn: (msg, opts) => toast.warning(msg, opts),
@@ -79,7 +79,7 @@ const toast = {
     // duration: null -> no auto-dismiss en Sileo
     return sileo.show({
       type: 'loading',
-      fill: SIGAB_FILL.loading,
+      fill: SIGAH_FILL.loading,
       duration: null,
       ...normalize(msg, opts),
     });
@@ -90,13 +90,13 @@ const toast = {
   },
   promise: (p, msgs = {}) => {
     return sileo.promise(p, {
-      loading: { title: msgs.loading || 'Procesando...', fill: SIGAB_FILL.loading },
+      loading: { title: msgs.loading || 'Procesando...', fill: SIGAH_FILL.loading },
       success: typeof msgs.success === 'function'
-        ? (data) => ({ title: msgs.success(data), fill: SIGAB_FILL.success })
-        : { title: msgs.success || 'Listo', fill: SIGAB_FILL.success },
+        ? (data) => ({ title: msgs.success(data), fill: SIGAH_FILL.success })
+        : { title: msgs.success || 'Listo', fill: SIGAH_FILL.success },
       error: typeof msgs.error === 'function'
-        ? (err) => ({ title: msgs.error(err), fill: SIGAB_FILL.error })
-        : { title: msgs.error || 'Error', fill: SIGAB_FILL.error },
+        ? (err) => ({ title: msgs.error(err), fill: SIGAH_FILL.error })
+        : { title: msgs.error || 'Error', fill: SIGAH_FILL.error },
     });
   },
 };

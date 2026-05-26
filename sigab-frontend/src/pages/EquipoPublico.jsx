@@ -59,7 +59,7 @@ export default function EquipoPublico() {
           <h1 className="text-xl font-bold text-[var(--content-text)]">Equipo no encontrado</h1>
           <p className="text-[var(--content-muted)] text-sm">{error}</p>
           <div className="pt-4 border-t border-[var(--content-border)]">
-            <p className="text-[var(--content-muted)] text-xs">SIGAB — Hospital General Regional No. 1</p>
+            <p className="text-[var(--content-muted)] text-xs">SIGAH — Hospital General Regional No. 1</p>
             <p className="text-[var(--content-muted)] text-xs">IMSS Tijuana, B.C.</p>
           </div>
         </div>
@@ -79,7 +79,7 @@ export default function EquipoPublico() {
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-sm font-bold">S</div>
           <div>
-            <div className="text-sm font-semibold text-[var(--content-text)]">SIGAB</div>
+            <div className="text-sm font-semibold text-[var(--content-text)]">SIGAH</div>
             <div className="text-[10px] text-[var(--content-muted)]">Hospital General Regional No. 1 · IMSS Tijuana</div>
           </div>
         </div>

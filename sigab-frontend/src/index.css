@@ -283,7 +283,7 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.qr-zebra-sigab {
+.qr-zebra-sigah {
   font-size: 5px;
   color: #9ca3af;
   font-weight: 700;
@@ -434,7 +434,7 @@ body {
     color: #000 !important;
   }
 
-  html[data-print-mode="zebra"] .qr-zebra-sigab {
+  html[data-print-mode="zebra"] .qr-zebra-sigah {
     color: #666 !important;
   }
 }

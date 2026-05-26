@@ -1,7 +1,7 @@
-# 🖥️ SIGAB — Plan Pragmático Sáb 18 → Lun 20 · abril 2026
+# 🖥️ SIGAH — Plan Pragmático Sáb 18 → Lun 20 · abril 2026
 ## Levantamiento LOCAL en Lenovo ThinkCentre (antes del Ambigu martes 21)
 
-> **Cambio de alcance:** El sábado NO se instala en la oficina IMSS. Solo se prepara la ThinkCentre EN CASA como ambiente de pruebas local. Objetivo: tener SIGAB corriendo 100% en la ThinkCentre para visualizar, probar y afinar sábado, domingo y lunes. Instalación en sitio → pospuesta.
+> **Cambio de alcance:** El sábado NO se instala en la oficina IMSS. Solo se prepara la ThinkCentre EN CASA como ambiente de pruebas local. Objetivo: tener SIGAH corriendo 100% en la ThinkCentre para visualizar, probar y afinar sábado, domingo y lunes. Instalación en sitio → pospuesta.
 
 ---
 
@@ -22,7 +22,7 @@
 
 > La ThinkCentre M720q probablemente tiene 8–16 GB RAM. Ubuntu te deja 5–7 GB libres para Docker + Ollama. Windows te deja 2–4 GB — apretado para Gemma.
 
-**Veredicto:** Ubuntu 24.04 LTS Desktop (no Server — necesitas GUI para ver el navegador corriendo SIGAB).
+**Veredicto:** Ubuntu 24.04 LTS Desktop (no Server — necesitas GUI para ver el navegador corriendo SIGAH).
 
 ---
 
@@ -84,8 +84,8 @@ https://releases.ubuntu.com/24.04/
 7. Zona horaria: Tijuana.
 8. Usuario:
    - Tu nombre: Gustavo Aguilar
-   - Nombre del equipo: `sigab-server`
-   - Usuario: `sigab`
+   - Nombre del equipo: `sigah-server`
+   - Usuario: `sigah`
    - Password: <password-fuerte-que-recuerdes>
    - [x] Require password to log in
 9. Instalar → 15–20 min → Reiniciar → quitar USB.
@@ -149,40 +149,40 @@ python3 --version   # debe mostrar 3.12.x
 sudo apt install -y python3-pip python3-venv
 ```
 
-### 1.7 Clonar repo SIGAB (10 min)
+### 1.7 Clonar repo SIGAH (10 min)
 
 ```bash
 # Desde donde tengas el repo — opciones:
 
 # Opción A: Si el repo está en GitHub/GitLab privado
 cd ~
-git clone https://github.com/<tu-usuario>/sigab.git
-cd sigab
+git clone https://github.com/<tu-usuario>/sigah.git
+cd sigah
 git checkout prototipo    # o la rama que tengas como "funcional"
 
 # Opción B: Si tienes el repo en la Asus TUF
 # Desde la Asus:
-#   cd ~/sigab
-#   tar czf /tmp/sigab-prototipo.tar.gz .
-#   scp /tmp/sigab-prototipo.tar.gz sigab@192.168.1.55:~/
+#   cd ~/sigah
+#   tar czf /tmp/sigah-prototipo.tar.gz .
+#   scp /tmp/sigah-prototipo.tar.gz sigah@192.168.1.55:~/
 # En la ThinkCentre:
 cd ~
-tar xzf sigab-prototipo.tar.gz -C ~/sigab
-cd ~/sigab
+tar xzf sigah-prototipo.tar.gz -C ~/sigah
+cd ~/sigah
 
 # Opción C: USB
 # Copia la carpeta del repo al USB y de ahí a la ThinkCentre:
-cp -r /media/usb/sigab ~/
-cd ~/sigab
+cp -r /media/usb/sigah ~/
+cd ~/sigah
 ```
 
 **Verifica estructura:**
 ```bash
 ls -la
 # Debes ver:
-#   sigab-backend/
-#   sigab-frontend/
-#   sigab-bot/        (si ya existe)
+#   sigah-backend/
+#   sigah-frontend/
+#   sigah-bot/        (si ya existe)
 #   migrations/
 #   docker-compose.yml
 #   README.md
@@ -191,17 +191,17 @@ ls -la
 ### 1.8 Configurar variables de entorno (5 min)
 
 ```bash
-cd ~/sigab
+cd ~/sigah
 
 # Si existe .env.example, copiar a .env
 cp .env.example .env
 nano .env   # editar si hace falta
 
 # Valores mínimos típicos:
-# MYSQL_ROOT_PASSWORD=sigab_root_2026
-# MYSQL_DATABASE=sigab
-# MYSQL_USER=sigab_admin
-# MYSQL_PASSWORD=sigab_admin_2026
+# MYSQL_ROOT_PASSWORD=REDACTED_DB_ROOT_PASS
+# MYSQL_DATABASE=sigah
+# MYSQL_USER=sigah_admin
+# MYSQL_PASSWORD=sigah_admin_2026
 # JWT_SECRET_KEY=<genera-uno-seguro>
 # OLLAMA_MODEL=gemma3:4b
 ```
@@ -209,7 +209,7 @@ nano .env   # editar si hace falta
 ### 1.9 Descargar imágenes Docker (15–30 min, depende de tu internet)
 
 ```bash
-cd ~/sigab
+cd ~/sigah
 
 # Descargar todas las imágenes necesarias de antemano
 docker compose pull
@@ -224,7 +224,7 @@ docker compose pull
 ### 1.10 Primer arranque del stack (20 min)
 
 ```bash
-cd ~/sigab
+cd ~/sigah
 docker compose up -d
 
 # Seguir logs en vivo
@@ -263,12 +263,12 @@ docker exec ollama-gemma ollama list
 
 ```bash
 # Ejecutar el script de siembra
-docker exec sigab-backend python -m scripts.seed_demo
+docker exec sigah-backend python -m scripts.seed_demo
 # Crea: 25 equipos, 6 zonas, 10 órdenes, 5 preventivos, 3 alertas
 
 # Login en el navegador:
 #   Usuario: ADMIN001
-#   Password: sigab_admin_2026
+#   Password: sigah_admin_2026
 ```
 
 ### 1.13 Validación final del sábado (10 min)
@@ -288,17 +288,17 @@ Si algo falla → anota el error exacto, no lo arregles hoy. Mañana (domingo) r
 ### 1.14 Último paso del sábado: auto-arranque (5 min)
 
 ```bash
-# Crear servicio systemd para que SIGAB arranque solo al prender la PC
-sudo tee /etc/systemd/system/sigab.service > /dev/null <<EOF
+# Crear servicio systemd para que SIGAH arranque solo al prender la PC
+sudo tee /etc/systemd/system/sigah.service > /dev/null <<EOF
 [Unit]
-Description=SIGAB Stack (Docker Compose)
+Description=SIGAH Stack (Docker Compose)
 Requires=docker.service
 After=docker.service network-online.target
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/home/sigab/sigab
+WorkingDirectory=/home/sigah/sigah
 ExecStart=/usr/bin/docker compose up -d
 ExecStop=/usr/bin/docker compose down
 TimeoutStartSec=300
@@ -308,8 +308,8 @@ WantedBy=multi-user.target
 EOF
 
 sudo systemctl daemon-reload
-sudo systemctl enable sigab.service
-sudo systemctl status sigab.service
+sudo systemctl enable sigah.service
+sudo systemctl status sigah.service
 ```
 
 **Prueba el auto-arranque:** reinicia la ThinkCentre (`sudo reboot`). Al regresar, espera 60 s y abre `http://localhost:5173`. Debe cargar sin que tú hagas `docker compose up`.
@@ -318,11 +318,11 @@ sudo systemctl status sigab.service
 
 ## 2. Domingo 19 · abril — Día de pruebas visuales (todo el día)
 
-> **Mantra del domingo:** Hoy NO instalas nada nuevo. Solo USAS SIGAB y documentas qué se ve mal.
+> **Mantra del domingo:** Hoy NO instalas nada nuevo. Solo USAS SIGAH y documentas qué se ve mal.
 
 ### 2.1 Lista de flujos a probar exhaustivamente
 
-Por cada flujo, abre una nota en `~/sigab/_notas_domingo.md` y anota bugs:
+Por cada flujo, abre una nota en `~/sigah/_notas_domingo.md` y anota bugs:
 
 1. **Login** — probar bien, mal, olvidar password, cerrar sesión.
 2. **Dashboard** — ¿carga el mapa? ¿los KPIs tienen sentido? ¿SSE actualiza?
@@ -339,18 +339,18 @@ Por cada flujo, abre una nota en `~/sigab/_notas_domingo.md` y anota bugs:
 
 ```bash
 # Ver logs del contenedor específico
-docker compose logs -f sigab-backend   # o sigab-frontend
-docker compose logs --tail=200 sigab-backend | grep ERROR
+docker compose logs -f sigah-backend   # o sigah-frontend
+docker compose logs --tail=200 sigah-backend | grep ERROR
 
 # Reiniciar un contenedor puntual
-docker compose restart sigab-backend
+docker compose restart sigah-backend
 
 # Reset completo (sin borrar BD)
 docker compose down && docker compose up -d
 
 # Reset TOTAL (borra BD, re-seed)
 docker compose down -v && docker compose up -d
-docker exec sigab-backend python -m scripts.seed_demo
+docker exec sigah-backend python -m scripts.seed_demo
 ```
 
 ### 2.3 (Opcional, si hay tiempo) Configurar OpenClaw bot WhatsApp
@@ -358,7 +358,7 @@ docker exec sigab-backend python -m scripts.seed_demo
 Si terminas las pruebas temprano y quieres adelantar:
 
 ```bash
-cd ~/sigab/sigab-bot
+cd ~/sigah/sigah-bot
 npm install
 # Seguir instrucciones específicas del README del bot
 # Requiere: teléfono IMSS + ADB + Chromium
@@ -387,7 +387,7 @@ npm install
 ```
 SISTEMA OPERATIVO
 ☐ Ubuntu 24.04 LTS Desktop
-☐ Usuario "sigab" con sudo
+☐ Usuario "sigah" con sudo
 ☐ SSH habilitado
 
 HERRAMIENTAS DE SISTEMA
@@ -412,7 +412,7 @@ MODELOS IA
 ☐ gemma3:4b (o 1b si la RAM es justa) via Ollama
 
 REPO CLONADO Y CORRIENDO
-☐ ~/sigab con el código del prototipo
+☐ ~/sigah con el código del prototipo
 ☐ .env configurado
 ☐ docker compose up -d sin errores
 ☐ Los 4 contenedores en healthy
@@ -420,7 +420,7 @@ REPO CLONADO Y CORRIENDO
 ☐ http://localhost:8000/health responde {"status":"ok"}
 
 AUTO-ARRANQUE
-☐ systemd unit sigab.service habilitado
+☐ systemd unit sigah.service habilitado
 ☐ Prueba: reboot y sigue arriba
 
 DATOS DEMO
@@ -462,8 +462,8 @@ DATOS DEMO
 | `docker run hello-world` pide permisos | No cerraste sesión tras `usermod -aG docker`. Logout + login. |
 | `docker compose up` dice "port already in use" | Algo usa 5173/8000. `sudo lsof -i :5173` y mata el proceso. |
 | Ollama responde "model not found" | `docker exec ollama-gemma ollama pull gemma3:4b` |
-| Frontend carga pero queda en loading | Backend no responde. `docker compose logs sigab-backend` |
-| MySQL "connection refused" al backend | BD tarda ~20 s en arrancar. Espera. Si persiste: `docker compose restart sigab-backend` |
+| Frontend carga pero queda en loading | Backend no responde. `docker compose logs sigah-backend` |
+| MySQL "connection refused" al backend | BD tarda ~20 s en arrancar. Espera. Si persiste: `docker compose restart sigah-backend` |
 | La ThinkCentre se queda sin RAM con Gemma 4B | Bájalo a 1B: `docker exec ollama-gemma ollama pull gemma3:1b` y cambia `.env` |
 
 ---
@@ -471,7 +471,7 @@ DATOS DEMO
 ## 7. Cuando termines el sábado
 
 1. Toma captura de pantalla del Dashboard cargado (prueba de éxito).
-2. Reinicia la ThinkCentre y verifica que SIGAB vuelve solo.
+2. Reinicia la ThinkCentre y verifica que SIGAH vuelve solo.
 3. Déjala prendida durante el fin de semana (modo ahorro de energía OFF).
 4. Desde la Asus, prueba acceder: `http://<ip-thinkcentre-lan-casa>:5173`.
 5. Descansa. Mañana es día de PROBAR, no de configurar.
@@ -487,7 +487,7 @@ DATOS DEMO
 - ❌ Eliminar módulos → se hace después del Ambigu
 - ❌ OpenClaw bot → opcional, domingo si hay tiempo
 
-**La meta es simple:** tener SIGAB corriendo en la ThinkCentre para poder DEMOSTRARLO visualmente el martes.
+**La meta es simple:** tener SIGAH corriendo en la ThinkCentre para poder DEMOSTRARLO visualmente el martes.
 
 ---
 

@@ -6,10 +6,10 @@ import os
 
 # Configuración (En un entorno real usar variables de entorno)
 # Para pruebas locales simularemos el envío si no hay credenciales
-SMTP_SERVER = os.getenv("SIGAB_SMTP_SERVER", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SIGAB_SMTP_PORT", "587"))
-SMTP_USER = os.getenv("SIGAB_SMTP_USER", "") # Requerido para Gmail real
-SMTP_PASS = os.getenv("SIGAB_SMTP_PASS", "") # Requerido para Gmail real
+SMTP_SERVER = os.getenv("SIGAH_SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SIGAH_SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SIGAH_SMTP_USER", "") # Requerido para Gmail real
+SMTP_PASS = os.getenv("SIGAH_SMTP_PASS", "") # Requerido para Gmail real
 
 def enviar_reporte_email(destinatario: str, asunto: str, cuerpo: str, archivo_nombre: str, archivo_bytes: bytes):
     """Envía un reporte PDF por correo electrónico."""

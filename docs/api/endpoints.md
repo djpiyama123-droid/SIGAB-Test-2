@@ -1,4 +1,4 @@
-# SIGAB API — Referencia de Endpoints
+# SIGAH API — Referencia de Endpoints
 
 > **Base URL:** `http://localhost:8000/api`  
 > **Autenticación:** Bearer Token (JWT) en header `Authorization`  
@@ -16,7 +16,7 @@
 
 **Login — Request:**
 ```json
-{ "matricula": "ADMIN001", "password": "sigab_admin_2026" }
+{ "matricula": "ADMIN001", "password": "sigah_admin_2026" }
 ```
 
 **Login — Response:**
@@ -220,7 +220,7 @@
 |--------|------|-------------|
 | `GET` | `/health` | Estado del sistema |
 
-**Response:** `{ "status": "ok", "sistema": "SIGAB", "modo": "on-premise" }`
+**Response:** `{ "status": "ok", "sistema": "SIGAH", "modo": "on-premise" }`
 
 ---
 

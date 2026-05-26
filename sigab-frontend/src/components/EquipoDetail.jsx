@@ -3,7 +3,7 @@
 // Soporta: ver detalle, editar, eliminar
 // ============================================================
 import { useState, useEffect } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
 import { useToast } from './Toast';
 import EquipoForm from './EquipoForm';

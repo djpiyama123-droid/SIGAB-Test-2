@@ -1,7 +1,7 @@
 """
-config.py — Variables de configuración centralizadas del backend SIGAB.
+config.py — Variables de configuración centralizadas del backend SIGAH.
 
-Todas las configuraciones se leen de variables de entorno con prefijo SIGAB_*.
+Todas las configuraciones se leen de variables de entorno con prefijo SIGAH_*.
 Se proporcionan valores por defecto para desarrollo local.
 
 Secciones:
@@ -16,46 +16,46 @@ import aiomysql
 import os
 
 DB_CONFIG = {
-    "host": os.getenv("SIGAB_DB_HOST", "127.0.0.1"),
-    "port": int(os.getenv("SIGAB_DB_PORT", 3306)),
-    "user": os.getenv("SIGAB_DB_USER", "sigab_user"),
-    "password": os.getenv("SIGAB_DB_PASS", "sigab_pass_2026"),
-    "db": os.getenv("SIGAB_DB_NAME", "sigab"),
+    "host": os.getenv("SIGAH_DB_HOST", "127.0.0.1"),
+    "port": int(os.getenv("SIGAH_DB_PORT", 3306)),
+    "user": os.getenv("SIGAH_DB_USER", "sigah_user"),
+    "password": os.getenv("SIGAH_DB_PASS", "REDACTED_DB_PASS"),
+    "db": os.getenv("SIGAH_DB_NAME", "sigah"),
     "autocommit": True,
 }
 
-UPLOAD_DIR = os.getenv("SIGAB_UPLOAD_DIR", "./static/uploads")
+UPLOAD_DIR = os.getenv("SIGAH_UPLOAD_DIR", "./static/uploads")
 MAX_UPLOAD_MB = 10
 
 # ── Autenticación JWT ─────────────────────────────────────────────
-# SIGAB_JWT_SECRET es OBLIGATORIO en producción. En dev cae a un valor
+# SIGAH_JWT_SECRET es OBLIGATORIO en producción. En dev cae a un valor
 # fijo (no aleatorio) para no invalidar sesiones al reiniciar.
 JWT_SECRET = os.getenv(
-    "SIGAB_JWT_SECRET",
+    "SIGAH_JWT_SECRET",
     "REDACTED_JWT_SECRET",
 )
-JWT_ALG = os.getenv("SIGAB_JWT_ALG", "HS256")
-ACCESS_TTL_MIN = int(os.getenv("SIGAB_ACCESS_TTL_MIN", "60"))
-REFRESH_TTL_DAYS = int(os.getenv("SIGAB_REFRESH_TTL_DAYS", "7"))
+JWT_ALG = os.getenv("SIGAH_JWT_ALG", "HS256")
+ACCESS_TTL_MIN = int(os.getenv("SIGAH_ACCESS_TTL_MIN", "60"))
+REFRESH_TTL_DAYS = int(os.getenv("SIGAH_REFRESH_TTL_DAYS", "7"))
 
 # URL base pública para embeber en QR. Puede ser IP LAN, hostname o dominio.
-PUBLIC_BASE_URL = os.getenv("SIGAB_PUBLIC_BASE_URL", "http://localhost:5173")
+PUBLIC_BASE_URL = os.getenv("SIGAH_PUBLIC_BASE_URL", "http://localhost:5173")
 
 # CORS extra (separados por coma) para permitir escaneo desde celulares LAN
-_cors_env = os.getenv("SIGAB_CORS_EXTRA", "")
+_cors_env = os.getenv("SIGAH_CORS_EXTRA", "")
 _cors_lan = ["http://192.168.1.125:5173", "http://192.168.1.125:5174"]
 CORS_EXTRA = [*_cors_lan, *[o.strip() for o in _cors_env.split(",") if o.strip()]]
 
 # ── IA Local (Qwen / Gemma via Ollama) ────────────────────────────
 # Ollama se instala en el mismo servidor (Lenovo ThinkCentre) y expone :11434
-OLLAMA_HOST = os.getenv("SIGAB_OLLAMA_HOST", "http://localhost:11434")
-GEMMA_MODEL = os.getenv("SIGAB_GEMMA_MODEL", "gemma3:4b")
-QWEN_MODEL = os.getenv("SIGAB_QWEN_MODEL", "qwen2.5:7b")
+OLLAMA_HOST = os.getenv("SIGAH_OLLAMA_HOST", "http://localhost:11434")
+GEMMA_MODEL = os.getenv("SIGAH_GEMMA_MODEL", "gemma3:4b")
+QWEN_MODEL = os.getenv("SIGAH_QWEN_MODEL", "qwen2.5:7b")
 
 # ── OCR Pipeline Config ──────────────────────────────────────────
-OCR_CONFIDENCE_THRESHOLD = float(os.getenv("SIGAB_OCR_CONFIDENCE", "0.85"))
-OCR_MIN_WORDS_THRESHOLD = int(os.getenv("SIGAB_OCR_MIN_WORDS", "5"))
-GEMINI_API_KEY = os.getenv("SIGAB_GEMINI_API_KEY", "")
+OCR_CONFIDENCE_THRESHOLD = float(os.getenv("SIGAH_OCR_CONFIDENCE", "0.85"))
+OCR_MIN_WORDS_THRESHOLD = int(os.getenv("SIGAH_OCR_MIN_WORDS", "5"))
+GEMINI_API_KEY = os.getenv("SIGAH_GEMINI_API_KEY", "")
 
 
 async def get_db():

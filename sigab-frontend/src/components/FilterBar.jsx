@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 
 export default function FilterBar({ filtros = {}, onChange }) {
   const [areas, setAreas] = useState([]);
@@ -18,8 +18,8 @@ export default function FilterBar({ filtros = {}, onChange }) {
   const handleBuscar = (e) => {
     const val = e.target.value;
     setBuscar(val);
-    clearTimeout(window._sigabSearch);
-    window._sigabSearch = setTimeout(() => {
+    clearTimeout(window._sigahSearch);
+    window._sigahSearch = setTimeout(() => {
       onChange({ ...filtros, buscar: val || undefined });
     }, 400);
   };

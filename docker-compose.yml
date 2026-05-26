@@ -1,7 +1,7 @@
 version: '3.8'
 
 # ================================================================
-# SIGAB — Docker Compose (100% On-Premise)
+# SIGAH — Docker Compose (100% On-Premise)
 # HGR No.1 IMSS Tijuana
 # ================================================================
 
@@ -9,18 +9,18 @@ services:
   # ── MySQL 8.0 ─────────────────────────────────────────────
   mysql:
     image: mysql:8.0
-    container_name: sigab-mysql
+    container_name: sigah-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-sigab_root_2026}
-      MYSQL_DATABASE:      ${DB_NAME:-sigab}
-      MYSQL_USER:          ${DB_USER:-sigab_user}
-      MYSQL_PASSWORD:      ${DB_PASS:-sigab_pass_2026}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-REDACTED_DB_ROOT_PASS}
+      MYSQL_DATABASE:      ${DB_NAME:-sigah}
+      MYSQL_USER:          ${DB_USER:-sigah_user}
+      MYSQL_PASSWORD:      ${DB_PASS:-REDACTED_DB_PASS}
     ports:
       - "3306:3306"
     volumes:
-      - sigab_mysql_data:/var/lib/mysql
-      - ./database/sigab_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - sigah_mysql_data:/var/lib/mysql
+      - ./database/sigah_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
       - ./database/seed_data.sql:/docker-entrypoint-initdb.d/02_seed.sql
     command: >
       --default-authentication-plugin=mysql_native_password
@@ -29,7 +29,7 @@ services:
       --event-scheduler=ON
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1",
-             "-u", "${DB_USER:-sigab_user}", "-p${DB_PASS:-sigab_pass_2026}"]
+             "-u", "${DB_USER:-sigah_user}", "-p${DB_PASS:-REDACTED_DB_PASS}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -38,30 +38,30 @@ services:
   # ── FastAPI Backend ────────────────────────────────────────
   backend:
     build:
-      context: ./sigab-backend
+      context: ./sigah-backend
       dockerfile: Dockerfile
-    container_name: sigab-backend
+    container_name: sigah-backend
     restart: always
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     environment:
-      SIGAB_DB_HOST: mysql
-      SIGAB_DB_PORT: 3306
-      SIGAB_DB_USER: ${DB_USER:-sigab_user}
-      SIGAB_DB_PASS: ${DB_PASS:-sigab_pass_2026}
-      SIGAB_DB_NAME: ${DB_NAME:-sigab}
-      SIGAB_UPLOAD_DIR: /app/static/uploads
-      SIGAB_JWT_SECRET: ${SIGAB_JWT_SECRET:-REDACTED_JWT_SECRET}
-      SIGAB_PUBLIC_BASE_URL: ${SIGAB_PUBLIC_BASE_URL:-http://localhost:5173}
-      SIGAB_CORS_EXTRA: ${SIGAB_CORS_EXTRA:-}
-      SIGAB_OLLAMA_HOST: ${SIGAB_OLLAMA_HOST:-http://host-gateway:11434}
-      SIGAB_GEMMA_MODEL: ${SIGAB_GEMMA_MODEL:-qwen-claw}
-      SIGAB_VISION_MODEL: ${SIGAB_VISION_MODEL:-gemma4-claw}
-      SIGAB_DISABLE_COPILOT: ${SIGAB_DISABLE_COPILOT:-0}
+      SIGAH_DB_HOST: mysql
+      SIGAH_DB_PORT: 3306
+      SIGAH_DB_USER: ${DB_USER:-sigah_user}
+      SIGAH_DB_PASS: ${DB_PASS:-REDACTED_DB_PASS}
+      SIGAH_DB_NAME: ${DB_NAME:-sigah}
+      SIGAH_UPLOAD_DIR: /app/static/uploads
+      SIGAH_JWT_SECRET: ${SIGAH_JWT_SECRET:-REDACTED_JWT_SECRET}
+      SIGAH_PUBLIC_BASE_URL: ${SIGAH_PUBLIC_BASE_URL:-http://localhost:5173}
+      SIGAH_CORS_EXTRA: ${SIGAH_CORS_EXTRA:-}
+      SIGAH_OLLAMA_HOST: ${SIGAH_OLLAMA_HOST:-http://host-gateway:11434}
+      SIGAH_GEMMA_MODEL: ${SIGAH_GEMMA_MODEL:-qwen-claw}
+      SIGAH_VISION_MODEL: ${SIGAH_VISION_MODEL:-gemma4-claw}
+      SIGAH_DISABLE_COPILOT: ${SIGAH_DISABLE_COPILOT:-0}
     extra_hosts:
       - "host-gateway:host-gateway"
     volumes:
-      - sigab_uploads:/app/static/uploads
+      - sigah_uploads:/app/static/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -76,28 +76,28 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=hostedapps_default"
-      - "traefik.http.routers.sigab-api.rule=Host(`sigab.129-121-100-147.sslip.io`) && (PathPrefix(`/api`) || PathPrefix(`/static`) || PathPrefix(`/health`) || PathPrefix(`/docs`))"
-      - "traefik.http.routers.sigab-api.entrypoints=web"
-      - "traefik.http.routers.sigab-api.priority=100"
-      - "traefik.http.routers.sigab-api.middlewares=sigab-redirect@docker"
-      - "traefik.http.routers.sigab-api.service=sigab-api-svc"
-      - "traefik.http.routers.sigab-api-s.rule=Host(`sigab.129-121-100-147.sslip.io`) && (PathPrefix(`/api`) || PathPrefix(`/static`) || PathPrefix(`/health`) || PathPrefix(`/docs`))"
-      - "traefik.http.routers.sigab-api-s.entrypoints=websecure"
-      - "traefik.http.routers.sigab-api-s.priority=100"
-      - "traefik.http.routers.sigab-api-s.service=sigab-api-svc"
-      - "traefik.http.routers.sigab-api-s.tls=true"
-      - "traefik.http.routers.sigab-api-s.tls.certresolver=challenger"
-      - "traefik.http.services.sigab-api-svc.loadbalancer.server.port=8000"
-      - "traefik.http.middlewares.sigab-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.sigab-redirect.redirectscheme.permanent=true"
+      - "traefik.http.routers.sigah-api.rule=Host(`sigah.129-121-100-147.sslip.io`) && (PathPrefix(`/api`) || PathPrefix(`/static`) || PathPrefix(`/health`) || PathPrefix(`/docs`))"
+      - "traefik.http.routers.sigah-api.entrypoints=web"
+      - "traefik.http.routers.sigah-api.priority=100"
+      - "traefik.http.routers.sigah-api.middlewares=sigah-redirect@docker"
+      - "traefik.http.routers.sigah-api.service=sigah-api-svc"
+      - "traefik.http.routers.sigah-api-s.rule=Host(`sigah.129-121-100-147.sslip.io`) && (PathPrefix(`/api`) || PathPrefix(`/static`) || PathPrefix(`/health`) || PathPrefix(`/docs`))"
+      - "traefik.http.routers.sigah-api-s.entrypoints=websecure"
+      - "traefik.http.routers.sigah-api-s.priority=100"
+      - "traefik.http.routers.sigah-api-s.service=sigah-api-svc"
+      - "traefik.http.routers.sigah-api-s.tls=true"
+      - "traefik.http.routers.sigah-api-s.tls.certresolver=challenger"
+      - "traefik.http.services.sigah-api-svc.loadbalancer.server.port=8000"
+      - "traefik.http.middlewares.sigah-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sigah-redirect.redirectscheme.permanent=true"
 
   # ── Frontend estático (nginx:alpine sirviendo build) ─────────
   frontend:
     image: nginx:alpine
-    container_name: sigab-frontend
+    container_name: sigah-frontend
     restart: always
     volumes:
-      - ./sigab-frontend/dist:/usr/share/nginx/html:ro
+      - ./sigah-frontend/dist:/usr/share/nginx/html:ro
       - ./nginx-frontend.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - backend
@@ -106,27 +106,27 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=hostedapps_default"
-      - "traefik.http.routers.sigab-fe.rule=Host(`129.121.100.147`) || Host(`sigab.129-121-100-147.sslip.io`)"
-      - "traefik.http.routers.sigab-fe.entrypoints=web"
-      - "traefik.http.routers.sigab-fe.middlewares=sigab-redirect@docker"
-      - "traefik.http.routers.sigab-fe.priority=10"
-      - "traefik.http.routers.sigab-fe.service=sigab-fe-svc"
-      - "traefik.http.routers.sigab-fe-s.rule=Host(`sigab.129-121-100-147.sslip.io`)"
-      - "traefik.http.routers.sigab-fe-s.entrypoints=websecure"
-      - "traefik.http.routers.sigab-fe-s.priority=10"
-      - "traefik.http.routers.sigab-fe-s.service=sigab-fe-svc"
-      - "traefik.http.routers.sigab-fe-s.tls=true"
-      - "traefik.http.routers.sigab-fe-s.tls.certresolver=challenger"
-      - "traefik.http.services.sigab-fe-svc.loadbalancer.server.port=80"
+      - "traefik.http.routers.sigah-fe.rule=Host(`129.121.100.147`) || Host(`sigah.129-121-100-147.sslip.io`)"
+      - "traefik.http.routers.sigah-fe.entrypoints=web"
+      - "traefik.http.routers.sigah-fe.middlewares=sigah-redirect@docker"
+      - "traefik.http.routers.sigah-fe.priority=10"
+      - "traefik.http.routers.sigah-fe.service=sigah-fe-svc"
+      - "traefik.http.routers.sigah-fe-s.rule=Host(`sigah.129-121-100-147.sslip.io`)"
+      - "traefik.http.routers.sigah-fe-s.entrypoints=websecure"
+      - "traefik.http.routers.sigah-fe-s.priority=10"
+      - "traefik.http.routers.sigah-fe-s.service=sigah-fe-svc"
+      - "traefik.http.routers.sigah-fe-s.tls=true"
+      - "traefik.http.routers.sigah-fe-s.tls.certresolver=challenger"
+      - "traefik.http.services.sigah-fe-svc.loadbalancer.server.port=80"
 
 volumes:
-  sigab_mysql_data:
-    name: sigab_mysql_data
-  sigab_uploads:
-    name: sigab_uploads
+  sigah_mysql_data:
+    name: sigah_mysql_data
+  sigah_uploads:
+    name: sigah_uploads
 
 networks:
   default:
-    name: sigab_default
+    name: sigah_default
   hostedapps_default:
     external: true

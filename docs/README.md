@@ -1,4 +1,4 @@
-# SIGAB — Índice de Documentación
+# SIGAH — Índice de Documentación
 
 > Documentación técnica y de negocio del Sistema Integral de Gestión de Activos Biomédicos.
 
@@ -10,9 +10,9 @@ Diagramas de flujo, organigramas e infraestructura del sistema.
 
 | Documento | Descripción |
 |-----------|-------------|
-| [Diagramas de Flujo](arquitectura/SIGAB_Diagramas_Flujo.html) | Flujos operativos del sistema |
-| [Organigramas](arquitectura/SIGAB_Organigramas.html) | Estructura organizacional |
-| [Layout del Taller](arquitectura/SIGAB_Layout_Taller.html) | Distribución física del taller biomédico |
+| [Diagramas de Flujo](arquitectura/SIGAH_Diagramas_Flujo.html) | Flujos operativos del sistema |
+| [Organigramas](arquitectura/SIGAH_Organigramas.html) | Estructura organizacional |
+| [Layout del Taller](arquitectura/SIGAH_Layout_Taller.html) | Distribución física del taller biomédico |
 | [Flujo Operativo (Mermaid)](arquitectura/diagrama_flujo_operativo.mermaid) | Diagrama en formato Mermaid |
 | [Implementación (Mermaid)](arquitectura/diagrama_implementacion.mermaid) | Plan de implementación en Mermaid |
 
@@ -24,12 +24,12 @@ Estrategia, planes maestros y documentación de negocio.
 
 | Documento | Descripción |
 |-----------|-------------|
-| [Plan Maestro de Implementación](negocio/SIGAB_PlanMaestro_Implementacion.md) | Plan completo de implementación del sistema |
-| [Estrategia Financiera V2](negocio/SIGAB_Estrategia_FinancieraV2.md) | Modelo de negocio y estrategia financiera |
-| [UI ModernStack](negocio/SIGAB_UI_ModernStack.md) | Especificaciones de diseño UI/UX |
-| [Reporte de Mejoras V1](negocio/SIGAB_Reporte_Mejoras_v1.md) | Registro de mejoras implementadas |
-| [Guion Demo](negocio/SIGAB_Guion_Demo_CarlosOswaldo_17Abr2026.md) | Guion para demostración en campo |
-| [Validación NotebookLM](negocio/SIGAB_Validacion_NotebookLM.md) | Validación con Google NotebookLM |
+| [Plan Maestro de Implementación](negocio/SIGAH_PlanMaestro_Implementacion.md) | Plan completo de implementación del sistema |
+| [Estrategia Financiera V2](negocio/SIGAH_Estrategia_FinancieraV2.md) | Modelo de negocio y estrategia financiera |
+| [UI ModernStack](negocio/SIGAH_UI_ModernStack.md) | Especificaciones de diseño UI/UX |
+| [Reporte de Mejoras V1](negocio/SIGAH_Reporte_Mejoras_v1.md) | Registro de mejoras implementadas |
+| [Guion Demo](negocio/SIGAH_Guion_Demo_CarlosOswaldo_17Abr2026.md) | Guion para demostración en campo |
+| [Validación NotebookLM](negocio/SIGAH_Validacion_NotebookLM.md) | Validación con Google NotebookLM |
 
 ---
 
@@ -45,7 +45,7 @@ Secciones del estudio técnico del proyecto.
 | 3.4 | [Distribución de Planta](estudios_tecnicos/Seccion_3.4_DistribucionPlanta.md) |
 | 3.5 | [Organigrama](estudios_tecnicos/Seccion_3.5_Organigrama.md) |
 | 3.6 | [Aspectos Legales](estudios_tecnicos/Seccion_3.6_AspectosLegales.md) |
-| 3.7 | [Análisis de Riesgos y Viabilidad](estudios_tecnicos/SIGAB_Analisis_Riesgos_Viabilidad.md) |
+| 3.7 | [Análisis de Riesgos y Viabilidad](estudios_tecnicos/SIGAH_Analisis_Riesgos_Viabilidad.md) |
 ---
 
 ## 💰 Estudios Económicos
@@ -59,7 +59,7 @@ Análisis financiero y evaluación de inversión.
 | 4.3 | [Punto de Equilibrio](estudios_economicos/4_3_Punto_de_Equilibrio.md) |
 | 4.4 | [Pro Forma](estudios_economicos/4_4_Pro_Forma.md) |
 | 4.5 | [VPN / TMAR / TIR](estudios_economicos/4_5_VPN_TMAR_TIR.md) |
-| — | [Modelo Financiero Excel](estudios_economicos/assets/SIGAB_Modelo_Financiero.xlsx) |
+| — | [Modelo Financiero Excel](estudios_economicos/assets/SIGAH_Modelo_Financiero.xlsx) |
 
 ---
 
@@ -73,7 +73,7 @@ Planes de instalación, go-live y operación en campo.
 | [Instrucciones de Ejecución](operacion/ANTIGRAVITY_EXECUTE_NOW.md) | Pasos de ejecución técnica |
 | [Checklist Instalación](operacion/Checklist_Instalacion_ThinkCentre_Clinica1.md) | Checklist del servidor |
 | [Plan Instalación ThinkCentre](operacion/Plan_Instalacion_ThinkCentre_Sab18_Lun20.md) | Plan de instalación física |
-| [Arranque Quijarro](operacion/SIGAB_Arranque_Quijarro_AsusTUF.md) | Arranque en equipo alterno |
+| [Arranque Quijarro](operacion/SIGAH_Arranque_Quijarro_AsusTUF.md) | Arranque en equipo alterno |
 
 ---
 
@@ -83,9 +83,9 @@ Material para presentaciones ejecutivas.
 
 | Archivo | Formato |
 |---------|---------|
-| [Presentación Ejecutiva](presentaciones/SIGAB_Presentacion_Ejecutiva.pdf) | PDF |
-| [Presentación Ejecutiva](presentaciones/SIGAB_Presentacion_Ejecutiva.pptx) | PPTX |
-| [Template Inversionista](presentaciones/SIGAB_DocInversionista_v3_Template.docx) | DOCX |
+| [Presentación Ejecutiva](presentaciones/SIGAH_Presentacion_Ejecutiva.pdf) | PDF |
+| [Presentación Ejecutiva](presentaciones/SIGAH_Presentacion_Ejecutiva.pptx) | PPTX |
+| [Template Inversionista](presentaciones/SIGAH_DocInversionista_v3_Template.docx) | DOCX |
 | `slides/` | Imágenes de los 12 slides |
 
 ---

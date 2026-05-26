@@ -360,7 +360,7 @@ async def escanear_os_imss(
     session: AsyncSession = Depends(get_async_session),
 ):
     """
-    Escanea una hoja física en formato SIGAB-IMSS-OS-V3 usando Gemma 3:4b
+    Escanea una hoja física en formato SIGAH-IMSS-OS-V3 usando Gemma 3:4b
     (local) con fallback a Gemini 1.5 Flash. Extrae los campos y opcionalmente
     crea la Orden de Servicio en estado 'pendiente_validacion'.
 

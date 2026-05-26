@@ -4,12 +4,12 @@ import os
 
 DB_HOST   = os.getenv("DB_HOST", "127.0.0.1")
 DB_PORT   = int(os.getenv("DB_PORT", "3306"))
-DB_USER   = os.getenv("DB_USER", "sigab_user")
-DB_PASS   = os.getenv("DB_PASS", "sigab_pass_2026")
+DB_USER   = os.getenv("DB_USER", "sigah_user")
+DB_PASS   = os.getenv("DB_PASS", "REDACTED_DB_PASS")
 
 def main():
     src = pymysql.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, password=DB_PASS, database="dummyequipomedicoimss", cursorclass=pymysql.cursors.DictCursor)
-    tgt = pymysql.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, password=DB_PASS, database="sigab", cursorclass=pymysql.cursors.DictCursor)
+    tgt = pymysql.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, password=DB_PASS, database="sigah", cursorclass=pymysql.cursors.DictCursor)
 
     try:
         # ── 1. MIGRAR REPORTES (CORRECTIVOS) ─────────────────────

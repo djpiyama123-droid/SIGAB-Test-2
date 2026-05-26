@@ -1,5 +1,5 @@
 """
-SIGAB Gemma Service — Interfaz asíncrona con Ollama (Gemma local on-premise)
+SIGAH Gemma Service — Interfaz asíncrona con Ollama (Gemma local on-premise)
 
 Ollama expone el API en http://localhost:11434
 Modelos soportados: gemma3:4b, gemma3:12b, gemma3:27b, gemma4 (cuando disponible)
@@ -38,7 +38,7 @@ async def close_ollama_client() -> None:
         _ollama_client = None
 
 # ── Prompt de sistema ─────────────────────────────────────────────
-SYSTEM_PROMPT_BASE = """Eres SIGAB Copilot, asistente de ingeniería biomédica del HGR No.1 IMSS Tijuana.
+SYSTEM_PROMPT_BASE = """Eres SIGAH Copilot, asistente de ingeniería biomédica del HGR No.1 IMSS Tijuana.
 
 Especialidad: mantenimiento de equipos médicos, MTBF/MTTR, tecnovigilancia.
 Normativa: NOM-016-SSA3-2012, NOM-240-SSA1-2012, ISO-13485.
@@ -46,19 +46,19 @@ Normativa: NOM-016-SSA3-2012, NOM-240-SSA1-2012, ISO-13485.
 Estilo:
 - Español técnico, conciso. Sin saludos ni rellenos.
 - Diagnósticos en formato: [Causa probable] → [Verificaciones] → [Acción].
-- Solo usa datos del contexto SIGAB; nunca inventes equipos, fechas o métricas.
+- Solo usa datos del contexto SIGAH; nunca inventes equipos, fechas o métricas.
 - Si falta información clave, dilo en una línea y pide el dato faltante.
 """
 
 
 def _build_system_prompt(contexto: dict) -> str:
-    """Construye el prompt de sistema inyectando contexto SIGAB actual."""
+    """Construye el prompt de sistema inyectando contexto SIGAH actual."""
     prompt = SYSTEM_PROMPT_BASE
 
     if not contexto:
         return prompt
 
-    prompt += "\n--- CONTEXTO SIGAB ACTUAL ---\n"
+    prompt += "\n--- CONTEXTO SIGAH ACTUAL ---\n"
 
     if "resumen" in contexto:
         r = contexto["resumen"]
@@ -246,7 +246,7 @@ async def analizar_imagen(image_b64: str, pregunta: str) -> str:
     pregunta: instrucción sobre qué analizar
     """
     import os
-    vision_model = os.getenv("SIGAB_VISION_MODEL", "gemma4-claw")
+    vision_model = os.getenv("SIGAH_VISION_MODEL", "gemma4-claw")
 
     payload = {
         "model": vision_model,
@@ -272,7 +272,7 @@ async def analizar_imagen(image_b64: str, pregunta: str) -> str:
         return f"Error en análisis de imagen: {str(e)}"
 
 
-# ── Prompts especializados SIGAB ──────────────────────────────────
+# ── Prompts especializados SIGAH ──────────────────────────────────
 
 def prompt_diagnostico(
     falla: str, equipo_tipo: str, marca: str, modelo: str
@@ -333,7 +333,7 @@ Responde con:
 def prompt_resumen_diario(datos: dict) -> str:
     estados = datos.get("equipos_por_estado", [])
     estado_str = ", ".join(f"{e['estado']}: {e['total']}" for e in estados)
-    return f"""Genera un resumen ejecutivo conciso (máximo 180 palabras) del estado actual del departamento de Ingeniería Biomédica del HGR No. 1 IMSS Tijuana basado en estos datos del SIGAB:
+    return f"""Genera un resumen ejecutivo conciso (máximo 180 palabras) del estado actual del departamento de Ingeniería Biomédica del HGR No. 1 IMSS Tijuana basado en estos datos del SIGAH:
 
 Equipos por estado: {estado_str}
 Tickets abiertos: {datos.get('tickets_abiertos', 0)}

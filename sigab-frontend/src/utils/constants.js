@@ -1,5 +1,5 @@
 /**
- * SIGAB Constants
+ * SIGAH Constants
  * Los tokens de color y estado se mantienen en tokens.js.
  * Este archivo re-exporta para compatibilidad con código existente.
  */

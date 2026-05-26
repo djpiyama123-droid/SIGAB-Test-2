@@ -1,7 +1,7 @@
 {
-  "name": "sigab-bot",
+  "name": "sigah-bot",
   "version": "1.0.0",
-  "description": "SIGAB WhatsApp Bot — Baileys (100% local, sin APIs de paga)",
+  "description": "SIGAH WhatsApp Bot — Baileys (100% local, sin APIs de paga)",
   "main": "index.js",
   "type": "module",
   "scripts": {

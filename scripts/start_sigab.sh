@@ -1,9 +1,9 @@
 #!/bin/bash
 # ================================================================
-# SIGAB — Script de arranque rápido (sin Docker)
+# SIGAH — Script de arranque rápido (sin Docker)
 # Hospital General Regional No. 1 — IMSS Tijuana
 # Entorno: WSL2 Ubuntu 24.04 / Lenovo ThinkCentre M720q
-# Uso: bash start_sigab.sh [--reset-db] [--no-bot]
+# Uso: bash start_sigah.sh [--reset-db] [--no-bot]
 # ================================================================
 
 set -e
@@ -16,13 +16,13 @@ NO_BOT=false
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 LOG_DIR="$PROJECT_DIR/logs"
-BACKEND_DIR="$PROJECT_DIR/sigab-backend"
-FRONTEND_DIR="$PROJECT_DIR/sigab-frontend"
-BOT_DIR="$PROJECT_DIR/sigab-bot"
+BACKEND_DIR="$PROJECT_DIR/sigah-backend"
+FRONTEND_DIR="$PROJECT_DIR/sigah-frontend"
+BOT_DIR="$PROJECT_DIR/sigah-bot"
 
-DB_USER="${DB_USER:-sigab_user}"
-DB_PASS="${DB_PASS:-sigab_pass_2026}"
-DB_NAME="${DB_NAME:-sigab}"
+DB_USER="${DB_USER:-sigah_user}"
+DB_PASS="${DB_PASS:-REDACTED_DB_PASS}"
+DB_NAME="${DB_NAME:-sigah}"
 
 CYAN='\033[0;36m'
 GREEN='\033[0;32m'
@@ -32,7 +32,7 @@ NC='\033[0m'
 
 echo -e "${CYAN}"
 echo "═══════════════════════════════════════════════"
-echo "  SIGAB — Sistema de Gestión de Activos Biomédicos"
+echo "  SIGAH — Sistema de Gestión de Activos Biomédicos"
 echo "  HGR No.1 IMSS Tijuana — On-Premise"
 echo "  Lenovo ThinkCentre M720q (i5 / 8GB / 256GB)"
 echo "═══════════════════════════════════════════════${NC}"
@@ -63,11 +63,11 @@ echo -e "    ${GREEN}MySQL: OK${NC}"
 echo -e "\n${YELLOW}[2/5] Aplicando esquema de base de datos...${NC}"
 if [[ "$RESET_DB" == "true" ]]; then
     echo "    Modo --reset-db: recreando tablas..."
-    mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$PROJECT_DIR/database/sigab_schema.sql" 2>/dev/null || true
+    mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$PROJECT_DIR/database/sigah_schema.sql" 2>/dev/null || true
     mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$PROJECT_DIR/database/seed_data.sql" 2>/dev/null || true
     echo -e "    ${GREEN}Schema + Seed: OK${NC}"
 else
-    mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$PROJECT_DIR/database/sigab_schema.sql" 2>/dev/null || true
+    mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$PROJECT_DIR/database/sigah_schema.sql" 2>/dev/null || true
     echo -e "    ${GREEN}Schema: OK (sin cambios si ya existía)${NC}"
 fi
 
@@ -87,11 +87,11 @@ pip install -r requirements.txt -q --no-cache-dir
 
 mkdir -p static/uploads
 
-export SIGAB_DB_HOST="${DB_HOST:-127.0.0.1}"
-export SIGAB_DB_PORT="${DB_PORT:-3306}"
-export SIGAB_DB_USER="$DB_USER"
-export SIGAB_DB_PASS="$DB_PASS"
-export SIGAB_DB_NAME="$DB_NAME"
+export SIGAH_DB_HOST="${DB_HOST:-127.0.0.1}"
+export SIGAH_DB_PORT="${DB_PORT:-3306}"
+export SIGAH_DB_USER="$DB_USER"
+export SIGAH_DB_PASS="$DB_PASS"
+export SIGAH_DB_NAME="$DB_NAME"
 
 nohup uvicorn main:app --host 0.0.0.0 --port 8000 \
     > "$LOG_DIR/backend.log" 2>&1 &
@@ -131,8 +131,8 @@ cd "$PROJECT_DIR"
 # ── 5. Iniciar Bot WhatsApp (Baileys) ─────────────────────────
 BOT_PID=""
 if [[ "$NO_BOT" == "false" && -d "$BOT_DIR" ]]; then
-    echo -e "\n${YELLOW}[5/5] Iniciando SIGAB Bot (WhatsApp)...${NC}"
-    pkill -f "sigab-bot" 2>/dev/null && sleep 1 || true
+    echo -e "\n${YELLOW}[5/5] Iniciando SIGAH Bot (WhatsApp)...${NC}"
+    pkill -f "sigah-bot" 2>/dev/null && sleep 1 || true
 
     cd "$BOT_DIR"
 
@@ -155,7 +155,7 @@ fi
 # ── Resumen ────────────────────────────────────────────────────
 echo -e "\n${GREEN}"
 echo "═══════════════════════════════════════════════"
-echo "  SIGAB activo — Lenovo ThinkCentre M720q"
+echo "  SIGAH activo — Lenovo ThinkCentre M720q"
 echo ""
 echo "  Dashboard:    http://localhost:5173"
 echo "  Modo TV:      http://localhost:5173/tv"
@@ -164,7 +164,7 @@ echo "  SSE Stream:   http://localhost:8000/api/dashboard/stream"
 echo "  Bot Logs:     tail -f $LOG_DIR/bot.log"
 echo "  Logs:         $LOG_DIR/"
 echo ""
-echo "  Para detener: bash scripts/stop_sigab.sh"
+echo "  Para detener: bash scripts/stop_sigah.sh"
 echo "═══════════════════════════════════════════════${NC}"
 
 # Guardar PIDs para stop script

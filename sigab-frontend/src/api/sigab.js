@@ -1,6 +1,6 @@
 /**
- * @module api/sigab
- * @description Cliente HTTP centralizado del frontend SIGAB.
+ * @module api/sigah
+ * @description Cliente HTTP centralizado del frontend SIGAH.
  *
  * Provee un objeto `api` con métodos para todos los endpoints del backend.
  * Utiliza Axios con interceptores automáticos para:
@@ -9,7 +9,7 @@
  * - Gestión de blobs para descargas PDF/Excel (responseType: 'blob')
  *
  * Patrón de uso:
- *   import { api } from '../api/sigab';
+ *   import { api } from '../api/sigah';
  *   const equipos = await api.getEquipos({ estado: 'operativo' });
  *
  * @requires axios
@@ -47,7 +47,7 @@ client.interceptors.response.use(
          window.location.href = '/login';
       }
     }
-    console.error('SIGAB API Error:', err.response?.status, err.config?.url);
+    console.error('SIGAH API Error:', err.response?.status, err.config?.url);
     return Promise.reject(err);
   }
 );
@@ -208,7 +208,7 @@ export const api = {
   descargarPdfNom240: (id) =>
     client.get(`/tecnovigilancia/${id}/pdf`, { responseType: 'blob' }),
 
-  // ── SIGAB Copilot (IA Local Gemma) ────────────────────────────
+  // ── SIGAH Copilot (IA Local Gemma) ────────────────────────────
   getCopilotEstado: () => client.get('/copilot/estado'),
   getCopilotPromptsRapidos: () => client.get('/copilot/prompts-rapidos'),
   copilotDiagnostico: (data) => client.post('/copilot/diagnostico', data),

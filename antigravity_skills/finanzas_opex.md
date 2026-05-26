@@ -1,7 +1,7 @@
-# Skill: Análisis Financiero OpEx y Punto de Equilibrio SIGAB
+# Skill: Análisis Financiero OpEx y Punto de Equilibrio SIGAH
 
 ## Goal
-Construir la tabla de punto de equilibrio financiero del sistema SIGAB y validar matemáticamente la viabilidad del gasto operativo mensual (OpEx) proyectado en $34,049.82 MXN, contrastándolo justificadamente contra el salario mínimo fronterizo vigente en 2026 de $440.87 MXN diarios. El análisis debe demostrar que el costo total de SIGAB es inferior al costo de UN ingeniero biomédico dedicado a tareas manuales equivalentes.
+Construir la tabla de punto de equilibrio financiero del sistema SIGAH y validar matemáticamente la viabilidad del gasto operativo mensual (OpEx) proyectado en $34,049.82 MXN, contrastándolo justificadamente contra el salario mínimo fronterizo vigente en 2026 de $440.87 MXN diarios. El análisis debe demostrar que el costo total de SIGAH es inferior al costo de UN ingeniero biomédico dedicado a tareas manuales equivalentes.
 
 ## Instructions
 
@@ -19,15 +19,15 @@ Construir la tabla de punto de equilibrio financiero del sistema SIGAB y validar
    - Salario mínimo fronterizo 2026: **$440.87 MXN/día** (zona libre de la frontera norte, CONASAMI)
    - Calcular: $440.87 × 30 días = salario mensual bruto de un trabajador a SMF
    - Calcular: costo total empleador = SMF × 1.35 (IMSS + INFONAVIT + SAR ≈ 35% carga social)
-   - Mostrar cuántos trabajadores a SMF equivale el OpEx de SIGAB
-   - **Argumento central**: SIGAB gestiona el inventario completo 24/7 al costo equivalente de N.N trabajadores a SMF, mientras un equipo humano equivalente requeriría al menos 3-5 personas + errores humanos + ausentismo
+   - Mostrar cuántos trabajadores a SMF equivale el OpEx de SIGAH
+   - **Argumento central**: SIGAH gestiona el inventario completo 24/7 al costo equivalente de N.N trabajadores a SMF, mientras un equipo humano equivalente requeriría al menos 3-5 personas + errores humanos + ausentismo
 
 3. **Tabla de Punto de Equilibrio**
    Calcular el breakeven en número de equipos gestionados:
    - **Costo unitario por equipo/mes**: `$34,049.82 / N_equipos`
    - Para N = 50, 100, 200, 500, 1000 equipos: mostrar costo unitario
    - **Comparativa**: costo de gestión manual por equipo/mes (horas técnico × tarifa)
-   - **Punto de equilibrio**: número de equipos donde SIGAB supera económicamente la gestión manual
+   - **Punto de equilibrio**: número de equipos donde SIGAH supera económicamente la gestión manual
    - Incluir columna: "Ahorro acumulado anual" para cada nivel de inventario
 
 4. **Escenario HGR No.1 IMSS Tijuana**
@@ -64,7 +64,7 @@ Carga social IMSS: 35%
 
 **Punto de equilibrio (fragmento):**
 
-| Equipos | Costo SIGAB/equipo/mes | Gestión Manual/equipo/mes | Ahorro Mensual |
+| Equipos | Costo SIGAH/equipo/mes | Gestión Manual/equipo/mes | Ahorro Mensual |
 |---------|------------------------|--------------------------|----------------|
 | 100 | $340.50 | $850.00 | $50,950 |
 | 500 | $68.10 | $850.00 | $390,950 |
@@ -77,6 +77,6 @@ Carga social IMSS: 35%
 - El SMF de $440.87 MXN/día es un DATO FIJO — no modificar ni "actualizar" sin instrucción explícita.
 - El OpEx de $34,049.82 MXN/mes es un DATO FIJO.
 - Todas las fórmulas deben ser transparentes y auditables (mostrar operación matemática explícita).
-- El argumento financiero debe ser CONSERVADOR (favorable hacia SIGAB sin exagerar el ahorro).
+- El argumento financiero debe ser CONSERVADOR (favorable hacia SIGAH sin exagerar el ahorro).
 - Cumplir con terminología contable mexicana: OpEx, CAPEX, carga social, IMSS, INFONAVIT, SAR.
-- No incluir análisis de ingresos ni modelo de negocio SaaS — SIGAB es on-premise sin licencias variables.
+- No incluir análisis de ingresos ni modelo de negocio SaaS — SIGAH es on-premise sin licencias variables.

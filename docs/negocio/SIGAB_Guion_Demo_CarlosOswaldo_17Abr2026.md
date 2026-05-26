@@ -1,4 +1,4 @@
-# SIGAB V2.0 — Guion de Demostración Ejecutiva
+# SIGAH V2.0 — Guion de Demostración Ejecutiva
 **Destinatario:** Ing. Carlos Oswaldo — Subjefe de Conservación de Equipos Médicos (HGR No.1 IMSS Tijuana)
 **Sede de reunión:** **Café Quijarro — Tijuana**
 **Fecha y hora:** **Viernes 17 de abril de 2026 · 12:00 h**
@@ -9,7 +9,7 @@
 
 ## Nota de contexto: setup split Asus ↔ ThinkCentre
 
-- **Para la reunión en Quijarro**: la demo corre en la **laptop Asus** de Gustavo. El stack SIGAB está replicado localmente en la Asus (Docker Compose) — idéntico al del ThinkCentre.
+- **Para la reunión en Quijarro**: la demo corre en la **laptop Asus** de Gustavo. El stack SIGAH está replicado localmente en la Asus (Docker Compose) — idéntico al del ThinkCentre.
 - **El Lenovo ThinkCentre M720q** se **queda instalado en la oficina de Conservación de Clínica 1** al salir de Quijarro. Desde ese momento es el **servidor de producción** durante el fin de semana 17-19 abril.
 - **Durante la presentación del martes 21-abr** la demo en vivo se conecta al ThinkCentre de Clínica 1 por WhatsApp video + Ray-Ban Meta Display — mostrando datos reales capturados durante el fin de semana.
 
@@ -20,12 +20,12 @@
 | Check | Acción |
 |---|---|
 | ☐ | **Laptop Asus** conectada con cargador (Quijarro tiene tomas en mesas de la ventana) |
-| ☐ | Tethering celular listo por si el WiFi de Quijarro falla (SIGAB NO requiere internet, es buen respaldo para correo) |
+| ☐ | Tethering celular listo por si el WiFi de Quijarro falla (SIGAH NO requiere internet, es buen respaldo para correo) |
 | ☐ | Backend activo en la Asus: `http://localhost:8000/health` → `{"status":"ok"}` |
 | ☐ | Frontend activo en la Asus: `http://localhost:5173` abierto en Chrome (pestaña fija) |
 | ☐ | Ollama corriendo en la Asus: `curl http://localhost:11434/api/tags` responde con modelos |
-| ☐ | Sesión iniciada con **ADMIN001 / sigab_admin_2026** (ya logueado antes de llegar) |
-| ☐ | Documentos abiertos en pestañas:<br>• `ESTUDIOS_ECONOMICOS/SIGAB_Resumen_Ejecutivo_Carlos_Oswaldo.pdf` (impreso + digital)<br>• `ESTUDIOS_ECONOMICOS/SIGAB_Modelo_Financiero.xlsx`<br>• `SIGAB_DocInversionista_v3_Template.docx`<br>• `SIGAB_Presentacion_Ejecutiva.pdf`<br>• Este guion |
+| ☐ | Sesión iniciada con **ADMIN001 / sigah_admin_2026** (ya logueado antes de llegar) |
+| ☐ | Documentos abiertos en pestañas:<br>• `ESTUDIOS_ECONOMICOS/SIGAH_Resumen_Ejecutivo_Carlos_Oswaldo.pdf` (impreso + digital)<br>• `ESTUDIOS_ECONOMICOS/SIGAH_Modelo_Financiero.xlsx`<br>• `SIGAH_DocInversionista_v3_Template.docx`<br>• `SIGAH_Presentacion_Ejecutiva.pdf`<br>• Este guion |
 | ☐ | **3 copias impresas del Resumen Ejecutivo** (una para Carlos, dos de respaldo) |
 | ☐ | USB con toda la documentación (por si Carlos quiere llevarse copia digital) |
 | ☐ | ThinkCentre M720q en la mochila + cables HDMI/Ethernet/corriente (para instalar después) |
@@ -36,7 +36,7 @@
 **Credenciales para demo (no compartir):**
 ```
 Matrícula: ADMIN001
-Password : sigab_admin_2026
+Password : sigah_admin_2026
 URL      : http://localhost:5173
 ```
 
@@ -45,14 +45,14 @@ URL      : http://localhost:5173
 ## 1 · Apertura (3 min)
 
 > *"Ing. Carlos, muchas gracias por recibirme aquí en Quijarro. En los próximos 40 minutos le voy a mostrar tres cosas:*
-> 1. ***SIGAB V2.0** corriendo end-to-end desde esta laptop Asus — idéntico a como operará en Clínica 1.*
+> 1. ***SIGAH V2.0** corriendo end-to-end desde esta laptop Asus — idéntico a como operará en Clínica 1.*
 > 2. ***El Resumen Ejecutivo impreso** con el modelo de negocio Asset-Light, los números (VPN +$493k, TIR 32.58%) y la propuesta concreta.*
 > 3. ***Un plan de instalación hoy mismo** en la oficina de Conservación: salimos de aquí a Clínica 1 a las 14:00 h y dejo el micro-servidor Lenovo ThinkCentre operando antes de las 16:30.*
 >
 > *Todo lo que verá corre **100 % on-premise** — cero datos salen del hospital, cumple NOM-016, NOM-240, ISO-13485 y LFPDPPP. Al final del fin de semana tendremos datos reales capturados por su personal, que presentaré el martes en la universidad con su nombre como socio técnico clave del piloto."*
 
 **Puntos clave a mencionar:**
-- SIGAB cumple con **NOM-016**, **NOM-240** e **ISO-13485**
+- SIGAH cumple con **NOM-016**, **NOM-240** e **ISO-13485**
 - Todo el stack es **software libre y ejecución local** → cero dependencia de internet
 - Diseñado específicamente para el flujo operativo del HGR No.1
 
@@ -63,7 +63,7 @@ URL      : http://localhost:5173
 ### 2.1 — Login e identidad del sistema (1 min)
 - Abrir `http://localhost:5173`
 - **Destacar:** pantalla de login con branding IMSS, matrícula como identificador (no email)
-- Ingresar `ADMIN001` / `sigab_admin_2026` → Dashboard
+- Ingresar `ADMIN001` / `sigah_admin_2026` → Dashboard
 
 ### 2.2 — Dashboard & KPIs (2 min)
 - Pestaña **Dashboard**
@@ -107,7 +107,7 @@ URL      : http://localhost:5173
   - Reporte a COFEPRIS prellenado
 - **Frase clave:** *"Aquí cumplimos NOM-240 sin depender del papel — el reporte a COFEPRIS se genera con un clic."*
 
-### 2.7 — SIGAB Copilot (IA local) (1.5 min) ⭐ DIFERENCIADOR
+### 2.7 — SIGAH Copilot (IA local) (1.5 min) ⭐ DIFERENCIADOR
 - Pestaña **Copilot**
 - **Preguntar al asistente:**
   - *"¿Cuántos equipos están fuera de servicio en UCI?"*
@@ -131,16 +131,16 @@ URL      : http://localhost:5173
 ## 3 · Revisión de documentos (8 min)
 
 ### 3.1 — Documento del Inversionista (3 min)
-**Archivo:** `SIGAB_DocInversionista_v3_Template.docx`
+**Archivo:** `SIGAH_DocInversionista_v3_Template.docx`
 - Abrir en Word
 - Recorrer rápidamente:
   - Resumen ejecutivo
-  - Problema que resuelve SIGAB
+  - Problema que resuelve SIGAH
   - Proyección financiera
   - Plan de implementación
 
 ### 3.2 — Presentación Ejecutiva PDF (3 min)
-**Archivo:** `SIGAB_Presentacion_Ejecutiva.pdf`
+**Archivo:** `SIGAH_Presentacion_Ejecutiva.pdf`
 - Abrir en visor PDF
 - Mostrar slides clave:
   - Arquitectura técnica on-premise
@@ -184,9 +184,9 @@ URL      : http://localhost:5173
 
 ### Materiales a dejar con el Ing.
 
-1. ☐ **`SIGAB_Resumen_Ejecutivo_Carlos_Oswaldo.pdf`** (copia impresa + digital en USB) — ⭐ PRIORIDAD
-2. ☐ `SIGAB_DocInversionista_v3_Template.docx` (USB)
-3. ☐ `SIGAB_Presentacion_Ejecutiva.pdf` (USB)
+1. ☐ **`SIGAH_Resumen_Ejecutivo_Carlos_Oswaldo.pdf`** (copia impresa + digital en USB) — ⭐ PRIORIDAD
+2. ☐ `SIGAH_DocInversionista_v3_Template.docx` (USB)
+3. ☐ `SIGAH_Presentacion_Ejecutiva.pdf` (USB)
 4. ☐ `PLAN_GO_LIVE_15ABR2026.md` (exportar a PDF)
 5. ☐ Tarjeta con la **URL del dashboard de Clínica 1** (una vez configurada la IP fija) + credenciales temporales de Carlos
 6. ☐ Mi número de WhatsApp + correo para incidencias del fin de semana
@@ -234,4 +234,4 @@ Antes de dormir el domingo, confirmar:
 
 ---
 
-*Documento preparado para la presentación ejecutiva de SIGAB V2.0 — 17 abril 2026 · 12:00 h · Café Quijarro + Instalación Clínica 1 HGR No.1 IMSS Tijuana.*
+*Documento preparado para la presentación ejecutiva de SIGAH V2.0 — 17 abril 2026 · 12:00 h · Café Quijarro + Instalación Clínica 1 HGR No.1 IMSS Tijuana.*

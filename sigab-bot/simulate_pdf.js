@@ -10,7 +10,7 @@ async function test_pdf() {
     try {
         const response = await handleCommand(`/pdf ${serie}`, "Gustavo");
         if (response && response.type === 'document') {
-            const path = `C:/Users/djpiy/Desktop/Bioingeneria/SIGAB/sigab-bot/test_report_${serie}.pdf`;
+            const path = `C:/Users/djpiy/Desktop/Bioingeneria/SIGAH/sigah-bot/test_report_${serie}.pdf`;
             fs.writeFileSync(path, response.document);
             console.log(`✅ BOT generó documento: ${response.fileName}`);
             console.log(`📁 Guardado en: ${path}`);

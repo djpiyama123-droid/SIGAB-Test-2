@@ -1,6 +1,6 @@
 /**
  * @module pages/Equipos
- * @description Inventario completo de Equipos Biomédicos — SIGAB Clínica 1.
+ * @description Inventario completo de Equipos Biomédicos — SIGAH Clínica 1.
  *
  * Funcionalidades:
  * - Doble vista: tarjetas (cards) y tabla (grid)
@@ -13,7 +13,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import EquipoCard from '../components/EquipoCard';
 import EquipoTable from '../components/EquipoTable';
 import EquipoDetail from '../components/EquipoDetail';
@@ -117,8 +117,8 @@ export default function Equipos() {
   const handleBuscar = (e) => {
     const val = e.target.value;
     setBuscarText(val);
-    clearTimeout(window._sigabEquiposSearch);
-    window._sigabEquiposSearch = setTimeout(() => {
+    clearTimeout(window._sigahEquiposSearch);
+    window._sigahEquiposSearch = setTimeout(() => {
       updateFiltros({ ...filtros, buscar: val || undefined });
     }, 400);
   };
@@ -137,7 +137,7 @@ export default function Equipos() {
       setExportandoCsv(true);
       const params = { ...filtros, buscar: buscarText || undefined };
       const res = await api.descargarEquiposCsv(params);
-      const filename = `inventario_sigab_${new Date().toISOString().split('T')[0]}.csv`;
+      const filename = `inventario_sigah_${new Date().toISOString().split('T')[0]}.csv`;
       api.triggerDownload(res, filename);
       toast.success('Archivo CSV exportado exitosamente');
     } catch (error) {

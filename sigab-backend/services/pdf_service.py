@@ -308,7 +308,7 @@ def generar_pdf_orden(
     c.setFont("Helvetica", 7)
     c.setFillColor(HexColor("#6B7280"))
     c.drawString(margin, margin - 5, "NOM-016-SSA3-2012 · NOM-240-SSA1-2012 · ISO-13485")
-    c.drawRightString(width - margin, margin - 5, "SIGAB-IMSS-OS-V3")
+    c.drawRightString(width - margin, margin - 5, "SIGAH-IMSS-OS-V3")
     c.setFillColor(HexColor("#000000"))
 
     c.showPage()
@@ -318,7 +318,7 @@ def generar_pdf_orden(
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Formato Poka-Yoke v2 — Orden de Servicio física imprimible
-# Diseño paralelo al HTML estático en sigab-frontend/public/orden-servicio-v2.html
+# Diseño paralelo al HTML estático en sigah-frontend/public/orden-servicio-v2.html
 # Cumple NOM-016-SSA3-2012 / NOM-240-SSA1-2012 / ISO-13485
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -661,7 +661,7 @@ def generar_pdf_orden_v2_poka_yoke(orden: dict, equipo: dict, materiales: list) 
 
     poka_items = [
         ("QR validado.", "El número de serie del QR coincide con la etiqueta física del equipo."),
-        ("Inventario validado.", "El número de inventario IMSS de la placa coincide con SIGAB."),
+        ("Inventario validado.", "El número de inventario IMSS de la placa coincide con SIGAH."),
         ("Ubicación validada.", "El equipo está físicamente en el área y piso registrados."),
         ("Causa raíz documentada.", "Aplica solo correctivos — al menos una causa identificada (5 porqués)."),
         ("Condición final declarada.", "Se especifica operativo / mantenimiento / fuera de servicio / baja."),
@@ -727,7 +727,7 @@ def generar_pdf_orden_v2_poka_yoke(orden: dict, equipo: dict, materiales: list) 
     c.setLineWidth(1)
     c.setFont("Helvetica", 6.5)
     c.setFillColor(GRAY)
-    c.drawString(M, y - 8, "SIGAB v2.0 · Sistema Integral de Gestión de Activos Biomédicos · HGR No.1 IMSS Tijuana")
+    c.drawString(M, y - 8, "SIGAH v2.0 · Sistema Integral de Gestión de Activos Biomédicos · HGR No.1 IMSS Tijuana")
     c.drawRightString(W - M, y - 8, "Formato OS v2.0 — 2026-05 · Poka-Yoke")
     c.setFillColor(HexColor("#000000"))
 
