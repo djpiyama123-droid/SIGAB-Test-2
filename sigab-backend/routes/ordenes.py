@@ -671,7 +671,10 @@ async def actualizar_orden(
         "falla_reportada", "descripcion_servicio", "condiciones_encontradas",
         "condicion_final", "observaciones", "recomendaciones",
         "tecnico_nombre", "empresa_externa", "folio_externo", "no_contrato",
-        "reporta_nombre", "estado", "prioridad"
+        "reporta_nombre", "estado", "prioridad",
+        "horas_uso_acumuladas", "antiguedad_equipo", "indice_salud", "probabilidad_falla",
+        "ventana_recomendada", "confianza_modelo", "componente_riesgo", "indicadores_monitoreados",
+        "validacion_ia", "justificacion_validacion"
     }
 
     for k, v in data.items():

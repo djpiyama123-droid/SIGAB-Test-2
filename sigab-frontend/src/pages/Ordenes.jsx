@@ -147,6 +147,19 @@ export default function Ordenes() {
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  const handleTipoFormatoChange = (e) => {
+    const val = e.target.value;
+    let tipoMaint = 'correctivo';
+    if (val === 'preventivo') tipoMaint = 'preventivo';
+    else if (val === 'predictivo') tipoMaint = 'predictivo';
+    
+    setForm((f) => ({
+      ...f,
+      tipo_formato: val,
+      tipo_mantenimiento: tipoMaint,
+    }));
+  };
+
   // Pre-llena el form de Nueva OS con los datos extraídos por el escaneo IMSS
   const handleScanIMSSConfirm = (datos) => {
     setForm((f) => ({
@@ -371,11 +384,12 @@ export default function Ordenes() {
             </div>
             <div className="col-span-2">
               <label className="text-xs text-[var(--content-muted)] block mb-1">Formato IMSS</label>
-              <select value={form.tipo_formato} onChange={set('tipo_formato')}
+              <select value={form.tipo_formato} onChange={handleTipoFormatoChange}
                 className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]">
                 <option value="correctivo_corto">Correctivo Corto</option>
                 <option value="correctivo_largo">Correctivo Largo (Complejo)</option>
                 <option value="preventivo">Mantenimiento Preventivo</option>
+                <option value="predictivo">Mantenimiento Predictivo (IA)</option>
                 <option value="orden_entrega">Orden de Entrega (Contrato Externo)</option>
               </select>
             </div>
