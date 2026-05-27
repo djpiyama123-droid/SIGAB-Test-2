@@ -647,3 +647,75 @@ async def descargar_pdf_fisico_poka_yoke(
         media_type="application/pdf",
         headers={"Content-Disposition": f"inline; filename=OS-Fisica_{numero}.pdf"}
     )
+
+
+@router.put("/{orden_id}")
+async def actualizar_orden(
+    orden_id: int,
+    data: dict,
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """Actualiza campos específicos de una Orden de Servicio de manera genérica (para edición inline)."""
+    stmt_ord = select(OrdenServicio).where(
+        OrdenServicio.id == orden_id, OrdenServicio.tenant_id == tenant_id
+    )
+    orden = (await session.execute(stmt_ord)).scalar_one_or_none()
+    if not orden:
+        raise HTTPException(status_code=404, detail="Orden no encontrada")
+
+    campos_permitidos = {
+        "equipo_nombre", "equipo_marca", "equipo_modelo", "equipo_serie",
+        "ubicacion_fisica", "piso", "area",
+        "falla_reportada", "descripcion_servicio", "condiciones_encontradas",
+        "condicion_final", "observaciones", "recomendaciones",
+        "tecnico_nombre", "empresa_externa", "folio_externo", "no_contrato",
+        "reporta_nombre", "estado", "prioridad"
+    }
+
+    for k, v in data.items():
+        if k in campos_permitidos:
+            setattr(orden, k, v)
+            
+    # Parsear horas
+    from datetime import time as _t
+    for k in ("hora_inicio", "hora_termino"):
+        if k in data and isinstance(data[k], str) and ":" in data[k]:
+            try:
+                hh, mm = data[k].split(":")[:2]
+                setattr(orden, k, _t(int(hh), int(mm)))
+            except Exception:
+                pass
+
+    # Parsear fecha
+    if "fecha" in data and isinstance(data["fecha"], str):
+        try:
+            orden.fecha = datetime.strptime(data["fecha"], "%Y-%m-%d").date()
+        except Exception:
+            pass
+
+    session.add(orden)
+    await session.commit()
+    
+    # Actualizar materiales/refacciones si se especifican
+    if "materiales" in data:
+        # Eliminar materiales anteriores
+        stmt_del = sa.delete(MATERIAL_OS).where(MATERIAL_OS.orden_id == orden_id)
+        await session.execute(stmt_del)
+        
+        # Insertar nuevos
+        for mat in data["materiales"]:
+            if isinstance(mat, dict):
+                desc = mat.get("descripcion", "")
+                cant = mat.get("cantidad", 1)
+            else:
+                desc = str(mat)
+                cant = 1
+            if desc:
+                session.add(MATERIAL_OS(orden_id=orden_id, descripcion=desc, cantidad=cant))
+                
+        await session.commit()
+
+    return {"ok": True, "mensaje": "Orden actualizada con éxito"}
+

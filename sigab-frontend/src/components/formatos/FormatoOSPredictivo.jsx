@@ -6,12 +6,76 @@ import { TEMAS_CONFIG, fmtFecha } from './formatoThemes';
 import { CB, SecHeader } from './formatoHelpers';
 import FormatoHeader from './FormatoHeader';
 
-export default function FormatoOSPredictivo({ orden, tema = 'blanco-imss' }) {
+export default function FormatoOSPredictivo({ orden, tema = 'blanco-imss', isEditing = false, onChange }) {
   const t = TEMAS_CONFIG[tema] || TEMAS_CONFIG['blanco-imss'];
   const o = orden || {};
 
   const folio = o.numero_orden || `OS-PR-${String(o.id || '0000').padStart(4, '0')}`;
   const validacion = o.validacion_ia || '';
+
+  const EditInput = ({ value, field, placeholder = '', style = {} }) => (
+    <input
+      type="text"
+      value={value || ''}
+      onChange={(e) => onChange(field, e.target.value)}
+      placeholder={placeholder}
+      style={{
+        border: 'none',
+        borderBottom: `1px dashed ${t.check || '#006CB7'}`,
+        background: 'transparent',
+        color: 'inherit',
+        fontSize: 'inherit',
+        fontWeight: 'inherit',
+        width: '100%',
+        padding: '2px 4px',
+        outline: 'none',
+        boxSizing: 'border-box',
+        ...style
+      }}
+    />
+  );
+
+  const EditTextarea = ({ value, field, placeholder = '', style = {} }) => (
+    <textarea
+      value={value || ''}
+      onChange={(e) => onChange(field, e.target.value)}
+      placeholder={placeholder}
+      style={{
+        border: 'none',
+        borderBottom: `1px dashed ${t.check || '#006CB7'}`,
+        background: 'transparent',
+        color: 'inherit',
+        fontSize: 'inherit',
+        fontWeight: 'inherit',
+        width: '100%',
+        height: '100%',
+        minHeight: 'inherit',
+        resize: 'none',
+        padding: '4px',
+        outline: 'none',
+        boxSizing: 'border-box',
+        ...style
+      }}
+    />
+  );
+
+  const EditCB = ({ checked, label, onClick }) => (
+    <span
+      onClick={onClick}
+      style={{
+        cursor: 'pointer',
+        color: checked ? t.check : t.cell.color,
+        marginRight: 14,
+        fontSize: 13,
+        whiteSpace: 'nowrap',
+        userSelect: 'none',
+        borderBottom: '1px dotted #ccc'
+      }}
+    >
+      <span style={{ color: checked ? t.check : t.cell.color, fontSize: 15 }}>{checked ? '☑' : '☐'}</span>
+      {' '}{label}
+    </span>
+  );
 
   const TD = (props) => <td style={{ ...t.cell, ...props.style }}>{props.children}</td>;
   const TH = ({ children, colSpan, w }) => (
@@ -20,11 +84,33 @@ export default function FormatoOSPredictivo({ orden, tema = 'blanco-imss' }) {
     </td>
   );
 
-  const MetricCard = ({ label, value, unit }) => (
+  const MetricCard = ({ label, value, unit, field }) => (
     <td style={{ ...t.cell, textAlign: 'center', verticalAlign: 'middle', width: '25%' }}>
-      <div style={{ fontSize: 22, fontWeight: 'bold', color: t.header.background || t.check }}>
-        {value ?? '—'}{unit}
-      </div>
+      {isEditing ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <input
+            type="number"
+            value={value ?? ''}
+            onChange={(e) => onChange(field, parseFloat(e.target.value) || 0)}
+            style={{
+              fontSize: 20,
+              fontWeight: 'bold',
+              color: t.header.background || t.check,
+              background: 'transparent',
+              border: 'none',
+              borderBottom: '1px dashed #ccc',
+              width: '70px',
+              textAlign: 'center',
+              outline: 'none'
+            }}
+          />
+          <span style={{ fontSize: 16, fontWeight: 'bold', color: t.header.background || t.check }}>{unit}</span>
+        </div>
+      ) : (
+        <div style={{ fontSize: 22, fontWeight: 'bold', color: t.header.background || t.check }}>
+          {value ?? '—'}{unit}
+        </div>
+      )}
       <div style={{ ...t.label, marginTop: 2, fontSize: 9 }}>{label}</div>
     </td>
   );
@@ -57,25 +143,25 @@ export default function FormatoOSPredictivo({ orden, tema = 'blanco-imss' }) {
             <TH w="24%">QR del Equipo</TH>
           </tr>
           <tr>
-            <TD>{o.equipo_nombre || ' '}</TD>
-            <TD>{o.equipo_marca || ' '}</TD>
-            <TD>{o.equipo_modelo || ' '}</TD>
-            <TD>{o.equipo_inventario || ' '}</TD>
+            <TD>{isEditing ? <EditInput value={o.equipo_nombre} field="equipo_nombre" /> : (o.equipo_nombre || ' ')}</TD>
+            <TD>{isEditing ? <EditInput value={o.equipo_marca} field="equipo_marca" /> : (o.equipo_marca || ' ')}</TD>
+            <TD>{isEditing ? <EditInput value={o.equipo_modelo} field="equipo_modelo" /> : (o.equipo_modelo || ' ')}</TD>
+            <TD>{isEditing ? <EditInput value={o.equipo_inventario} field="equipo_inventario" /> : (o.equipo_inventario || ' ')}</TD>
             <TD rowSpan={3} style={{ ...t.cell, textAlign: 'center', verticalAlign: 'middle', fontSize: 10, color: t.label.color }}>
               [QR]
             </TD>
           </tr>
           <tr>
             <TH>No. de Serie</TH>
-            <TD>{o.equipo_serie || ' '}</TD>
+            <TD>{isEditing ? <EditInput value={o.equipo_serie} field="equipo_serie" /> : (o.equipo_serie || ' ')}</TD>
             <TH>Ubicación / Servicio</TH>
-            <TD>{o.area ? `${o.area}${o.piso ? ` · Piso ${o.piso}` : ''}` : ' '}</TD>
+            <TD>{isEditing ? <EditInput value={o.area} field="area" /> : (o.area ? `${o.area}${o.piso ? ` · Piso ${o.piso}` : ''}` : ' ')}</TD>
           </tr>
           <tr>
             <TH colSpan={2}>Horas de Uso Acumuladas</TH>
-            <TD colSpan={1}>{o.horas_uso_acumuladas ? `${o.horas_uso_acumuladas} h` : ' '}</TD>
+            <TD colSpan={1}>{isEditing ? <EditInput value={o.horas_uso_acumuladas} field="horas_uso_acumuladas" /> : (o.horas_uso_acumuladas ? `${o.horas_uso_acumuladas} h` : ' ')}</TD>
             <TH>Antigüedad del Equipo</TH>
-            <TD colSpan={1}>{o.antiguedad_equipo || ' '}</TD>
+            <TD colSpan={1}>{isEditing ? <EditInput value={o.antiguedad_equipo} field="antiguedad_equipo" /> : (o.antiguedad_equipo || ' ')}</TD>
           </tr>
         </tbody>
       </table>
@@ -85,10 +171,10 @@ export default function FormatoOSPredictivo({ orden, tema = 'blanco-imss' }) {
         <tbody>
           <SecHeader title="Análisis Predictivo SIGAH" t={t} />
           <tr>
-            <MetricCard label="Índice de Salud (/ 100)" value={o.indice_salud}          unit="" />
-            <MetricCard label="Probabilidad de Falla"   value={o.probabilidad_falla}    unit="%" />
-            <MetricCard label="Ventana Recomendada"     value={o.ventana_recomendada}   unit=" días" />
-            <MetricCard label="Confianza del Modelo"    value={o.confianza_modelo}      unit="%" />
+            <MetricCard label="Índice de Salud (/ 100)" value={o.indice_salud}          unit="" field="indice_salud" />
+            <MetricCard label="Probabilidad de Falla"   value={o.probabilidad_falla}    unit="%" field="probabilidad_falla" />
+            <MetricCard label="Ventana Recomendada"     value={o.ventana_recomendada}   unit=" días" field="ventana_recomendada" />
+            <MetricCard label="Confianza del Modelo"    value={o.confianza_modelo}      unit="%" field="confianza_modelo" />
           </tr>
         </tbody>
       </table>
@@ -103,10 +189,10 @@ export default function FormatoOSPredictivo({ orden, tema = 'blanco-imss' }) {
           </tr>
           <tr>
             <TD style={{ minHeight: 50, height: 50, verticalAlign: 'top' }}>
-              {o.componente_riesgo || ' '}
+              {isEditing ? <EditTextarea value={o.componente_riesgo} field="componente_riesgo" /> : (o.componente_riesgo || ' ')}
             </TD>
             <TD style={{ minHeight: 50, height: 50, verticalAlign: 'top' }}>
-              {o.indicadores_monitoreados || ' '}
+              {isEditing ? <EditTextarea value={o.indicadores_monitoreados} field="indicadores_monitoreados" /> : (o.indicadores_monitoreados || ' ')}
             </TD>
           </tr>
         </tbody>
@@ -118,7 +204,7 @@ export default function FormatoOSPredictivo({ orden, tema = 'blanco-imss' }) {
           <SecHeader title="Acción Preventiva Ejecutada" t={t} />
           <tr>
             <TD style={{ minHeight: 60, height: 60 }}>
-              {o.descripcion_servicio || o.accion_preventiva || ' '}
+              {isEditing ? <EditTextarea value={o.descripcion_servicio || o.accion_preventiva} field="descripcion_servicio" /> : (o.descripcion_servicio || o.accion_preventiva || ' ')}
             </TD>
           </tr>
         </tbody>
@@ -135,10 +221,10 @@ export default function FormatoOSPredictivo({ orden, tema = 'blanco-imss' }) {
             <TH w="34%">Técnico Asignado</TH>
           </tr>
           <tr>
-            <TD>{o.hora_inicio || '__:__'}</TD>
-            <TD>{o.hora_termino || '__:__'}</TD>
-            <TD>{o.tiempo_real || '___'}</TD>
-            <TD>{o.tecnico_nombre || ' '}</TD>
+            <TD>{isEditing ? <EditInput value={o.hora_inicio} field="hora_inicio" placeholder="HH:MM" /> : (o.hora_inicio || '__:__')}</TD>
+            <TD>{isEditing ? <EditInput value={o.hora_termino} field="hora_termino" placeholder="HH:MM" /> : (o.hora_termino || '__:__')}</TD>
+            <TD>{isEditing ? <EditInput value={o.tiempo_real} field="tiempo_real" placeholder="Hrs" /> : (o.tiempo_real || '___')}</TD>
+            <TD>{isEditing ? <EditInput value={o.tecnico_nombre} field="tecnico_nombre" /> : (o.tecnico_nombre || ' ')}</TD>
           </tr>
         </tbody>
       </table>
@@ -150,15 +236,25 @@ export default function FormatoOSPredictivo({ orden, tema = 'blanco-imss' }) {
           <tr>
             <TD>
               <div style={{ marginBottom: 6 }}>
-                <CB checked={validacion === 'acepta'}   label="Acepta la recomendación" t={t} />
-                <CB checked={validacion === 'ajusta'}   label="Ajusta"                  t={t} />
-                <CB checked={validacion === 'descarta'} label="Descarta"                t={t} />
+                {isEditing ? (
+                  <>
+                    <EditCB checked={validacion === 'acepta'} label="Acepta la recomendación" onClick={() => onChange('validacion_ia', 'acepta')} />
+                    <EditCB checked={validacion === 'ajusta'} label="Ajusta" onClick={() => onChange('validacion_ia', 'ajusta')} />
+                    <EditCB checked={validacion === 'descarta'} label="Descarta" onClick={() => onChange('validacion_ia', 'descarta')} />
+                  </>
+                ) : (
+                  <>
+                    <CB checked={validacion === 'acepta'}   label="Acepta la recomendación" t={t} />
+                    <CB checked={validacion === 'ajusta'}   label="Ajusta"                  t={t} />
+                    <CB checked={validacion === 'descarta'} label="Descarta"                t={t} />
+                  </>
+                )}
               </div>
               <div style={{ fontSize: 10, color: t.label.color, marginBottom: 4 }}>
                 Justificación (obligatoria si ajusta o descarta):
               </div>
               <div style={{ ...t.value, minHeight: 28, borderBottom: `1px solid ${t.table.borderColor}` }}>
-                {o.justificacion_validacion || ' '}
+                {isEditing ? <EditInput value={o.justificacion_validacion} field="justificacion_validacion" /> : (o.justificacion_validacion || ' ')}
               </div>
             </TD>
           </tr>
