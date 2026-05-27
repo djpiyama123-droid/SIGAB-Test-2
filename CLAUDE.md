@@ -51,3 +51,44 @@ sigah-bot/          # Bot de notificaciones
 - Colores de estado: emerald=operativo, amber=mantenimiento, red=fuera_servicio, slate=baja
 - Máquinas de estado con dict `TRANSICIONES` en backend (patrón establecido)
 - Audit trail en tabla `log_actividad` para NOM-016
+
+## Comandos Frecuentes de Desarrollo y Despliegue
+
+### Local (Desarrollo)
+- **Backend (FastAPI)**: `cd sigab-backend && uvicorn main:app --reload`
+- **Frontend (Vite)**: `cd sigab-frontend && npm run dev`
+- **Base de Datos**: `docker compose up -d mysql` (puerto 3306)
+
+### VPS (Producción - Host `sigab-vps`)
+- **Acceso rápido**: `ssh sigab-vps` (utiliza la llave `~/.ssh/sigab_vps`)
+- **Recompilar frontend estático**: `cd /opt/sigab/sigab-frontend && npm run build`
+- **Reiniciar stack de servicios**: `cd /opt/sigab && docker compose up -d --force-recreate`
+- **Reiniciar Traefik (Refrescar Socket)**: `docker restart traefik`
+
+---
+
+## ⚡ Reglas Críticas del VPS (Memoria de Agentes)
+
+### 1. Regla del Dominio y Traefik (Evitar Bad Gateway)
+- **IMPORTANTE**: La aplicación debe ser accesible a través de ambos dominios: `sigab.129-121-100-147.sslip.io` y `sigah.129-121-100-147.sslip.io`.
+- Cualquier modificación en `docker-compose.yml` en los labels de Traefik para backend o frontend **DEBE** incluir ambos hosts. Ejemplo:
+  `"traefik.http.routers.sigah-fe.rule=Host(\`129.121.100.147\`) || Host(\`sigab.129-121-100-147.sslip.io\`) || Host(\`sigah.129-121-100-147.sslip.io\`)"`
+- Si no se incluyen ambos hosts en Traefik, las peticiones HTTP del dominio que no coincida fallarán inmediatamente con **Bad Gateway (502)** o **404 Not Found**.
+
+### 2. Refresco del Docker Socket
+- **SÍNTOMA**: Si el daemon de docker se reinicia o actualiza en la VPS, el bind mount de `/var/run/docker.sock` dentro de Traefik se vuelve **stale** (descriptor de archivo huérfano/roto), lo que causa que Traefik arroje errores de conexión y devuelva `Bad Gateway` para todos los dominios.
+- **SOLUCIÓN**: Ejecutar `docker restart traefik` en el VPS. Esto recarga la conexión y restaura la resolución de rutas inmediatamente.
+
+### 3. Credenciales de Base de Datos en Producción
+Para cualquier migración de base de datos directa o scripts de mantenimiento en la VPS, usar los datos reales del contenedor:
+- **Base de Datos**: `sigab` (nota la 'b')
+- **Usuario**: `sigab_user`
+- **Contraseña**: `7_ALvv_NEldMfImwdnA6sw`
+- **Comando de acceso rápido**:
+  `docker exec -it sigah-mysql mysql -usigab_user -p7_ALvv_NEldMfImwdnA6sw sigab`
+
+### 4. Sincronización Antigravity & Claude Code
+- Ambos agentes deben operar cooperativamente y mantener `CLAUDE.md` como la **fuente de verdad** y memoria compartida del proyecto.
+- Cualquier migración de base de datos debe ser versionada bajo `database/migrations/00X_nombre.sql` y ser ejecutada de manera idempotente en el VPS.
+- Sincronizar todos los cambios locales haciendo push a `origin` y ejecutando un `git pull` limpio en el VPS (`/opt/sigab`).
+
