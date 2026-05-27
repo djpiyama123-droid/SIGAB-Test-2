@@ -101,6 +101,18 @@ class OrdenServicio(SQLModel, table=True):
     prioridad: str = Field(default="media")
     origen: str = Field(default="manual")
     
+    # Mantenimiento Predictivo (IA) — NOM-016-SSA3-2012
+    horas_uso_acumuladas: Optional[int] = Field(default=0, sa_column=Column(mysql.INTEGER, nullable=True))
+    antiguedad_equipo: Optional[str] = Field(default=None, max_length=100)
+    indice_salud: Optional[int] = Field(default=100, sa_column=Column(mysql.INTEGER, nullable=True))
+    probabilidad_falla: Optional[int] = Field(default=0, sa_column=Column(mysql.INTEGER, nullable=True))
+    ventana_recomendada: Optional[int] = Field(default=None, sa_column=Column(mysql.INTEGER, nullable=True))
+    confianza_modelo: Optional[int] = Field(default=0, sa_column=Column(mysql.INTEGER, nullable=True))
+    componente_riesgo: Optional[str] = Field(default=None, sa_column=Column(mysql.TEXT, nullable=True))
+    indicadores_monitoreados: Optional[str] = Field(default=None, sa_column=Column(mysql.TEXT, nullable=True))
+    validacion_ia: Optional[str] = Field(default="acepta", max_length=50)
+    justificacion_validacion: Optional[str] = Field(default=None, sa_column=Column(mysql.TEXT, nullable=True))
+
     # Metadatos
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),

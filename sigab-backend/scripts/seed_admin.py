@@ -44,10 +44,12 @@ async def main():
                 )
                 print(f"Admin actualizado: {MATRICULA}")
             else:
+                from datetime import datetime, timezone
+                now = datetime.now(timezone.utc)
                 await cur.execute(
-                    "INSERT INTO usuarios (nombre, matricula, rol, email, password_hash, "
-                    "must_change_password, activo) VALUES (%s, %s, %s, %s, %s, FALSE, TRUE)",
-                    (NOMBRE, MATRICULA, "admin", EMAIL, pwd_hash),
+                    "INSERT INTO usuarios (tenant_id, nombre, matricula, rol, email, password_hash, "
+                    "must_change_password, activo, created_at) VALUES (1, %s, %s, %s, %s, %s, FALSE, TRUE, %s)",
+                    (NOMBRE, MATRICULA, "admin", EMAIL, pwd_hash, now),
                 )
                 print(f"Admin creado: {MATRICULA}")
 

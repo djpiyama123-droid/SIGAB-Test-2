@@ -48,7 +48,10 @@ class Equipo(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(mysql.DATETIME, nullable=False),
     )
-    zona_id: Optional[int] = Field(default=None, foreign_key="zonas_mapa.id")
+    zona_id: Optional[int] = Field(
+        default=None,
+        sa_column=Column(mysql.INTEGER(unsigned=True), ForeignKey("zonas_mapa.id"), nullable=True),
+    )
     pos_x: float = Field(default=50.0)
     pos_y: float = Field(default=50.0)
     imagen_url: Optional[str] = None
