@@ -28,6 +28,7 @@ import QRScanner from './pages/QRScanner';
 import AdminGlobal from './pages/AdminGlobal';
 import CommandCenter from './pages/CommandCenter';
 import Reservas from './pages/Reservas';
+import Formatos from './pages/Formatos';
 
 
 export default function App() {
@@ -70,6 +71,7 @@ export default function App() {
               <Route path="reservas" element={<Reservas />} />
               <Route path="qrbatch" element={<QRBatch />} />
               <Route path="command-center" element={<CommandCenter />} />
+              <Route path="formatos" element={<Formatos />} />
             </Route>
           </Route>
         </Routes>
