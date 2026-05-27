@@ -61,7 +61,7 @@ services:
     extra_hosts:
       - "host-gateway:host-gateway"
     volumes:
-      - sigah_uploads:/app/static/uploads
+      - sigab_uploads:/app/static/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -122,8 +122,8 @@ services:
 volumes:
   sigah_mysql_data:
     name: sigah_mysql_data
-  sigah_uploads:
-    name: sigah_uploads
+  sigab_uploads:
+    name: sigab_uploads
 
 networks:
   default:
