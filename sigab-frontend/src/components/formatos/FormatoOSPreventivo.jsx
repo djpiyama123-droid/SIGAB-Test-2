@@ -15,13 +15,88 @@ const RUTINA_ITEMS = [
   { id: 'prueba_seguridad',        label: 'Prueba de seguridad eléctrica' },
 ];
 
-export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss' }) {
+export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss', isEditing = false, onChange }) {
   const t = TEMAS_CONFIG[tema] || TEMAS_CONFIG['blanco-imss'];
   const o = orden || {};
 
   const folio = o.numero_orden || `OS-P-${String(o.id || '0000').padStart(4, '0')}`;
   const rutina = Array.isArray(o.rutina_realizada) ? o.rutina_realizada : [];
   const condicionCierre = o.condicion_cierre || (o.estado === 'cerrada' ? 'apto_operacion' : '');
+
+  const EditInput = ({ value, field, placeholder = '', style = {} }) => (
+    <input
+      type="text"
+      value={value || ''}
+      onChange={(e) => onChange(field, e.target.value)}
+      placeholder={placeholder}
+      style={{
+        border: 'none',
+        borderBottom: `1px dashed ${t.check || '#006CB7'}`,
+        background: 'transparent',
+        color: 'inherit',
+        fontSize: 'inherit',
+        fontWeight: 'inherit',
+        width: '100%',
+        padding: '2px 4px',
+        outline: 'none',
+        boxSizing: 'border-box',
+        ...style
+      }}
+    />
+  );
+
+  const EditTextarea = ({ value, field, placeholder = '', style = {} }) => (
+    <textarea
+      value={value || ''}
+      onChange={(e) => onChange(field, e.target.value)}
+      placeholder={placeholder}
+      style={{
+        border: 'none',
+        borderBottom: `1px dashed ${t.check || '#006CB7'}`,
+        background: 'transparent',
+        color: 'inherit',
+        fontSize: 'inherit',
+        fontWeight: 'inherit',
+        width: '100%',
+        height: '100%',
+        minHeight: 'inherit',
+        resize: 'none',
+        padding: '4px',
+        outline: 'none',
+        boxSizing: 'border-box',
+        ...style
+      }}
+    />
+  );
+
+  const EditCB = ({ checked, label, onClick }) => (
+    <span
+      onClick={onClick}
+      style={{
+        cursor: 'pointer',
+        color: checked ? t.check : t.cell.color,
+        marginRight: 14,
+        fontSize: 13,
+        whiteSpace: 'nowrap',
+        userSelect: 'none',
+        borderBottom: '1px dotted #ccc'
+      }}
+    >
+      <span style={{ color: checked ? t.check : t.cell.color, fontSize: 15 }}>{checked ? '☑' : '☐'}</span>
+      {' '}{label}
+    </span>
+  );
+
+  const handleRutinaToggle = (itemId) => {
+    const list = [...rutina];
+    const idx = list.indexOf(itemId);
+    if (idx === -1) {
+      list.push(itemId);
+    } else {
+      list.splice(idx, 1);
+    }
+    onChange('rutina_realizada', list);
+  };
 
   const TD = (props) => <td style={{ ...t.cell, ...props.style }}>{props.children}</td>;
   const TH = ({ children, colSpan, w }) => (
@@ -56,19 +131,19 @@ export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss' }) {
             <TH w="24%">QR del Equipo</TH>
           </tr>
           <tr>
-            <TD>{o.equipo_nombre || ' '}</TD>
-            <TD>{o.equipo_marca || ' '}</TD>
-            <TD>{o.equipo_modelo || ' '}</TD>
-            <TD>{o.equipo_inventario || ' '}</TD>
+            <TD>{isEditing ? <EditInput value={o.equipo_nombre} field="equipo_nombre" /> : (o.equipo_nombre || ' ')}</TD>
+            <TD>{isEditing ? <EditInput value={o.equipo_marca} field="equipo_marca" /> : (o.equipo_marca || ' ')}</TD>
+            <TD>{isEditing ? <EditInput value={o.equipo_modelo} field="equipo_modelo" /> : (o.equipo_modelo || ' ')}</TD>
+            <TD>{isEditing ? <EditInput value={o.equipo_inventario} field="equipo_inventario" /> : (o.equipo_inventario || ' ')}</TD>
             <TD rowSpan={2} style={{ ...t.cell, textAlign: 'center', verticalAlign: 'middle', fontSize: 10, color: t.label.color }}>
               [QR]
             </TD>
           </tr>
           <tr>
             <TH>No. de Serie</TH>
-            <TD>{o.equipo_serie || ' '}</TD>
+            <TD>{isEditing ? <EditInput value={o.equipo_serie} field="equipo_serie" /> : (o.equipo_serie || ' ')}</TD>
             <TH>Ubicación / Servicio</TH>
-            <TD>{o.area ? `${o.area}${o.piso ? ` · Piso ${o.piso}` : ''}` : ' '}</TD>
+            <TD>{isEditing ? <EditInput value={o.area} field="area" /> : (o.area ? `${o.area}${o.piso ? ` · Piso ${o.piso}` : ''}` : ' ')}</TD>
           </tr>
         </tbody>
       </table>
@@ -81,14 +156,22 @@ export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss' }) {
             <TD style={{ width: '50%', verticalAlign: 'top' }}>
               {leftRutina.map((r) => (
                 <div key={r.id} style={{ marginBottom: 6 }}>
-                  <CB checked={rutina.includes(r.id)} label={r.label} t={t} />
+                  {isEditing ? (
+                    <EditCB checked={rutina.includes(r.id)} label={r.label} onClick={() => handleRutinaToggle(r.id)} />
+                  ) : (
+                    <CB checked={rutina.includes(r.id)} label={r.label} t={t} />
+                  )}
                 </div>
               ))}
             </TD>
             <TD style={{ width: '50%', verticalAlign: 'top' }}>
               {rightRutina.map((r) => (
                 <div key={r.id} style={{ marginBottom: 6 }}>
-                  <CB checked={rutina.includes(r.id)} label={r.label} t={t} />
+                  {isEditing ? (
+                    <EditCB checked={rutina.includes(r.id)} label={r.label} onClick={() => handleRutinaToggle(r.id)} />
+                  ) : (
+                    <CB checked={rutina.includes(r.id)} label={r.label} t={t} />
+                  )}
                 </div>
               ))}
             </TD>
@@ -102,7 +185,7 @@ export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss' }) {
           <SecHeader title="Servicio Efectuado y Material Utilizado" t={t} />
           <tr>
             <TD style={{ minHeight: 60, height: 60 }}>
-              {o.descripcion_servicio || ' '}
+              {isEditing ? <EditTextarea value={o.descripcion_servicio} field="descripcion_servicio" /> : (o.descripcion_servicio || ' ')}
             </TD>
           </tr>
         </tbody>
@@ -119,10 +202,10 @@ export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss' }) {
             <TH w="34%">Técnico Asignado</TH>
           </tr>
           <tr>
-            <TD>{o.hora_inicio || '__:__'}</TD>
-            <TD>{o.hora_termino || '__:__'}</TD>
-            <TD>{o.tiempo_real || '___'}</TD>
-            <TD>{o.tecnico_nombre || ' '}</TD>
+            <TD>{isEditing ? <EditInput value={o.hora_inicio} field="hora_inicio" placeholder="HH:MM" /> : (o.hora_inicio || '__:__')}</TD>
+            <TD>{isEditing ? <EditInput value={o.hora_termino} field="hora_termino" placeholder="HH:MM" /> : (o.hora_termino || '__:__')}</TD>
+            <TD>{isEditing ? <EditInput value={o.tiempo_real} field="tiempo_real" placeholder="Hrs" /> : (o.tiempo_real || '___')}</TD>
+            <TD>{isEditing ? <EditInput value={o.tecnico_nombre} field="tecnico_nombre" /> : (o.tecnico_nombre || ' ')}</TD>
           </tr>
         </tbody>
       </table>
@@ -152,13 +235,22 @@ export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss' }) {
             <TD style={{ width: '40%' }}>
               <span style={{ ...t.label, display: 'block', marginBottom: 4 }}>Próximo Preventivo Programado</span>
               <span style={{ ...t.value, display: 'inline-block', minWidth: 120 }}>
-                {o.proximo_preventivo ? fmtFecha(o.proximo_preventivo) : '__/__/____'}
+                {isEditing ? <EditInput value={o.proximo_preventivo} field="proximo_preventivo" placeholder="YYYY-MM-DD" style={{ width: '100px' }} /> : (o.proximo_preventivo ? fmtFecha(o.proximo_preventivo) : '__/__/____')}
               </span>
             </TD>
             <TD style={{ width: '60%' }}>
               <span style={{ ...t.label, display: 'block', marginBottom: 6 }}>Condición al Cierre</span>
-              <CB checked={condicionCierre === 'apto_operacion'}    label="Equipo apto para operación"  t={t} />
-              <CB checked={condicionCierre === 'requiere_correctivo'} label="Requiere correctivo"       t={t} />
+              {isEditing ? (
+                <>
+                  <EditCB checked={condicionCierre === 'apto_operacion'} label="Equipo apto para operación" onClick={() => onChange('condicion_cierre', 'apto_operacion')} />
+                  <EditCB checked={condicionCierre === 'requiere_correctivo'} label="Requiere correctivo" onClick={() => onChange('condicion_cierre', 'requiere_correctivo')} />
+                </>
+              ) : (
+                <>
+                  <CB checked={condicionCierre === 'apto_operacion'}    label="Equipo apto para operación"  t={t} />
+                  <CB checked={condicionCierre === 'requiere_correctivo'} label="Requiere correctivo"       t={t} />
+                </>
+              )}
             </TD>
           </tr>
         </tbody>

@@ -101,6 +101,7 @@ export const api = {
   getArchivosHistoricos: (params = {}) => client.get('/ordenes/archivos-historicos', { params }),
   getOrden: (id) => client.get(`/ordenes/${id}`),
   crearOrden: (data) => client.post('/ordenes', data),
+  updateOrden: (id, data) => client.put(`/ordenes/${id}`, data),
   cerrarOrden: (id) => client.put(`/ordenes/${id}/cerrar`),
   cambiarEstadoOrden: (id, estado) =>
     client.put(`/ordenes/${id}/estado`, { estado }),
