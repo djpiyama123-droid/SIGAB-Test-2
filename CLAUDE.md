@@ -45,6 +45,19 @@ sigab-bot/          # Bot de notificaciones
 8. Trazabilidad NOM-016 (trazabilidad.py / Trazabilidad.jsx)
 9. Reportes PDF/Excel (reportes.py / Reportes.jsx)
 
+## gstack (Navegación Web y Skills de Ingeniería)
+
+Para toda navegación web usar la skill `/browse` de gstack. **Nunca usar herramientas `mcp__claude-in-chrome__*`.**
+
+**Instalación (una vez por máquina, requiere `bun`):**
+```bash
+git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack
+cd ~/.claude/skills/gstack && ./setup
+```
+
+Skills disponibles:
+`/office-hours`, `/plan-ceo-review`, `/plan-eng-review`, `/plan-design-review`, `/design-consultation`, `/design-shotgun`, `/design-html`, `/review`, `/ship`, `/land-and-deploy`, `/canary`, `/benchmark`, `/browse`, `/connect-chrome`, `/qa`, `/qa-only`, `/design-review`, `/setup-browser-cookies`, `/setup-deploy`, `/setup-gbrain`, `/retro`, `/investigate`, `/document-release`, `/document-generate`, `/codex`, `/cso`, `/autoplan`, `/plan-devex-review`, `/devex-review`, `/careful`, `/freeze`, `/guard`, `/unfreeze`, `/gstack-upgrade`, `/learn`
+
 ## Convenciones
 - Todos los textos en **español mexicano** (UI y mensajes)
 - Toast notifications con `toast.success/error/loading`

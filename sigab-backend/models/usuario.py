@@ -7,8 +7,17 @@ class Usuario(SQLModel, table=True):
     __tablename__ = "usuarios"
     
     id: Optional[int] = Field(
-        default=None, 
+        default=None,
         sa_column=Column(mysql.INTEGER(unsigned=True), primary_key=True, autoincrement=True)
+    )
+    tenant_id: int = Field(
+        default=1,
+        sa_column=Column(
+            mysql.INTEGER(unsigned=True),
+            nullable=False,
+            index=True,
+            server_default="1",
+        ),
     )
     nombre: str
     matricula: Optional[str] = Field(default=None, unique=True, index=True)
