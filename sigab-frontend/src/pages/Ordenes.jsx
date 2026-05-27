@@ -18,6 +18,7 @@ import { api } from '../api/sigab';
 import OrdenDetalleModal from '../components/OrdenDetalleModal';
 import OrdenCasillasForm from '../components/OrdenCasillasForm';
 import { useToast } from '../components/Toast';
+import FormatoViewer from '../components/formatos/FormatoViewer';
 
 const PRIORIDAD_BADGE = {
   critica: 'bg-red-900/60 text-red-300 border border-red-700',
@@ -51,6 +52,8 @@ export default function Ordenes() {
   });
   const [guardando, setGuardando]     = useState(false);
   const [selectedOrden, setSelectedOrden] = useState(null);
+  // Visor de formatos IMSS
+  const [formatoOrden, setFormatoOrden]     = useState(null);
   // Casillas CENEVAL
   const [showCasillas, setShowCasillas]     = useState(false);
   const [casillasOrdenId, setCasillasOrdenId] = useState(null);
@@ -396,13 +399,20 @@ export default function Ordenes() {
                       </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         {os.estado !== 'cerrada' && os.estado !== 'cancelada' && (
                           <button onClick={() => handleCerrar(os.id)}
                             className="text-xs text-emerald-400 hover:text-emerald-300 hover:underline">
                             Cerrar
                           </button>
                         )}
+                        <button
+                          onClick={() => setFormatoOrden(os)}
+                          className="text-xs text-blue-400 hover:text-blue-300 hover:underline"
+                          title="Ver / Imprimir Formato IMSS"
+                        >
+                          🖨 Formato
+                        </button>
                         <button
                           onClick={() => {
                             setCasillasOrdenId(os.id);
@@ -445,6 +455,14 @@ export default function Ordenes() {
       )}
 
       </> /* fin tab activas */}
+
+      {/* Visor de formato IMSS */}
+      {formatoOrden && (
+        <FormatoViewer
+          orden={formatoOrden}
+          onClose={() => setFormatoOrden(null)}
+        />
+      )}
     </div>
   );
 }
