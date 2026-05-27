@@ -1,13 +1,13 @@
 #!/bin/bash
 # ================================================================
-# SIGAB — Arranque rápido (backend + frontend)
+# SIGAH — Arranque rápido (backend + frontend)
 # ================================================================
-SIGAB_DIR="$(cd "$(dirname "$0")" && pwd)"
+SIGAH_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-echo "Arrancando SIGAB..."
+echo "Arrancando SIGAH..."
 
 # Backend
-cd "$SIGAB_DIR/sigab-backend"
+cd "$SIGAH_DIR/sigah-backend"
 source venv/bin/activate 2>/dev/null || true
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload &
 BACKEND_PID=$!
@@ -17,13 +17,13 @@ echo "Backend PID: $BACKEND_PID (puerto 8000)"
 sleep 3
 
 # Frontend
-cd "$SIGAB_DIR/sigab-frontend"
+cd "$SIGAH_DIR/sigah-frontend"
 npm run dev &
 FRONTEND_PID=$!
 echo "Frontend PID: $FRONTEND_PID (puerto 5173)"
 
 echo ""
-echo "SIGAB corriendo:"
+echo "SIGAH corriendo:"
 echo "  Frontend: http://localhost:5173"
 echo "  API Docs: http://localhost:8000/docs"
 echo ""

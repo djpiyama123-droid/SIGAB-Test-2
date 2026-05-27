@@ -239,7 +239,7 @@
 5. Para generar pantallas: usar el chat con prompts como:
    - "Genera la pantalla de gestión de equipos médicos usando el design system SIGAH"
    - "Crea el dashboard de KPIs hospitalarios con 4 tiles y 2 gráficas"
-6. Exportar → React → copiar en sigab-frontend/src/
+6. Exportar → React → copiar en sigah-frontend/src/
 
 ## Prompt base para Stitch (copiar y pegar)
 
