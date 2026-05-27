@@ -53,8 +53,9 @@ export default function Ordenes() {
   });
   const [guardando, setGuardando]     = useState(false);
   const [selectedOrden, setSelectedOrden] = useState(null);
-  // Visor de formatos IMSS
+  // Visor de formatos IMSS (autoprint=true dispara impresión al abrir post-creación)
   const [formatoOrden, setFormatoOrden]     = useState(null);
+  const [formatoAutoprint, setFormatoAutoprint] = useState(false);
   // Casillas CENEVAL
   const [showCasillas, setShowCasillas]     = useState(false);
   const [casillasOrdenId, setCasillasOrdenId] = useState(null);
@@ -120,10 +121,26 @@ export default function Ordenes() {
       const res = await api.crearOrden({ ...form, origen: 'dashboard' });
       toast.success(`Orden ${res.numero_orden || ''} creada`);
       setShowForm(false);
+      const formSnapshot = { ...form };
       setForm({ equipo_nombre:'', equipo_serie:'', tipo_mantenimiento:'correctivo',
                 tipo_formato:'correctivo_corto',
                 falla_reportada:'', tecnico_nombre:'', area:'', piso:'', prioridad:'media' });
       cargar();
+      // Abrir el formato IMSS automáticamente con autoprint
+      setFormatoAutoprint(true);
+      setFormatoOrden({
+        id: res.orden_id,
+        numero_orden: res.numero_orden,
+        tipo_mantenimiento: formSnapshot.tipo_mantenimiento,
+        equipo_nombre: formSnapshot.equipo_nombre,
+        equipo_serie: formSnapshot.equipo_serie,
+        falla_reportada: formSnapshot.falla_reportada,
+        tecnico_nombre: formSnapshot.tecnico_nombre,
+        area: formSnapshot.area,
+        piso: formSnapshot.piso,
+        prioridad: formSnapshot.prioridad,
+        fecha: new Date().toISOString().split('T')[0],
+      });
     } catch (err) {
       console.error(err);
       toast.error(err?.response?.data?.detail || 'Error al crear la orden');
@@ -577,7 +594,17 @@ export default function Ordenes() {
         <OrdenCasillasForm
           ordenId={casillasOrdenId}
           equipoData={casillasEquipo}
-          onGuardado={() => { cargar(); }}
+          onGuardado={async () => {
+            cargar();
+            setShowCasillas(false);
+            if (casillasOrdenId) {
+              try {
+                const res = await api.getOrden(casillasOrdenId);
+                setFormatoAutoprint(true);
+                setFormatoOrden(res.orden || res);
+              } catch { /* silencioso si falla la carga */ }
+            }
+          }}
           onCerrar={() => setShowCasillas(false)}
         />
       )}
@@ -596,7 +623,8 @@ export default function Ordenes() {
       {formatoOrden && (
         <FormatoViewer
           orden={formatoOrden}
-          onClose={() => setFormatoOrden(null)}
+          autoprint={formatoAutoprint}
+          onClose={() => { setFormatoOrden(null); setFormatoAutoprint(false); }}
         />
       )}
     </div>
