@@ -91,6 +91,35 @@ services:
       - "traefik.http.middlewares.sigah-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.sigah-redirect.redirectscheme.permanent=true"
 
+  # ── SIGAH Bot WhatsApp (Baileys) ──────────────────────────────
+  bot:
+    build:
+      context: ./sigab-bot
+      dockerfile: Dockerfile
+    container_name: sigah-bot
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      FASTAPI_BASE_URL: http://backend:8000
+      BOT_PORT: 3000
+      GRUPO_BIOMEDICOS: ${GRUPO_BIOMEDICOS:-Residentes de biomedica 2025}
+      SUPERVISOR_JID_1: ${SUPERVISOR_JID_1:-526645534349@s.whatsapp.net}
+      SUPERVISOR_JID_2: ${SUPERVISOR_JID_2:-526643057010@s.whatsapp.net}
+    volumes:
+      - sigab_bot_auth:/app/auth_sigah
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health | grep -q 'ok' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
   # ── Frontend estático (nginx:alpine sirviendo build) ─────────
   frontend:
     image: nginx:alpine
@@ -124,6 +153,8 @@ volumes:
     name: sigah_mysql_data
   sigab_uploads:
     name: sigab_uploads
+  sigab_bot_auth:
+    name: sigab_bot_auth
 
 networks:
   default:
