@@ -116,6 +116,110 @@ body {
   --z-toast:        80;
 }
 
+/* ══════════════════════════════════════════════════════════
+   TEMA "GLASS" — Clinical Precision Glass (Stitch / Apple-Medical)
+   Listo para activarse vía toggle (Fase 2). NO es default todavía.
+   ══════════════════════════════════════════════════════════ */
+[data-theme="glass"] {
+  --sidebar-bg:        #060e20;
+  --sidebar-text:      #dae2fd;
+  --sidebar-border:    rgba(34,211,238,0.1);
+  --sidebar-active:    rgba(0,108,183,0.8);
+  --sidebar-hover:     rgba(0,108,183,0.2);
+  --content-bg:        #020617;
+  --content-surface:   rgba(11,18,38,0.55);
+  --content-border:    rgba(34,211,238,0.18);
+  --content-text:      #dae2fd;
+  --content-muted:     #bbc9cd;
+  --accent:            #006CB7;
+  --accent-dark:       #00497D;
+  --accent-light:      rgba(34,211,238,0.12);
+  --header-bg:         rgba(11,19,38,0.8);
+  --header-border:     rgba(34,211,238,0.18);
+  --header-text:       #ffffff;
+  --header-muted:      #bbc9cd;
+  --bottom-nav-bg:     rgba(11,19,38,0.92);
+  --bottom-nav-border: rgba(34,211,238,0.18);
+  --bottom-nav-active: #22D3EE;
+  --bottom-nav-muted:  #859397;
+
+  --z-dropdown:     20;
+  --z-sticky:       30;
+  --z-overlay:      40;
+  --z-tooltip:      45;
+  --z-modal:        50;
+  --z-modal-nested: 60;
+  --z-confirm:      70;
+  --z-toast:        80;
+}
+
+/* ── Utilidades Glassmorphism (usadas por la landing y, en Fase 2+, por la app) ── */
+.glass-panel {
+  background: rgba(11, 18, 38, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  transition: all 0.3s ease;
+}
+.glass-panel:hover {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-color: rgba(34, 211, 238, 0.36);
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.1);
+}
+.ai-card {
+  background: rgba(30, 20, 50, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 2px solid #8B5CF6;
+  box-shadow: 0 -4px 20px rgba(139, 92, 246, 0.1);
+}
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(135deg, #8aebff, #9fcaff);
+}
+.btn-primary {
+  background: linear-gradient(135deg, #22D3EE, #056db9);
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(34, 217, 244, 0.4);
+}
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+.radial-bg {
+  background: radial-gradient(circle at 50% 0%, rgba(5, 109, 185, 0.15) 0%, rgba(2, 6, 23, 1) 60%);
+}
+/* Slider de la calculadora (landing) */
+.glass-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #8aebff;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(138, 235, 255, 0.5);
+}
+.glass-range::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border: none;
+  border-radius: 50%;
+  background: #8aebff;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(138, 235, 255, 0.5);
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer { animation: shimmer 3s infinite linear; }
+
 /* ── Focus ring global — accesibilidad ── */
 *:focus-visible {
   outline: 2px solid var(--accent, #006CB7);

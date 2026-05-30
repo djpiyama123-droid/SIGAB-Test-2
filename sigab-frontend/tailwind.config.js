@@ -20,6 +20,8 @@ export default {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         data: ['"Source Sans 3"', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Courier New', 'monospace'],
+        display: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
+        body: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         'xs':   ['clamp(0.75rem, 1vw, 1rem)',     { lineHeight: '1rem' }],
@@ -55,6 +57,18 @@ export default {
           slate:           '#1E293B',
           gray:            '#64748B',
           'gray-light':    '#F1F5F9',
+        },
+        // Clinical Precision Glass (Stitch / Apple-Medical) — Fase diseño premium
+        'cyan-glow':  '#22D3EE',
+        'ai-violet':  '#8B5CF6',
+        glass: {
+          0: '#020617',   // fondo base (deep slate)
+          50:'#060e20',
+          100:'#0b1326',
+          200:'#131b2e',
+          300:'#171f33',
+          400:'#222a3d',
+          500:'#2d3449',
         },
       },
       backgroundImage: {
