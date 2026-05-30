@@ -5,9 +5,9 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
 const THEMES = [
-  { id: 'blue',  color: '#006CB7', label: 'Azul IMSS' },
-  { id: 'green', color: '#059669', label: 'Verde SIGAH' },
-  { id: 'dark',  color: '#0F172A', label: 'Oscuro SIGAH' },
+  { id: 'glass', color: '#22D3EE', label: 'Glass (Clinical Precision)' },
+  { id: 'blue',  color: '#006CB7', label: 'Azul IMSS (claro)' },
+  { id: 'green', color: '#059669', label: 'Verde SIGAH (claro)' },
 ];
 
 export default function Header({ onMenuClick }) {

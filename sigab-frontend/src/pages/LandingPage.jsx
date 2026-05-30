@@ -6,7 +6,7 @@
  * Si el usuario ya tiene sesión, redirige al dashboard de la app.
  */
 import { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   ShieldCheck, ArrowRight, Building2, Stethoscope, HeartPulse,
@@ -36,10 +36,12 @@ const SIGAB_FEATURES = [
 export default function LandingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [beds, setBeds] = useState(500);
 
-  // Si ya hay sesión, no mostramos la landing: directo a la app.
-  if (user) return <Navigate to="/dashboard" replace />;
+  // En "/" con sesión activa → directo a la app. En "/landing" siempre se muestra
+  // (útil como preview de marketing aunque haya sesión iniciada).
+  if (user && location.pathname === '/') return <Navigate to="/dashboard" replace />;
 
   // Calculadora: base $500 + $4 por cama censable.
   const price = (500 + beds * 4).toLocaleString('es-MX');
