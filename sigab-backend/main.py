@@ -28,6 +28,7 @@ from routes import (
     auth as auth_routes,
     ocr, events, casillas, formatos,
     admin as admin_routes,
+    twilio_whatsapp,
 )
 _COPILOT_ON = os.getenv("SIGAH_DISABLE_COPILOT", "0") != "1"
 if _COPILOT_ON:
@@ -84,6 +85,7 @@ app.include_router(events.router, prefix="/api/v1/events", tags=["Eventos"])
 app.include_router(casillas.router, tags=["Casillas CENEVAL (Conservación)"])
 app.include_router(admin_routes.router, prefix="/api", tags=["SuperAdmin"])
 app.include_router(formatos.router, prefix="/api/formatos", tags=["Formatos Oficiales IMSS"])
+app.include_router(twilio_whatsapp.router, prefix="/api/twilio", tags=["WhatsApp OCR (Twilio)"])
 
 
 @app.get("/health")

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGAH — Monitor de Servicios</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+    header { background: #006CB7; padding: 20px 32px; display: flex; align-items: center; gap: 16px; }
+    header h1 { font-size: 1.25rem; font-weight: 500; letter-spacing: -0.01em; }
+    header .subtitle { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-top: 2px; }
+    .badge { background: rgba(255,255,255,0.15); border-radius: 6px; padding: 4px 10px; font-size: 0.72rem; margin-left: auto; }
+    main { padding: 32px; max-width: 1000px; margin: 0 auto; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 24px; }
+    .card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 12px; padding: 20px; }
+    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; transition: background 0.3s; }
+    .dot.ok { background: #059669; box-shadow: 0 0 8px rgba(5,150,105,0.5); }
+    .dot.error { background: #B91C1C; box-shadow: 0 0 8px rgba(185,28,28,0.5); }
+    .dot.loading { background: #B45309; animation: pulse 1s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+    .card-name { font-weight: 500; font-size: 0.95rem; }
+    .card-url { font-size: 0.75rem; color: #718096; margin-top: 2px; font-family: monospace; }
+    .status-text { font-size: 0.8rem; color: #a0aec0; }
+    .latency { font-family: monospace; font-size: 0.75rem; color: #68d391; }
+    .timestamp { font-size: 0.72rem; color: #4a5568; margin-top: 8px; }
+    .refresh-info { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #4a5568; margin-top: 24px; }
+    .progress-bar { height: 2px; background: #2d3748; border-radius: 2px; overflow: hidden; flex: 1; }
+    .progress-fill { height: 100%; background: #006CB7; transition: width 1s linear; }
+    h2 { font-size: 0.85rem; font-weight: 500; color: #718096; text-transform: uppercase; letter-spacing: 0.08em; }
+    .logs-section { margin-top: 32px; }
+    .log-box { background: #0d1117; border: 1px solid #2d3748; border-radius: 8px; padding: 16px; font-family: monospace; font-size: 0.78rem; color: #68d391; max-height: 200px; overflow-y: auto; margin-top: 12px; }
+    .log-entry { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .log-time { color: #4a5568; }
+  </style>
+</head>
+<body>
+  <header>
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="rgba(255,255,255,0.15)"/>
+      <path d="M8 14h12M14 8v12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <h1>SIGAH — Monitor de Servicios</h1>
+      <div class="subtitle">VPS Bluehost · 129.121.100.147</div>
+    </div>
+    <div class="badge" id="last-update">Actualizando...</div>
+  </header>
+
+  <main>
+    <h2>Estado de servicios</h2>
+    <div class="grid" id="services-grid">
+      <!-- Populated by JS -->
+    </div>
+
+    <div class="refresh-info">
+      <span>Próxima actualización en <span id="countdown">30</span>s</span>
+      <div class="progress-bar"><div class="progress-fill" id="progress" style="width:100%"></div></div>
+    </div>
+
+    <div class="logs-section">
+      <h2>Actividad reciente</h2>
+      <div class="log-box" id="log-box">
+        <div class="log-entry"><span class="log-time">--:--:-- </span>Iniciando monitor...</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const SERVICES = [
+      { name: 'Portal de Marketing', url: 'https://sigah.129-121-100-147.sslip.io', check: 'https://sigah.129-121-100-147.sslip.io', icon: '🌐' },
+      { name: 'Dashboard Cliente',   url: 'https://sigab.129-121-100-147.sslip.io', check: 'https://sigab.129-121-100-147.sslip.io', icon: '🏥' },
+      { name: 'API Backend (FastAPI)', url: 'https://sigab.129-121-100-147.sslip.io/health', check: 'https://sigab.129-121-100-147.sslip.io/health', icon: '⚙️' },
+      { name: 'Bot WhatsApp',        url: 'http://129.121.100.147:3000/health', check: 'http://129.121.100.147:3000/health', icon: '💬' },
+      { name: 'OpenClaw AI',         url: 'https://usg.tpf.mybluehost.me', check: 'https://usg.tpf.mybluehost.me', icon: '🤖' },
+    ];
+
+    const logs = [];
+    function addLog(msg) {
+      const t = new Date().toLocaleTimeString('es-MX', { hour12: false });
+      logs.unshift({ t, msg });
+      if (logs.length > 50) logs.pop();
+      document.getElementById('log-box').innerHTML = logs.map(l =>
+        `<div class="log-entry"><span class="log-time">${l.t} </span>${l.msg}</div>`
+      ).join('');
+    }
+
+    function renderServices(results) {
+      const grid = document.getElementById('services-grid');
+      grid.innerHTML = results.map(r => `
+        <div class="card">
+          <div class="card-header">
+            <div class="dot ${r.status === 'ok' ? 'ok' : r.status === 'loading' ? 'loading' : 'error'}"></div>
+            <div>
+              <div class="card-name">${r.icon} ${r.name}</div>
+              <div class="card-url">${r.url}</div>
+            </div>
+          </div>
+          <div class="status-text">${r.status === 'ok' ? 'En línea' : r.status === 'loading' ? 'Verificando...' : 'Sin respuesta'}</div>
+          ${r.latency ? `<div class="latency">${r.latency}ms</div>` : ''}
+          <div class="timestamp">${r.ts || ''}</div>
+        </div>
+      `).join('');
+    }
+
+    async function checkService(svc) {
+      const start = Date.now();
+      try {
+        const resp = await fetch(svc.check, { mode: 'no-cors', cache: 'no-store', signal: AbortSignal.timeout(5000) });
+        const latency = Date.now() - start;
+        return { ...svc, status: 'ok', latency, ts: new Date().toLocaleTimeString('es-MX') };
+      } catch (e) {
+        return { ...svc, status: 'error', ts: new Date().toLocaleTimeString('es-MX') };
+      }
+    }
+
+    async function runChecks() {
+      const results = SERVICES.map(s => ({ ...s, status: 'loading' }));
+      renderServices(results);
+
+      const checks = await Promise.allSettled(SERVICES.map(checkService));
+      const final = checks.map(c => c.status === 'fulfilled' ? c.value : { ...c.reason, status: 'error' });
+      renderServices(final);
+
+      const now = new Date().toLocaleTimeString('es-MX', { hour12: false });
+      document.getElementById('last-update').textContent = `Actualizado: ${now}`;
+
+      const online = final.filter(s => s.status === 'ok').length;
+      addLog(`Verificación: ${online}/${SERVICES.length} servicios activos`);
+    }
+
+    let countdown = 30;
+    function tick() {
+      countdown--;
+      document.getElementById('countdown').textContent = countdown;
+      document.getElementById('progress').style.width = ((countdown / 30) * 100) + '%';
+      if (countdown <= 0) {
+        countdown = 30;
+        runChecks();
+      }
+    }
+
+    runChecks();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>

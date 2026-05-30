@@ -105,11 +105,11 @@ const EQUIPMENT_ICONS = {
 
 // ── Colores de estado
 const STATUS_CONFIG = {
-  operativo:        { border: '#22c55e', bg: '#166534', pulse: false, label: 'Operativo' },
-  en_mantenimiento: { border: '#f59e0b', bg: '#78350f', pulse: true,  label: 'En Mantenimiento' },
-  fuera_servicio:   { border: '#ef4444', bg: '#7f1d1d', pulse: true,  label: 'Fuera de Servicio' },
-  en_traslado:      { border: '#8b5cf6', bg: '#4c1d95', pulse: false, label: 'En Traslado' },
-  baja:             { border: '#475569', bg: '#1e293b', pulse: false, label: 'Baja' },
+  operativo:        { border: '#4ade80', bg: '#14532d', pulse: false, label: 'Operativo' },
+  en_mantenimiento: { border: '#fbbf24', bg: '#78350f', pulse: true,  label: 'En Mantenimiento' },
+  fuera_servicio:   { border: '#f87171', bg: '#7f1d1d', pulse: true,  label: 'Fuera de Servicio' },
+  en_traslado:      { border: '#a78bfa', bg: '#4c1d95', pulse: false, label: 'En Traslado' },
+  baja:             { border: '#64748b', bg: '#1e293b', pulse: false, label: 'Baja' },
 };
 
 const CRITICIDAD_CONFIG = {
@@ -332,26 +332,29 @@ function ZoneBox({ zona, onEquipoClick }) {
       className="relative rounded-2xl overflow-visible transition-shadow duration-200 flex flex-col h-fit"
       style={{
         backgroundColor: zona.color_bg || '#1e293b',
-        border: `1px solid ${conFalla ? '#ef444440' : (zona.color_borde || '#334155')}`,
-        boxShadow: conFalla ? '0 0 15px #ef444410' : 'none',
+        border: `1px solid ${conFalla ? '#f87171' : (zona.color_borde || '#475569')}`,
+        boxShadow: conFalla ? '0 0 20px #ef444420' : '0 1px 4px rgba(0,0,0,0.4)',
       }}
     >
       {/* Header de la zona */}
-      <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
-        <span className="text-[10px] font-bold tracking-[0.2em] text-[var(--content-muted)] uppercase truncate">
+      <div
+        className="flex items-center justify-between px-3 pt-2.5 pb-1 rounded-t-2xl"
+        style={{ backgroundColor: conFalla ? '#3b0f0f' : '#0f172a' }}
+      >
+        <span className="text-[11px] font-bold tracking-[0.15em] text-slate-100 uppercase truncate">
           {zona.nombre}
         </span>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {zona.piso && (
-            <span className="text-[9px] text-[var(--content-muted)] bg-[var(--content-surface)] px-1.5 py-0.5 rounded-full">
+            <span className="text-[9px] font-semibold text-slate-300 bg-slate-700 px-1.5 py-0.5 rounded-full">
               {zona.piso}
             </span>
           )}
           <span
             className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
             style={{
-              backgroundColor: conFalla ? '#7f1d1d' : '#0f172a',
-              color: conFalla ? '#fca5a5' : '#cbd5e1',
+              backgroundColor: conFalla ? '#7f1d1d' : '#1e293b',
+              color: conFalla ? '#fca5a5' : '#e2e8f0',
             }}
             title={`${equipos.length} equipos en la zona`}
           >
@@ -362,18 +365,18 @@ function ZoneBox({ zona, onEquipoClick }) {
 
       {/* Mini-resumen por estado */}
       {tieneEquipos && (
-        <div className="flex items-center gap-2 px-3 pb-1.5 text-[9px] font-medium">
+        <div className="flex items-center gap-2 px-3 pb-1.5 pt-1 text-[9px] font-semibold">
           {counts.operativo > 0 && (
-            <span className="text-emerald-400">● {counts.operativo} OK</span>
+            <span style={{ color: '#4ade80' }}>● {counts.operativo} OK</span>
           )}
           {counts.en_mantenimiento > 0 && (
-            <span className="text-amber-400">● {counts.en_mantenimiento} Mant.</span>
+            <span style={{ color: '#fbbf24' }}>● {counts.en_mantenimiento} Mant.</span>
           )}
           {counts.fuera_servicio > 0 && (
-            <span className="text-red-400">● {counts.fuera_servicio} Fuera</span>
+            <span style={{ color: '#f87171' }}>● {counts.fuera_servicio} Fuera</span>
           )}
           {counts.en_traslado > 0 && (
-            <span className="text-purple-400">● {counts.en_traslado} Trasl.</span>
+            <span style={{ color: '#a78bfa' }}>● {counts.en_traslado} Trasl.</span>
           )}
         </div>
       )}
@@ -429,7 +432,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
     <div className="fixed inset-y-0 right-0 z-50 w-80 shadow-2xl flex flex-col"
          style={{ backgroundColor: '#0f172a', borderLeft: '1px solid #1e293b' }}>
       <div className="flex items-center justify-between p-4 border-b border-[var(--content-border)]">
-        <h3 className="text-[var(--content-text)] font-semibold text-sm">Ficha Tecnica</h3>
+        <h3 className="text-[var(--content-text)] font-semibold text-sm">Ficha Técnica</h3>
         <button
           onClick={onClose}
           className="text-[var(--content-muted)] hover:text-white transition-colors w-7 h-7 flex items-center
@@ -943,13 +946,13 @@ export default function HospitalMap() {
                 ];
 
                 return groups.map(group => (
-                  <div key={group.key} className="rounded-xl p-3 border border-[var(--content-border)]" style={{ background: "var(--content-surface)" }}>
+                  <div key={group.key} className="rounded-xl p-3 border border-slate-700/60" style={{ background: '#131d2e' }}>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-1.5 h-1.5 rounded bg-blue-500/60" />
-                      <span className="text-[var(--content-muted)] text-[10px] font-bold uppercase tracking-widest">
+                      <div className="w-2 h-2 rounded bg-blue-500" />
+                      <span className="text-slate-200 text-[11px] font-bold uppercase tracking-widest">
                         {group.label}
                       </span>
-                      <span className="text-[var(--content-muted)] text-[9px] ml-auto">
+                      <span className="text-slate-400 text-[10px] ml-auto font-medium">
                         {group.zonas.length} zona{group.zonas.length !== 1 ? 's' : ''} · {group.zonas.reduce((a, z) => a + z.equipos.length, 0)} equipos
                       </span>
                     </div>
