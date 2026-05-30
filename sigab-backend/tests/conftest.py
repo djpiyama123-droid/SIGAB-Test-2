@@ -105,6 +105,25 @@ async def session(test_engine: AsyncEngine) -> AsyncIterator[AsyncSession]:
 
 
 @pytest_asyncio.fixture
+async def test_session(test_engine: AsyncEngine) -> AsyncIterator[AsyncSession]:
+    """Sesión transaccional para tests multi-tenant (fixture independiente de 'session')."""
+    async with test_engine.connect() as conn:
+        trans = await conn.begin()
+        SessionLocal = sessionmaker(
+            bind=conn,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autoflush=False,
+            autocommit=False,
+        )
+        async with SessionLocal() as s:
+            try:
+                yield s
+            finally:
+                await trans.rollback()
+
+
+@pytest_asyncio.fixture
 async def client(session: AsyncSession) -> AsyncIterator[AsyncClient]:
     """httpx.AsyncClient con override de get_async_session inyectando la sesión transaccional."""
     async def _override():
