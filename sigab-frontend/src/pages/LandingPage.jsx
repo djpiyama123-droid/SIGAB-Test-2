@@ -1,428 +1,296 @@
-import React from 'react';
+/**
+ * LandingPage.jsx — Portal comercial SIGAH (tema "Clinical Precision Glass").
+ *
+ * Página pública servida en `/`. Diseño premium dark glassmorphism (Stitch / Apple-Medical).
+ * Es visualmente independiente del tema de la app: fuerza su propio fondo oscuro (#020617).
+ * Si el usuario ya tiene sesión, redirige al dashboard de la app.
+ */
+import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { 
-  Activity, 
-  Shield, 
-  Cpu, 
-  Layers, 
-  BarChart3, 
-  Terminal, 
-  ArrowRight, 
-  CheckCircle,
-  Database,
-  Globe,
-  Radio,
-  FileText
+import {
+  ShieldCheck, ArrowRight, Building2, Stethoscope, HeartPulse,
+  CheckCircle2, CalendarCheck, Cpu, Activity, Database, Menu,
 } from 'lucide-react';
+import { Button } from '../components/ui';
+
+const NAV_LINKS = [
+  { label: 'Plataforma',  href: '#plataforma' },
+  { label: 'Planes',      href: '#planes' },
+  { label: 'Casos de éxito', href: '#casos' },
+  { label: 'Cumplimiento', href: '#cumplimiento' },
+];
+
+const SIGAH_FEATURES = [
+  'Inventario digital de activos',
+  'Cronograma de mantenimiento preventivo',
+  'Alertas de calibración y vencimientos',
+];
+
+const SIGAB_FEATURES = [
+  'Trazabilidad por zona y piso (mapa en vivo)',
+  'Señales predictivas de falla con IA local',
+  'Bitácoras clínicas y órdenes NOM-016',
+];
 
 export default function LandingPage() {
   const { user } = useAuth();
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
   const navigate = useNavigate();
+  const [beds, setBeds] = useState(500);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { staggerChildren: 0.15 }
-    }
-  };
+  // Si ya hay sesión, no mostramos la landing: directo a la app.
+  if (user) return <Navigate to="/dashboard" replace />;
 
-  const itemVariants = {
-    hidden: { y: 30, opacity: 0 },
-    visible: { 
-      y: 0, 
-      opacity: 1,
-      transition: { type: "spring", stiffness: 100 }
-    }
-  };
+  // Calculadora: base $500 + $4 por cama censable.
+  const price = (500 + beds * 4).toLocaleString('es-MX');
+
+  const goLogin = () => navigate('/login');
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden font-sans relative selection:bg-teal-500 selection:text-slate-900">
-      {/* Background Decorative Gradients */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[150px] pointer-events-none"></div>
-      <div className="absolute bottom-10 left-10 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none"></div>
-
-      {/* Header / Navbar */}
-      <header className="sticky top-0 z-50 backdrop-blur-md bg-slate-950/70 border-b border-slate-800/80 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-teal-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <Activity className="w-5 h-5 text-white" />
+    <div
+      className="min-h-screen flex flex-col font-body text-[#dae2fd] antialiased"
+      style={{ backgroundColor: '#020617' }}
+    >
+      {/* ── Navegación fija ── */}
+      <nav className="fixed top-0 w-full z-50 bg-[#0b1326]/55 backdrop-blur-[20px] border-b border-cyan-glow/10 shadow-[0_0_20px_rgba(34,217,244,0.05)]">
+        <div className="flex justify-between items-center px-6 md:px-8 h-16 max-w-7xl mx-auto">
+          <div className="flex items-center gap-6">
+            <span className="font-display font-extrabold text-xl text-cyan-glow tracking-tighter">SIGAH</span>
+            <div className="hidden md:flex items-center gap-5 ml-4">
+              {NAV_LINKS.map((l) => (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  className="text-sm text-[#bbc9cd] hover:text-cyan-glow transition-colors"
+                >
+                  {l.label}
+                </a>
+              ))}
             </div>
-            <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
-              SIGAH<span className="text-teal-400 font-extrabold">.mx</span>
-            </span>
           </div>
-
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-            <a href="#features" className="hover:text-white transition-colors">Módulos</a>
-            <a href="#tech" className="hover:text-white transition-colors">Tecnología</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Planes</a>
-            <a href="#contact" className="hover:text-white transition-colors">Contacto</a>
-          </nav>
-
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => navigate('/login')}
-              className="relative px-6 py-2.5 rounded-xl text-sm font-semibold overflow-hidden group transition-all duration-300"
-            >
-              <span className="absolute inset-0 bg-slate-900 border border-slate-700 rounded-xl group-hover:border-teal-400 transition-colors duration-300"></span>
-              <span className="relative text-slate-200 group-hover:text-teal-400 transition-colors duration-300">Acceso Portal</span>
-            </button>
-            <button 
-              onClick={() => navigate('/login')}
-              className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white shadow-lg shadow-teal-500/20 transition-all duration-300 hover:scale-[1.03]"
-            >
-              Comenzar
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="relative max-w-7xl mx-auto px-6 pt-24 pb-20 flex flex-col items-center text-center">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-300 text-xs font-semibold uppercase tracking-wider mb-8"
-        >
-          <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
-          Ecosistema SaaS Multi-Tenant v2.0 Aprobado
-        </motion.div>
-
-        <motion.h1 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-5xl md:text-7xl font-extrabold tracking-tight max-w-5xl leading-tight mb-8"
-        >
-          Orquestación Inteligente para <br/>
-          <span className="bg-gradient-to-r from-blue-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent">
-            Gestión Biomédica y Hospitalaria
-          </span>
-        </motion.h1>
-
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-lg md:text-xl text-slate-400 max-w-3xl leading-relaxed mb-12"
-        >
-          La única suite SaaS multi-tenant diseñada para ingeniería biomédica y administración de activos hospitalarios que integra IA local offline, cumplimiento estricto de la NOM-016-SSA3 y telemetría automatizada en tiempo real.
-        </motion.p>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
-        >
-          <button 
-            onClick={() => navigate('/login')}
-            className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-base font-bold bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white shadow-xl shadow-blue-500/20 transition-all duration-300 hover:scale-[1.03]"
-          >
-            Explorar Módulos <ArrowRight className="w-5 h-5" />
+          <Button variant="primary" size="sm" onClick={goLogin} className="hidden md:inline-flex">
+            Iniciar sesión
+          </Button>
+          <button className="md:hidden text-cyan-glow" onClick={goLogin} aria-label="Acceder">
+            <Menu size={22} />
           </button>
-          <a 
-            href="#contact"
-            className="flex items-center justify-center px-8 py-4 rounded-xl text-base font-bold bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition-all duration-300"
-          >
-            Solicitar Demo
-          </a>
-        </motion.div>
-      </section>
-
-      {/* Grid Features Módulos */}
-      <section id="features" className="max-w-7xl mx-auto px-6 py-24 border-t border-slate-900 relative">
-        <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
-            Módulos del Sistema
-          </h2>
-          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-            Herramientas robustas diseñadas a la medida de la ingeniería clínica de vanguardia.
-          </p>
         </div>
+      </nav>
 
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+      <main className="flex-grow pt-16">
+        {/* ── Hero ── */}
+        <section
+          id="plataforma"
+          className="relative px-6 md:px-8 py-20 md:py-28 flex flex-col items-center text-center radial-bg overflow-hidden"
         >
-          {/* Card 1 */}
-          <motion.div 
-            variants={itemVariants}
-            className="bg-slate-900/40 border border-slate-800/80 hover:border-teal-500/40 rounded-2xl p-8 backdrop-blur-sm transition-all duration-300 hover:translate-y-[-4px] group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center mb-6 group-hover:bg-teal-500 group-hover:text-slate-950 transition-all duration-300">
-              <Cpu className="w-6 h-6" />
+          <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center gap-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border border-sigah-blue text-[#9fcaff] bg-[#0b1326]/50 backdrop-blur-sm">
+              <ShieldCheck size={15} />
+              Validado en HGR No. 1 IMSS Tijuana
             </div>
-            <h3 className="text-xl font-bold mb-3">SIGAB Biomédico</h3>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              Control exhaustivo de la hoja de vida de equipos médicos, calibraciones de metrología y alertas de mantenimiento preventivo.
+            <h1 className="font-display font-extrabold text-4xl md:text-6xl tracking-tighter leading-tight">
+              Gestión biomédica inteligente.<br />
+              <span className="text-gradient">Cumplimiento NOM-016 en automático.</span>
+            </h1>
+            <p className="text-lg text-[#bbc9cd] max-w-2xl leading-relaxed">
+              El sistema operativo clínico que digitaliza bitácoras, predice fallas en equipos vitales
+              y asegura el cumplimiento regulatorio sin esfuerzo cognitivo.
             </p>
-          </motion.div>
-
-          {/* Card 2 */}
-          <motion.div 
-            variants={itemVariants}
-            className="bg-slate-900/40 border border-slate-800/80 hover:border-blue-500/40 rounded-2xl p-8 backdrop-blur-sm transition-all duration-300 hover:translate-y-[-4px] group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-6 group-hover:bg-blue-500 group-hover:text-slate-950 transition-all duration-300">
-              <Shield className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold mb-3">Gobernanza NOM-016</h3>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              Auditoría digital en tiempo real para verificar el cumplimiento técnico e institucional en consultorios y quirófanos según las normativas vigentes del IMSS.
-            </p>
-          </motion.div>
-
-          {/* Card 3 */}
-          <motion.div 
-            variants={itemVariants}
-            className="bg-slate-900/40 border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl p-8 backdrop-blur-sm transition-all duration-300 hover:translate-y-[-4px] group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-6 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-all duration-300">
-              <BarChart3 className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold mb-3">Reportes NOM-240</h3>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              Registro inmediato y trazabilidad completa de incidentes de tecnovigilancia, automatizando la recopilación de evidencias fotográficas digitales.
-            </p>
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* Orquestación Multi-Nodo (Tech) */}
-      <section id="tech" className="bg-slate-900/20 border-y border-slate-900 py-24 relative">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-300 text-xs font-semibold mb-6">
-              <Terminal className="w-3.5 h-3.5" /> Arquitectura Distribuida
-            </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight mb-6">
-              Orquestación Multi-Nodo de Alta Disponibilidad
-            </h2>
-            <p className="text-slate-400 text-base leading-relaxed mb-8">
-              Nuestra infraestructura SaaS se despliega de forma agnóstica combinando la VPS en la nube (Bluehost) para administración y acceso corporativo global con nodos Edge locales de alto desempeño (Lenovo ThinkCentre) en el hospital general. Esto permite correr modelos de inteligencia artificial y OCR de forma local offline sin consumir tokens.
-            </p>
-
-            <div className="space-y-4">
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-md bg-teal-500/10 text-teal-400 flex items-center justify-center mt-1">
-                  <CheckCircle className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-200">Sincronización Inteligente del Cerebro</h4>
-                  <p className="text-slate-400 text-sm">Git con estrategia rebase sincroniza automáticamente las bitácoras de Obsidian cada 15 minutos.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-md bg-teal-500/10 text-teal-400 flex items-center justify-center mt-1">
-                  <CheckCircle className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-200">Inferencia Offline con Ollama</h4>
-                  <p className="text-slate-400 text-sm">Modelos Qwen2.5 y Gemma3 locales para lectura veloz de etiquetas técnicas y fichas de mantenimiento.</p>
-                </div>
-              </div>
+            <div className="flex flex-col sm:flex-row gap-4 mt-4">
+              <Button variant="primary" size="lg" icon={ArrowRight} iconPosition="right" onClick={goLogin}>
+                Comenzar ahora
+              </Button>
+              <Button variant="glass" size="lg" as="a" href="#planes">
+                Ver funcionamiento
+              </Button>
             </div>
           </div>
 
-          <div className="relative">
-            {/* Visual simulation of multi-node dashboard */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
+          {/* Preview abstracto del dashboard */}
+          <div className="relative w-full max-w-5xl mt-16 mx-auto z-10 glass-panel rounded-xl p-6 overflow-hidden aspect-video hidden md:block group">
+            <div className="relative z-10 flex flex-col h-full gap-4 opacity-70 group-hover:opacity-100 transition-opacity duration-500">
+              <div className="flex justify-between items-center border-b border-cyan-glow/20 pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span className="text-xs text-slate-500 font-mono ml-2">sys_monitor@sigah.mx</span>
+                  <span className="w-3 h-3 rounded-full bg-[#10B981] animate-pulse" />
+                  <span className="text-xs text-[#bbc9cd] uppercase tracking-wider">Sistema en línea</span>
                 </div>
-                <span className="text-xs text-teal-400 font-mono">100% OPERATIVO</span>
+                <div className="flex gap-2">
+                  <div className="h-6 w-24 bg-[#171f33] rounded" />
+                  <div className="h-6 w-6 bg-[#171f33] rounded-full" />
+                </div>
               </div>
-
-              <div className="space-y-4 font-mono text-xs text-slate-400">
-                <p className="text-emerald-400"># Verificando topología del sistema...</p>
-                <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <Globe className="w-4 h-4 text-blue-400 animate-spin" />
-                    <span>Bluehost VPS Cloud (Master)</span>
-                  </div>
-                  <span className="text-teal-400 font-bold">ACTIVO</span>
+              <div className="flex-grow grid grid-cols-3 gap-4">
+                <div className="col-span-2 flex flex-col gap-4">
+                  <div className="bg-[#0b1326]/50 rounded-lg flex-grow border border-cyan-glow/10" />
+                  <div className="bg-[#0b1326]/50 rounded-lg h-24 border border-cyan-glow/10" />
                 </div>
-
-                <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <Radio className="w-4 h-4 text-teal-400" />
-                    <span>ASUS TUF A16 (Terminal Física)</span>
-                  </div>
-                  <span className="text-teal-400 font-bold">ACTIVO</span>
-                </div>
-
-                <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <Database className="w-4 h-4 text-purple-400" />
-                    <span>Lenovo ThinkCentre (IMSS Edge)</span>
-                  </div>
-                  <span className="text-teal-400 font-bold">ONLINE</span>
-                </div>
-
-                <div className="pt-2 text-slate-500 flex justify-between">
-                  <span>Tráfico API: 2,451 req/hora</span>
-                  <span>Latencia global: 12ms</span>
+                <div className="col-span-1 flex flex-col gap-4">
+                  <div className="bg-[#0b1326]/50 rounded-lg h-1/3 border border-cyan-glow/10" />
+                  <div className="ai-card rounded-lg flex-grow" />
                 </div>
               </div>
             </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent z-20" />
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Pricing / SaaS Section */}
-      <section id="pricing" className="max-w-7xl mx-auto px-6 py-24">
-        <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Planes de Suscripción SaaS</h2>
-          <p className="text-slate-400 text-lg max-w-2xl mx-auto">Aislamiento total de datos (multi-tenant) con infraestructura a la medida.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Plan 1 */}
-          <div className="bg-slate-900/30 border border-slate-800 rounded-2xl p-8 backdrop-blur-sm relative overflow-hidden flex flex-col">
-            <h3 className="text-xl font-bold mb-2">Hospital Singular</h3>
-            <p className="text-slate-400 text-sm mb-6">Para clínicas medianas y hospitales autónomos.</p>
-            <div className="text-3xl font-extrabold text-white mb-6">Contacto <span className="text-sm font-normal text-slate-400">/ mes</span></div>
-            <ul className="space-y-4 text-slate-300 text-sm mb-8 flex-grow">
-              <li className="flex items-center gap-3"><CheckCircle className="w-4 h-4 text-teal-400" /> 1 Hospital (Tenant Aislado)</li>
-              <li className="flex items-center gap-3"><CheckCircle className="w-4 h-4 text-teal-400" /> Módulos Básicos SIGAB</li>
-              <li className="flex items-center gap-3"><CheckCircle className="w-4 h-4 text-teal-400" /> Base de Datos Separada</li>
-              <li className="flex items-center gap-3"><CheckCircle className="w-4 h-4 text-teal-400" /> 5 Usuarios Concurrentes</li>
-            </ul>
-            <button className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-all">Saber Más</button>
-          </div>
-
-          {/* Plan 2 */}
-          <div className="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-teal-500 rounded-2xl p-8 backdrop-blur-sm relative overflow-hidden flex flex-col shadow-2xl shadow-teal-500/5">
-            <div className="absolute top-4 right-4 bg-teal-500/10 text-teal-400 border border-teal-500/30 text-[10px] font-bold tracking-widest px-3 py-1 rounded-full uppercase">Recomendado</div>
-            <h3 className="text-xl font-bold mb-2">Red Metropolitana</h3>
-            <p className="text-slate-400 text-sm mb-6">Para redes de salud y delegaciones regionales.</p>
-            <div className="text-3xl font-extrabold text-white mb-6">Contacto <span className="text-sm font-normal text-slate-400">/ mes</span></div>
-            <ul className="space-y-4 text-slate-300 text-sm mb-8 flex-grow">
-              <li className="flex items-center gap-3"><CheckCircle className="w-4 h-4 text-teal-400" /> Hasta 5 Hospitales</li>
-              <li className="flex items-center gap-3"><CheckCircle className="w-4 h-4 text-teal-400" /> Módulos Avanzados (Metrología)</li>
-              <li className="flex items-center gap-3"><CheckCircle className="w-4 h-4 text-teal-400" /> Aislamiento de Redes</li>
-              <li className="flex items-center gap-3"><CheckCircle className="w-4 h-4 text-teal-400" /> Copilot IA local ilimitado</li>
-            </ul>
-            <button className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white font-bold transition-all shadow-lg shadow-teal-500/20">Solicitar Información</button>
-          </div>
-
-          {/* Plan 3 */}
-          <div className="bg-slate-900/30 border border-slate-800 rounded-2xl p-8 backdrop-blur-sm relative overflow-hidden flex flex-col">
-            <h3 className="text-xl font-bold mb-2">Gubernamental Custom</h3>
-            <p className="text-slate-400 text-sm mb-6">Para grandes delegaciones IMSS a nivel estatal.</p>
-            <div className="text-3xl font-extrabold text-white mb-6">Cotización <span className="text-sm font-normal text-slate-400">/ anual</span></div>
-            <ul className="space-y-4 text-slate-300 text-sm mb-8 flex-grow">
-              <li className="flex items-center gap-3"><CheckCircle className="w-4 h-4 text-teal-400" /> Hospitales Ilimitados</li>
-              <li className="flex items-center gap-3"><CheckCircle className="w-4 h-4 text-teal-400" /> Integración con Sistemas IMSS</li>
-              <li className="flex items-center gap-3"><CheckCircle className="w-4 h-4 text-teal-400" /> Panel SuperAdmin Consolidado</li>
-              <li className="flex items-center gap-3"><CheckCircle className="w-4 h-4 text-teal-400" /> Soporte Dedicado 24/7</li>
-            </ul>
-            <button className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-all">Agendar Cita</button>
-          </div>
-        </div>
-      </section>
-
-      {/* Formulario de Contacto */}
-      <section id="contact" className="max-w-4xl mx-auto px-6 py-24 border-t border-slate-900 relative">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">¿Listo para modernizar tu hospital?</h2>
-          <p className="text-slate-400 text-base max-w-md mx-auto">Completa el formulario y un especialista te contactará de inmediato.</p>
-        </div>
-
-        <div className="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-8 md:p-12 backdrop-blur-sm relative">
-          <form className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nombre Completo</label>
-                <input 
-                  type="text" 
-                  placeholder="Gustavo ..." 
-                  className="w-full px-4 py-3.5 bg-slate-950 border border-slate-800 focus:border-teal-400 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none transition-colors"
-                />
+        {/* ── Ecosistema SIGAH vs SIGAB ── */}
+        <section id="casos" className="py-20 px-6 md:px-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-14">
+              <h2 className="font-display font-bold text-3xl md:text-5xl mb-4">Ecosistema SIGAH</h2>
+              <p className="text-lg text-[#bbc9cd] max-w-2xl mx-auto">
+                Módulos especializados para cubrir cada aspecto operativo y clínico de tu institución médica.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* SIGAH Comercial */}
+              <div className="glass-panel rounded-xl p-6 flex flex-col gap-4 relative overflow-hidden group">
+                <Building2 className="absolute top-4 right-4 text-cyan-glow opacity-20 group-hover:opacity-100 transition-opacity" size={56} />
+                <h3 className="font-display font-semibold text-xl text-cyan-glow flex items-center gap-2">
+                  <Building2 size={22} /> SIGAH Comercial
+                </h3>
+                <p className="text-[#bbc9cd]">Gestión administrativa y mantenimiento de equipos biomédicos.</p>
+                <ul className="space-y-2 mt-2 flex-grow">
+                  {SIGAH_FEATURES.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-[#dae2fd]">
+                      <CheckCircle2 className="text-cyan-glow shrink-0 mt-0.5" size={20} /> {f}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Hospital o Institución</label>
-                <input 
-                  type="text" 
-                  placeholder="HGR No. 1 Tijuana" 
-                  className="w-full px-4 py-3.5 bg-slate-950 border border-slate-800 focus:border-teal-400 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none transition-colors"
-                />
+              {/* SIGAB Clínico */}
+              <div className="glass-panel rounded-xl p-6 flex flex-col gap-4 relative overflow-hidden group border-ai-violet/30">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-ai-violet to-transparent opacity-50" />
+                <HeartPulse className="absolute top-4 right-4 text-ai-violet opacity-20 group-hover:opacity-100 transition-opacity" size={56} />
+                <h3 className="font-display font-semibold text-xl text-[#cbb5ff] flex items-center gap-2">
+                  <Stethoscope size={22} /> SIGAB Clínico
+                </h3>
+                <p className="text-[#bbc9cd]">Monitoreo y trazabilidad de activos y operación clínica en tiempo real.</p>
+                <ul className="space-y-2 mt-2 flex-grow">
+                  {SIGAB_FEATURES.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-[#dae2fd]">
+                      <CheckCircle2 className="text-[#cbb5ff] shrink-0 mt-0.5" size={20} /> {f}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
+          </div>
+        </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Correo Electrónico</label>
-                <input 
-                  type="email" 
-                  placeholder="gustavo@sigah.mx" 
-                  className="w-full px-4 py-3.5 bg-slate-950 border border-slate-800 focus:border-teal-400 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none transition-colors"
-                />
+        {/* ── Calculadora de inversión ── */}
+        <section id="planes" className="py-20 px-6 md:px-8 bg-[#060e20]">
+          <div className="max-w-4xl mx-auto glass-panel rounded-xl p-8 md:p-10 flex flex-col md:flex-row gap-10 items-center">
+            <div className="flex-1 w-full">
+              <h2 className="font-display font-bold text-3xl mb-2">Calculadora de inversión</h2>
+              <p className="text-[#bbc9cd] mb-8">Escala tu licencia según la capacidad de tu institución.</p>
+              <div className="mb-3 flex justify-between items-end">
+                <label htmlFor="bed-slider" className="text-xs font-semibold text-cyan-glow uppercase tracking-wider">
+                  Camas censables
+                </label>
+                <span className="font-display font-semibold text-xl text-white">{beds}</span>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Teléfono de Contacto</label>
-                <input 
-                  type="text" 
-                  placeholder="+52 664 ..." 
-                  className="w-full px-4 py-3.5 bg-slate-950 border border-slate-800 focus:border-teal-400 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none transition-colors"
-                />
+              <input
+                id="bed-slider"
+                type="range"
+                min="50"
+                max="2000"
+                step="50"
+                value={beds}
+                onChange={(e) => setBeds(parseInt(e.target.value, 10))}
+                className="glass-range w-full h-2 bg-[#2d3449] rounded-lg appearance-none cursor-pointer"
+              />
+              <div className="flex justify-between mt-2 text-xs text-[#859397]">
+                <span>50</span>
+                <span>2000</span>
               </div>
             </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Mensaje o Requerimientos</label>
-              <textarea 
-                rows="4"
-                placeholder="Estamos interesados en la migración a la versión SaaS 2.0 y el licenciamiento..."
-                className="w-full px-4 py-3.5 bg-slate-950 border border-slate-800 focus:border-teal-400 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none transition-colors resize-none"
-              ></textarea>
+            <div className="flex-1 w-full bg-[#171f33] rounded-lg p-6 border border-cyan-glow/20 text-center shadow-inner">
+              <div className="text-xs text-[#bbc9cd] uppercase tracking-wider mb-2">Inversión mensual estimada</div>
+              <div className="font-display font-extrabold text-5xl text-cyan-glow mb-2 flex justify-center items-start">
+                <span className="text-xl mt-1">$</span>
+                <span>{price}</span>
+                <span className="text-xl mt-auto mb-1 text-[#bbc9cd]">/mes</span>
+              </div>
+              <p className="text-xs text-[#bbc9cd] mb-6">Licencia incluye soporte técnico 24/7</p>
+              <Button variant="primary" className="w-full" onClick={goLogin}>
+                Solicitar presupuesto formal
+              </Button>
             </div>
+          </div>
+        </section>
 
-            <button 
-              type="button" 
-              className="w-full py-4 bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white font-extrabold rounded-xl shadow-lg shadow-teal-500/20 transition-all duration-300 hover:scale-[1.01]"
+        {/* ── Formulario de auditoría (lead) ── */}
+        <section id="cumplimiento" className="py-20 px-6 md:px-8 bg-[#060e20]">
+          <div className="max-w-3xl mx-auto glass-panel rounded-xl p-8 md:p-10 border border-cyan-glow/30 relative overflow-hidden">
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-glow/0 via-cyan-glow/20 to-cyan-glow/0 opacity-50 pointer-events-none animate-shimmer" />
+            <div className="text-center mb-8 relative z-10">
+              <h2 className="font-display font-bold text-3xl mb-2">Agenda tu auditoría gratuita NOM-016</h2>
+              <p className="text-[#bbc9cd]">
+                Descubre el nivel de cumplimiento actual de tu hospital y cómo SIGAH puede automatizarlo.
+              </p>
+            </div>
+            <form
+              className="flex flex-col gap-5 relative z-10"
+              onSubmit={(e) => { e.preventDefault(); goLogin(); }}
             >
-              Enviar Mensaje de Contacto
-            </button>
-          </form>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-12 text-center text-sm text-slate-500">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-teal-400 flex items-center justify-center">
-              <Activity className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-slate-300">SIGAH Ecosistema</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs text-[#bbc9cd]">Nombre completo</label>
+                  <input
+                    type="text"
+                    placeholder="Dr. Juan Pérez"
+                    className="bg-[#020617] border border-cyan-glow/20 rounded-lg p-3 text-white placeholder-[#859397] focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow focus:outline-none transition-colors"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs text-[#bbc9cd]">Institución médica</label>
+                  <input
+                    type="text"
+                    placeholder="Hospital General"
+                    className="bg-[#020617] border border-cyan-glow/20 rounded-lg p-3 text-white placeholder-[#859397] focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-xs text-[#bbc9cd]">Correo corporativo</label>
+                <input
+                  type="email"
+                  placeholder="juan.perez@hospital.com"
+                  className="bg-[#020617] border border-cyan-glow/20 rounded-lg p-3 text-white placeholder-[#859397] focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow focus:outline-none transition-colors"
+                />
+              </div>
+              <Button variant="primary" type="submit" icon={CalendarCheck} className="w-full mt-2">
+                Solicitar auditoría
+              </Button>
+              <p className="text-center text-xs text-[#859397]">
+                Tus datos están protegidos bajo estrictos protocolos de privacidad.
+              </p>
+            </form>
           </div>
+        </section>
 
-          <p>© 2026 SIGAH / SIGAB. Todos los derechos reservados. Bioingeniería.</p>
-
-          <div className="flex gap-6 text-slate-400">
-            <span className="cursor-pointer hover:text-white transition-colors">Aviso de Privacidad</span>
-            <span className="cursor-pointer hover:text-white transition-colors">Términos de Uso</span>
+        {/* ── Tira de confianza ── */}
+        <section className="py-12 px-6 md:px-8 border-t border-cyan-glow/10">
+          <div className="max-w-5xl mx-auto flex flex-wrap justify-center items-center gap-8 text-[#859397]">
+            <span className="flex items-center gap-2 text-sm"><ShieldCheck size={18} className="text-cyan-glow" /> NOM-016-SSA3</span>
+            <span className="flex items-center gap-2 text-sm"><Activity size={18} className="text-cyan-glow" /> NOM-240-SSA1</span>
+            <span className="flex items-center gap-2 text-sm"><Database size={18} className="text-cyan-glow" /> ISO 13485</span>
+            <span className="flex items-center gap-2 text-sm"><Cpu size={18} className="text-cyan-glow" /> IA local On-Premise</span>
           </div>
+        </section>
+      </main>
+
+      {/* ── Footer ── */}
+      <footer className="bg-[#060e20] w-full py-12 border-t border-cyan-glow/10 flex flex-col md:flex-row justify-between items-center px-6 md:px-8 gap-4 mt-auto">
+        <span className="font-display font-bold text-lg text-white">SIGAH</span>
+        <div className="flex flex-wrap justify-center gap-6">
+          {['Privacidad', 'Términos', 'Contacto', 'Cumplimiento'].map((t) => (
+            <a key={t} href="#" className="text-xs uppercase tracking-wider text-[#bbc9cd] hover:text-cyan-glow transition-colors">{t}</a>
+          ))}
         </div>
+        <span className="text-xs uppercase tracking-wider text-[#9fcaff]">© 2026 SIGAH Medical Systems</span>
       </footer>
     </div>
   );
