@@ -1,0 +1,14 @@
+node_modules
+dist
+.venv
+*.log
+
+# Variables de entorno con secretos
+.env
+.env.local
+.env.production
+backend/.env
+
+# Sistema
+.DS_Store
+*.local
