@@ -37,6 +37,7 @@ import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 
 from main import app
+from database import get_async_session
 from auth.jwt_handler import create_access_token
 from models.hospital import Hospital
 from models.usuario import Usuario
@@ -65,7 +66,7 @@ async def two_tenants(test_session):
     )
     test_session.add(hosp_a)
     test_session.add(hosp_b)
-    await test_session.commit()
+    await test_session.flush()
     await test_session.refresh(hosp_a)
     await test_session.refresh(hosp_b)
     return hosp_a, hosp_b
@@ -91,7 +92,7 @@ async def users_for_tenants(test_session, two_tenants):
     )
     test_session.add(user_a)
     test_session.add(user_b)
-    await test_session.commit()
+    await test_session.flush()
     await test_session.refresh(user_a)
     await test_session.refresh(user_b)
 
@@ -132,17 +133,25 @@ async def equipos_for_tenants(test_session, two_tenants):
     )
     test_session.add(eq_a)
     test_session.add(eq_b)
-    await test_session.commit()
+    await test_session.flush()
     await test_session.refresh(eq_a)
     await test_session.refresh(eq_b)
     return eq_a, eq_b
 
 
 @pytest_asyncio.fixture
-async def client():
+async def client(test_session):
+    """Cliente HTTP que comparte test_session con los fixtures de datos.
+    El override garantiza que las rutas de la app vean los datos flusheados en la transacción de test.
+    """
+    async def _override():
+        yield test_session
+
+    app.dependency_overrides[get_async_session] = _override
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
+    app.dependency_overrides.pop(get_async_session, None)
 
 
 def auth_headers(token: str) -> dict:
@@ -319,7 +328,7 @@ async def test_superadmin_no_puede_usar_rutas_tenant(client, test_session):
             activo=True,
         )
         test_session.add(admin)
-        await test_session.commit()
+        await test_session.flush()
         await test_session.refresh(admin)
     except Exception as e:
         pytest.skip(f"Migración Fase 3 no aplicada (tenant_id aún NOT NULL): {e}")
