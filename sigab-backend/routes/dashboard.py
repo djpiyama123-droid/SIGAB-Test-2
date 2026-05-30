@@ -234,6 +234,41 @@ async def dashboard_equipos(
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
+@router.get("/kpis")
+async def dashboard_kpis(
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """KPIs resumidos para el SIGAB WebPanel (panel.sslip.io)."""
+    stmt_eq = select(
+        func.count(Equipo.id).label("total"),
+        func.sum(sa.case((Equipo.estado == 'operativo', 1), else_=0)).label("operativos"),
+    ).where(Equipo.tenant_id == tenant_id)
+    res_eq = (await session.execute(stmt_eq)).one()
+
+    stmt_ord = select(func.count(OrdenServicio.id)).where(
+        OrdenServicio.tenant_id == tenant_id,
+        OrdenServicio.estado.in_(('abierta', 'en_progreso')),
+    )
+    mant_activos = (await session.execute(stmt_ord)).scalar() or 0
+
+    stmt_alert = (
+        select(func.count(Alerta.id))
+        .join(Equipo, Alerta.equipo_id == Equipo.id)
+        .where(Alerta.leida == False, Equipo.tenant_id == tenant_id)
+    )
+    alertas = (await session.execute(stmt_alert)).scalar() or 0
+
+    return {
+        "equipos_registrados": int(res_eq.total or 0),
+        "activos_en_uso": int(res_eq.operativos or 0),
+        "mantenimientos_activos": int(mant_activos),
+        "alertas_criticas": int(alertas),
+        "contratos_activos": 1,
+        "instituciones": 1,
+    }
+
+
 @router.get("/stream")
 async def dashboard_sse_deprecated():
     """DEPRECATED: Use /api/v1/events/subscribe instead."""
