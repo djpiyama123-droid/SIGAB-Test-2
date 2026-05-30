@@ -1,15 +1,15 @@
 """
-database.py — Motor asíncrono SQLModel para MySQL 8.0.
+database.py ??? Motor as??ncrono SQLModel para MySQL 8.0.
 
 Provee:
-  engine              — AsyncEngine (mysql+asyncmy) con SSL opcional
-  async_session_maker — Fábrica de sesiones (expire_on_commit=False)
-  get_async_session   — Dependency de FastAPI para inyección de sesiones
-  init_db             — Placeholder; las migraciones se manejan con Alembic/SQL
+  engine              ??? AsyncEngine (mysql+asyncmy) con SSL opcional
+  async_session_maker ??? F??brica de sesiones (expire_on_commit=False)
+  get_async_session   ??? Dependency de FastAPI para inyecci??n de sesiones
+  init_db             ??? Placeholder; las migraciones se manejan con Alembic/SQL
   
 Control de SSL:
-  SIGAH_SSL_DISABLED=true  → Sin SSL (desarrollo local / Docker)
-  SIGAH_SSL_DISABLED=false → Con SSL (producción HGR No. 1)
+  SIGAH_SSL_DISABLED=true  ??? Sin SSL (desarrollo local / Docker)
+  SIGAH_SSL_DISABLED=false ??? Con SSL (producci??n HGR No. 1)
 """
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -18,7 +18,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from config import DB_CONFIG
 import os
 
-# Construir URL asíncrona para asyncmy
+# Construir URL as??ncrona para asyncmy
 # mysql+asyncmy://user:pass@host:port/db
 db_user = DB_CONFIG["user"]
 db_pass = DB_CONFIG["password"]
@@ -46,7 +46,7 @@ async_session_maker = sessionmaker(
 )
 
 async def init_db():
-    # Alembic se encargará de las migraciones, pero para pruebas iniciales:
+    # Alembic se encargar?? de las migraciones, pero para pruebas iniciales:
     # async with engine.begin() as conn:
     #    await conn.run_sync(SQLModel.metadata.create_all)
     pass
