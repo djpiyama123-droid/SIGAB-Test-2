@@ -77,3 +77,17 @@ htmlcov/
 # Scratch / debug output
 scratch/
 sigab-backend/alembic_output.txt
+.monitor.env
+
+# Graphify — cache y archivos pesados (>50MB)
+graphify-out/cache/
+graphify-out/graph.json
+graphify-out/manifest.json
+
+# Audit scripts temporales
+sigab-frontend/audit_sigab.cjs
+sigab-frontend/audit_sigab.js
+sigab-frontend/audit_sigab2.cjs
+sigab-frontend/audit_v2.cjs
+sigab-frontend/audit_win.cjs
+skills-lock.json
