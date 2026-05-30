@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  /* Tipografía */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-data: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Source Code Pro', ui-monospace, monospace;
+
+  /* Colores de marca SIGAH */
+  --color-sigah-blue: #006CB7;
+  --color-sigah-blue-dark: #00497D;
+  --color-bg-principal: #F1F5F9;
+  --color-bg-alt: #DCEBF7;
+  --color-border: #C9D6E2;
+
+  /* Estados semánticos */
+  --color-esmeralda: #059669;
+  --color-esmeralda-bg: #DCFCE7;
+  --color-ambar: #B45309;
+  --color-ambar-bg: #FEF3C7;
+  --color-rojo: #B91C1C;
+  --color-rojo-bg: #FEE2E2;
+}
+
+@utility card-border {
+  border-width: 0.5px;
+  border-style: solid;
+  border-color: var(--color-border);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    background-color: var(--color-bg-principal);
+    color: #1E293B;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

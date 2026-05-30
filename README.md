@@ -24,6 +24,35 @@
 
 ---
 
+## Estructura del Monorepo SIGAH
+
+**SIGAH** es la empresa de servicios tecnológicos Industria 4.0 para hospitales (marca paraguas).
+**SIGAB** es la aplicación web de gestión de activos biomédicos (el producto). Mnemotecnia: *SIGAH contiene a SIGAB*.
+
+```
+SIGAH/  ← monorepo (este repo en GitHub: djpiyama123-droid/SIGAH)
+├── portal-sigah/       Portal comercial + WebPanel CEO/Dev (React + TS)
+│                       Consume la API de SIGAB. Deploy → panel.129-121-100-147.sslip.io
+├── sigab-backend/      API FastAPI de la app SIGAB           ← NO MOVER (el VPS depende de la ruta)
+├── sigab-frontend/     App hospitalaria React 19              ← NO MOVER (VPS)
+├── sigab-bot/          Bot WhatsApp Baileys                   ← NO MOVER (VPS)
+├── database/           Schema + seed MySQL                    ← NO MOVER (VPS)
+├── docker-compose.yml  Stack de producción (rutas ./sigab-*)  ← NO ROMPER
+├── docs/               Documentación (infraestructura, etc.)
+├── scripts/            Utilidades de sincronización
+└── CLAUDE.md           Memoria compartida (fuente de verdad)
+```
+
+### Infraestructura — 3 máquinas, 1 fuente de verdad
+GitHub (repo `SIGAH`) es el **master**. Las 3 máquinas son réplicas vía `git pull`:
+- **ASUS TUF A16** (Windows+WSL2) — sesiones largas de desarrollo
+- **ThinkCentre M720q** (Ubuntu nativo) — servidor 24/7 con Claude Code, acceso remoto Tailscale
+- **VPS Bluehost** (Ubuntu) — producción Docker
+
+Red privada **Tailscale** + **Syncthing** para contexto no-versionado. Detalle: [`docs/INFRAESTRUCTURA-3-MAQUINAS.md`](docs/INFRAESTRUCTURA-3-MAQUINAS.md).
+
+---
+
 ## Arquitectura del Sistema
 
 ```mermaid

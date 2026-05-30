@@ -25,14 +25,23 @@ Invocar esta skill cuando se trabaje en:
 **Estilo base**: Minimalism + Dark Mode compatible, componentes con Tailwind utility classes
 **Tipografía**: Inter (UI) + Source Sans Pro (data tables)
 
-## Estructura del Proyecto
+## Estructura del Monorepo (SIGAH = empresa; contiene a SIGAB = app)
 ```
-sigah-backend/      # FastAPI routes, services, models
-sigah-frontend/     # React pages, components, hooks
-migrations/         # SQL migrations (001-006)
-sigah-bot/          # Bot de notificaciones
-.claude/skills/     # Skills instaladas (ui-ux-pro-max)
+SIGAH/  (este repo en GitHub: djpiyama123-droid/SIGAH)
+├── portal-sigah/   # Portal comercial + WebPanel CEO/Dev (React+TS). Consume API de SIGAB.
+│                   #   Deploy: portal-sigah/deploy.ps1 → panel.129-121-100-147.sslip.io
+├── sigab-backend/  # API FastAPI de la app SIGAB           ← NO MOVER (VPS depende de ./sigab-backend)
+├── sigab-frontend/ # App hospitalaria React 19             ← NO MOVER (VPS)
+├── sigab-bot/      # Bot WhatsApp Baileys                  ← NO MOVER (VPS)
+├── database/       # Schema + seed MySQL                   ← NO MOVER (VPS)
+├── docker-compose.yml  # Stack producción (rutas ./sigab-*) ← NO ROMPER
+├── docs/           # INFRAESTRUCTURA-3-MAQUINAS.md, etc.
+├── scripts/        # sync-contexto.sh y utilidades
+└── CLAUDE.md       # Memoria compartida (fuente de verdad)
 ```
+
+> **Infraestructura 3 máquinas** (ASUS · ThinkCentre 24/7 · VPS): ver `docs/INFRAESTRUCTURA-3-MAQUINAS.md`.
+> GitHub es la fuente de verdad; las 3 máquinas son réplicas vía `git pull`. Tailscale + Syncthing + Ubuntu nativo.
 
 ## Módulos Implementados — SIGAB Plataforma Hospitalaria
 1. Auth JWT                  `routes/auth.py`         → `/api/auth/*`
