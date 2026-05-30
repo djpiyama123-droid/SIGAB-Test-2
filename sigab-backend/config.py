@@ -50,7 +50,8 @@ CORS_EXTRA = [*_cors_lan, *[o.strip() for o in _cors_env.split(",") if o.strip()
 # Ollama se instala en el mismo servidor (Lenovo ThinkCentre) y expone :11434
 OLLAMA_HOST = os.getenv("SIGAH_OLLAMA_HOST", "http://localhost:11434")
 GEMMA_MODEL = os.getenv("SIGAH_GEMMA_MODEL", "gemma3:4b")
-QWEN_MODEL = os.getenv("SIGAH_QWEN_MODEL", "qwen2.5:7b")
+QWEN_MODEL  = os.getenv("SIGAH_QWEN_MODEL",  "qwen2.5:7b")
+DISABLE_COPILOT = os.getenv("SIGAH_DISABLE_COPILOT", "0").strip() in ("1", "true", "yes")
 
 # ── OCR Pipeline Config ──────────────────────────────────────────
 OCR_CONFIDENCE_THRESHOLD = float(os.getenv("SIGAH_OCR_CONFIDENCE", "0.85"))
