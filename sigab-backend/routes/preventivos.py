@@ -101,6 +101,75 @@ async def crear_preventivo(
     return {"ok": True, "id": nuevo_pp.id}
 
 
+@router.get("/proximos")
+async def mantenimientos_proximos(
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """Calendario de mantenimientos y señales predictivas para el SIGAB WebPanel."""
+    from models.orden_servicio import OrdenServicio
+    hoy = date.today()
+
+    stmt_eq = (
+        select(Equipo)
+        .where(Equipo.tenant_id == tenant_id)
+        .order_by(Equipo.fecha_proximo_mantenimiento.asc().nullslast())
+        .limit(100)
+    )
+    equipos = (await session.execute(stmt_eq)).scalars().all()
+
+    equipos_list = []
+    for e in equipos:
+        if e.fecha_proximo_mantenimiento is None:
+            situacion = "sin fecha"
+            dias = None
+        else:
+            dias = (e.fecha_proximo_mantenimiento - hoy).days
+            if dias < 0:
+                situacion = "vencido"
+            elif dias <= 30:
+                situacion = "proximo"
+            else:
+                situacion = "al dia"
+        equipos_list.append({
+            "id": str(e.id),
+            "nombre": e.nombre,
+            "marca": e.marca,
+            "modelo": e.modelo,
+            "area": e.area or "—",
+            "criticidad": e.criticidad,
+            "proximo_mant": str(e.fecha_proximo_mantenimiento) if e.fecha_proximo_mantenimiento else "—",
+            "dias_restantes": dias,
+            "situacion": situacion,
+        })
+
+    stmt_pred = (
+        select(OrdenServicio, Equipo.nombre.label("eq_nombre"), Equipo.area.label("eq_area"))
+        .join(Equipo, OrdenServicio.equipo_id == Equipo.id)
+        .where(
+            OrdenServicio.tenant_id == tenant_id,
+            OrdenServicio.indice_salud.is_not(None),
+        )
+        .order_by(OrdenServicio.fecha.desc())
+        .limit(20)
+    )
+    res_pred = await session.execute(stmt_pred)
+
+    predictivo = []
+    for os_row, eq_nom, eq_area in res_pred.all():
+        predictivo.append({
+            "orden": getattr(os_row, 'numero_orden', None) or str(os_row.id),
+            "equipo": eq_nom,
+            "area": eq_area or "—",
+            "indice_salud": getattr(os_row, 'indice_salud', None),
+            "probabilidad_falla": getattr(os_row, 'probabilidad_falla', None),
+            "componente_riesgo": getattr(os_row, 'componente_riesgo', None) or "—",
+            "ventana_dias": getattr(os_row, 'ventana_falla_dias', None),
+        })
+
+    return {"equipos": equipos_list, "predictivo": predictivo}
+
+
 @router.put("/{prev_id}/ejecutar")
 async def marcar_ejecutado(
     prev_id: int,

@@ -28,6 +28,8 @@ from routes import (
     auth as auth_routes,
     ocr, events, casillas, formatos,
     admin as admin_routes,
+    twilio_whatsapp,
+    monitor, tokens, cerebro,
 )
 _COPILOT_ON = os.getenv("SIGAH_DISABLE_COPILOT", "0") != "1"
 if _COPILOT_ON:
@@ -50,7 +52,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-_origins = ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000", *CORS_EXTRA]
+_origins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:3000",
+    "https://panel.129-121-100-147.sslip.io",
+    "https://sigab.129-121-100-147.sslip.io",
+    "https://sigah.129-121-100-147.sslip.io",
+    *CORS_EXTRA,
+]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_origins,
@@ -84,6 +94,10 @@ app.include_router(events.router, prefix="/api/v1/events", tags=["Eventos"])
 app.include_router(casillas.router, tags=["Casillas CENEVAL (Conservación)"])
 app.include_router(admin_routes.router, prefix="/api", tags=["SuperAdmin"])
 app.include_router(formatos.router, prefix="/api/formatos", tags=["Formatos Oficiales IMSS"])
+app.include_router(twilio_whatsapp.router, prefix="/api/twilio", tags=["WhatsApp OCR (Twilio)"])
+app.include_router(monitor.router,   prefix="/api/monitor",  tags=["Monitor SIGAB WebPanel"])
+app.include_router(tokens.router,    prefix="/api/tokens",   tags=["Tokens API (WebPanel)"])
+app.include_router(cerebro.router,   prefix="/api/cerebro",  tags=["Cerebro / Sesiones Claude Code"])
 
 
 @app.get("/health")

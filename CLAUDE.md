@@ -34,16 +34,62 @@ sigah-bot/          # Bot de notificaciones
 .claude/skills/     # Skills instaladas (ui-ux-pro-max)
 ```
 
-## Módulos Implementados
-1. Autenticación JWT (auth/)
-2. Gestión de Equipos (equipos.py / Equipos.jsx)
-3. Órdenes de Servicio (ordenes.py / Ordenes.jsx)
-4. Mantenimiento Preventivo (preventivos.py / Preventivos.jsx)
-5. Alertas + Dashboard KPIs (dashboard.py / Dashboard.jsx)
-6. Tecnovigilancia NOM-240 (tecnovigilancia.py / Tecnovigilancia.jsx)
-7. SIGAH Copilot IA Local (copilot.py / Copilot.jsx)
-8. Trazabilidad NOM-016 (trazabilidad.py / Trazabilidad.jsx)
-9. Reportes PDF/Excel (reportes.py / Reportes.jsx)
+## Módulos Implementados — SIGAB Plataforma Hospitalaria
+1. Auth JWT                  `routes/auth.py`         → `/api/auth/*`
+2. Equipos                   `routes/equipos.py`      → `/api/equipos`
+3. Órdenes de Servicio       `routes/ordenes.py`      → `/api/ordenes`
+4. Preventivos / Mant.       `routes/preventivos.py`  → `/api/preventivos` + `/api/preventivos/proximos`
+5. Dashboard KPIs            `routes/dashboard.py`    → `/api/dashboard/resumen`, `/api/dashboard/kpis`
+6. Alertas                   `routes/alertas.py`      → `/api/alertas`
+7. Tecnovigilancia NOM-240   `routes/tecnovigilancia.py` → `/api/tecnovigilancia`
+8. SIGAH Copilot IA          `routes/copilot.py`      → `/api/copilot` (desactivable via ENV)
+9. Trazabilidad              `routes/trazabilidad.py` → `/api/trazabilidad`
+10. Reportes PDF/Excel       `routes/reportes.py`     → `/api/reportes`
+11. Auditoría NOM-016        `routes/auditoria.py`    → `/api/auditoria`
+12. Checklists               `routes/checklists.py`   → `/api/checklists`
+13. Almacén                  `routes/almacen.py`      → `/api/almacen`
+14. Metrología               `routes/metrologia.py`   → `/api/metrologia`
+15. Capacitaciones           `routes/capacitaciones.py` → `/api/capacitaciones`
+16. Reservas                 `routes/reservas.py`     → `/api/reservas`
+17. Formatos IMSS            `routes/formatos.py`     → `/api/formatos`
+18. OCR / Visión             `routes/ocr.py`          → `/api/ocr`
+19. OpenClaw Agente IA       `routes/openclaw.py`     → `/api/openclaw`
+20. QR / Inventario          `routes/equipos.py`      → `/api/equipos/qr/*`
+21. Admin Global SuperAdmin  `routes/admin.py`        → `/api/admin-*`
+22. Eventos SSE              `routes/events.py`       → `/api/v1/events`
+23. Bot WhatsApp Twilio      `routes/twilio_whatsapp.py` → `/api/twilio`
+
+## Módulos SIGAB WebPanel (panel.sslip.io → usa API SIGAB)
+24. Monitor                  `routes/monitor.py`      → `/api/monitor/status`
+25. Tokens API               `routes/tokens.py`       → `/api/tokens`
+26. Cerebro / Claude Code    `routes/cerebro.py`      → `/api/cerebro/sesiones`
+
+## 🔒 Estado de Cambios Activos (2026-05-29 — rama feat/sileo-toasts-hermes-context)
+
+> Leer esto antes de modificar `main.py`, `routes/dashboard.py` o `routes/preventivos.py`.
+> Archivo completo: `.claude/shared/sesion-webpanel-coordinacion.md`
+
+### Archivos modificados por la sesión WebPanel (SIN commitear aún)
+- `sigab-backend/main.py` → CORS expandido + 4 nuevos routers (twilio, monitor, tokens, cerebro)
+- `sigab-backend/routes/dashboard.py` → endpoint `GET /kpis` al final
+- `sigab-backend/routes/preventivos.py` → endpoint `GET /proximos` al final
+- `sigab-backend/routes/monitor.py` → NUEVO archivo (no trackear aún)
+- `sigab-backend/routes/tokens.py` → NUEVO archivo (no trackear aún)
+- `sigab-backend/routes/cerebro.py` → NUEVO archivo (no trackear aún)
+
+### Archivos de la otra sesión activa (NO tocar — tiene cambios propios)
+- `sigab-frontend/src/pages/Ordenes.jsx`
+- `sigab-frontend/src/components/formatos/*` (4 formatos IMSS)
+- `sigab-backend/config.py`, `routes/copilot.py`, `routes/openclaw.py`
+- `sigab-backend/services/gemma_service.py`, `sigab-bot/index.js`
+- `docker-compose.yml`
+
+### Orden de commit correcto
+1. **Primero**: commitear los 6 archivos de esta sesión (ver `.claude/shared/`)
+2. **Después**: la otra sesión commitea sus cambios de formatos/copilot/bot
+3. NO hacer merge a `main` hasta que ambas sesiones hayan commiteado en sus ramas
+
+---
 
 ## Convenciones
 - Todos los textos en **español mexicano** (UI y mensajes)
