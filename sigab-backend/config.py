@@ -22,6 +22,7 @@ DB_CONFIG = {
     "password": os.getenv("SIGAH_DB_PASS", "REDACTED_DB_PASS"),
     "db": os.getenv("SIGAH_DB_NAME", "sigah"),
     "autocommit": True,
+    "charset": "utf8mb4",
 }
 
 UPLOAD_DIR = os.getenv("SIGAH_UPLOAD_DIR", "./static/uploads")

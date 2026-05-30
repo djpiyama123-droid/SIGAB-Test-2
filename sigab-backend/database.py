@@ -26,7 +26,7 @@ db_host = DB_CONFIG["host"]
 db_port = DB_CONFIG["port"]
 db_name = DB_CONFIG["db"]
 
-DATABASE_URL = f"mysql+asyncmy://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
+DATABASE_URL = f"mysql+asyncmy://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}?charset=utf8mb4"
 
 # HGR No. 1 IMSS: SSL/TLS es obligatorio en entornos sensibles
 connect_args = {
