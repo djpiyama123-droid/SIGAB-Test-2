@@ -29,6 +29,8 @@ import AdminGlobal from './pages/AdminGlobal';
 import CommandCenter from './pages/CommandCenter';
 import Reservas from './pages/Reservas';
 import Formatos from './pages/Formatos';
+import LandingPage from './pages/LandingPage';
+import SuperAdmin from './pages/SuperAdmin';
 
 
 export default function App() {
@@ -36,9 +38,11 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
       <Toaster position="top-right" theme="light" />
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/landing" element={<LandingPage />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/equipo/:token" element={<EquipoPublico />} />
           <Route path="/scan" element={<QRScanner />} />
           <Route path="/tv" element={<TVDashboard />} />
@@ -46,6 +50,7 @@ export default function App() {
           
           {/* Rutas Protegidas — SuperAdmin */}
           <Route element={<ProtectedRoute allowedRoles={['superadmin']} />}>
+            <Route path="/superadmin" element={<SuperAdmin />} />
             <Route path="/" element={<Layout />}>
               <Route path="admin-global" element={<AdminGlobal />} />
             </Route>
@@ -55,6 +60,7 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
+              <Route path="dashboard" element={<Dashboard />} />
               <Route path="equipos" element={<Equipos />} />
               <Route path="ordenes" element={<Ordenes />} />
               <Route path="trazabilidad" element={<Trazabilidad />} />
