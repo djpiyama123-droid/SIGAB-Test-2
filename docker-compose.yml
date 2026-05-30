@@ -91,7 +91,36 @@ services:
       - "traefik.http.middlewares.sigah-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.sigah-redirect.redirectscheme.permanent=true"
 
-  # ── Frontend estático (nginx:alpine sirviendo build) ─────────
+  # ── SIGAH Bot WhatsApp (Baileys) ──────────────────────────────
+  bot:
+    build:
+      context: ./sigab-bot
+      dockerfile: Dockerfile
+    container_name: sigah-bot
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      FASTAPI_BASE_URL: http://backend:8000
+      BOT_PORT: 3000
+      GRUPO_BIOMEDICOS: ${GRUPO_BIOMEDICOS:-Residentes de biomedica 2025}
+      SUPERVISOR_JID_1: ${SUPERVISOR_JID_1:-526645534349@s.whatsapp.net}
+      SUPERVISOR_JID_2: ${SUPERVISOR_JID_2:-526643057010@s.whatsapp.net}
+    volumes:
+      - sigab_bot_auth:/app/auth_sigah
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health | grep -q 'ok' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # ── Dashboard cliente (nginx:alpine sirviendo build) ──────────
   frontend:
     image: nginx:alpine
     container_name: sigah-frontend
@@ -106,12 +135,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=hostedapps_default"
-      - "traefik.http.routers.sigah-fe.rule=Host(`129.121.100.147`) || Host(`sigab.129-121-100-147.sslip.io`) || Host(`sigah.129-121-100-147.sslip.io`)"
+      - "traefik.http.routers.sigah-fe.rule=Host(`129.121.100.147`) || Host(`sigab.129-121-100-147.sslip.io`)"
       - "traefik.http.routers.sigah-fe.entrypoints=web"
       - "traefik.http.routers.sigah-fe.middlewares=sigah-redirect@docker"
       - "traefik.http.routers.sigah-fe.priority=10"
       - "traefik.http.routers.sigah-fe.service=sigah-fe-svc"
-      - "traefik.http.routers.sigah-fe-s.rule=Host(`sigab.129-121-100-147.sslip.io`) || Host(`sigah.129-121-100-147.sslip.io`)"
+      - "traefik.http.routers.sigah-fe-s.rule=Host(`sigab.129-121-100-147.sslip.io`)"
       - "traefik.http.routers.sigah-fe-s.entrypoints=websecure"
       - "traefik.http.routers.sigah-fe-s.priority=10"
       - "traefik.http.routers.sigah-fe-s.service=sigah-fe-svc"
@@ -119,11 +148,63 @@ services:
       - "traefik.http.routers.sigah-fe-s.tls.certresolver=challenger"
       - "traefik.http.services.sigah-fe-svc.loadbalancer.server.port=80"
 
+  # ── Portal de marketing SIGAH ─────────────────────────────────
+  portal:
+    image: nginx:alpine
+    container_name: sigah-portal
+    restart: always
+    volumes:
+      - ./sigah-portal/dist:/usr/share/nginx/html:ro
+      - ./nginx-portal.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - hostedapps_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=hostedapps_default"
+      - "traefik.http.routers.sigah-portal.rule=Host(`sigah.129-121-100-147.sslip.io`)"
+      - "traefik.http.routers.sigah-portal.entrypoints=web"
+      - "traefik.http.routers.sigah-portal.middlewares=sigah-redirect@docker"
+      - "traefik.http.routers.sigah-portal.priority=20"
+      - "traefik.http.routers.sigah-portal.service=sigah-portal-svc"
+      - "traefik.http.routers.sigah-portal-s.rule=Host(`sigah.129-121-100-147.sslip.io`)"
+      - "traefik.http.routers.sigah-portal-s.entrypoints=websecure"
+      - "traefik.http.routers.sigah-portal-s.priority=20"
+      - "traefik.http.routers.sigah-portal-s.service=sigah-portal-svc"
+      - "traefik.http.routers.sigah-portal-s.tls=true"
+      - "traefik.http.routers.sigah-portal-s.tls.certresolver=challenger"
+      - "traefik.http.services.sigah-portal-svc.loadbalancer.server.port=80"
+
+  # ── Monitor de servicios SIGAH ────────────────────────────────
+  monitor:
+    image: nginx:alpine
+    container_name: sigah-monitor
+    restart: always
+    volumes:
+      - ./monitor:/usr/share/nginx/html:ro
+      - ./nginx-monitor.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - hostedapps_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=hostedapps_default"
+      - "traefik.http.routers.sigah-monitor.rule=Host(`monitor.sigah.129-121-100-147.sslip.io`)"
+      - "traefik.http.routers.sigah-monitor.entrypoints=web"
+      - "traefik.http.routers.sigah-monitor.middlewares=sigah-redirect@docker"
+      - "traefik.http.routers.sigah-monitor.service=sigah-monitor-svc"
+      - "traefik.http.routers.sigah-monitor-s.rule=Host(`monitor.sigah.129-121-100-147.sslip.io`)"
+      - "traefik.http.routers.sigah-monitor-s.entrypoints=websecure"
+      - "traefik.http.routers.sigah-monitor-s.service=sigah-monitor-svc"
+      - "traefik.http.routers.sigah-monitor-s.tls=true"
+      - "traefik.http.routers.sigah-monitor-s.tls.certresolver=challenger"
+      - "traefik.http.services.sigah-monitor-svc.loadbalancer.server.port=80"
+
 volumes:
   sigah_mysql_data:
     name: sigah_mysql_data
   sigah_uploads:
     name: sigah_uploads
+  sigab_bot_auth:
+    name: sigab_bot_auth
 
 networks:
   default:

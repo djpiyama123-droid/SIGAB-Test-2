@@ -599,3 +599,184 @@ async def escanear_os_whatsapp(
         "mensaje": f"OS {numero} creada. Confianza extracción: {(extracted.get('confianza_global') or 0)*100:.0f}%. Requiere validación en SIGAH.",
     }
 
+
+@router.post("/intake-group")
+async def intake_group_message(
+    mensaje: str = Form(None),
+    sender_name: str = Form(None),
+    sender_jid: str = Form(None),
+    foto: UploadFile = File(None),
+    tipo: str = Form("texto"),  # texto | imagen | audio_transcripcion
+    conn=Depends(get_db),
+):
+    """
+    Procesa mensajes del grupo de técnicos de WhatsApp (texto libre o imagen).
+    Usa Gemma para extraer datos estructurados y crea la OS en SIGAH.
+
+    Flujo:
+      1. Recibe mensaje del grupo (texto o imagen)
+      2. Llama a Gemma para extraer: equipo, falla, área, prioridad
+      3. Crea OS en estado 'abierta'
+      4. Devuelve número de OS + confirmación para el bot
+
+    Este endpoint es interno (llamado solo desde sigah-bot, red Docker).
+    """
+    if not mensaje and not foto:
+        return {"ok": False, "mensaje": "Se requiere mensaje o imagen"}
+
+    # ── Extraer datos con Gemma ──────────────────────────────────
+    if foto and tipo == "imagen":
+        img_bytes = await foto.read()
+        if len(img_bytes) > 15 * 1024 * 1024:
+            return {"ok": False, "mensaje": "Imagen excede 15 MB"}
+
+        # Intentar con extractor IMSS primero
+        if _IMSS_EXTRACTOR_AVAILABLE:
+            try:
+                extracted = await extract_imss_os(img_bytes)
+                if extracted and not extracted.get("error"):
+                    mapped = map_to_orden_servicio(extracted)
+                    falla = mapped.get("falla_reportada") or "Falla reportada por imagen"
+                    equipo_nombre = mapped.get("equipo_nombre") or "Sin identificar"
+                    equipo_serie = mapped.get("equipo_serie") or ""
+                    area = mapped.get("area") or ""
+                    prioridad = mapped.get("prioridad") or "media"
+                    tipo_mant = mapped.get("tipo_mantenimiento") or "correctivo"
+                    origen = "grupo_wa_imagen_imss"
+                else:
+                    raise ValueError("no es formato IMSS")
+            except Exception:
+                # No es formato IMSS — tratar como foto de equipo
+                prompt = (
+                    f"Eres el asistente de bioingeniería del HGR No.1 IMSS Tijuana.\n"
+                    f"El técnico {sender_name or 'desconocido'} envió una foto al grupo de WhatsApp.\n"
+                    f"Extrae en JSON plano (sin markdown): equipo_nombre, falla_reportada, area, prioridad (critica/alta/media/baja).\n"
+                    f"Si no puedes extraer algún campo, usa null.\n"
+                    f"Responde SOLO el JSON."
+                )
+                try:
+                    rsp = await gemma_service.consultar_gemma_no_streaming(prompt)
+                    import json as _json
+                    datos = _json.loads(rsp.strip().strip("```json").strip("```").strip())
+                except Exception:
+                    datos = {}
+                falla = datos.get("falla_reportada") or f"Reporte por imagen de {sender_name or 'técnico'}"
+                equipo_nombre = datos.get("equipo_nombre") or "Sin identificar"
+                equipo_serie = ""
+                area = datos.get("area") or ""
+                prioridad = datos.get("prioridad") or "media"
+                tipo_mant = "correctivo"
+                origen = "grupo_wa_imagen"
+        else:
+            falla = f"Reporte por imagen de {sender_name or 'técnico'}"
+            equipo_nombre = "Sin identificar"
+            equipo_serie = ""
+            area = ""
+            prioridad = "media"
+            tipo_mant = "correctivo"
+            origen = "grupo_wa_imagen"
+    else:
+        # Texto libre — usar Gemma para extraer campos
+        texto = mensaje or ""
+        prompt = (
+            f"Eres el asistente de bioingeniería del HGR No.1 IMSS Tijuana.\n"
+            f"El técnico '{sender_name or 'desconocido'}' envió este mensaje al grupo de WhatsApp:\n"
+            f"\"{texto}\"\n\n"
+            f"Extrae en JSON plano (sin markdown ni bloques de código):\n"
+            f"  equipo_nombre: nombre del equipo o aparato mencionado\n"
+            f"  falla_reportada: descripción breve de la falla o trabajo\n"
+            f"  area: área o servicio del hospital (Urgencias, Quirófano, UCIN, etc.)\n"
+            f"  prioridad: critica|alta|media|baja según urgencia\n"
+            f"  tipo_mantenimiento: correctivo|preventivo|instalacion\n"
+            f"Si no puedes extraer algún campo con certeza, usa null.\n"
+            f"Responde SOLO el JSON, sin explicaciones."
+        )
+        try:
+            rsp = await gemma_service.consultar_gemma_no_streaming(prompt)
+            import json as _json
+            # Limpiar posible markdown de Gemma
+            clean = rsp.strip()
+            if "```" in clean:
+                clean = clean.split("```")[1].lstrip("json").strip()
+            datos = _json.loads(clean)
+        except Exception:
+            datos = {}
+
+        falla = datos.get("falla_reportada") or texto[:200]
+        equipo_nombre = datos.get("equipo_nombre") or "Sin identificar"
+        equipo_serie = ""
+        area = datos.get("area") or ""
+        prioridad = datos.get("prioridad") or "media"
+        tipo_mant = datos.get("tipo_mantenimiento") or "correctivo"
+        origen = "grupo_wa_texto"
+
+        # Si Gemma no extrajo nada útil, no crear OS de basura
+        if not falla or falla.lower() in ("null", "none", ""):
+            return {
+                "ok": False,
+                "mensaje": "No se pudo extraer una falla o tarea del mensaje. No se creó OS.",
+                "requiere_os": False,
+            }
+
+    # ── Crear OS ─────────────────────────────────────────────────
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        await cur.execute(
+            "SELECT COUNT(*)+1 as next_num FROM ordenes_servicio WHERE YEAR(fecha) = YEAR(CURDATE())"
+        )
+        n = (await cur.fetchone())["next_num"]
+        numero = f"OS-{datetime.now().strftime('%Y%m%d')}-{n:04d}"
+
+        equipo_id = None
+        if equipo_serie:
+            await cur.execute("SELECT id FROM equipos WHERE serie = %s", (equipo_serie,))
+            row = await cur.fetchone()
+            if row:
+                equipo_id = row["id"]
+
+        await cur.execute(
+            """INSERT INTO ordenes_servicio
+            (numero_orden, tipo_formato, equipo_id, equipo_nombre, equipo_serie,
+             area, tipo_mantenimiento, falla_reportada, tecnico_nombre,
+             fecha, estado, prioridad, origen)
+            VALUES (%s, 'correctivo_corto', %s, %s, %s, %s, %s, %s, %s, CURDATE(), 'abierta', %s, %s)""",
+            (
+                numero, equipo_id, equipo_nombre, equipo_serie,
+                area, tipo_mant, falla, sender_name or "WhatsApp Bot",
+                prioridad, origen,
+            ),
+        )
+        orden_id = cur.lastrowid
+
+        # Guardar imagen como evidencia si viene foto
+        if foto and tipo == "imagen":
+            ext = (foto.filename or "img").split(".")[-1].lower() if foto.filename else "jpg"
+            if ext not in {"png", "jpg", "jpeg", "webp"}:
+                ext = "jpg"
+            secure_name = f"grp_wa_{orden_id}_{datetime.now().strftime('%Y%m%d')}_{secrets.token_hex(3)}.{ext}"
+            ruta = os.path.join(UPLOAD_DIR, secure_name)
+            os.makedirs(UPLOAD_DIR, exist_ok=True)
+            with open(ruta, "wb") as f:
+                f.write(img_bytes)
+            await cur.execute(
+                "INSERT INTO os_evidencias (orden_id, ruta_archivo, tipo, descripcion) VALUES (%s, %s, 'imagen', %s)",
+                (orden_id, f"/static/uploads/{secure_name}", f"Foto grupo WA — {sender_name or 'desconocido'}"),
+            )
+
+        await cur.execute(
+            """INSERT INTO alertas (tipo, equipo_id, orden_id, mensaje, prioridad)
+               VALUES ('ticket_abierto_mucho_tiempo', %s, %s, %s, %s)""",
+            (equipo_id, orden_id, f"OS creada desde grupo WhatsApp por {sender_name or 'desconocido'}: {falla[:80]}", prioridad),
+        )
+
+    return {
+        "ok": True,
+        "numero_orden": numero,
+        "orden_id": orden_id,
+        "equipo": equipo_nombre,
+        "falla": falla[:100],
+        "prioridad": prioridad,
+        "area": area,
+        "tipo": tipo_mant,
+        "mensaje": f"✅ OS *{numero}* registrada en SIGAH\n🔧 {equipo_nombre}: {falla[:80]}\n📍 {area or 'Sin área'} · Prioridad: {prioridad}",
+    }
+
