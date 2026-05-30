@@ -12,6 +12,7 @@
 import { useState, useCallback } from 'react';
 import { api } from '../api/sigah';
 import toast from '../lib/toast';
+import { usePrintFormato } from '../hooks/usePrintFormato';
 
 // ─── Paleta SIGAH ────────────────────────────────────────────────────────────
 const C = {
@@ -201,14 +202,26 @@ function CheckboxGrid({ campos, form, onChange }) {
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
-export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado, onCerrar }) {
+export default function OrdenCasillasForm({ ordenId: ordenIdProp, equipoData = {}, onGuardado, onCerrar }) {
+  const { print: printFormato } = usePrintFormato();
   const [form, setForm] = useState(estadoInicial);
+  const [osForm, setOsForm] = useState({
+    equipo_nombre: equipoData.nombre || '',
+    equipo_serie: equipoData.serie || '',
+    falla_reportada: '',
+    tecnico_nombre: '',
+    area: equipoData.area || '',
+    piso: equipoData.piso || '',
+    prioridad: 'media',
+  });
+  const [localOrdenId, setLocalOrdenId] = useState(ordenIdProp || null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState(null);
   const [exito, setExito] = useState(false);
   const [fotoOCR, setFotoOCR] = useState(null);
   const [procesandoOCR, setProcesandoOCR] = useState(false);
   const [gruposAbiertos, setGruposAbiertos] = useState({ 0: true, 1: true });
+  const ordenId = localOrdenId;
 
   const setRadio = (campo) => (valor) => setForm((f) => ({ ...f, [campo]: valor }));
   const setCheck = useCallback((campo, valor) => setForm((f) => ({ ...f, [campo]: valor })), []);
@@ -219,24 +232,38 @@ export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado
   // ── Guardar ─────────────────────────────────────────────────────────────
   const handleGuardar = async (e) => {
     e.preventDefault();
-    if (!ordenId) {
-      setError('⚠ Debes seleccionar o crear una Orden de Servicio primero');
-      return;
-    }
     setGuardando(true);
     setError(null);
     try {
+      let idOrden = ordenId;
+
+      // Si no hay OS, crear una automáticamente con los datos del formulario superior
+      if (!idOrden) {
+        if (!osForm.falla_reportada.trim() && !osForm.equipo_nombre.trim()) {
+          setError('⚠ Ingresa al menos el equipo o la descripción del servicio');
+          setGuardando(false);
+          return;
+        }
+        const resOS = await api.crearOrden({
+          ...osForm,
+          tipo_mantenimiento: form.tipo_servicio === 'preventivo' ? 'preventivo' : 'correctivo',
+          origen: 'casillas',
+        });
+        idOrden = resOS.orden_id;
+        setLocalOrdenId(idOrden);
+      }
+
       const payload = {
         ...form,
         observaciones_breves: form.observaciones_breves || null,
         refacciones_solicitadas: form.refacciones_solicitadas || null,
       };
-      const res = await api.post(`/casillas/${ordenId}`, payload);
+      const res = await api.post(`/casillas/${idOrden}`, payload);
       setExito(true);
       onGuardado?.(res.data);
       setTimeout(() => setExito(false), 3000);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Error al guardar casillas');
+      setError(err.response?.data?.detail || 'Error al guardar');
     } finally {
       setGuardando(false);
     }
@@ -263,7 +290,7 @@ export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado
   };
 
   // ── Imprimir hoja física ────────────────────────────────────────────────────
-  const handleImprimir = () => window.print();
+  const handleImprimir = () => printFormato();
 
   const toggleGrupo = (i) => setGruposAbiertos((g) => ({ ...g, [i]: !g[i] }));
 
@@ -311,6 +338,48 @@ export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado
           </div>
 
           <form onSubmit={handleGuardar} className="p-6 space-y-6">
+
+            {/* ── Datos de la OS (solo si no hay ordenId) ─── */}
+            {!ordenIdProp && (
+              <section className="bg-blue-950/40 border border-blue-700/50 rounded-xl p-4 space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-widest text-blue-400 mb-1">
+                  📝 Nueva Orden de Servicio
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    placeholder="Equipo / activo *"
+                    value={osForm.equipo_nombre}
+                    onChange={(e) => setOsForm((f) => ({ ...f, equipo_nombre: e.target.value }))}
+                    className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-teal-500"
+                  />
+                  <input
+                    placeholder="No. de serie"
+                    value={osForm.equipo_serie}
+                    onChange={(e) => setOsForm((f) => ({ ...f, equipo_serie: e.target.value }))}
+                    className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-teal-500"
+                  />
+                  <input
+                    placeholder="Técnico responsable"
+                    value={osForm.tecnico_nombre}
+                    onChange={(e) => setOsForm((f) => ({ ...f, tecnico_nombre: e.target.value }))}
+                    className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-teal-500"
+                  />
+                  <input
+                    placeholder="Área"
+                    value={osForm.area}
+                    onChange={(e) => setOsForm((f) => ({ ...f, area: e.target.value }))}
+                    className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-teal-500"
+                  />
+                </div>
+                <textarea
+                  placeholder="Descripción de la falla / servicio requerido *"
+                  value={osForm.falla_reportada}
+                  onChange={(e) => setOsForm((f) => ({ ...f, falla_reportada: e.target.value }))}
+                  rows={2}
+                  className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-teal-500 resize-none"
+                />
+              </section>
+            )}
 
             {/* ── Bloque A: Dominio ─── */}
             <section>

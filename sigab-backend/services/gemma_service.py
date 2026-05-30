@@ -18,6 +18,7 @@ from typing import AsyncGenerator
 from config import OLLAMA_HOST, GEMMA_MODEL
 
 _ollama_client: httpx.AsyncClient | None = None
+_resolved_model: str | None = None  # modelo activo (auto-detectado si el configurado no existe)
 
 
 def get_ollama_client() -> httpx.AsyncClient:
@@ -121,14 +122,52 @@ Evento adverso en análisis:
 
 # ── Funciones principales ─────────────────────────────────────────
 
+async def _resolve_model() -> str:
+    """
+    Devuelve el modelo activo. Intenta el configurado primero; si no existe
+    en Ollama, toma el primer modelo instalado como fallback.
+    Cachea el resultado en _resolved_model para no re-consultar en cada petición.
+    """
+    global _resolved_model
+    if _resolved_model:
+        return _resolved_model
+
+    try:
+        client = get_ollama_client()
+        resp = await client.get("/api/tags", timeout=5.0)
+        if resp.status_code != 200:
+            _resolved_model = GEMMA_MODEL
+            return _resolved_model
+
+        modelos = [m["name"] for m in resp.json().get("models", [])]
+        modelo_base = GEMMA_MODEL.split(":")[0]
+        if any(modelo_base in m or GEMMA_MODEL in m for m in modelos):
+            _resolved_model = GEMMA_MODEL
+        elif modelos:
+            # fallback: primer modelo de texto disponible (no vision)
+            _resolved_model = next(
+                (m for m in modelos if "vision" not in m.lower() and "embed" not in m.lower()),
+                modelos[0],
+            )
+        else:
+            _resolved_model = GEMMA_MODEL
+    except Exception:
+        _resolved_model = GEMMA_MODEL
+
+    return _resolved_model
+
+
 async def verificar_ollama() -> dict:
     """Verifica si Ollama está corriendo y si el modelo está disponible."""
+    global _resolved_model
+    _resolved_model = None  # forzar re-detección
     try:
         client = get_ollama_client()
         resp = await client.get("/api/tags", timeout=5.0)
         if resp.status_code == 200:
             data = resp.json()
             modelos = [m["name"] for m in data.get("models", [])]
+            modelo_activo = await _resolve_model()
             modelo_base = GEMMA_MODEL.split(":")[0]
             modelo_disponible = any(
                 modelo_base in m or GEMMA_MODEL in m for m in modelos
@@ -136,7 +175,8 @@ async def verificar_ollama() -> dict:
             return {
                 "ok": True,
                 "ollama_activo": True,
-                "modelo": GEMMA_MODEL,
+                "modelo_configurado": GEMMA_MODEL,
+                "modelo_activo": modelo_activo,
                 "modelo_disponible": modelo_disponible,
                 "modelos_instalados": modelos,
             }
@@ -145,7 +185,8 @@ async def verificar_ollama() -> dict:
             "ok": False,
             "ollama_activo": False,
             "error": str(e),
-            "modelo": GEMMA_MODEL,
+            "modelo_configurado": GEMMA_MODEL,
+            "modelo_activo": GEMMA_MODEL,
             "modelo_disponible": False,
             "modelos_instalados": [],
         }
@@ -161,8 +202,9 @@ async def chat_stream(
     """
     system_prompt = _build_system_prompt(contexto or {})
 
+    model = await _resolve_model()
     payload = {
-        "model": GEMMA_MODEL,
+        "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
             *messages,
@@ -212,8 +254,9 @@ async def analizar_no_stream(prompt_user: str, contexto: dict = None) -> str:
     """
     system_prompt = _build_system_prompt(contexto or {})
 
+    model = await _resolve_model()
     payload = {
-        "model": GEMMA_MODEL,
+        "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt_user},
@@ -230,11 +273,15 @@ async def analizar_no_stream(prompt_user: str, contexto: dict = None) -> str:
     try:
         client = get_ollama_client()
         resp = await client.post("/api/chat", json=payload, timeout=90.0)
+        if resp.status_code == 404:
+            return f"Modelo '{model}' no encontrado en Ollama. Instala el modelo con: ollama pull {model}"
         resp.raise_for_status()
         data = resp.json()
         return data.get("message", {}).get("content", "")
     except httpx.ConnectError:
         return "Error: Ollama no está disponible. Verifica que el servicio esté corriendo en el servidor."
+    except httpx.HTTPStatusError as e:
+        return f"Error Ollama HTTP {e.response.status_code}: {e.response.text[:200]}"
     except Exception as e:
         return f"Error al consultar Gemma: {str(e)}"
 

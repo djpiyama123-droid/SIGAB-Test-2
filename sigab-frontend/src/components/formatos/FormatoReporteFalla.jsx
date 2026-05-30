@@ -112,8 +112,12 @@ export default function FormatoReporteFalla({ orden, tema = 'blanco-imss', isEdi
             <TD>{isEditing ? <EditInput value={o.equipo_marca} field="equipo_marca" /> : (o.equipo_marca || ' ')}</TD>
             <TD>{isEditing ? <EditInput value={o.equipo_modelo} field="equipo_modelo" /> : (o.equipo_modelo || ' ')}</TD>
             <TD>{isEditing ? <EditInput value={o.equipo_inventario} field="equipo_inventario" /> : (o.equipo_inventario || ' ')}</TD>
-            <TD rowSpan={2} style={{ ...t.cell, textAlign: 'center', verticalAlign: 'middle', fontSize: 10, color: t.label.color }}>
-              [QR]
+            <TD rowSpan={2} style={{ ...t.cell, textAlign: 'center', verticalAlign: 'middle', padding: '6px' }}>
+              <div style={{ display: 'inline-block', padding: 4, background: '#fff', border: '1px solid #ccc', borderRadius: 2 }}>
+                <svg width="46" height="46" viewBox="0 0 29 29" style={{ display: 'block', shapeRendering: 'crispedges' }}>
+                  <path fill="#000" d="M0 0h7v7H0zm1 1h5v5H1zm1 1h3v3H2zm5-2h1v1H7zm1 1h1v1H8zm-1 1h1v1H7zm1 1h1v1H8zm-8 4h1v1H0zm1 1h1v1H1zm1-1h1v1H2zm3 1h1v1H5zm3 0h1v1H8zm1-1h1v1H9zm1 1h1v1H10zm1-1h1v1H11zm2-7h7v7h-7zm1 1h5v5h-5zm1 1h3v3H3zm-5 6h1v1H9zm1 1h1v1H10zm2-1h1v1H12zm1 1h1v1H13zm2 0h1v1H15zm2-1h1v1H17zm1 1h1v1H18zm2 0h1v1H20zm1-1h1v1H21zm1 1h1v1H22zm-22 5h7v7H0zm1 1h5v5H1zm1 1h3v3H2zm10-5h1v1H12zm2 1h1v1H14zm1-1h1v1H15zm1 1h1v1H16zm3 0h1v1H19zm1-1h1v1H20zm2 0h1v1H22zm-9 2h1v1H13zm1 1h1v1H14zm1-1h1v1H15zm2 1h1v1H17zm3-1h1v1H20zm2 1h1v1H22zm-10 3h1v1H12zm2 1h1v1H14zm1-1h1v1H15zm2 0h1v1H17zm1-1h1v1H18zm3 0h1v1H21zm1 1h1v1H22z" />
+                </svg>
+              </div>
             </TD>
           </tr>
           <tr>

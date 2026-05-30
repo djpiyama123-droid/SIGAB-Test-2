@@ -77,3 +77,4 @@ htmlcov/
 # Scratch / debug output
 scratch/
 sigah-backend/alembic_output.txt
+.monitor.env
