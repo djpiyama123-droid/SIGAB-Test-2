@@ -44,6 +44,28 @@ export default function FormatoViewer({ orden: initialOrden, onClose }) {
     setCurrentOrden(initialOrden || {});
   }, [initialOrden]);
 
+  // Enriquecer datos de la orden con casillas CENEVAL si es una OS real
+  useEffect(() => {
+    const id = currentOrden?.id;
+    if (!id || String(id).includes('mock')) return;
+    const tipo = currentOrden.tipo_mantenimiento || 'correctivo';
+    api.getFormato(tipo, id)
+       .then(({ orden }) => {
+         if (orden) setCurrentOrden(prev => ({ ...prev, ...orden }));
+       })
+       .catch(() => {});
+  }, [currentOrden?.id]);
+
+  // Disparo automático de impresión al montar (usado en flujo post-creación de OS)
+  useEffect(() => {
+    if (autoprint && !autoprintDone.current) {
+      autoprintDone.current = true;
+      // Esperar a que el DOM del formato esté renderizado
+      const t = setTimeout(() => { print(); }, 1200);
+      return () => clearTimeout(t);
+    }
+  }, [autoprint, print]);
+
   const tipo = currentOrden?.tipo_mantenimiento || 'correctivo';
   const titulo = `${TIPO_LABEL[tipo] || 'Formato'} — ${currentOrden?.numero_orden || ''}`;
 

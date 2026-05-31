@@ -551,6 +551,22 @@ export default function Ordenes() {
                         >
                           📋
                         </button>
+                        <button
+                          onClick={async () => {
+                            try {
+                              const blob = await api.descargarPdfCasillas(os.id);
+                              api.triggerDownload(blob, `CENEVAL_${os.id}.pdf`);
+                            } catch (err) {
+                              const status = err.response?.status;
+                              if (status === 404) toast.error('Esta orden no tiene casillas CENEVAL registradas');
+                              else toast.error('Error al generar PDF CENEVAL');
+                            }
+                          }}
+                          className="text-xs text-purple-400 hover:text-purple-300 hover:underline"
+                          title="Descargar PDF CENEVAL"
+                        >
+                          📄
+                        </button>
                       </div>
                     </td>
                   </tr>
