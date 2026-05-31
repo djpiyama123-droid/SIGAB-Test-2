@@ -37,6 +37,11 @@ async def get_mapa_equipos(
     session: AsyncSession = Depends(get_async_session),
 ):
     """Retorna zonas activas con sus equipos para el mapa hospitalario."""
+    cache_key = f"dashboard_mapa_{tenant_id}"
+    cached = cache_service.get(cache_key)
+    if cached is not None:
+        return cached
+
     try:
         # Zonas con agregados — filtradas por tenant para no mezclar hospitales.
         stmt_zonas = select(
@@ -81,7 +86,9 @@ async def get_mapa_equipos(
             })
             resultado.append(z_dict)
 
-        return {"zonas": resultado, "timestamp": datetime.now(timezone.utc).isoformat()}
+        mapa_result = {"zonas": resultado, "timestamp": datetime.now(timezone.utc).isoformat()}
+        cache_service.set(cache_key, mapa_result, ttl_seconds=60)
+        return mapa_result
 
     except Exception as e:
         logging.error(f"Error en get_mapa_equipos: {str(e)}")

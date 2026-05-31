@@ -14,6 +14,7 @@ import sqlalchemy as sa
 from database import get_async_session
 from models.alerta import Alerta
 from models.equipo import Equipo
+from services.cache_service import cache_service, HOT
 
 
 # Nota de arquitectura — Alerta.tenant_id pendiente (Fase 1 migration).
@@ -76,7 +77,11 @@ async def alertas_pendientes(
     tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
-    # Filtrar alertas pendientes del tenant via JOIN con Equipo.
+    cache_key = f"alertas_pendientes_{tenant_id}"
+    cached = cache_service.get(cache_key)
+    if cached is not None:
+        return cached
+
     stmt = (
         select(Alerta)
         .join(Equipo, Alerta.equipo_id == Equipo.id)
@@ -85,7 +90,9 @@ async def alertas_pendientes(
     )
     res = await session.execute(stmt)
     alertas = res.scalars().all()
-    return {"alertas": alertas, "total": len(alertas)}
+    result = {"alertas": [a.model_dump() for a in alertas], "total": len(alertas)}
+    cache_service.set(cache_key, result, ttl_seconds=HOT)
+    return result
 
 
 @router.put("/{alerta_id}/leer")
@@ -107,6 +114,7 @@ async def marcar_leida(
         raise HTTPException(status_code=404, detail="Alerta no encontrada")
     alerta.leida = True
     await session.commit()
+    cache_service.invalidate(f"alertas_pendientes_{tenant_id}")
     return {"ok": True}
 
 
@@ -116,8 +124,6 @@ async def marcar_todas_leidas(
     tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
-    # UPDATE masivo sólo sobre alertas del tenant — via subquery de equipos.
-    # Alerta.equipo_id → Equipo.tenant_id para acotar el UPDATE.
     equipo_ids_stmt = select(Equipo.id).where(Equipo.tenant_id == tenant_id)
     equipo_ids = (await session.execute(equipo_ids_stmt)).scalars().all()
 
@@ -129,4 +135,5 @@ async def marcar_todas_leidas(
         )
         await session.execute(stmt)
         await session.commit()
+    cache_service.invalidate(f"alertas_pendientes_{tenant_id}")
     return {"ok": True}

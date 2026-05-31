@@ -15,6 +15,7 @@ from models.preventivo import PreventivoProgramado
 from models.equipo import Equipo
 from models.usuario import Usuario
 from datetime import date, timedelta
+from services.cache_service import cache_service, WARM
 
 router = APIRouter()
 
@@ -107,6 +108,11 @@ async def mantenimientos_proximos(
     session: AsyncSession = Depends(get_async_session),
 ):
     """Calendario de mantenimientos y señales predictivas para el SIGAB WebPanel."""
+    cache_key = f"preventivos_proximos_{tenant_id}"
+    cached = cache_service.get(cache_key)
+    if cached is not None:
+        return cached
+
     from models.orden_servicio import OrdenServicio
     hoy = date.today()
 
@@ -167,7 +173,9 @@ async def mantenimientos_proximos(
             "ventana_dias": getattr(os_row, 'ventana_falla_dias', None),
         })
 
-    return {"equipos": equipos_list, "predictivo": predictivo}
+    result = {"equipos": equipos_list, "predictivo": predictivo}
+    cache_service.set(cache_key, result, ttl_seconds=WARM)
+    return result
 
 
 @router.put("/{prev_id}/ejecutar")
