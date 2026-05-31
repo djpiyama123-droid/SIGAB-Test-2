@@ -55,7 +55,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#0f172a]">
+      <div className="flex items-center justify-center h-screen" style={{ background: 'var(--content-bg)' }}>
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

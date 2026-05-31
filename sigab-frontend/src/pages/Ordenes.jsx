@@ -236,7 +236,7 @@ export default function Ordenes() {
         </button>
         <button
           onClick={() => { setCasillasOrdenId(null); setCasillasEquipo({}); setShowCasillas(true); }}
-          className="w-12 h-12 bg-slate-700 hover:bg-[#006CB7] text-white rounded-full shadow-lg shadow-slate-900/50 flex items-center justify-center transition-all duration-150 hover:scale-105 active:scale-95"
+          className="w-12 h-12 bg-[var(--content-surface)] hover:bg-[#006CB7] text-[var(--content-text)] hover:text-white border border-[var(--content-border)] rounded-full shadow-lg flex items-center justify-center transition-all duration-150 hover:scale-105 active:scale-95"
           title="Nueva OS (Casillas)"
         >
           <ClipboardList className="h-5 w-5" />

@@ -249,12 +249,20 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Anillo pulsante para equipos con falla */}
+      {/* Anillo pulsante para equipos con falla.
+          fuera_servicio → ping urgente (crítico); resto → pulse sutil. */}
       {status.pulse && (
-        <div
-          className="absolute inset-0 rounded-full animate-pulse opacity-30 pointer-events-none"
-          style={{ backgroundColor: status.border, transform: 'scale(1.2)' }}
-        />
+        equipo.estado === 'fuera_servicio' ? (
+          <div
+            className="absolute inset-0 rounded-full animate-ping opacity-60 pointer-events-none"
+            style={{ backgroundColor: status.border }}
+          />
+        ) : (
+          <div
+            className="absolute inset-0 rounded-full animate-pulse opacity-30 pointer-events-none"
+            style={{ backgroundColor: status.border, transform: 'scale(1.2)' }}
+          />
+        )
       )}
 
       {/* Circulo principal del equipo */}
