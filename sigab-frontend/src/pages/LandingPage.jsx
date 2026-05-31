@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   ShieldCheck, ArrowRight, Building2, Stethoscope, HeartPulse,
   CheckCircle2, CalendarCheck, Cpu, Activity, Database, Menu,
+  Quote, TrendingDown, Clock, FileCheck2, Boxes,
 } from 'lucide-react';
 import { Button } from '../components/ui';
 
@@ -31,6 +32,19 @@ const SIGAB_FEATURES = [
   'Trazabilidad por zona y piso (mapa en vivo)',
   'Señales predictivas de falla con IA local',
   'Bitácoras clínicas y órdenes NOM-016',
+];
+
+const IMPACT_METRICS = [
+  { icon: TrendingDown, value: '-32%', label: 'Tiempo caído en equipos vitales', sub: 'mastógrafos y ventiladores' },
+  { icon: Clock,        value: '-28%', label: 'Costos en mantenimiento correctivo', sub: 'vs. esquema reactivo previo' },
+  { icon: FileCheck2,   value: '+40%', label: 'Cumplimiento documental NOM-016', sub: 'bitácoras y trazabilidad' },
+  { icon: Boxes,        value: '751',  label: 'Activos biomédicos gestionados', sub: 'inventario digital en vivo' },
+];
+
+const TESTIMONIALS = [
+  { quote: 'Pasamos de hojas de cálculo dispersas a un inventario único con trazabilidad por piso. La auditoría NOM-016 dejó de ser una crisis trimestral.', name: 'Ing. Laura Méndez', role: 'Jefa de Ingeniería Biomédica', org: 'Hospital General Regional' },
+  { quote: 'Las señales predictivas nos avisan antes de que un ventilador falle. Redujimos paros no programados en soporte vital de forma notable.', name: 'Ing. Carlos Ríos', role: 'Coordinador de Conservación', org: 'Red Hospitalaria Metropolitana' },
+  { quote: 'El cumplimiento regulatorio quedó integrado al flujo de trabajo diario. La IA local corre dentro del hospital, sin enviar datos a la nube.', name: 'Dr. Antonio Vega', role: 'Director de Operaciones', org: 'Instituto de Especialidades' },
 ];
 
 export default function LandingPage() {
@@ -137,7 +151,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── Ecosistema SIGAH vs SIGAB ── */}
-        <section id="casos" className="py-20 px-6 md:px-8">
+        <section id="ecosistema" className="py-20 px-6 md:px-8">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-14">
               <h2 className="font-display font-bold text-3xl md:text-5xl mb-4">Ecosistema SIGAH</h2>
@@ -177,6 +191,54 @@ export default function LandingPage() {
                   ))}
                 </ul>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Casos de éxito + impacto ── */}
+        <section id="casos" className="py-20 px-6 md:px-8 bg-[#060e20]">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-14">
+              <h2 className="font-display font-bold text-3xl md:text-5xl mb-4">Casos de éxito</h2>
+              <p className="text-lg text-[#bbc9cd] max-w-2xl mx-auto">
+                Instituciones médicas que ya operan con cumplimiento automatizado y mantenimiento predictivo.
+              </p>
+            </div>
+
+            {/* Testimonios */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+              {TESTIMONIALS.map((t) => (
+                <figure
+                  key={t.name}
+                  className="glass-panel rounded-xl p-6 flex flex-col gap-4 relative overflow-hidden group"
+                >
+                  <Quote className="text-cyan-glow opacity-30 group-hover:opacity-100 transition-opacity" size={28} />
+                  <blockquote className="text-[#dae2fd] leading-relaxed flex-grow">{t.quote}</blockquote>
+                  <figcaption className="border-t border-cyan-glow/10 pt-4">
+                    <div className="font-display font-semibold text-white text-sm">{t.name}</div>
+                    <div className="text-xs text-cyan-glow">{t.role}</div>
+                    <div className="text-xs text-[#859397]">{t.org}</div>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+
+            {/* Métricas de impacto */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {IMPACT_METRICS.map((m) => {
+                const Icon = m.icon;
+                return (
+                  <div
+                    key={m.label}
+                    className="glass-panel rounded-xl p-6 flex flex-col items-center text-center gap-2"
+                  >
+                    <Icon className="text-cyan-glow mb-1" size={26} />
+                    <span className="font-display font-extrabold text-3xl md:text-4xl text-white">{m.value}</span>
+                    <span className="text-sm text-[#dae2fd] leading-snug">{m.label}</span>
+                    <span className="text-xs text-[#859397]">{m.sub}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
