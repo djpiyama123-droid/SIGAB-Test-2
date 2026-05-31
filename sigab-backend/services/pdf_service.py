@@ -734,3 +734,253 @@ def generar_pdf_orden_v2_poka_yoke(orden: dict, equipo: dict, materiales: list) 
     c.showPage()
     c.save()
     return buf.getvalue()
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# generar_pdf_casillas — Hoja CENEVAL para Conservación (Carta, vertical)
+# ──────────────────────────────────────────────────────────────────────────────
+
+def generar_pdf_casillas(orden: dict, casillas: dict) -> bytes:
+    """Genera PDF de la hoja CENEVAL (Bloques A–F) para una OS."""
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.units import cm
+    from reportlab.pdfgen import canvas as rlcanvas
+    from reportlab.lib.colors import HexColor, black, white
+    from io import BytesIO
+    from datetime import date
+
+    AZUL   = HexColor("#1B3A5C")
+    GRIS   = HexColor("#64748B")
+    NEGRO  = HexColor("#000000")
+    BLANCO = HexColor("#FFFFFF")
+
+    buf = BytesIO()
+    W, H = letter
+    c = rlcanvas.Canvas(buf, pagesize=letter)
+    c.setTitle(f"CENEVAL OS-{orden.get('id', '')}")
+
+    margin_x  = 1.5 * cm
+    page_w    = W - 2 * margin_x
+    y         = H - 1.5 * cm
+
+    def banner(texto, height=14):
+        nonlocal y
+        c.setFillColor(AZUL)
+        c.rect(margin_x, y - height, page_w, height, fill=1, stroke=0)
+        c.setFillColor(BLANCO)
+        c.setFont("Helvetica-Bold", 8)
+        c.drawString(margin_x + 4, y - height + 4, texto)
+        y -= height + 2
+
+    def field(label, value, x, w, line_y):
+        c.setFillColor(GRIS)
+        c.setFont("Helvetica", 7)
+        c.drawString(x, line_y + 9, label)
+        c.setFillColor(NEGRO)
+        c.setFont("Helvetica-Bold", 8)
+        c.drawString(x, line_y, str(value or "—")[:60])
+        c.setStrokeColor(GRIS)
+        c.line(x, line_y - 1, x + w, line_y - 1)
+
+    def radio(label, marcado, rx, ry):
+        sym = "●" if marcado else "○"
+        c.setFont("Helvetica", 9)
+        c.setFillColor(AZUL if marcado else GRIS)
+        c.drawString(rx, ry, sym)
+        c.setFillColor(NEGRO)
+        c.setFont("Helvetica", 8)
+        c.drawString(rx + 12, ry, label)
+
+    def check(label, marcado, cx, cy):
+        sym = "■" if marcado else "□"
+        c.setFont("Helvetica", 9)
+        c.setFillColor(AZUL if marcado else GRIS)
+        c.drawString(cx, cy, sym)
+        c.setFillColor(NEGRO)
+        c.setFont("Helvetica", 7)
+        c.drawString(cx + 10, cy, label)
+
+    # ── ENCABEZADO ──────────────────────────────────────────────────────────
+    c.setFillColor(AZUL)
+    c.rect(margin_x, y - 30, page_w, 30, fill=1, stroke=0)
+    c.setFillColor(BLANCO)
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(margin_x + 6, y - 14, "INSTITUTO MEXICANO DEL SEGURO SOCIAL")
+    c.setFont("Helvetica", 8)
+    c.drawString(margin_x + 6, y - 24, "Hospital General Regional No. 1 — IMSS Tijuana · Conservación e Ingeniería Biomédica")
+    # Folio OS
+    folio = orden.get("numero_orden") or f"OS-{orden.get('id', '?')}"
+    c.setFont("Helvetica-Bold", 10)
+    c.drawRightString(W - margin_x - 4, y - 14, folio)
+    c.setFont("Helvetica", 7)
+    c.drawRightString(W - margin_x - 4, y - 24, f"Fecha: {date.today().strftime('%d/%m/%Y')}")
+    y -= 35
+
+    # Título
+    c.setFont("Helvetica-Bold", 11)
+    c.setFillColor(NEGRO)
+    c.drawCentredString(W / 2, y, "ORDEN DE SERVICIO — CONSERVACIÓN (CENEVAL)")
+    y -= 20
+
+    # ── DATOS DEL EQUIPO ────────────────────────────────────────────────────
+    c.setFillColor(HexColor("#F1F5F9"))
+    c.rect(margin_x, y - 28, page_w, 28, fill=1, stroke=0)
+    c.setStrokeColor(GRIS)
+    c.rect(margin_x, y - 28, page_w, 28, fill=0, stroke=1)
+    col_w = page_w / 3
+    field("Equipo",    orden.get("equipo_nombre") or orden.get("nombre"),
+          margin_x + 4, col_w - 8, y - 18)
+    field("No. Serie", orden.get("equipo_serie") or orden.get("serie"),
+          margin_x + col_w + 4, col_w - 8, y - 18)
+    area_piso = f"{orden.get('area') or '—'}  Piso {orden.get('piso') or '—'}"
+    field("Área / Piso", area_piso,
+          margin_x + 2 * col_w + 4, col_w - 8, y - 18)
+    y -= 34
+
+    if not casillas:
+        # Sin casillas — hoja en blanco
+        c.setFont("Helvetica-Oblique", 10)
+        c.setFillColor(GRIS)
+        c.drawCentredString(W / 2, y - 40, "Sin datos de casillas CENEVAL registrados para esta OS.")
+        c.save()
+        return buf.getvalue()
+
+    # ── BLOQUE A — DOMINIO ──────────────────────────────────────────────────
+    banner("A — DOMINIO DEL ACTIVO (marcar uno)")
+    dominios = [("medico","⚕ Equipo Médico"), ("polivalente","↩ Polivalente"), ("ac_infra","❄ A/C / Infraestructura")]
+    rx = margin_x + 8
+    for val, lbl in dominios:
+        radio(lbl, casillas.get("dominio") == val, rx, y - 2)
+        rx += 130
+    y -= 16
+
+    # ── BLOQUE B — TIPO DE SERVICIO ─────────────────────────────────────────
+    banner("B — TIPO DE SERVICIO (marcar uno)")
+    servicios = [
+        ("correctivo","Correctivo"), ("preventivo","Preventivo"),
+        ("instalacion","Instalación"), ("baja","Baja"),
+        ("prestamo","Préstamo"), ("inspeccion","Inspección"),
+    ]
+    rx = margin_x + 8
+    for val, lbl in servicios:
+        radio(lbl, casillas.get("tipo_servicio") == val, rx, y - 2)
+        rx += 85
+    y -= 16
+
+    # ── BLOQUE C — NATURALEZA DE LA FALLA ──────────────────────────────────
+    banner("C — NATURALEZA DE LA FALLA / TRABAJO (marcar todas las que aplican)")
+    grupos = [
+        ("⚡ Eléctrico", [
+            ("falla_no_enciende","No enciende"),("falla_corto","Corto circuito"),
+            ("falla_cable","Cable dañado"),("falla_fusible","Fusible"),
+            ("falla_bateria","Batería"),("falla_ups","UPS/No-break"),
+        ]),
+        ("⚙ Mecánico", [
+            ("falla_ruido","Ruido anormal"),("falla_vibracion","Vibración"),
+            ("falla_atasco","Atasco/Trabo"),("falla_fuga","Fuga"),
+            ("falla_rotura","Rotura física"),
+        ]),
+        ("💨 Neumático/Hidráulico", [
+            ("falla_presion_baja","Presión baja"),("falla_compresor","Compresor"),
+            ("falla_valvula","Válvula"),("falla_manguera","Manguera"),
+        ]),
+        ("💻 Electrónico/SW", [
+            ("falla_display","Display"),("falla_sensor","Sensor"),
+            ("falla_alarma_falsa","Alarma falsa"),("falla_error_pantalla","Error pantalla"),
+            ("falla_firmware","Firmware"),
+        ]),
+        ("🔧 Consumibles", [
+            ("falla_filtro","Filtro"),("falla_empaque","Empaque/Junta"),
+            ("falla_lampara","Lámpara"),("falla_toner_papel","Tóner/Papel"),
+        ]),
+        ("❄ A/C específico", [
+            ("falla_gas_ref","Gas refrigerante"),("falla_evaporador","Evaporador"),
+            ("falla_condensador","Condensador"),("falla_termostato","Termostato"),
+        ]),
+    ]
+    col_w3 = page_w / 3
+    ncols = 3
+    max_rows_per_col = max(len(g[1]) + 1 for g in grupos)
+    col_heights = [0, 0, 0]
+    col_items   = [[], [], []]
+    for gi, (gtitle, gcampos) in enumerate(grupos):
+        ci = gi % ncols
+        col_items[ci].append((gtitle, gcampos))
+
+    col_y_start = y - 4
+    col_y = [col_y_start, col_y_start, col_y_start]
+    for ci in range(ncols):
+        cx = margin_x + ci * col_w3 + 4
+        for gtitle, gcampos in col_items[ci]:
+            c.setFont("Helvetica-Bold", 7)
+            c.setFillColor(AZUL)
+            c.drawString(cx, col_y[ci], gtitle)
+            col_y[ci] -= 10
+            for key, lbl in gcampos:
+                check(lbl, casillas.get(key, 0) == 1, cx + 4, col_y[ci])
+                col_y[ci] -= 9
+
+    min_col_y = min(col_y)
+    y = min_col_y - 6
+
+    # ── BLOQUES D y E ────────────────────────────────────────────────────────
+    half = page_w / 2 - 4
+    # D
+    banner_y_save = y
+    c.setFillColor(AZUL)
+    c.rect(margin_x, y - 14, half, 14, fill=1, stroke=0)
+    c.setFillColor(BLANCO)
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(margin_x + 4, y - 10, "D — RESOLUCIÓN")
+    # E
+    c.setFillColor(AZUL)
+    c.rect(margin_x + half + 8, y - 14, half, 14, fill=1, stroke=0)
+    c.drawString(margin_x + half + 12, y - 10, "E — ESTADO FINAL DEL EQUIPO")
+    y -= 16
+
+    resoluciones = [
+        ("sitio","Resuelto en sitio"), ("refaccion","Requiere refacción"),
+        ("taller","Enviar a taller"),  ("externo","Escalar a externo"), ("baja","Declarar baja"),
+    ]
+    estados_finales = [
+        ("operativo","Operativo"), ("operativo_obs","Operativo c/observaciones"),
+        ("fuera_servicio","Fuera de servicio"), ("en_taller","En taller"),
+    ]
+    dy = y
+    for val, lbl in resoluciones:
+        radio(lbl, casillas.get("resolucion") == val, margin_x + 8, dy - 2)
+        dy -= 10
+    dy2 = y
+    for val, lbl in estados_finales:
+        radio(lbl, casillas.get("estado_final") == val, margin_x + half + 12, dy2 - 2)
+        dy2 -= 10
+    y = min(dy, dy2) - 6
+
+    # ── BLOQUE F — TEXTO LIBRE ────────────────────────────────────────────────
+    banner("F — TEXTO LIBRE / OBSERVACIONES")
+    obs  = casillas.get("observaciones_breves") or ""
+    refs = casillas.get("refacciones_solicitadas") or ""
+    c.setFont("Helvetica", 8)
+    c.setFillColor(NEGRO)
+    c.drawString(margin_x + 4, y - 2, f"Observaciones: {obs or '_' * 60}")
+    y -= 12
+    c.drawString(margin_x + 4, y - 2, f"Refacciones solicitadas: {refs or '_' * 55}")
+    y -= 20
+
+    # ── FIRMAS ────────────────────────────────────────────────────────────────
+    c.setStrokeColor(NEGRO)
+    sig_y = max(y - 30, 2 * cm)
+    sig_w = page_w / 2 - 20
+    for i, label in enumerate(["Técnico Responsable", "Jefe de Conservación / Vo.Bo."]):
+        sx = margin_x + i * (page_w / 2 + 10)
+        c.line(sx, sig_y, sx + sig_w, sig_y)
+        c.setFont("Helvetica", 7)
+        c.setFillColor(NEGRO)
+        c.drawCentredString(sx + sig_w / 2, sig_y - 10, label)
+        c.setFont("Helvetica-Oblique", 6)
+        c.setFillColor(GRIS)
+        c.drawCentredString(sx + sig_w / 2, sig_y - 18, "Nombre / Firma / Fecha")
+
+    c.showPage()
+    c.save()
+    return buf.getvalue()

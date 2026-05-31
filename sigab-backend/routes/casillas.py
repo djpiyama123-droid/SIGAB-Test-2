@@ -9,10 +9,11 @@ Endpoints:
   POST   /api/casillas/ocr/{orden_id}      — OCR sobre foto de formato físico (Gemini Vision)
   GET    /api/casillas/resumen/dominio     — conteo agrupado por dominio (para Dashboard)
 """
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select, func
 from datetime import datetime, timezone
+import asyncio
 import json
 import base64
 import logging
@@ -22,6 +23,7 @@ from database import get_async_session as get_session
 from models.orden_casillas import OrdenCasillas, CasillasCreate, CasillasRead
 from models.orden_servicio import OrdenServicio
 from services.sse_service import sse_manager
+from services.pdf_service import generar_pdf_casillas
 from auth.dependencies import get_current_user
 from auth.tenancy import get_current_tenant
 
@@ -120,6 +122,46 @@ async def get_casillas(
         raise HTTPException(status_code=404, detail="No hay casillas para esta orden")
     return casillas
 
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  GET /api/casillas/{orden_id}/pdf  — PDF CENEVAL
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/{orden_id}/pdf")
+async def pdf_casillas(
+    orden_id: int,
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_session),
+):
+    """Genera y devuelve el PDF de la hoja CENEVAL para una OS."""
+    stmt_ord = select(OrdenServicio).where(
+        OrdenServicio.id == orden_id,
+        OrdenServicio.tenant_id == tenant_id,
+    )
+    orden = (await session.execute(stmt_ord)).scalar_one_or_none()
+    if not orden:
+        raise HTTPException(status_code=404, detail="Orden no encontrada")
+
+    stmt_cas = select(OrdenCasillas).where(
+        OrdenCasillas.orden_id == orden_id,
+        OrdenCasillas.tenant_id == tenant_id,
+    )
+    casillas = (await session.execute(stmt_cas)).scalar_one_or_none()
+    if not casillas:
+        raise HTTPException(status_code=404, detail="Esta orden no tiene casillas CENEVAL registradas")
+
+    loop = asyncio.get_event_loop()
+    pdf_bytes = await loop.run_in_executor(
+        None,
+        lambda: generar_pdf_casillas(orden.model_dump(), casillas.model_dump()),
+    )
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"inline; filename=CENEVAL_{orden_id}.pdf"},
+    )
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  POST /api/casillas/ocr/{orden_id}  — OCR con Gemini Vision
