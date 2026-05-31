@@ -13,7 +13,7 @@
  * @requires components/OrdenDetalleModal — Vista detallada de la OS
  * @requires components/OrdenCasillasForm — Formulario CENEVAL
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api/sigah';
 import OrdenDetalleModal from '../components/OrdenDetalleModal';
 import OrdenCasillasForm from '../components/OrdenCasillasForm';
@@ -69,6 +69,13 @@ export default function Ordenes() {
   const [archivosPag, setArchivosPag]       = useState(1);
   const [archivoBuscar, setArchivoBuscar]   = useState('');
   const [archivosLoading, setArchivosLoading] = useState(false);
+  // Autocomplete equipo + catálogos
+  const [equipoSug,  setEquipoSug]  = useState([]);
+  const [showEqSug,  setShowEqSug]  = useState(false);
+  const [areasOpts,  setAreasOpts]  = useState([]);
+  const [pisosOpts,  setPisosOpts]  = useState([]);
+  const equipoRef  = useRef(null);
+  const buscarTimer = useRef(null);
 
   const cargar = useCallback(async () => {
     setLoading(true);
@@ -102,6 +109,18 @@ export default function Ordenes() {
   }, []); // eslint-disable-line
 
   useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    api.getAreasCatalogo()
+       .then((res) => { setAreasOpts(res.areas || []); setPisosOpts(res.pisos || []); })
+       .catch(() => {});
+  }, []);
+  useEffect(() => {
+    const handler = (e) => {
+      if (equipoRef.current && !equipoRef.current.contains(e.target)) setShowEqSug(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
   useEffect(() => {
     if (tab === 'historico') cargarArchivos(1, archivoBuscar);
   }, [tab]); // eslint-disable-line
@@ -164,6 +183,31 @@ export default function Ordenes() {
   };
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const buscarEquipos = (val) => {
+    setForm((f) => ({ ...f, equipo_nombre: val }));
+    clearTimeout(buscarTimer.current);
+    if (val.length < 2) { setEquipoSug([]); setShowEqSug(false); return; }
+    buscarTimer.current = setTimeout(async () => {
+      try {
+        const res = await api.getEquipos({ buscar: val, limit: 6 });
+        setEquipoSug(res.equipos || []);
+        setShowEqSug(true);
+      } catch { setEquipoSug([]); }
+    }, 280);
+  };
+
+  const seleccionarEquipo = (eq) => {
+    setForm((f) => ({
+      ...f,
+      equipo_nombre: eq.nombre || '',
+      equipo_serie:  eq.serie  || '',
+      area:          eq.area   || f.area,
+      piso:          eq.piso   || f.piso,
+    }));
+    setShowEqSug(false);
+    setEquipoSug([]);
+  };
 
   const handleTipoFormatoChange = (e) => {
     const val = e.target.value;
@@ -372,19 +416,82 @@ export default function Ordenes() {
           className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-5 space-y-4">
           <h2 className="text-base font-semibold text-[var(--content-text)]">Nueva Orden de Servicio</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {[
-              ['equipo_nombre','Equipo (nombre)','text'],
-              ['equipo_serie','No. Serie','text'],
-              ['tecnico_nombre','Técnico','text'],
-              ['area','Área','text'],
-              ['piso','Piso','text'],
-            ].map(([k, label]) => (
-              <div key={k}>
-                <label className="text-xs text-[var(--content-muted)] block mb-1">{label}</label>
-                <input value={form[k]} onChange={set(k)}
+            {/* Equipo — autocompletado en tiempo real */}
+            <div className="relative" ref={equipoRef}>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Equipo (nombre)</label>
+              <input
+                value={form.equipo_nombre}
+                onChange={(e) => buscarEquipos(e.target.value)}
+                onFocus={() => equipoSug.length > 0 && setShowEqSug(true)}
+                placeholder="Escribe 2+ caracteres para buscar…"
+                autoComplete="off"
+                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600"
+              />
+              {showEqSug && equipoSug.length > 0 && (
+                <ul className="absolute z-30 left-0 right-0 mt-1 bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg shadow-xl overflow-hidden max-h-52 overflow-y-auto">
+                  {equipoSug.map((eq) => (
+                    <li key={eq.id}
+                      onMouseDown={() => seleccionarEquipo(eq)}
+                      className="px-3 py-2 text-sm cursor-pointer hover:bg-emerald-900/40 border-b border-[var(--content-border)] last:border-0">
+                      <div className="font-medium text-[var(--content-text)]">{eq.nombre}</div>
+                      <div className="text-xs text-[var(--content-muted)]">
+                        {[eq.marca, eq.modelo].filter(Boolean).join(' ')}
+                        {eq.serie ? ` · Serie: ${eq.serie}` : ''}
+                        {eq.area  ? ` · ${eq.area}` : ''}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* No. Serie — auto-rellenado al seleccionar equipo */}
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">No. Serie</label>
+              <input value={form.equipo_serie} onChange={set('equipo_serie')}
+                placeholder="Auto-completado al seleccionar equipo"
+                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
+            </div>
+
+            {/* Técnico */}
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Técnico</label>
+              <input value={form.tecnico_nombre} onChange={set('tecnico_nombre')}
+                placeholder="Nombre del técnico responsable"
+                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
+            </div>
+
+            {/* Área — select del catálogo de áreas del hospital */}
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Área</label>
+              {areasOpts.length > 0 ? (
+                <select value={form.area} onChange={set('area')}
+                  className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]">
+                  <option value="">— selecciona un área —</option>
+                  {areasOpts.map((a) => <option key={a} value={a}>{a}</option>)}
+                </select>
+              ) : (
+                <input value={form.area} onChange={set('area')}
+                  placeholder="Área del equipo"
                   className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
-              </div>
-            ))}
+              )}
+            </div>
+
+            {/* Piso — select del catálogo o auto-rellenado */}
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Piso</label>
+              {pisosOpts.length > 0 ? (
+                <select value={form.piso} onChange={set('piso')}
+                  className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]">
+                  <option value="">— selecciona un piso —</option>
+                  {pisosOpts.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              ) : (
+                <input value={form.piso} onChange={set('piso')}
+                  placeholder="Piso / nivel"
+                  className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
+              )}
+            </div>
             <div>
               <label className="text-xs text-[var(--content-muted)] block mb-1">Prioridad</label>
               <select value={form.prioridad} onChange={set('prioridad')}
