@@ -73,10 +73,12 @@ SIGAH/  (este repo en GitHub: djpiyama123-droid/SIGAH)
 25. Tokens API               `routes/tokens.py`       → `/api/tokens`
 26. Cerebro / Claude Code    `routes/cerebro.py`      → `/api/cerebro/sesiones`
 
-## 🔒 Estado de Cambios Activos (2026-05-29 — rama feat/sileo-toasts-hermes-context)
+## 🔒 Estado de Cambios Activos (2026-05-30 — rama feat/sileo-toasts-hermes-context)
 
-> Leer esto antes de modificar `main.py`, `routes/dashboard.py` o `routes/preventivos.py`.
-> Archivo completo: `.claude/shared/sesion-webpanel-coordinacion.md`
+### Cambios realizados por Antigravity (Completados y listos para commit)
+- **sigab-bot/index.js**: Implementación de `FASE2-OPENCLAW-JWT`. Se añadió la carga de `BOT_API_KEY`, la función de autenticación `botLogin()` para obtener JWT efímero del hospital mediante `POST /api/openclaw/bot-login`, y el wrapper `authPost()` para añadir cabeceras `Authorization: Bearer` y reintentar una vez tras 401 (re-login automático). Las llamadas a `/intake-group` ahora usan `authPost()`. Se añadió el disparador en el arranque cuando `connection === 'open'`.
+- **sigab-backend/database.py & config.py**: Añadido soporte explícito de `charset=utf8mb4` en la URL de conexión SQLAlchemy y la configuración aiomysql para prevenir mojibake (commiteado en `c540b44`).
+- **Base de Datos (Producción)**: Ejecutado el script `fix_db_encoding.py` directamente en el contenedor del VPS, corrigiendo 623 registros de texto doblemente codificados en las tablas `equipos`, `zonas_mapa` y `ordenes_servicio`.
 
 ### Archivos modificados por la sesión WebPanel (SIN commitear aún)
 - `sigab-backend/main.py` → CORS expandido + 4 nuevos routers (twilio, monitor, tokens, cerebro)
@@ -86,17 +88,15 @@ SIGAH/  (este repo en GitHub: djpiyama123-droid/SIGAH)
 - `sigab-backend/routes/tokens.py` → NUEVO archivo (no trackear aún)
 - `sigab-backend/routes/cerebro.py` → NUEVO archivo (no trackear aún)
 
-### Archivos de la otra sesión activa (NO tocar — tiene cambios propios)
-- `sigab-frontend/src/pages/Ordenes.jsx`
-- `sigab-frontend/src/components/formatos/*` (4 formatos IMSS)
-- `sigab-backend/config.py`, `routes/copilot.py`, `routes/openclaw.py`
-- `sigab-backend/services/gemma_service.py`, `sigab-bot/index.js`
-- `docker-compose.yml`
+### Cambios de UI/Stitch por Claude Code (SIN commitear aún - en working tree)
+- `sigab-frontend/src/pages/Dashboard.jsx` (refactorización de botones Poka-Yoke y NOM-016 con Lucide)
+- `sigab-frontend/src/pages/Equipos.jsx` (estandarización de toggle tarjetas/tabla y botones Nuevo Equipo/CSV con Lucide)
+- `sigab-frontend/src/pages/Ordenes.jsx` (estandarización de botones con Lucide)
 
 ### Orden de commit correcto
-1. **Primero**: commitear los 6 archivos de esta sesión (ver `.claude/shared/`)
-2. **Después**: la otra sesión commitea sus cambios de formatos/copilot/bot
-3. NO hacer merge a `main` hasta que ambas sesiones hayan commiteado en sus ramas
+1. **Primero**: commitear los 3 archivos de la UI de la sesión de Claude Code (`git commit` con prefijo correspondiente).
+2. **Segundo**: commitear los cambios del bot de esta sesión (`sigab-bot/index.js`) con prefijo `[Antigravity]`.
+3. NO hacer merge a `main` hasta que ambas sesiones hayan commiteado en sus ramas.
 
 ---
 
