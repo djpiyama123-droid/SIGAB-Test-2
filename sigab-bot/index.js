@@ -29,6 +29,7 @@ const FASTAPI_BASE        = process.env.FASTAPI_BASE_URL  || 'http://localhost:8
 const FASTAPI_WEBHOOK_URL = `${FASTAPI_BASE}/api/v1/events/whatsapp/webhook`;
 const OPENCLAW_API        = `${FASTAPI_BASE}/api/openclaw`;
 const BOT_PORT            = process.env.BOT_PORT || 3000;
+const BOT_API_KEY         = process.env.BOT_API_KEY;
 
 // JIDs que reciben DM de notificaciones (supervisores)
 const SUPERVISORES_JID = [
@@ -39,10 +40,58 @@ const SUPERVISORES_JID = [
 const logger = pino({ level: 'warn' });
 let sock = null;
 let grupoJid = null;
+let botToken = null;
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+// ── Autenticación Bot (JWT / Multi-tenant) ────────────────
+async function botLogin() {
+  if (!BOT_API_KEY) {
+    console.warn('⚠️ BOT_API_KEY no está definida en las variables de entorno.');
+    return;
+  }
+  try {
+    console.log('🔑 Iniciando autenticación del bot con JWT...');
+    const res = await axios.post(`${OPENCLAW_API}/bot-login`, {
+      api_key: BOT_API_KEY
+    }, { timeout: 10000 });
+    
+    if (res.data && res.data.access_token) {
+      botToken = res.data.access_token;
+      console.log('🟢 Bot autenticado con éxito. Token JWT adquirido.');
+    } else {
+      console.error('❌ Error de autenticación: No se recibió access_token.');
+    }
+  } catch (err) {
+    console.error('❌ Error al autenticar el bot:', err.response?.data?.detail || err.message);
+  }
+}
+
+async function authPost(url, data, config = {}) {
+  if (!botToken) {
+    await botLogin();
+  }
+  const headers = {
+    ...config.headers,
+    'Authorization': `Bearer ${botToken}`
+  };
+  try {
+    return await axios.post(url, data, { ...config, headers });
+  } catch (err) {
+    if (err.response && err.response.status === 401) {
+      console.warn('⚠️ Token de bot expirado o inválido (401). Intentando re-login...');
+      await botLogin();
+      const retryHeaders = {
+        ...config.headers,
+        'Authorization': `Bearer ${botToken}`
+      };
+      return await axios.post(url, data, { ...config, headers: retryHeaders });
+    }
+    throw err;
+  }
+}
 
 // ── DM a supervisores ─────────────────────────────────────
 async function notificarSupervisores(mensaje) {
@@ -76,7 +125,7 @@ async function procesarMensajeGrupo(texto, senderJid, senderName) {
       sender_jid: senderJid || '',
       tipo: 'texto',
     });
-    const res = await axios.post(`${OPENCLAW_API}/intake-group`, params.toString(), {
+    const res = await authPost(`${OPENCLAW_API}/intake-group`, params.toString(), {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       timeout: 30000,
     });
@@ -107,7 +156,7 @@ async function procesarImagenGrupo(buffer, mimeType, caption, senderJid, senderN
     fd.set('tipo', 'imagen');
     if (caption) fd.set('mensaje', caption);
 
-    const res = await axios.post(`${OPENCLAW_API}/intake-group`, fd, {
+    const res = await authPost(`${OPENCLAW_API}/intake-group`, fd, {
       headers: fd.headers || {},
       timeout: 45000,
     });
@@ -160,6 +209,7 @@ async function startBot() {
     }
     if (connection === 'open') {
       console.log(`🟢 SIGAH Bot conectado. Buscando grupo "${GRUPO_BIOMEDICOS}"...`);
+      await botLogin();
       await resolverGrupo();
       initScheduler(sendToGroup);
       await notificarSupervisores(
