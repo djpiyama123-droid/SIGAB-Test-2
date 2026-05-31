@@ -46,6 +46,18 @@ export default function FormatoViewer({ orden: initialOrden, onClose, autoprint 
     setCurrentOrden(initialOrden || {});
   }, [initialOrden]);
 
+  // Enriquecer datos de la orden con casillas CENEVAL si es una OS real
+  useEffect(() => {
+    const id = currentOrden?.id;
+    if (!id || String(id).includes('mock')) return;
+    const tipo = currentOrden.tipo_mantenimiento || 'correctivo';
+    api.getFormato(tipo, id)
+       .then(({ orden }) => {
+         if (orden) setCurrentOrden(prev => ({ ...prev, ...orden }));
+       })
+       .catch(() => {});
+  }, [currentOrden?.id]);
+
   // Disparo automático de impresión al montar (usado en flujo post-creación de OS)
   useEffect(() => {
     if (autoprint && !autoprintDone.current) {

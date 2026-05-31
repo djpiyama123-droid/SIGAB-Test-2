@@ -148,6 +148,8 @@ export const api = {
     });
   },
   getResumenCasillas: () => client.get('/casillas/resumen/dominio'),
+  descargarPdfCasillas: (ordenId) => client.get(`/casillas/${ordenId}/pdf`, { responseType: 'blob' }),
+  getFormato: (tipo, ordenId) => client.get(`/formatos/${tipo}/${ordenId}`),
   // Helper para uso directo por URL desde OrdenCasillasForm
   post: (url, data) => client.post(url, data),
   postForm: (url, formData) =>

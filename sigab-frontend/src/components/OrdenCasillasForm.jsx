@@ -296,15 +296,6 @@ export default function OrdenCasillasForm({ ordenId: ordenIdProp, equipoData = {
 
   return (
     <>
-      {/* ── CSS print ── */}
-      <style>{`
-        @media print {
-          body > *:not(#casillas-print) { display: none !important; }
-          #casillas-print { display: block !important; }
-        }
-        @media screen { #casillas-print { display: none; } }
-      `}</style>
-
       {/* ── Modal overlay ── */}
       <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-start justify-center p-0 sm:p-4 overflow-y-auto">
         <div className="bg-[var(--content-bg)] border-t sm:border border-[var(--content-border)] rounded-t-2xl sm:rounded-2xl w-full max-w-4xl shadow-2xl h-[95vh] sm:h-auto overflow-y-auto">
@@ -327,6 +318,15 @@ export default function OrdenCasillasForm({ ordenId: ordenIdProp, equipoData = {
               >
                 🖨 Imprimir hoja
               </button>
+              {ordenId && (
+                <button
+                  type="button"
+                  onClick={handleDescargarPdf}
+                  className="px-3 py-1.5 text-xs rounded-lg border border-[var(--content-border)] text-[var(--content-muted)] hover:border-blue-500 hover:text-blue-400 transition-colors"
+                >
+                  📄 PDF
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onCerrar}
@@ -544,8 +544,8 @@ export default function OrdenCasillasForm({ ordenId: ordenIdProp, equipoData = {
         </div>
       </div>
 
-      {/* ── Hoja imprimible A4 (oculta en pantalla, visible al imprimir) ─────── */}
-      <div id="casillas-print" className="hidden">
+      {/* ── Hoja imprimible A4 (oculta en pantalla, usePrintFormato la copia a ventana nueva) ─── */}
+      <div id="formato-print-root" style={{ display: 'none' }}>
         <HojaFisicaCeneval form={form} ordenId={ordenId} equipoData={equipoData} />
       </div>
     </>
