@@ -16,6 +16,7 @@ Formatos soportados: correctivo_corto, correctivo_largo, orden_entrega, reporte_
 """
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Response
 from typing import Optional
+import asyncio
 import aiomysql
 import os
 import secrets
@@ -25,6 +26,7 @@ from config import get_db, UPLOAD_DIR
 from auth.dependencies import get_current_user, require_action
 from auth.tenancy import get_current_tenant
 from services.pdf_service import generar_pdf_orden, generar_pdf_orden_v2_poka_yoke
+from services.cache_service import cache_service
 try:
     from services.ocr_service import parsear_reporte_ocr
 except ImportError:
@@ -204,6 +206,8 @@ async def crear_orden(
         session.add(nuevo_mat)
     
     await session.commit()
+    cache_service.invalidate_prefix(f"dashboard_resumen_{tenant_id}")
+    cache_service.invalidate_prefix(f"dashboard_mapa_{tenant_id}")
 
     return {"ok": True, "numero_orden": numero, "orden_id": orden.id}
 
@@ -580,12 +584,16 @@ async def descargar_pdf_orden(
     materiales_dict = [m.model_dump() for m in materiales]
     evidencias_dict = [e.model_dump() for e in evidencias]
 
-    pdf_bytes = generar_pdf_orden(
-        orden_dict,
-        materiales_dict,
-        evidencias_dict,
-        historial_breve=historial_breve,
-        proximo_preventivo=proximo_preventivo,
+    loop = asyncio.get_event_loop()
+    pdf_bytes = await loop.run_in_executor(
+        None,
+        lambda: generar_pdf_orden(
+            orden_dict,
+            materiales_dict,
+            evidencias_dict,
+            historial_breve=historial_breve,
+            proximo_preventivo=proximo_preventivo,
+        ),
     )
 
     numero = orden.numero_orden or str(orden_id)
@@ -639,7 +647,11 @@ async def descargar_pdf_fisico_poka_yoke(
 
     orden_dict = orden.model_dump()
 
-    pdf_bytes = generar_pdf_orden_v2_poka_yoke(orden_dict, equipo_dict, materiales_dict)
+    loop = asyncio.get_event_loop()
+    pdf_bytes = await loop.run_in_executor(
+        None,
+        lambda: generar_pdf_orden_v2_poka_yoke(orden_dict, equipo_dict, materiales_dict),
+    )
 
     numero = orden.numero_orden or str(orden_id)
     return Response(

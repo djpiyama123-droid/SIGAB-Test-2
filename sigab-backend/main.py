@@ -93,5 +93,20 @@ def health():
     return {"status": "ok", "sistema": "SIGAH", "modo": "on-premise"}
 
 
+@app.get("/api/cache/stats", tags=["Observabilidad"])
+def cache_stats():
+    """Estadísticas del caché en memoria — útil para monitoreo y tuning."""
+    from services.cache_service import cache_service
+    return cache_service.stats()
+
+
+@app.delete("/api/cache/flush", tags=["Observabilidad"])
+def cache_flush():
+    """Vacía todo el caché en memoria — usar solo en mantenimiento."""
+    from services.cache_service import cache_service
+    cache_service.clear()
+    return {"ok": True, "mensaje": "Caché vaciado"}
+
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
