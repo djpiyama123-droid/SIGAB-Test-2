@@ -5,7 +5,7 @@
  * HGR No.1 IMSS Tijuana — 100% On-Premise
  */
 
-import { getAuthHeaders } from './auth.js';
+import { getAuthHeaders, authPost, authGet } from './auth.js';
 
 const API = process.env.SIGAB_BACKEND_URL
   ? `${process.env.SIGAB_BACKEND_URL}/api/openclaw`
@@ -347,7 +347,8 @@ async function cmdAI(mensaje) {
  * Sube la imagen a POST /api/casillas/ocr/{orden_id} y responde con resumen.
  */
 async function cmdCasillasOCR(mediaBuffer, mimeType, args) {
-  const CASILLAS_API = 'http://localhost:8000/api/casillas';
+  const BACKEND_URL = process.env.SIGAB_BACKEND_URL || process.env.FASTAPI_BASE_URL || 'http://localhost:8000';
+  const CASILLAS_API = `${BACKEND_URL}/api/casillas`;
 
   // Si se mandó sin imagen o sin orden_id, dar instrucciones
   if (!args && !mediaBuffer) {
@@ -408,18 +409,17 @@ El sistema usará IA para leer las casillas automáticamente. ✅`;
       const fd = new FormData();
       fd.set('foto', new Blob([mediaBuffer], { type: mimeType || 'image/jpeg' }), 'foto.jpg');
 
-      const ocrRes = await fetch(`${CASILLAS_API}/ocr/${ordenId}`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: fd,
-      });
-
-      if (!ocrRes.ok) {
-        const err = await ocrRes.json();
-        return `❌ Error en OCR: ${err.detail || 'Intenta de nuevo'}`;
+      let casillas;
+      try {
+        const ocrRes = await authPost(`${CASILLAS_API}/ocr/${ordenId}`, fd, {
+          headers: fd.headers ? fd.headers : {},
+        });
+        casillas = ocrRes.data;
+      } catch (err) {
+        console.error('OCR POST error:', err);
+        const detail = err.response?.data?.detail || err.message;
+        return `❌ Error en OCR: ${detail || 'Intenta de nuevo'}`;
       }
-
-      const casillas = await ocrRes.json();
 
       const DOMINIO_LABEL = { medico: '⚕ Médico', polivalente: '🛏 Polivalente', ac_infra: '❄ A/C' };
       const ESTADO_EMOJI  = { operativo: '🟢', operativo_obs: '🟡', fuera_servicio: '🔴', en_taller: '🔵' };
@@ -439,7 +439,42 @@ El sistema usará IA para leer las casillas automáticamente. ✅`;
       if (casillas.ocr_confianza) reply += `\n🎯 Confianza OCR: ${Math.round(casillas.ocr_confianza * 100)}%`;
       reply += `\n\n_Datos guardados en SIGAH. Dashboard actualizado._`;
 
-      return reply;
+      // Descargar el PDF con authGet a GET /api/casillas/{orden_id}/pdf
+      let pdfBuffer = null;
+      let hasPdf = false;
+      let is404 = false;
+      try {
+        const pdfRes = await authGet(`${CASILLAS_API}/${ordenId}/pdf`, {
+          responseType: 'arraybuffer'
+        });
+        if (pdfRes.data) {
+          pdfBuffer = Buffer.from(pdfRes.data);
+          hasPdf = true;
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 404) {
+          is404 = true;
+          console.log(`ℹ️ Hoja CENEVAL PDF no encontrada para la OS #${ordenId} (404).`);
+        } else {
+          console.error(`❌ Error al descargar PDF de casillas para OS #${ordenId}:`, err.message);
+        }
+      }
+
+      if (hasPdf && pdfBuffer) {
+        return [
+          reply,
+          {
+            document: pdfBuffer,
+            fileName: `CENEVAL_${ordenId}.pdf`,
+            mimetype: 'application/pdf',
+            caption: `📄 Hoja CENEVAL de la OS #${ordenId}`
+          }
+        ];
+      } else if (is404) {
+        return `${reply}\n\n⚠️ *Nota:* Aún no se han registrado casillas CENEVAL válidas para esta orden en el sistema.`;
+      } else {
+        return `${reply}\n\n⚠️ *Nota:* Las casillas se guardaron, pero no se pudo generar el PDF en este momento.`;
+      }
     }
 
     // Sin imagen → instrucciones

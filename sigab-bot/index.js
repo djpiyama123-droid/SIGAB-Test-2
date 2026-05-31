@@ -21,7 +21,7 @@ import axios from 'axios';
 import cors from 'cors';
 import { handleCommand, handleImageCommand } from './commands.js';
 import { initScheduler } from './scheduler.js';
-import { initBotAuth, getAuthHeaders } from './auth.js';
+import { initBotAuth, botLogin, authPost, authGet, getAuthHeaders } from './auth.js';
 
 // ── Configuración ──────────────────────────────────────────
 const GRUPO_BIOMEDICOS    = process.env.GRUPO_BIOMEDICOS || 'Residentes de biomedica 2025';
@@ -41,58 +41,10 @@ const SUPERVISORES_JID = [
 const logger = pino({ level: 'warn' });
 let sock = null;
 let grupoJid = null;
-let botToken = null;
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-
-// ── Autenticación Bot (JWT / Multi-tenant) ────────────────
-async function botLogin() {
-  if (!BOT_API_KEY) {
-    console.warn('⚠️ BOT_API_KEY no está definida en las variables de entorno.');
-    return;
-  }
-  try {
-    console.log('🔑 Iniciando autenticación del bot con JWT...');
-    const res = await axios.post(`${OPENCLAW_API}/bot-login`, {
-      api_key: BOT_API_KEY
-    }, { timeout: 10000 });
-    
-    if (res.data && res.data.access_token) {
-      botToken = res.data.access_token;
-      console.log('🟢 Bot autenticado con éxito. Token JWT adquirido.');
-    } else {
-      console.error('❌ Error de autenticación: No se recibió access_token.');
-    }
-  } catch (err) {
-    console.error('❌ Error al autenticar el bot:', err.response?.data?.detail || err.message);
-  }
-}
-
-async function authPost(url, data, config = {}) {
-  if (!botToken) {
-    await botLogin();
-  }
-  const headers = {
-    ...config.headers,
-    'Authorization': `Bearer ${botToken}`
-  };
-  try {
-    return await axios.post(url, data, { ...config, headers });
-  } catch (err) {
-    if (err.response && err.response.status === 401) {
-      console.warn('⚠️ Token de bot expirado o inválido (401). Intentando re-login...');
-      await botLogin();
-      const retryHeaders = {
-        ...config.headers,
-        'Authorization': `Bearer ${botToken}`
-      };
-      return await axios.post(url, data, { ...config, headers: retryHeaders });
-    }
-    throw err;
-  }
-}
 
 // ── DM a supervisores ─────────────────────────────────────
 async function notificarSupervisores(mensaje) {
@@ -209,13 +161,8 @@ async function startBot() {
       }
     }
     if (connection === 'open') {
-<<<<<<< HEAD
       console.log(`🟢 SIGAH Bot conectado. Buscando grupo "${GRUPO_BIOMEDICOS}"...`);
-      await botLogin();
-=======
-      console.log('🟢 WhatsApp Bot Conectado');
       await initBotAuth();
->>>>>>> b1001f1 (feat(bot): autenticación JWT via bot-login — auth.js + headers en commands/index)
       await resolverGrupo();
       initScheduler(sendToGroup);
       await notificarSupervisores(
@@ -246,19 +193,13 @@ async function startBot() {
             from: senderJid, pushName: senderName, type: 'audio',
             timestamp: msg.messageTimestamp,
             data: buffer.toString('base64'),
-<<<<<<< HEAD
             mimetype: msg.message.audioMessage.mimetype,
             isGroup, grupoJid: isGroup ? remoteJid : null,
-          });
-        } catch (err) { console.error('❌ Error audio:', err.message); }
-=======
-            mimetype: msg.message.audioMessage.mimetype
           }, { headers: getAuthHeaders() });
           console.log('✅ Voice note reenviada a FastAPI');
         } catch (err) {
           console.error('❌ Error procesando voice note:', err.message);
         }
->>>>>>> b1001f1 (feat(bot): autenticación JWT via bot-login — auth.js + headers en commands/index)
         continue;
       }
 
@@ -271,7 +212,15 @@ async function startBot() {
 
           if (caption.startsWith('/')) {
             const response = await handleImageCommand(caption, buffer, mimeType, senderName);
-            if (response) await sock.sendMessage(remoteJid, typeof response === 'string' ? { text: response } : response);
+            if (response) {
+              if (Array.isArray(response)) {
+                for (const r of response) {
+                  await sock.sendMessage(remoteJid, typeof r === 'string' ? { text: r } : r);
+                }
+              } else {
+                await sock.sendMessage(remoteJid, typeof response === 'string' ? { text: response } : response);
+              }
+            }
             continue;
           }
           if (esBioGrupo) await procesarImagenGrupo(buffer, mimeType, caption, senderJid, senderName);
@@ -286,28 +235,26 @@ async function startBot() {
       // Audit log a FastAPI
       try {
         await axios.post(FASTAPI_WEBHOOK_URL, {
-<<<<<<< HEAD
           from: senderJid, pushName: senderName, type: 'text',
           body: text, timestamp: msg.messageTimestamp,
           isGroup, grupoJid: isGroup ? remoteJid : null,
-        });
-      } catch (_) {}
-
-      if (text.startsWith('/')) {
-        const response = await handleCommand(text, senderName);
-        if (response) await sock.sendMessage(remoteJid, typeof response === 'string' ? { text: response } : response);
-        continue;
-=======
-          from: remoteJid,
-          pushName: msg.pushName,
-          type: 'text',
-          body: text,
-          timestamp: msg.messageTimestamp,
-          isGroup
         }, { headers: getAuthHeaders() });
       } catch (err) {
         console.warn('⚠️ Webhook a FastAPI falló:', err.message);
->>>>>>> b1001f1 (feat(bot): autenticación JWT via bot-login — auth.js + headers en commands/index)
+      }
+
+      if (text.startsWith('/')) {
+        const response = await handleCommand(text, senderName);
+        if (response) {
+          if (Array.isArray(response)) {
+            for (const r of response) {
+              await sock.sendMessage(remoteJid, typeof r === 'string' ? { text: r } : r);
+            }
+          } else {
+            await sock.sendMessage(remoteJid, typeof response === 'string' ? { text: response } : response);
+          }
+        }
+        continue;
       }
 
       // Texto libre del grupo → intake pasivo
