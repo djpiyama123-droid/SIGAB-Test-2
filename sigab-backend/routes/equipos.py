@@ -88,12 +88,18 @@ async def equipo_por_qr(qr_token: str, session: AsyncSession = Depends(get_async
 
 from models.mapa import ZonasMapa
 from sqlmodel import func
+from services.cache_service import cache_service, STATIC
 
 @router.get("/areas/catalogo")
 async def catalogo_areas(
     session: AsyncSession = Depends(get_async_session),
     tenant_id: int = Depends(get_current_tenant),
 ):
+    cache_key = f"areas_catalogo_{tenant_id}"
+    cached = cache_service.get(cache_key)
+    if cached is not None:
+        return cached
+
     stmt_areas = (
         select(Equipo.area)
         .where(Equipo.tenant_id == tenant_id, Equipo.area != None)
@@ -112,7 +118,9 @@ async def catalogo_areas(
     res_pisos = await session.execute(stmt_pisos)
     pisos = res_pisos.scalars().all()
 
-    return {"areas": areas, "pisos": pisos}
+    result = {"areas": list(areas), "pisos": list(pisos)}
+    cache_service.set(cache_key, result, ttl_seconds=STATIC)
+    return result
 
 
 @router.get("/zonas/catalogo")
@@ -121,6 +129,11 @@ async def catalogo_zonas(
     tenant_id: int = Depends(get_current_tenant),
 ):
     """Lista las zonas del mapa para el formulario de alta/edición de equipos."""
+    cache_key = f"zonas_catalogo_{tenant_id}"
+    cached = cache_service.get(cache_key)
+    if cached is not None:
+        return cached
+
     stmt = (
         select(ZonasMapa)
         .where(ZonasMapa.tenant_id == tenant_id, ZonasMapa.activa == True)
@@ -128,7 +141,9 @@ async def catalogo_zonas(
     )
     res = await session.execute(stmt)
     zonas = res.scalars().all()
-    return {"zonas": zonas}
+    result = {"zonas": [z.model_dump() for z in zonas]}
+    cache_service.set(cache_key, result, ttl_seconds=STATIC)
+    return result
 
 
 @router.post("/")
@@ -171,7 +186,8 @@ async def crear_equipo(
             accion="CREATE_EQUIPO",
             entidad="equipos",
             entidad_id=nuevo_equipo.id,
-            datos=data
+            datos=data,
+            session=session
         )
     except Exception as e:
         await session.rollback()
