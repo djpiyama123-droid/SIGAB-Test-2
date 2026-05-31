@@ -20,6 +20,7 @@ import OrdenCasillasForm from '../components/OrdenCasillasForm';
 import OCRScannerModal from '../components/OCRScannerModal';
 import { useToast } from '../components/Toast';
 import FormatoViewer from '../components/formatos/FormatoViewer';
+import { Camera, ClipboardList, Plus, X } from 'lucide-react';
 
 const PRIORIDAD_BADGE = {
   critica: 'bg-red-900/60 text-red-300 border border-red-700',
@@ -202,22 +203,24 @@ export default function Ordenes() {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setShowScanIMSS(true)}
-            className="hidden md:block px-3 py-2 bg-purple-700 hover:bg-purple-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
+            className="hidden md:inline-flex items-center gap-2 px-3 py-2 bg-[#006CB7]/20 border border-[#006CB7]/40 text-[#5bb3e8] hover:bg-[#006CB7] hover:text-white active:scale-[0.97] text-sm font-medium rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#006CB7]/50"
             title="Escanear formato OS IMSS con cámara o foto"
           >
-            📸 Escanear OS IMSS
+            <Camera className="h-4 w-4" />
+            Escanear OS IMSS
           </button>
           <button
             onClick={() => { setCasillasOrdenId(null); setCasillasEquipo({}); setShowCasillas(true); }}
-            className="hidden md:block px-3 py-2 bg-teal-700 hover:bg-teal-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
+            className="hidden md:inline-flex items-center gap-2 px-3 py-2 bg-[var(--content-surface)] border border-[var(--content-border)] text-[var(--content-text)] hover:bg-[#006CB7] hover:border-[#006CB7] hover:text-white active:scale-[0.97] text-sm font-medium rounded-xl transition-all duration-150"
           >
-            📋 Nueva OS (Casillas)
+            <ClipboardList className="h-4 w-4" />
+            Nueva OS (Casillas)
           </button>
           <button
             onClick={() => setShowForm((v) => !v)}
-            className="hidden md:block px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
+            className={`hidden md:inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 ${showForm ? 'bg-rose-600 hover:bg-rose-500 text-white focus-visible:ring-rose-500/50' : 'bg-emerald-600 hover:bg-emerald-500 text-white focus-visible:ring-emerald-500/50'}`}
           >
-            {showForm ? '✕ Cancelar' : '+ Nueva OS'}
+            {showForm ? <><X className="h-4 w-4" /> Cancelar</> : <><Plus className="h-4 w-4" /> Nueva OS</>}
           </button>
         </div>
       </div>
@@ -226,31 +229,23 @@ export default function Ordenes() {
       <div className="md:hidden fixed bottom-6 right-6 z-[40] flex flex-col gap-3">
         <button
           onClick={() => setShowScanIMSS(true)}
-          className="w-12 h-12 bg-purple-600 hover:bg-purple-500 text-white rounded-full shadow-lg shadow-purple-900/50 flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
+          className="w-12 h-12 bg-[#006CB7] hover:bg-[#005a9e] text-white rounded-full shadow-lg shadow-[#006CB7]/30 flex items-center justify-center transition-all duration-150 hover:scale-105 active:scale-95"
           title="Escanear OS IMSS"
         >
-          📸
+          <Camera className="h-5 w-5" />
         </button>
         <button
           onClick={() => { setCasillasOrdenId(null); setCasillasEquipo({}); setShowCasillas(true); }}
-          className="w-12 h-12 bg-teal-600 hover:bg-teal-500 text-white rounded-full shadow-lg shadow-teal-900/50 flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
+          className="w-12 h-12 bg-slate-700 hover:bg-[#006CB7] text-white rounded-full shadow-lg shadow-slate-900/50 flex items-center justify-center transition-all duration-150 hover:scale-105 active:scale-95"
           title="Nueva OS (Casillas)"
         >
-          📋
+          <ClipboardList className="h-5 w-5" />
         </button>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className={`w-14 h-14 text-white rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95 ${showForm ? 'bg-red-600 shadow-red-900/50' : 'bg-emerald-600 shadow-emerald-900/50'}`}
+          className={`w-14 h-14 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-150 hover:scale-105 active:scale-95 ${showForm ? 'bg-rose-600 shadow-rose-900/50' : 'bg-emerald-600 shadow-emerald-900/50'}`}
         >
-          {showForm ? (
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-          )}
+          {showForm ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
         </button>
       </div>
 
@@ -280,7 +275,7 @@ export default function Ordenes() {
               className="flex-1 bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600"
             />
             <button onClick={() => cargarArchivos(1, archivoBuscar)}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-lg">
+              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.97] text-white text-sm font-medium rounded-xl transition-all duration-150">
               Buscar
             </button>
           </div>
