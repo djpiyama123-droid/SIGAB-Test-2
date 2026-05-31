@@ -148,7 +148,8 @@ async def crear_equipo(
             accion="CREATE_EQUIPO",
             entidad="equipos",
             entidad_id=nuevo_equipo.id,
-            datos=data
+            datos=data,
+            session=session
         )
     except Exception as e:
         await session.rollback()
