@@ -78,3 +78,18 @@ htmlcov/
 scratch/
 sigah-backend/alembic_output.txt
 .monitor.env
+
+# ── Claude Code / agentes locales (Sesión B 2026-06-01) ──
+.claude/agents/
+.claude/agency-strategy/
+.claude/shared/
+.claude/ssh/
+.claude/scheduled_tasks.lock
+.claude/worktrees/
+.claude/skills/*
+!.claude/skills/ui-ux-pro-max/
+.agents/
+skills-lock.json
+
+# ── Salida generada por herramientas ──
+graphify-out/
