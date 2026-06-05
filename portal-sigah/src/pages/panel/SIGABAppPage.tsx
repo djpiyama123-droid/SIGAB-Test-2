@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import {
   IconStethoscope, IconAlertTriangle, IconCircleCheck,
-  IconClockHour4, IconSearch, IconCurrencyPeso, IconDatabase,
+  IconClockHour4, IconSearch, IconCurrencyDollar, IconDatabase,
 } from '@tabler/icons-react'
 import { equiposBiomedicos, resumenInventario, type EstadoEquipo, type EquipoBiomedico } from '../../data/equiposBiomedicos'
 import { useAuth } from '../../contexts/AuthContext'
@@ -15,7 +15,8 @@ const ESTADO_CFG: Record<EstadoEquipo, { label: string; bg: string; text: string
   baja:          { label: 'Baja',          bg: 'bg-slate-100', text: 'text-slate-500',  icon: <IconAlertTriangle size={13} /> },
 }
 
-const fmtMXN = (n: number) => '$' + n.toLocaleString('es-MX')
+const fmtMXN = (n: number | undefined | null) =>
+  n != null && !isNaN(Number(n)) ? '$' + Number(n).toLocaleString('es-MX') : '—'
 
 export default function SIGABAppPage() {
   const { token } = useAuth()
@@ -93,7 +94,7 @@ export default function SIGABAppPage() {
       {/* Valor del inventario */}
       <div className="bg-sigah-blue-dark rounded-xl p-5 flex items-center gap-4">
         <div className="p-2.5 bg-white/10 rounded-lg">
-          <IconCurrencyPeso size={22} className="text-white" />
+          <IconCurrencyDollar size={22} className="text-white" />
         </div>
         <div>
           <p className="font-data font-normal text-xs text-white/60 uppercase tracking-wider">Valor total del inventario</p>

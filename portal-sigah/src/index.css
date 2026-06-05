@@ -41,6 +41,14 @@
     scroll-behavior: smooth;
   }
 
+  html, body {
+    /* Evita scroll horizontal accidental en móvil (grid/tabla blowout).
+       Usamos `clip` y NO `hidden`: hidden convierte el ancestro en scroll-container
+       y rompe `position: sticky` (ScrollVideoEngine). `clip` corta sin romper sticky. */
+    overflow-x: clip;
+    max-width: 100%;
+  }
+
   body {
     font-family: var(--font-sans);
     font-weight: 400;

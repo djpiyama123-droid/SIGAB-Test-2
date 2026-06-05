@@ -1,13 +1,5 @@
 import { IconMail, IconMapPin, IconBrandLinkedin, IconLock } from '@tabler/icons-react'
-
-const NAV_LINKS = [
-  { label: 'Inicio',       href: '#hero'       },
-  { label: 'Contexto',     href: '#contexto'   },
-  { label: 'Plataforma',   href: '#plataforma' },
-  { label: 'Planes',       href: '#planes'     },
-  { label: 'Proyección',   href: '#proyeccion' },
-  { label: 'Hoja de ruta', href: '#hitos'      },
-]
+import { NAV_LINKS } from '../data/navLinks'
 
 interface Props {
   onLoginClick: () => void
@@ -26,7 +18,7 @@ export default function Footer({ onLoginClick }: Props) {
               SIGAH
             </span>
             <p className="font-data font-normal text-sm text-white/65 leading-relaxed mb-4">
-              Sistema Integral de Activos Hospitalarios. Plataforma SaaS B2B para la gestión inteligente de equipos biomédicos en instituciones de salud mexicanas.
+              Sistema Integral de Gestión de Activos Biomédicos. Plataforma SaaS B2B para la gestión inteligente de equipos biomédicos en instituciones de salud mexicanas.
             </p>
             <p className="font-data font-normal text-xs text-white/40">
               SIGAH, S. de R.L. de C.V.

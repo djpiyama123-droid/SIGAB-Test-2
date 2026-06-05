@@ -1,109 +1,199 @@
-import { useEffect, useState } from 'react'
-import { IconKey, IconCircleCheck, IconCircleX, IconRefresh } from '@tabler/icons-react'
-import { useAuth } from '../../contexts/AuthContext'
+import {
+  IconCoin, IconTrendingUp, IconBolt, IconArrowDownRight, IconInfoCircle, IconStar,
+} from '@tabler/icons-react'
+import {
+  periodoMayo2026, totalTokens, totalCostoUsd, totalMensajes,
+  PLAN_SUSCRIPCION, TARIFARIO, comparativaPlataformas, type ModelUsage,
+} from '../../data/tokenCostReport'
 
-const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8000'
+const fmtUsd = (n: number) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const fmtTok = (n: number) => n >= 1_000_000 ? (n / 1_000_000).toFixed(1) + 'M' : n >= 1000 ? (n / 1000).toFixed(0) + 'K' : String(n)
 
-interface TokenRecord {
-  id: string
-  label: string
-  created: string
-  last_used: string
-  calls: number
-  active: boolean
+const MODEL_COLOR: Record<ModelUsage['modelo'], string> = {
+  Opus:   'text-sigah-blue',
+  Sonnet: 'text-esmeralda',
+  Haiku:  'text-ambar',
 }
-
-interface TokenData {
-  tokens: TokenRecord[]
-  monthly_spend_usd: number
-  tokens_used_this_month: number
+const MODEL_BAR: Record<ModelUsage['modelo'], string> = {
+  Opus:   'bg-sigah-blue',
+  Sonnet: 'bg-esmeralda',
+  Haiku:  'bg-ambar',
 }
 
 export default function TokensPage() {
-  const { token } = useAuth()
-  const [data, setData] = useState<TokenData | null>(null)
+  const p = periodoMayo2026
+  const tok = totalTokens(p)
+  const costo = totalCostoUsd(p)
+  const msgs = totalMensajes(p)
+  const totalTok = tok.input + tok.output + tok.cacheWrite + tok.cacheRead
 
-  useEffect(() => {
-    fetch(`${API_URL}/api/tokens`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => r.json())
-      .then(setData)
-      .catch(() => null)
-  }, [token])
+  const ahorro = costo - PLAN_SUSCRIPCION.costoMensualUsd
+  const factor = costo / PLAN_SUSCRIPCION.costoMensualUsd
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-5xl">
       <div>
-        <h1 className="font-sans font-medium text-xl text-sigah-blue-dark">Tokens API</h1>
+        <h1 className="font-sans font-medium text-xl text-sigah-blue-dark">Costo de tokens — Operación IA</h1>
         <p className="font-data font-normal text-sm text-slate-500 mt-0.5">
-          Gestión de tokens Anthropic Claude — SIGAH AI integrations
+          Consumo de Claude Code en el entorno SIGAH/SIGAB · <span className="font-medium text-slate-600">{p.periodo}</span> (30 días)
         </p>
       </div>
 
-      {/* Consumo mensual */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl card-border p-5">
-          <p className="font-data font-normal text-xs text-slate-400 uppercase tracking-wider">Gasto mensual</p>
-          <p className="font-sans font-medium text-3xl text-sigah-blue-dark mt-1">
-            ${data?.monthly_spend_usd.toFixed(2) ?? '—'} <span className="text-sm text-slate-400 font-normal">USD</span>
-          </p>
+      {/* Tarjetas resumen */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-sigah-blue-dark rounded-xl p-5">
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-data font-normal text-xs text-white/60 uppercase tracking-wider">Costo API-equivalente</p>
+            <IconCoin size={18} className="text-white/70" />
+          </div>
+          <p className="font-sans font-medium text-3xl text-white">{fmtUsd(costo)}</p>
+          <p className="font-data font-normal text-xs text-white/50 mt-1">si se facturara por token vía API</p>
         </div>
+
         <div className="bg-white rounded-xl card-border p-5">
-          <p className="font-data font-normal text-xs text-slate-400 uppercase tracking-wider">Tokens usados este mes</p>
-          <p className="font-sans font-medium text-3xl text-slate-800 mt-1">
-            {data ? (data.tokens_used_this_month / 1_000_000).toFixed(2) : '—'} <span className="text-sm text-slate-400 font-normal">M tokens</span>
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-data font-normal text-xs text-slate-400 uppercase tracking-wider">Tokens procesados</p>
+            <IconBolt size={18} className="text-ambar" />
+          </div>
+          <p className="font-sans font-medium text-3xl text-slate-800">{(totalTok / 1_000_000).toFixed(0)}<span className="text-base text-slate-400 font-normal"> M</span></p>
+          <p className="font-data font-normal text-xs text-slate-400 mt-1">{msgs.toLocaleString()} mensajes de IA</p>
+        </div>
+
+        <div className="bg-green-50 rounded-xl border border-green-100 p-5">
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-data font-normal text-xs text-esmeralda uppercase tracking-wider">Ahorro vs API</p>
+            <IconArrowDownRight size={18} className="text-esmeralda" />
+          </div>
+          <p className="font-sans font-medium text-3xl text-esmeralda">{fmtUsd(ahorro)}</p>
+          <p className="font-data font-normal text-xs text-slate-500 mt-1">
+            plan {PLAN_SUSCRIPCION.nombre} {fmtUsd(PLAN_SUSCRIPCION.costoMensualUsd)}/mes → <span className="font-medium">{factor.toFixed(0)}× valor</span>
           </p>
         </div>
       </div>
 
-      {/* Lista de tokens */}
+      {/* Desglose por modelo */}
       <div className="bg-white rounded-xl card-border overflow-hidden">
-        <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-          <h2 className="font-sans font-medium text-sm text-slate-700">API Keys activas</h2>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg card-border text-xs font-data text-slate-500 hover:bg-bg-alt transition-colors">
-            <IconRefresh size={13} /> Sincronizar
-          </button>
+        <div className="px-5 py-4 border-b border-border">
+          <h2 className="font-sans font-medium text-sm text-slate-700">Desglose por modelo</h2>
         </div>
         <div className="divide-y divide-border">
-          {data?.tokens.map(tk => (
-            <div key={tk.id} className="flex items-center gap-4 px-5 py-4">
-              <div className={`p-2 rounded-lg ${tk.active ? 'bg-green-50' : 'bg-slate-50'}`}>
-                <IconKey size={16} className={tk.active ? 'text-esmeralda' : 'text-slate-400'} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-data font-normal text-sm text-slate-700">{tk.label}</p>
-                  {tk.active
-                    ? <IconCircleCheck size={13} className="text-esmeralda flex-shrink-0" />
-                    : <IconCircleX size={13} className="text-slate-400 flex-shrink-0" />
-                  }
+          {p.modelos.map(m => {
+            const mTotal = m.input + m.output + m.cacheWrite + m.cacheRead
+            const pct = (m.costoUsd / costo) * 100
+            return (
+              <div key={m.modelo} className="px-5 py-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`font-sans font-medium text-sm ${MODEL_COLOR[m.modelo]}`}>Claude {m.modelo}</span>
+                    <span className="font-data font-normal text-xs text-slate-400">· {m.mensajes.toLocaleString()} msgs · {fmtTok(mTotal)} tokens</span>
+                  </div>
+                  <span className="font-sans font-medium text-sm text-slate-800">{fmtUsd(m.costoUsd)}</span>
                 </div>
-                <p className="font-mono text-xs text-slate-400 mt-0.5">{tk.id.slice(0, 10)}••••••</p>
+                <div className="w-full h-2 bg-bg-alt rounded-full overflow-hidden mb-2">
+                  <div className={`h-full rounded-full ${MODEL_BAR[m.modelo]}`} style={{ width: `${pct}%` }} />
+                </div>
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  {[
+                    ['Input', m.input], ['Output', m.output],
+                    ['Cache write', m.cacheWrite], ['Cache read', m.cacheRead],
+                  ].map(([label, val]) => (
+                    <div key={label as string}>
+                      <p className="font-data font-normal text-[10px] text-slate-400 uppercase tracking-wider">{label}</p>
+                      <p className="font-data font-normal text-xs text-slate-600">{fmtTok(val as number)}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="text-right flex-shrink-0 space-y-0.5">
-                <p className="font-data font-normal text-sm text-slate-700">{tk.calls.toLocaleString()} llamadas</p>
-                <p className="font-data font-normal text-xs text-slate-400">Último uso: {tk.last_used}</p>
-              </div>
-              <span className={`px-2 py-0.5 rounded text-[10px] font-data font-normal ${
-                tk.active ? 'bg-green-50 text-esmeralda' : 'bg-slate-100 text-slate-500'
-              }`}>
-                {tk.active ? 'Activo' : 'Inactivo'}
-              </span>
-            </div>
-          ))}
-          {!data && (
-            <div className="px-5 py-10 flex justify-center">
-              <div className="w-5 h-5 border-2 border-sigah-blue border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
+            )
+          })}
         </div>
       </div>
 
-      <p className="font-data font-normal text-xs text-slate-400">
-        Los tokens se generan en{' '}
-        <span className="font-mono">console.anthropic.com</span> y se agregan aquí para monitoreo centralizado.
-      </p>
+      {/* Tarifario de referencia */}
+      <div className="bg-white rounded-xl card-border overflow-hidden">
+        <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+          <IconTrendingUp size={15} className="text-sigah-blue" />
+          <h2 className="font-sans font-medium text-sm text-slate-700">Tarifario API de referencia (USD / millón de tokens)</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[480px]">
+            <thead>
+              <tr className="border-b border-border bg-bg-principal">
+                {['Modelo', 'Input', 'Output', 'Cache write', 'Cache read'].map(h => (
+                  <th key={h} className="px-4 py-2.5 text-left font-data font-normal text-xs text-slate-500 uppercase tracking-wider">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {(Object.keys(TARIFARIO) as Array<keyof typeof TARIFARIO>).map(modelo => (
+                <tr key={modelo}>
+                  <td className={`px-4 py-2.5 font-data font-medium ${MODEL_COLOR[modelo]}`}>{modelo}</td>
+                  <td className="px-4 py-2.5 font-data text-slate-600">${TARIFARIO[modelo].input.toFixed(2)}</td>
+                  <td className="px-4 py-2.5 font-data text-slate-600">${TARIFARIO[modelo].output.toFixed(2)}</td>
+                  <td className="px-4 py-2.5 font-data text-slate-600">${TARIFARIO[modelo].cacheWrite.toFixed(2)}</td>
+                  <td className="px-4 py-2.5 font-data text-slate-600">${TARIFARIO[modelo].cacheRead.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Comparativa de plataformas — mismo workload en cada IA */}
+      <div className="bg-white rounded-xl card-border overflow-hidden">
+        <div className="px-5 py-4 border-b border-border">
+          <h2 className="font-sans font-medium text-sm text-slate-700">Comparativa de plataformas — tu workload en cada IA</h2>
+          <p className="font-data font-normal text-xs text-slate-400 mt-0.5">
+            Costo mensual equivalente si corrieras los mismos {(totalTok / 1_000_000).toFixed(0)}M tokens en cada plataforma
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[520px]">
+            <thead>
+              <tr className="border-b border-border bg-bg-principal">
+                {['Plataforma', 'Modelo', 'Costo/mes', 'Nota'].map(h => (
+                  <th key={h} className="px-4 py-2.5 text-left font-data font-normal text-xs text-slate-500 uppercase tracking-wider">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {comparativaPlataformas.map(pl => (
+                <tr key={pl.plataforma + pl.modelo} className={pl.recomendado ? 'bg-sigah-blue/5' : ''}>
+                  <td className="px-4 py-2.5 font-data font-medium text-slate-700 whitespace-nowrap">
+                    <span className="flex items-center gap-1.5">
+                      {pl.recomendado && <IconStar size={13} className="text-sigah-blue flex-shrink-0" />}
+                      {pl.plataforma}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5 font-data text-slate-500 whitespace-nowrap">{pl.modelo}</td>
+                  <td className="px-4 py-2.5 font-sans font-medium text-slate-800 whitespace-nowrap">${pl.costoMes.toLocaleString()}</td>
+                  <td className="px-4 py-2.5 font-data text-xs text-slate-400">{pl.nota}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="px-5 py-3 border-t border-border bg-bg-principal">
+          <p className="font-data font-normal text-xs text-slate-500 leading-relaxed">
+            <span className="font-medium text-sigah-blue">Recomendación:</span> esquema híbrido —
+            <span className="font-medium"> runtime de SIGAB en IA local</span> (Ollama, nunca sale dato del hospital) +
+            <span className="font-medium"> desarrollo en Kimi K2.6</span> (Allegro $99 / Vivace $199, ~5× más barato que Opus, con Agent Swarm).
+            Conservar Claude Opus solo para arquitectura crítica.
+          </p>
+        </div>
+      </div>
+
+      {/* Metodología */}
+      <div className="bg-bg-alt rounded-xl border border-border p-4 flex gap-3">
+        <IconInfoCircle size={16} className="text-sigah-blue flex-shrink-0 mt-0.5" />
+        <p className="font-data font-normal text-xs text-slate-500 leading-relaxed">
+          Cálculo a partir de los registros de uso de Claude Code en el entorno SIGAH/SIGAB ({p.desde} → {p.hasta}).
+          Se suman tokens de entrada, salida y caché por modelo y se aplica el tarifario público de la API de Anthropic.
+          El <span className="font-medium text-slate-600">costo API-equivalente</span> es el valor que se pagaría facturando por token;
+          con el plan {PLAN_SUSCRIPCION.nombre} (suscripción plana) el costo real fue {fmtUsd(PLAN_SUSCRIPCION.costoMensualUsd)}.
+          El uso intensivo de <span className="font-medium">caché de prompts</span> reduce drásticamente el costo de los {fmtTok(tok.cacheRead)} tokens de cache-read.
+        </p>
+      </div>
     </div>
   )
 }

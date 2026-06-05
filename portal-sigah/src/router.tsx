@@ -17,6 +17,7 @@ const TerminalPage   = lazy(() => import('./pages/panel/TerminalPage'))
 const AgentesPage    = lazy(() => import('./pages/panel/AgentesPage'))
 const TokensPage     = lazy(() => import('./pages/panel/TokensPage'))
 const ObsidianPage   = lazy(() => import('./pages/panel/ObsidianPage'))
+const QRScanPage     = lazy(() => import('./pages/panel/QRScanPage'))
 
 const Loading = () => (
   <div className="flex items-center justify-center h-64">
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
         { path: 'tokens',             element: wrap(<TokensPage />) },
         { path: 'cerebro',            element: wrap(<ObsidianPage />) },
         { path: 'cerebro/:equipo',    element: wrap(<ObsidianPage />) },
+        { path: 'qr',                 element: wrap(<QRScanPage />) },
       ],
     }],
   },

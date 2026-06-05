@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { IconX, IconMail, IconLock, IconLoader, IconAlertCircle, IconBuildingHospital } from '@tabler/icons-react'
+import { useAuth } from '../contexts/AuthContext'
 
 interface Props {
   onClose: () => void
 }
 
-const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8000'
-const APP_URL = (import.meta.env.VITE_APP_URL as string | undefined) ?? ''
+const ADMIN_ROLES = ['superadmin', 'admin']
 
 export default function LoginModal({ onClose }: Props) {
-  const [username, setUsername]   = useState('')
+  const { login } = useAuth()
+  const navigate = useNavigate()
+  const [matricula, setMatricula] = useState('')
   const [password, setPassword]   = useState('')
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState('')
@@ -26,31 +29,13 @@ export default function LoginModal({ onClose }: Props) {
     e.preventDefault()
     setError('')
     setLoading(true)
-
     try {
-      const body = new URLSearchParams()
-      body.append('username', username.trim())
-      body.append('password', password)
-
-      const res = await fetch(`${API_URL}/auth/token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body.toString(),
-      })
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError((data as { detail?: string }).detail ?? 'Credenciales incorrectas. Verifica tu usuario y contraseña.')
-        return
-      }
-
-      const data = (await res.json()) as { access_token: string; token_type: string }
-      localStorage.setItem('sigah_access_token', data.access_token)
-      localStorage.setItem('sigah_token_type', data.token_type)
-
-      window.location.href = APP_URL ? `${APP_URL}/dashboard` : '/dashboard'
-    } catch {
-      setError('No se pudo conectar con el servidor SIGAH. Verifica tu conexión o contacta soporte.')
+      const u = await login(matricula.trim(), password)
+      // superadmin/admin → panel (misma SPA); resto → app hospitalaria /app/.
+      if (ADMIN_ROLES.includes(u.rol)) navigate('/panel/hub')
+      else window.location.assign('/app/')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Credenciales incorrectas. Verifica tu matrícula y contraseña.')
     } finally {
       setLoading(false)
     }
@@ -103,16 +88,16 @@ export default function LoginModal({ onClose }: Props) {
           {/* Username */}
           <div>
             <label className="font-data font-normal text-xs text-slate-500 uppercase tracking-wider block mb-1.5">
-              Usuario / Correo institucional
+              Matrícula
             </label>
             <div className="relative">
               <IconMail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input
                 ref={inputRef}
                 type="text"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                placeholder="usuario@hospital.mx"
+                value={matricula}
+                onChange={e => setMatricula(e.target.value)}
+                placeholder="Matrícula IMSS"
                 required
                 autoComplete="username"
                 className="w-full pl-10 pr-4 py-2.5 rounded-lg card-border font-data font-normal text-sm text-slate-800 placeholder-slate-400 bg-white outline-none focus:border-sigah-blue transition-colors"
@@ -150,7 +135,7 @@ export default function LoginModal({ onClose }: Props) {
           {/* Submit */}
           <button
             type="submit"
-            disabled={loading || !username || !password}
+            disabled={loading || !matricula || !password}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-sigah-blue text-white font-sans font-medium text-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           >
             {loading ? (

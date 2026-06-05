@@ -72,13 +72,20 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
           {/* Header */}
           <div className="p-6 border-b border-[var(--content-border)] flex justify-between items-start">
             <div className="flex gap-4">
-              {equipo.imagen_url && (
-                <img
-                  src={equipo.imagen_url}
-                  alt={equipo.nombre}
-                  className="w-16 h-16 rounded-lg object-cover bg-[var(--content-bg)] flex-shrink-0"
-                />
-              )}
+              <div className="relative w-16 h-16 rounded-lg bg-[var(--content-bg)] flex-shrink-0 flex items-center justify-center overflow-hidden border border-[var(--content-border)]">
+                {/* Placeholder de fondo (visible si no hay imagen o si falla la carga) */}
+                <svg className="w-7 h-7 text-[var(--content-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+                {equipo.imagen_url && (
+                  <img
+                    src={equipo.imagen_url}
+                    alt={equipo.nombre}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                )}
+              </div>
               <div>
                 <h2 className="text-xl font-bold text-[var(--content-text)]">{equipo.nombre}</h2>
                 <p className="text-[var(--content-muted)] text-sm mt-1">

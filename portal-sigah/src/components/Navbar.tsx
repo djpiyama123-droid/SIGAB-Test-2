@@ -1,18 +1,10 @@
 import { useState, useEffect } from 'react'
 import { IconMenu2, IconX, IconLock } from '@tabler/icons-react'
+import { NAV_LINKS } from '../data/navLinks'
 
 interface Props {
   onLoginClick: () => void
 }
-
-const NAV_LINKS = [
-  { label: 'Inicio',       href: '#hero'       },
-  { label: 'Contexto',     href: '#contexto'   },
-  { label: 'Plataforma',   href: '#plataforma' },
-  { label: 'Planes',       href: '#planes'     },
-  { label: 'Proyección',   href: '#proyeccion' },
-  { label: 'Hoja de ruta', href: '#hitos'      },
-]
 
 export default function Navbar({ onLoginClick }: Props) {
   const [scrolled, setScrolled]   = useState(false)

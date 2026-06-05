@@ -1,0 +1,163 @@
+--- /mnt/c/Users/djpiy/Desktop/Bioingeneria/SIGAB/sigab-backend/tests/conftest.py	2026-05-30 20:28:00.015171200 -0700
++++ /home/gustavo/.claude/jobs/03e72699/tmp/isorun/tests/conftest.py	2026-06-01 17:51:14.449514099 -0700
+@@ -155,7 +155,7 @@
+ # Usuarios + tokens JWT
+ # ─────────────────────────────────────────────────────────────────────────────
+ 
+-async def _crear_usuario(session: AsyncSession, *, rol: str, matricula: str) -> Usuario:
++async def _crear_usuario(session: AsyncSession, *, rol: str, matricula: str, tenant_id: int = 1) -> Usuario:
+     user = Usuario(
+         nombre=f"Test {rol}",
+         matricula=matricula,
+@@ -164,6 +164,7 @@
+         password_hash="not-used-in-tests",
+         must_change_password=False,
+         activo=True,
++        tenant_id=tenant_id,
+     )
+     session.add(user)
+     await session.flush()
+@@ -175,18 +176,42 @@
+         "id": user.id,
+         "rol": user.rol,
+         "matricula": user.matricula,
++        "tenant_id": user.tenant_id,
+     })
+     return {"Authorization": f"Bearer {token}"}
+ 
+ 
++# ─────────────────────────────────────────────────────────────────────────────
++# Tenant (Hospital) — requerido por el FK NOT NULL Equipo.tenant_id → hospitales.id
++# ─────────────────────────────────────────────────────────────────────────────
++
++@pytest_asyncio.fixture
++async def tenant(session: AsyncSession) -> Hospital:
++    """Crea un Hospital (tenant) para el test. Equipos y usuarios del test se
++    asocian a este tenant para satisfacer el FK y el aislamiento multi-tenant."""
++    hosp = Hospital(
++        slug=f"hgr-test-{uuid.uuid4().hex[:8]}",
++        razon_social="Hospital de Pruebas SIGAH",
++        nombre_corto="HGR Test",
++    )
++    session.add(hosp)
++    await session.flush()
++    return hosp
++
++
++@pytest_asyncio.fixture
++async def usuario_biomedico(session: AsyncSession, tenant: Hospital) -> Usuario:
++    return await _crear_usuario(session, rol="biomedico", matricula=f"BIO{uuid.uuid4().hex[:6]}", tenant_id=tenant.id)
++
++
+ @pytest_asyncio.fixture
+-async def usuario_biomedico(session: AsyncSession) -> Usuario:
+-    return await _crear_usuario(session, rol="biomedico", matricula=f"BIO{uuid.uuid4().hex[:6]}")
++async def usuario_jefe(session: AsyncSession, tenant: Hospital) -> Usuario:
++    return await _crear_usuario(session, rol="jefe_biomedica", matricula=f"JEFE{uuid.uuid4().hex[:6]}", tenant_id=tenant.id)
+ 
+ 
+ @pytest_asyncio.fixture
+-async def usuario_jefe(session: AsyncSession) -> Usuario:
+-    return await _crear_usuario(session, rol="jefe_biomedica", matricula=f"JEFE{uuid.uuid4().hex[:6]}")
++async def usuario_admin(session: AsyncSession, tenant: Hospital) -> Usuario:
++    return await _crear_usuario(session, rol="admin", matricula=f"ADM{uuid.uuid4().hex[:6]}", tenant_id=tenant.id)
+ 
+ 
+ @pytest_asyncio.fixture
+@@ -199,6 +224,11 @@
+     return _bearer(usuario_jefe)
+ 
+ 
++@pytest_asyncio.fixture
++async def auth_headers_admin(usuario_admin: Usuario) -> dict:
++    return _bearer(usuario_admin)
++
++
+ # ─────────────────────────────────────────────────────────────────────────────
+ # Helpers para construir equipos
+ # ─────────────────────────────────────────────────────────────────────────────
+@@ -216,6 +246,7 @@
+     piso: str | None = "Planta baja",
+     estado: str = "operativo",
+     qr_token: str | None = None,
++    tenant_id: int = 1,
+ ) -> Equipo:
+     eq = Equipo(
+         serie=serie or _serie_unica(),
+@@ -228,6 +259,7 @@
+         estado=estado,
+         criticidad="media",
+         qr_token=qr_token or uuid.uuid4().hex[:16],
++        tenant_id=tenant_id,
+     )
+     session.add(eq)
+     await session.flush()
+@@ -235,20 +267,33 @@
+ 
+ 
+ @pytest_asyncio.fixture
+-async def equipo_simple(session: AsyncSession) -> Equipo:
++async def equipo_simple(session: AsyncSession, tenant: Hospital) -> Equipo:
+     """Equipo SIN relaciones bloqueantes — válido para DELETE limpio y PUT."""
+-    return await _nuevo_equipo(session)
++    return await _nuevo_equipo(session, tenant_id=tenant.id)
+ 
+ 
+ @pytest_asyncio.fixture
+-async def equipo_existente(session: AsyncSession) -> Equipo:
++async def equipo_existente(session: AsyncSession, tenant: Hospital) -> Equipo:
+     """Alias semántico para los tests que sólo necesitan un equipo cualquiera con qr_token."""
+-    return await _nuevo_equipo(session)
++    return await _nuevo_equipo(session, tenant_id=tenant.id)
++
++
++@pytest_asyncio.fixture
++async def equipo_existente_con_ubicacion(session: AsyncSession, tenant: Hospital) -> Equipo:
++    """Equipo con ubicación/área/piso definidos — para tests de preservación de ubicación."""
++    return await _nuevo_equipo(
++        session,
++        serie=_serie_unica("UBI"),
++        ubicacion="Quirófano 3 · Segundo",
++        area="Quirófano 3",
++        piso="Segundo",
++        tenant_id=tenant.id,
++    )
+ 
+ 
+ @pytest_asyncio.fixture
+-async def equipo_con_trazabilidad(session: AsyncSession, usuario_jefe: Usuario) -> Equipo:
+-    eq = await _nuevo_equipo(session, serie=_serie_unica("TRZ"))
++async def equipo_con_trazabilidad(session: AsyncSession, tenant: Hospital, usuario_jefe: Usuario) -> Equipo:
++    eq = await _nuevo_equipo(session, serie=_serie_unica("TRZ"), tenant_id=tenant.id)
+     session.add(Trazabilidad(
+         equipo_id=eq.id,
+         piso_origen="Planta baja",
+@@ -263,8 +308,8 @@
+ 
+ 
+ @pytest_asyncio.fixture
+-async def equipo_con_preventivo_activo(session: AsyncSession) -> Equipo:
+-    eq = await _nuevo_equipo(session, serie=_serie_unica("PRV"))
++async def equipo_con_preventivo_activo(session: AsyncSession, tenant: Hospital) -> Equipo:
++    eq = await _nuevo_equipo(session, serie=_serie_unica("PRV"), tenant_id=tenant.id)
+     session.add(PreventivoProgramado(
+         equipo_id=eq.id,
+         tipo_preventivo="trimestral",
+@@ -278,14 +323,14 @@
+ 
+ 
+ @pytest_asyncio.fixture
+-async def equipo_serie_duplicada_target(session: AsyncSession) -> Tuple[Equipo, str]:
++async def equipo_serie_duplicada_target(session: AsyncSession, tenant: Hospital) -> Tuple[Equipo, str]:
+     """
+     Devuelve (target, serie_existente) donde:
+       - target: equipo cuyo serie podemos intentar cambiar
+       - serie_existente: serie de OTRO equipo en BD (PUT a target con esta serie debe fallar UNIQUE)
+     """
+-    target = await _nuevo_equipo(session, serie=_serie_unica("TGT"))
+-    otro = await _nuevo_equipo(session, serie=_serie_unica("DUP"))
++    target = await _nuevo_equipo(session, serie=_serie_unica("TGT"), tenant_id=tenant.id)
++    otro = await _nuevo_equipo(session, serie=_serie_unica("DUP"), tenant_id=tenant.id)
+     return target, otro.serie
+ 
+ 
