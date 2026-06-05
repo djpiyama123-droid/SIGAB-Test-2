@@ -28,8 +28,12 @@ export default function Hero({ onLoginClick }: Props) {
             <h1 className="font-sans font-medium text-4xl lg:text-5xl text-slate-900 leading-tight mb-6">
               Trazabilidad e inteligencia operativa para activos biomédicos hospitalarios
             </h1>
-            <p className="font-data font-normal text-lg text-slate-600 mb-10 leading-relaxed">
+            <p className="font-data font-normal text-lg text-slate-600 mb-6 leading-relaxed">
               SIGAH digitaliza el inventario, mantenimiento y control de equipos clínicos en hospitales de alta complejidad. Sistema Industria 4.0 validado en entornos reales del IMSS.
+            </p>
+            <p className="font-data font-normal text-sm text-slate-400 mb-10 border-l-2 border-sigah-blue pl-3">
+              <span className="text-sigah-blue font-medium">SIGAH</span> es el ecosistema y la empresa.{' '}
+              <span className="text-sigah-blue font-medium">SIGAB</span> es la aplicación con la que el hospital trabaja todos los días.
             </p>
 
             {/* CTA buttons — modernized */}

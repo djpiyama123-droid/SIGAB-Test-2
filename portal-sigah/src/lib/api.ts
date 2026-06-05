@@ -19,7 +19,9 @@ export async function apiFetch<T>(path: string, token: string | null, init?: Req
     },
   })
   if (res.status === 401) {
-    localStorage.removeItem('sigah_access_token')
+    localStorage.removeItem('token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user')
     if (!location.pathname.startsWith('/login')) location.assign('/login')
     throw new ApiError(401, 'Sesión expirada')
   }

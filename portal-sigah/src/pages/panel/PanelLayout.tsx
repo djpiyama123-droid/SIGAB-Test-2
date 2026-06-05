@@ -77,7 +77,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     to: '/panel/tokens',
-    label: 'Tokens API',
+    label: 'Costo de tokens IA',
     icon: <IconKey size={18} />,
     adminOnly: true,
   },
@@ -193,12 +193,14 @@ export default function PanelLayout() {
       <div className="px-3 py-4 border-t border-border">
         <div className="flex items-center gap-3 px-2 py-2">
           <div className="w-8 h-8 bg-sigah-blue-dark rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-sans font-medium text-xs">{user?.avatar}</span>
+            <span className="text-white font-sans font-medium text-xs">
+              {(user?.nombre ?? '?').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()}
+            </span>
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <p className="font-data font-normal text-xs text-slate-700 truncate">{user?.nombre}</p>
-              <p className="font-data font-normal text-[10px] text-slate-400 uppercase tracking-wider">{user?.role}</p>
+              <p className="font-data font-normal text-[10px] text-slate-400 uppercase tracking-wider">{user?.rol}</p>
             </div>
           )}
         </div>
@@ -266,7 +268,7 @@ export default function PanelLayout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <Outlet />
         </main>
       </div>

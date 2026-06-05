@@ -37,7 +37,7 @@ export default function InstitutionalContext({ inventory }: Props) {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-16 items-start">
-          <div className="space-y-8">
+          <div className="space-y-8 min-w-0">
             {ORIGIN_ITEMS.map(item => (
               <div key={item.title} className="flex gap-4">
                 <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-[8px] bg-bg-alt card-border">
@@ -55,7 +55,7 @@ export default function InstitutionalContext({ inventory }: Props) {
             ))}
           </div>
 
-          <div>
+          <div className="min-w-0 w-full">
             <h3 className="font-sans font-medium text-sm text-slate-600 mb-4">
               Inventario piloto — HGR No. 1 IMSS Tijuana
             </h3>

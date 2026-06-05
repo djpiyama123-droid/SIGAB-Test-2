@@ -54,6 +54,17 @@ from models.usuario import Usuario  # noqa: E402
 from models.equipo import Equipo  # noqa: E402
 from models.trazabilidad import Trazabilidad  # noqa: E402
 from models.preventivo import PreventivoProgramado  # noqa: E402
+# Imports adicionales para que SQLModel.metadata conozca TODAS las tablas antes de create_all.
+# Sin estos, el sort de dependencias FK falla con NoReferencedTableError.
+from models.ubicacion import Ubicacion  # noqa: E402, F401
+from models.hospital import Hospital  # noqa: E402, F401
+from models.orden_servicio import OrdenServicio  # noqa: E402, F401
+from models.mapa import ZonasMapa  # noqa: E402, F401
+from models.alerta import Alerta  # noqa: E402, F401
+from models.reserva import Reserva  # noqa: E402, F401
+from models.soporte import AuditLog, LogActividad  # noqa: E402, F401
+from models.orden_casillas import OrdenCasillas  # noqa: E402, F401
+from models.modulos_extra import Refaccion, MetrologiaCalibracion, Capacitacion, PokaYokeLog  # noqa: E402, F401
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -66,21 +77,25 @@ TEST_DATABASE_URL = os.getenv(
 )
 
 
-@pytest.fixture(scope="session")
-def event_loop():
-    """Loop por sesión para que pytest-asyncio reuse conexiones."""
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+@pytest.fixture(scope="session", autouse=True)
+def create_test_schema():
+    """Crea el schema en sigah_test una sola vez, en un loop propio (sync fixture)."""
+    import asyncio as _asyncio
+    from sqlalchemy.ext.asyncio import create_async_engine as _cae
+
+    async def _create():
+        _engine = _cae(TEST_DATABASE_URL, echo=False, future=True)
+        async with _engine.begin() as conn:
+            await conn.run_sync(SQLModel.metadata.create_all)
+        await _engine.dispose()
+
+    _asyncio.run(_create())
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture
 async def test_engine() -> AsyncIterator[AsyncEngine]:
+    """Engine fresco por test — cada test tiene su propio loop y conexión asyncmy."""
     engine = create_async_engine(TEST_DATABASE_URL, echo=False, future=True, pool_pre_ping=True)
-    # Garantizar schema. En CI conviene apuntar a una BD vacía y dejar create_all aquí;
-    # en VPS donde sigah_test ya existe esto es no-op.
-    async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
     yield engine
     await engine.dispose()
 

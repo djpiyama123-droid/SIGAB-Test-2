@@ -3,20 +3,28 @@ import { useNavigate } from 'react-router-dom'
 import { IconMail, IconLock, IconLoader, IconAlertCircle, IconBuildingHospital } from '@tabler/icons-react'
 import { useAuth } from '../contexts/AuthContext'
 
+const ADMIN_ROLES = ['superadmin', 'admin']
+
 export default function LoginPage() {
   const { login, user, loading } = useAuth()
   const navigate = useNavigate()
-  const [username, setUsername] = useState('')
+  const [matricula, setMatricula] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Redirección por rol. superadmin/admin → panel (misma SPA).
+  // Resto → app hospitalaria en /app/ (otra SPA, requiere recarga completa).
+  const redirectByRole = (rol: string) => {
+    if (ADMIN_ROLES.includes(rol)) navigate('/panel/hub', { replace: true })
+    else window.location.assign('/app/')
+  }
+
   useEffect(() => {
-    if (!loading && user) {
-      navigate(user.role === 'admin' ? '/panel/dashboard' : '/panel/sigab', { replace: true })
-    }
-  }, [user, loading, navigate])
+    if (!loading && user) redirectByRole(user.rol)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading])
 
   useEffect(() => { inputRef.current?.focus() }, [])
 
@@ -25,7 +33,8 @@ export default function LoginPage() {
     setError('')
     setSubmitting(true)
     try {
-      await login(username.trim(), password)
+      const u = await login(matricula.trim(), password)
+      redirectByRole(u.rol)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error de autenticación')
     } finally {
@@ -80,16 +89,16 @@ export default function LoginPage() {
 
             <div>
               <label className="font-data font-normal text-xs text-slate-500 uppercase tracking-wider block mb-1.5">
-                Usuario
+                Matrícula
               </label>
               <div className="relative">
                 <IconMail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 <input
                   ref={inputRef}
                   type="text"
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
-                  placeholder="gustavo / carlos / demo"
+                  value={matricula}
+                  onChange={e => setMatricula(e.target.value)}
+                  placeholder="Matrícula IMSS"
                   required
                   autoComplete="username"
                   className="w-full pl-10 pr-4 py-2.5 rounded-lg card-border font-data font-normal text-sm text-slate-800 placeholder-slate-400 bg-white outline-none focus:border-sigah-blue transition-colors"
@@ -124,7 +133,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={submitting || !username || !password}
+              disabled={submitting || !matricula || !password}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-sigah-blue text-white font-sans font-medium text-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
             >
               {submitting

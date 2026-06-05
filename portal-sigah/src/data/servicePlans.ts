@@ -3,6 +3,8 @@ export interface ServicePlan {
   name: string
   subtitle: string
   description: string
+  price: string
+  priceNote: string
   highlight: boolean
 }
 
@@ -19,6 +21,8 @@ export const servicePlans: ServicePlan[] = [
     subtitle: 'Modelo híbrido con servidor local',
     description:
       'Servidor físico local (Lenovo ThinkCentre M720q Tiny) como Edge Node. Operación autónoma sin acceso WAN, con sincronización asíncrona hacia el servidor central. Ideal para quirófanos y urgencias.',
+    price: '$20,000 implementación + $4,000 / mes',
+    priceNote: 'MXN · incluye servidor local, soporte SLA y actualizaciones',
     highlight: true,
   },
   {
@@ -27,6 +31,8 @@ export const servicePlans: ServicePlan[] = [
     subtitle: 'Inventariado físico único',
     description:
       'Solución diagnóstica para instituciones con gestión administrativa deficiente. Auditoría física completa, depuración de base de datos y estandarización de activos como línea base para escalar al Plan A.',
+    price: 'Pago único',
+    priceNote: 'MXN · cotización según número de activos a inventariar',
     highlight: false,
   },
 ]

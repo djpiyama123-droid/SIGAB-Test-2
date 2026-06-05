@@ -13,7 +13,9 @@ export default function ProtectedRoute({ adminOnly = false }: { adminOnly?: bool
   }
 
   if (!user) return <Navigate to="/login" replace />
-  if (adminOnly && user.role !== 'admin') return <Navigate to="/app" replace />
+  if (adminOnly && !['superadmin', 'admin'].includes(user.rol)) {
+    return <Navigate to="/login" replace />
+  }
 
   return <Outlet />
 }
