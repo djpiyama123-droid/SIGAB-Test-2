@@ -13,4 +13,7 @@ export default defineConfig({
       '/api':  'http://localhost:8000',
     },
   },
+  preview: {
+    allowedHosts: ['.trycloudflare.com', '.sslip.io'],
+  },
 })
