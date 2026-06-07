@@ -25,6 +25,7 @@ import sqlalchemy as sa
 from config import get_db, UPLOAD_DIR
 from auth.dependencies import get_current_user, require_action
 from auth.tenancy import get_current_tenant
+from utils.file_validation import validate_upload
 from services.pdf_service import generar_pdf_orden, generar_pdf_orden_v2_poka_yoke
 from services.cache_service import cache_service
 try:
@@ -282,11 +283,14 @@ async def subir_evidencia(
     if ext not in extensiones_validas:
         raise HTTPException(status_code=400, detail=f"Extensión no permitida: {ext}")
 
+    content = await file.read()
+    validate_upload(content, ext)
+
     filename = f"os_{orden_id}_{secrets.token_hex(6)}.{ext}"
     filepath = os.path.join(UPLOAD_DIR, filename)
 
     with open(filepath, "wb") as f:
-        f.write(await file.read())
+        f.write(content)
 
     file_url = f"/static/uploads/{filename}"
 

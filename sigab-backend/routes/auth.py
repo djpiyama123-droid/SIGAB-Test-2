@@ -16,17 +16,22 @@ router = APIRouter()
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from database import get_async_session
-from auth.password import hash_password, verify_password
+from auth.password import hash_password, verify_password, validate_password_strength
 from auth.jwt_handler import create_access_token, create_refresh_token, decode_token
 from auth.dependencies import get_current_user
+from auth.rate_limit import login_rate_limit
 from models.usuario import Usuario
 
 router = APIRouter()
 
 
 @router.post("/login")
-async def login(data: dict, session: AsyncSession = Depends(get_async_session)):
-    """Login con matrícula IMSS + contraseña."""
+async def login(
+    data: dict,
+    session: AsyncSession = Depends(get_async_session),
+    _rl: None = Depends(login_rate_limit),
+):
+    """Login con matrícula IMSS + contraseña (con rate limit por IP)."""
     matricula = (data.get("matricula") or "").strip()
     password = data.get("password") or ""
 
@@ -126,8 +131,10 @@ async def change_password(
     actual = data.get("password_actual") or ""
     nueva = data.get("password_nueva") or ""
 
-    if not nueva or len(nueva) < 6:
-        raise HTTPException(status_code=400, detail="La nueva contraseña debe tener al menos 6 caracteres")
+    try:
+        validate_password_strength(nueva)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     stmt = select(Usuario).where(Usuario.id == user["id"])
     result = await session.execute(stmt)

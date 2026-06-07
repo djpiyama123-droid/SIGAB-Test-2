@@ -39,14 +39,19 @@ sudo apt install -y mysql-server mysql-client
 sudo systemctl start mysql
 sudo systemctl enable mysql
 
+# Recomendado: usa ./setup.sh, que genera credenciales ÚNICAS y aleatorias.
+# Si lo haces manual, define tus propias contraseñas (NO uses valores de ejemplo):
+export DB_ROOT_PASS="$(openssl rand -hex 16)"   # guárdala en un gestor de secretos
+export DB_PASS="$(openssl rand -hex 16)"
+
 # Configurar contraseña de root
-sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'sigah_root_2026';"
+sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_ROOT_PASS}';"
 
 # Crear usuario y base de datos
-sudo mysql -u root -psigah_root_2026 -e "
+sudo mysql -u root -p"${DB_ROOT_PASS}" -e "
 CREATE DATABASE IF NOT EXISTS sigah CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS dummyequipomedicoimss CHARACTER SET utf8mb3;
-CREATE USER IF NOT EXISTS 'sigah_user'@'localhost' IDENTIFIED BY 'sigah_pass_2026';
+CREATE USER IF NOT EXISTS 'sigah_user'@'localhost' IDENTIFIED BY '${DB_PASS}';
 GRANT ALL PRIVILEGES ON sigah.* TO 'sigah_user'@'localhost';
 GRANT ALL PRIVILEGES ON dummyequipomedicoimss.* TO 'sigah_user'@'localhost';
 FLUSH PRIVILEGES;
@@ -59,14 +64,14 @@ FLUSH PRIVILEGES;
 cd ~/SIGAH
 
 # Esquema SIGAH (crea tablas del sistema)
-mysql -u sigah_user -psigah_pass_2026 sigah < database/sigah_schema_fresh.sql
+mysql -u sigah_user -p"${DB_PASS}" sigah < database/sigah_schema_fresh.sql
 
 # Migraciones adicionales (mapa, QR, etc.)
-mysql -u sigah_user -psigah_pass_2026 sigah < database/migrations/004_mapa_interactivo.sql
-mysql -u sigah_user -psigah_pass_2026 sigah < database/migrations/004_seed_hgr1.sql
+mysql -u sigah_user -p"${DB_PASS}" sigah < database/migrations/004_mapa_interactivo.sql
+mysql -u sigah_user -p"${DB_PASS}" sigah < database/migrations/004_seed_hgr1.sql
 
 # BD real del hospital (datos de equipos)
-mysql -u sigah_user -psigah_pass_2026 dummyequipomedicoimss < BaseDeDatosV2_190326.sql
+mysql -u sigah_user -p"${DB_PASS}" dummyequipomedicoimss < BaseDeDatosV2_190326.sql
 
 # Migrar datos reales a SIGAH
 pip3 install pymysql
@@ -115,17 +120,24 @@ pip install fastapi==0.115.0 uvicorn[standard]==0.30.0 aiomysql==0.2.0 \
 Crear archivo `.env` en `~/SIGAH/sigah-backend/`:
 
 ```bash
-cat > ~/SIGAH/sigah-backend/.env << 'EOF'
+# Usa la MISMA contraseña que definiste arriba ($DB_PASS) y un JWT secret aleatorio.
+cat > ~/SIGAH/sigah-backend/.env << EOF
+SIGAH_ENV=development
 SIGAH_DB_HOST=127.0.0.1
 SIGAH_DB_PORT=3306
 SIGAH_DB_USER=sigah_user
-SIGAH_DB_PASS=sigah_pass_2026
+SIGAH_DB_PASS=${DB_PASS}
 SIGAH_DB_NAME=sigah
 SIGAH_SSL_DISABLED=true
-SIGAH_JWT_SECRET=demo-hgr1-2026-secreto-cambiar-en-produccion
+SIGAH_JWT_SECRET=$(python3 -c "import secrets; print(secrets.token_urlsafe(48))")
 SIGAH_PUBLIC_BASE_URL=http://localhost:5173
 EOF
+chmod 600 ~/SIGAH/sigah-backend/.env
 ```
+
+> En **producción** define `SIGAH_ENV=production`. Con ese valor el backend
+> se niega a arrancar si `SIGAH_DB_PASS` o `SIGAH_JWT_SECRET` no están definidos
+> (fail-fast: nunca usa credenciales por defecto).
 
 ### 8. Arrancar el sistema
 

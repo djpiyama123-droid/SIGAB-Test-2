@@ -20,9 +20,20 @@ BACKEND_DIR="$PROJECT_DIR/sigah-backend"
 FRONTEND_DIR="$PROJECT_DIR/sigah-frontend"
 BOT_DIR="$PROJECT_DIR/sigah-bot"
 
-DB_USER="${DB_USER:-sigah_user}"
-DB_PASS="${DB_PASS:-sigah_pass_2026}"
-DB_NAME="${DB_NAME:-sigah}"
+# Cargar credenciales desde el .env del backend (NO hardcodear contraseñas).
+ENV_FILE="$BACKEND_DIR/.env"
+if [ -f "$ENV_FILE" ]; then
+    set -a; . "$ENV_FILE"; set +a
+fi
+
+DB_USER="${DB_USER:-${SIGAH_DB_USER:-sigah_user}}"
+DB_PASS="${DB_PASS:-${SIGAH_DB_PASS:-}}"
+DB_NAME="${DB_NAME:-${SIGAH_DB_NAME:-sigah}}"
+
+if [ -z "$DB_PASS" ]; then
+    echo "ERROR: SIGAH_DB_PASS no definido. Crea $ENV_FILE (./setup.sh lo genera) o expórtalo." >&2
+    exit 1
+fi
 
 CYAN='\033[0;36m'
 GREEN='\033[0;32m'

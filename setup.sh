@@ -12,6 +12,18 @@ NC='\033[0m'
 
 SIGAH_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# ── Credenciales ──────────────────────────────────────────────
+# NO se hardcodean credenciales. Se reutilizan las del .env si ya
+# existe (re-ejecución idempotente) y, si no, se generan aleatorias.
+# Puedes forzarlas exportando DB_ROOT_PASS / SIGAH_DB_PASS / SIGAH_JWT_SECRET.
+ENV_FILE="$SIGAH_DIR/sigab-backend/.env"
+if [ -f "$ENV_FILE" ]; then
+    set -a; . "$ENV_FILE"; set +a
+fi
+DB_ROOT_PASS="${DB_ROOT_PASS:-$(openssl rand -hex 16)}"
+DB_PASS="${SIGAH_DB_PASS:-$(openssl rand -hex 16)}"
+JWT_SECRET="${SIGAH_JWT_SECRET:-$(openssl rand -hex 32)}"
+
 echo -e "${GREEN}╔════════════════════════════════════════════╗${NC}"
 echo -e "${GREEN}║   SIGAH — Instalación Automática           ║${NC}"
 echo -e "${GREEN}║   Sistema de Gestión de Activos Biomédicos  ║${NC}"
@@ -45,13 +57,13 @@ fi
 
 # Configurar usuario y bases de datos
 echo -e "${YELLOW}[4/9] Configurando bases de datos...${NC}"
-sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'sigah_root_2026';" 2>/dev/null || true
+sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_ROOT_PASS}';" 2>/dev/null || true
 
-mysql -u root -psigah_root_2026 -e "
+mysql -u root -p"${DB_ROOT_PASS}" -e "
 CREATE DATABASE IF NOT EXISTS sigah CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS dummyequipomedicoimss CHARACTER SET utf8mb3;
-CREATE USER IF NOT EXISTS 'sigah_user'@'localhost' IDENTIFIED BY 'sigah_pass_2026';
-CREATE USER IF NOT EXISTS 'sigah_user'@'127.0.0.1' IDENTIFIED BY 'sigah_pass_2026';
+CREATE USER IF NOT EXISTS 'sigah_user'@'localhost' IDENTIFIED BY '${DB_PASS}';
+CREATE USER IF NOT EXISTS 'sigah_user'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}';
 GRANT ALL PRIVILEGES ON sigah.* TO 'sigah_user'@'localhost';
 GRANT ALL PRIVILEGES ON sigah.* TO 'sigah_user'@'127.0.0.1';
 GRANT ALL PRIVILEGES ON dummyequipomedicoimss.* TO 'sigah_user'@'localhost';
@@ -67,28 +79,28 @@ cd "$SIGAH_DIR"
 
 # Esquema fresco de SIGAH
 if [ -f database/sigah_schema_fresh.sql ]; then
-    mysql -u sigah_user -psigah_pass_2026 sigah < database/sigah_schema_fresh.sql 2>/dev/null
+    mysql -u sigah_user -p"${DB_PASS}" sigah < database/sigah_schema_fresh.sql 2>/dev/null
     echo "  OK: Esquema SIGAH importado"
 fi
 
 # Migraciones
 for migration in database/migrations/*.sql; do
     if [ -f "$migration" ]; then
-        mysql -u sigah_user -psigah_pass_2026 sigah < "$migration" 2>/dev/null || true
+        mysql -u sigah_user -p"${DB_PASS}" sigah < "$migration" 2>/dev/null || true
         echo "  OK: Migración $(basename $migration)"
     fi
 done
 
 # Seed data
 if [ -f database/seed_data.sql ]; then
-    mysql -u sigah_user -psigah_pass_2026 sigah < database/seed_data.sql 2>/dev/null || true
+    mysql -u sigah_user -p"${DB_PASS}" sigah < database/seed_data.sql 2>/dev/null || true
 fi
 
 # BD real del hospital (si existe el archivo)
 BD_REAL=$(find "$SIGAH_DIR" -name "BaseDeDatos*.sql" -o -name "basededatos*.sql" 2>/dev/null | head -1)
 if [ -n "$BD_REAL" ]; then
     echo "  Importando BD real: $(basename $BD_REAL)"
-    mysql -u sigah_user -psigah_pass_2026 dummyequipomedicoimss < "$BD_REAL" 2>/dev/null || true
+    mysql -u sigah_user -p"${DB_PASS}" dummyequipomedicoimss < "$BD_REAL" 2>/dev/null || true
     echo "  OK: BD real importada"
 fi
 
@@ -142,19 +154,23 @@ pip install -q \
 
 echo "  OK: Backend listo"
 
-# Crear .env si no existe
+# Crear .env si no existe (con las credenciales generadas/ reutilizadas)
 if [ ! -f .env ]; then
-    cat > .env << 'ENVEOF'
+    cat > .env << ENVEOF
+SIGAH_ENV=development
 SIGAH_DB_HOST=127.0.0.1
 SIGAH_DB_PORT=3306
 SIGAH_DB_USER=sigah_user
-SIGAH_DB_PASS=sigah_pass_2026
+SIGAH_DB_PASS=${DB_PASS}
 SIGAH_DB_NAME=sigah
 SIGAH_SSL_DISABLED=true
-SIGAH_JWT_SECRET=demo-hgr1-2026-secreto-cambiar-en-produccion
+SIGAH_JWT_SECRET=${JWT_SECRET}
 SIGAH_PUBLIC_BASE_URL=http://localhost:5173
 ENVEOF
-    echo "  OK: .env creado"
+    chmod 600 .env
+    echo "  OK: .env creado con credenciales únicas (permisos 600)"
+else
+    echo "  OK: .env ya existía — se reutilizan sus credenciales"
 fi
 
 # ── 9. Migrar datos reales ───────────────────────────────────
