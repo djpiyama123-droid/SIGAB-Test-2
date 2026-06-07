@@ -28,6 +28,7 @@ from datetime import datetime
 from config import get_db, UPLOAD_DIR
 from auth.dependencies import get_current_user
 from auth.tenancy import get_current_tenant
+from utils.file_validation import validate_upload
 from services.tecnovigilancia_pdf_service import generar_pdf_nom240
 from services.alerta_service import AlertaService
 
@@ -473,11 +474,14 @@ async def subir_evidencia(
         if not await cur.fetchone():
             raise HTTPException(status_code=404, detail="Evento no encontrado")
 
+        content = await file.read()
+        validate_upload(content, ext)
+
         filename = f"tv_{evento_id}_{secrets.token_hex(6)}.{ext}"
         filepath = os.path.join(UPLOAD_DIR, filename)
 
         with open(filepath, "wb") as f:
-            f.write(await file.read())
+            f.write(content)
 
         file_url = f"/static/uploads/{filename}"
 

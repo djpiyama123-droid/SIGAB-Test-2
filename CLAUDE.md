@@ -138,9 +138,12 @@ SIGAH/  (este repo en GitHub: djpiyama123-droid/SIGAH)
 Para cualquier migración de base de datos directa o scripts de mantenimiento en la VPS, usar los datos reales del contenedor:
 - **Base de Datos**: `sigab` (nota la 'b')
 - **Usuario**: `sigab_user`
-- **Contraseña**: `7_ALvv_NEldMfImwdnA6sw`
-- **Comando de acceso rápido**:
-  `docker exec -it sigah-mysql mysql -usigab_user -p7_ALvv_NEldMfImwdnA6sw sigab`
+- **Contraseña**: ⚠️ NO se versiona. Está en el `.env` del VPS (`/opt/sigab/.env`, variable `DB_PASS`).
+  Léela en el servidor con: `grep DB_PASS /opt/sigab/.env`
+- **Comando de acceso rápido** (lee la contraseña del entorno, no la escribas en claro):
+  `docker exec -it sigah-mysql sh -c 'mysql -usigab_user -p"$MYSQL_PASSWORD" sigab'`
+  > La contraseña que estaba aquí en texto plano fue retirada por seguridad y **debe rotarse**
+  > (sigue figurando en el historial git). Ver `SECURITY.md`.
 
 ### 4. Sincronización Antigravity & Claude Code
 - Ambos agentes deben operar cooperativamente y mantener `CLAUDE.md` como la **fuente de verdad** y memoria compartida del proyecto.
