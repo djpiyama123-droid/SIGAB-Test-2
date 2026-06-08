@@ -6,6 +6,8 @@ import InstitutionalContext from './components/InstitutionalContext'
 import TeamSection from './components/TeamSection'
 import Capabilities from './components/Capabilities'
 import EquipmentShowcase from './components/EquipmentShowcase'
+import Traceability from './components/Traceability'
+import SigabLiveDashboard from './components/SigabLiveDashboard'
 import ProblemSection from './components/ProblemSection'
 import LimitsSection from './components/LimitsSection'
 import ContactSection from './components/ContactSection'
@@ -39,8 +41,10 @@ export default function PublicApp() {
         <TeamSection />
         <Capabilities />
         <EquipmentShowcase />
+        <Traceability />
         <LimitsSection />
         <ProductShowcase />
+        <SigabLiveDashboard />
         <ScrollVideoEngine />
         <ServicePlans plans={servicePlans} features={planFeatures} onLoginClick={openLogin} />
         <NewServices />
