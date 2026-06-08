@@ -154,6 +154,40 @@ export default function EquipmentShowcase() {
           ))}
         </div>
 
+        {/* Áreas del hospital y resguardo de equipos */}
+        <div className="mb-12">
+          <p className="text-center font-data font-normal text-xs text-sigah-blue uppercase tracking-wider mb-5">
+            Áreas del hospital · dónde viven y se resguardan los activos
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {[
+              { src: '/quirofano.jpg',     label: 'Quirófano', sub: 'Cirugía · equipo crítico' },
+              { src: '/laboratorio.jpg',   label: 'Laboratorio clínico', sub: 'Analizadores y diagnóstico' },
+              { src: '/sala-equipada.jpg', label: 'Sala equipada', sub: 'Lámparas, torre y monitores' },
+              { src: '/hospital-pasillo.jpg', label: 'Hospitalización', sub: 'Camas y monitoreo' },
+              { src: '/almacen-equipos.jpg',  label: 'Almacén de resguardo', sub: 'Equipos en custodia' },
+              { src: '/eq-uci.jpg',        label: 'Unidad de cuidados intensivos', sub: 'Soporte vital' },
+            ].map((p, i) => (
+              <div
+                key={p.src}
+                className={`group relative rounded-2xl overflow-hidden border border-border bg-slate-900 ${i === 0 ? 'col-span-2 lg:col-span-2' : ''}`}
+              >
+                <img
+                  src={p.src}
+                  alt={p.label}
+                  loading="lazy"
+                  className={`w-full object-cover transition-transform duration-500 group-hover:scale-105 ${i === 0 ? 'h-48 sm:h-64' : 'h-36 sm:h-44'}`}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/85 via-slate-900/15 to-transparent" />
+                <div className="absolute bottom-0 inset-x-0 p-3 sm:p-4">
+                  <p className="font-sans font-medium text-sm text-white leading-tight">{p.label}</p>
+                  <p className="font-data font-normal text-xs text-white/70 mt-0.5">{p.sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Tipos de equipo (ilustraciones de marca) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {EQUIPOS.map(({ Comp, nombre, desc }) => (
