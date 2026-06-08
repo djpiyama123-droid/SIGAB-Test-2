@@ -61,7 +61,7 @@ services:
     extra_hosts:
       - "host-gateway:host-gateway"
     volumes:
-      - sigah_uploads:/app/static/uploads
+      - sigab_uploads:/app/static/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -135,12 +135,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=hostedapps_default"
-      - "traefik.http.routers.sigah-fe.rule=Host(`129.121.100.147`) || Host(`sigab.129-121-100-147.sslip.io`) || Host(`sigah.129-121-100-147.sslip.io`)"
+      - "traefik.http.routers.sigah-fe.rule=Host(`129.121.100.147`) || Host(`sigab.129-121-100-147.sslip.io`)"
       - "traefik.http.routers.sigah-fe.entrypoints=web"
       - "traefik.http.routers.sigah-fe.middlewares=sigah-redirect@docker"
       - "traefik.http.routers.sigah-fe.priority=30"
       - "traefik.http.routers.sigah-fe.service=sigah-fe-svc"
-      - "traefik.http.routers.sigah-fe-s.rule=Host(`sigab.129-121-100-147.sslip.io`) || Host(`sigah.129-121-100-147.sslip.io`)"
+      - "traefik.http.routers.sigah-fe-s.rule=Host(`sigab.129-121-100-147.sslip.io`)"
       - "traefik.http.routers.sigah-fe-s.entrypoints=websecure"
       - "traefik.http.routers.sigah-fe-s.priority=30"
       - "traefik.http.routers.sigah-fe-s.service=sigah-fe-svc"
@@ -201,8 +201,8 @@ services:
 volumes:
   sigah_mysql_data:
     name: sigah_mysql_data
-  sigah_uploads:
-    name: sigah_uploads
+  sigab_uploads:
+    name: sigab_uploads
   sigab_bot_auth:
     name: sigab_bot_auth
 
