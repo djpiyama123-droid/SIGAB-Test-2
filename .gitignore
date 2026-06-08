@@ -93,3 +93,5 @@ skills-lock.json
 
 # ── Salida generada por herramientas ──
 graphify-out/
+
+.claude/settings.local.json
