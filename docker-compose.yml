@@ -58,6 +58,9 @@ services:
       SIGAH_GEMMA_MODEL: ${SIGAH_GEMMA_MODEL:-qwen-claw}
       SIGAH_VISION_MODEL: ${SIGAH_VISION_MODEL:-gemma4-claw}
       SIGAH_DISABLE_COPILOT: ${SIGAH_DISABLE_COPILOT:-0}
+      # Mapa JSON {slug_hospital: clave} que valida el bot-login del bot WhatsApp.
+      # Debe contener la misma clave que BOT_API_KEY del servicio `bot`.
+      BOT_API_KEYS: ${BOT_API_KEYS:-}
     extra_hosts:
       - "host-gateway:host-gateway"
     volumes:
@@ -103,6 +106,9 @@ services:
     environment:
       FASTAPI_BASE_URL: http://backend:8000
       BOT_PORT: 3000
+      # Clave del hospital para obtener JWT efímero vía /api/openclaw/bot-login.
+      # Debe coincidir con una entrada del mapa BOT_API_KEYS del backend.
+      BOT_API_KEY: ${BOT_API_KEY:-}
       GRUPO_BIOMEDICOS: ${GRUPO_BIOMEDICOS:-Residentes de biomedica 2025}
       SUPERVISOR_JID_1: ${SUPERVISOR_JID_1:-526645534349@s.whatsapp.net}
       SUPERVISOR_JID_2: ${SUPERVISOR_JID_2:-526643057010@s.whatsapp.net}

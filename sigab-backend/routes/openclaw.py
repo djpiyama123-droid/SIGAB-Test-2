@@ -420,7 +420,7 @@ async def ai_chat_bot(data: dict):
     prompt = f"Actúa como SIGAH Assistant, un experto en bioingeniería en el IMSS. Responde de forma concisa al siguiente mensaje: {mensaje}"
     
     try:
-        respuesta = await gemma_service.consultar_gemma_no_streaming(prompt)
+        respuesta = await gemma_service.analizar_no_stream(prompt)
         return {"ok": True, "respuesta": respuesta}
     except Exception as e:
         return {"ok": False, "mensaje": str(e)}
@@ -655,7 +655,7 @@ async def intake_group_message(
                     f"Responde SOLO el JSON."
                 )
                 try:
-                    rsp = await gemma_service.consultar_gemma_no_streaming(prompt)
+                    rsp = await gemma_service.analizar_no_stream(prompt)
                     import json as _json
                     datos = _json.loads(rsp.strip().strip("```json").strip("```").strip())
                 except Exception:
@@ -692,7 +692,7 @@ async def intake_group_message(
             f"Responde SOLO el JSON, sin explicaciones."
         )
         try:
-            rsp = await gemma_service.consultar_gemma_no_streaming(prompt)
+            rsp = await gemma_service.analizar_no_stream(prompt)
             import json as _json
             # Limpiar posible markdown de Gemma
             clean = rsp.strip()

@@ -73,6 +73,24 @@ SIGAH/  (este repo en GitHub: djpiyama123-droid/SIGAH)
 25. Tokens API               `routes/tokens.py`       → `/api/tokens`
 26. Cerebro / Claude Code    `routes/cerebro.py`      → `/api/cerebro/sesiones`
 
+## 🔒 Estado de Cambios Activos (2026-06-07 — rama `fix/bugs-bloqueantes-ia`, basada en `feat/landing-sync-2026-06`)
+
+### Migración Edge + IA híbrida: diagnóstico, plan y 2 fixes bloqueantes (workflow multi-agente Opus 4.8)
+- **Objetivo:** dejar de depender del VPS Bluehost y consolidar todo (app SIGAB, plataforma SIGAH, bots, IA) en un nodo on-premise en el hospital, con IA local (Ollama/GPU) + nube (MiniMax) orquestadas por un router.
+- **Nodo edge PROVISIONAL = Lenovo ThinkCentre M720q** (ya en el hospital, Ubuntu 24.04, acceso por **Tailscale SSH** `ssh gustavo@thinkcentre`; la IP `100.x` se obtiene con `tailscale ip -4` en el equipo — NO está como literal en docs ni en el vault Obsidian). La HP Z840 del tomógrafo GE será el nodo final cuando esté lista (lleva RTX 5090; el M720q no tiene GPU → IA local limitada, apoyarse en MiniMax).
+- **Documentación nueva:** `docs/migracion-edge-z840/00-PLAN-MAESTRO-MIGRACION-EDGE.md` (plan completo + runbook) y `docs/migracion-edge-z840/01-NODO-PROVISIONAL-THINKCENTRE.md` (despliegue provisional en el ThinkCentre).
+
+### Fixes bloqueantes corregidos en esta rama (listos para commit/merge)
+- **Bug #1** — `sigab-backend/routes/openclaw.py`: las llamadas a `gemma_service.consultar_gemma_no_streaming(prompt)` (líneas 423, 658, 695) apuntaban a una función **inexistente** → rompían `/api/openclaw/ai-chat-bot` e `/api/openclaw/intake-group` con `AttributeError`. Reapuntadas a la función real `gemma_service.analizar_no_stream(prompt)`. `py_compile` OK.
+- **Bug #2** — `docker-compose.yml`: el servicio `bot` no recibía `BOT_API_KEY` y el `backend` no recibía `BOT_API_KEYS` → el bot-login JWT (FASE2-OPENCLAW-JWT que implementó Antigravity en `sigab-bot/index.js`) fallaba en contenedor. Añadidas ambas variables (vía `.env`); los `.env.example` ya las documentaban.
+
+### Pendiente (no ejecutable sin acceso al nodo/VPS reales)
+- Implementar la capa de router IA híbrida (`services/llm_service.py` + `minimax_service.py`, vars `SIGAH_MINIMAX_*`/`SIGAH_LLM_PROVIDER` en `config.py`) — MiniMax aún NO está en el código, solo en `docs/minimax-workflow/`.
+- Migrar datos VPS→ThinkCentre (`mysqldump sigab` + volúmenes `sigab_uploads`, `sigab_bot_auth`), levantar stack (compose sin Traefik/LAN) y validar bots.
+- ⚠️ **Seguridad:** la API key de MiniMax (`sk-cp-…`) fue expuesta en chat → **rotarla** ("Reset key" en portal MiniMax) y guardarla solo en `.env` (chmod 600, fuera de git).
+
+---
+
 ## 🔒 Estado de Cambios Activos (2026-05-30 — rama feat/sileo-toasts-hermes-context)
 
 ### Cambios realizados por Antigravity (Completados y listos para commit)
