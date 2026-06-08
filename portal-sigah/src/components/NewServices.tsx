@@ -10,6 +10,10 @@ const TOOLS = [
     tag: 'Fabricación de refacciones',
     icon: <IconScan size={22} />,
     title: 'Revopoint Miracoplus — Escáner 3D all-in-one',
+    image: '/escaner-metrologia.jpg',
+    imgClass: 'object-contain bg-slate-100',
+    video: 'zez4LI-0EDQ',
+    videoLabel: 'Cómo escanear con metrología (Revopoint)',
     problem: 'Las refacciones se dibujan manualmente en AutoCAD antes de imprimirse. Ese diseño manual es el cuello de botella: lento y dependiente de un experto.',
     solution: 'El Revopoint Miracoplus digitaliza la pieza real en minutos → STL → impresión 3D directa. Se elimina el rediseño y se habilita un catálogo de refacciones bajo demanda en SIGAB.',
     flow: 'Pieza dañada → escaneo 3D → STL → impresión filamento/resina → registro en SIGAB → grabado láser del ID',
@@ -24,6 +28,10 @@ const TOOLS = [
     tag: 'Identificación permanente',
     icon: <IconBolt size={22} />,
     title: 'Pistola grabadora láser portátil — reemplaza la Zebra',
+    image: '/pistola-laser.jpg',
+    imgClass: 'object-cover object-center scale-[1.35]',
+    video: '',
+    videoLabel: '',
     problem: 'Las etiquetas Zebra se despegan y no resisten la limpieza con cloro y desinfectantes hospitalarios, rompiendo la trazabilidad del activo.',
     solution: 'La pistola láser portátil graba de forma permanente el QR, información del equipo y el logo institucional en metal, plástico o cables. El activo queda ligado a su expediente en SIGAB de por vida.',
     flow: 'QR + info del equipo + logo institucional → pistola láser → grabado indeleble en metal/plástico/cable → trazabilidad de por vida',
@@ -38,6 +46,10 @@ const TOOLS = [
     tag: 'Servidor IA on-premise',
     icon: <IconCpu size={22} />,
     title: 'ASUS Ascent GX10 — Servidor de IA local',
+    image: '/workstation-ia.jpg',
+    imgClass: 'object-cover object-center',
+    video: '',
+    videoLabel: '',
     problem: 'Los modelos de IA en la nube implican costo por token, latencia de red y envío de datos clínicos sensibles a terceros. Las instituciones con alta carga o requisitos de privacidad no pueden depender de la nube.',
     solution: 'El ASUS Ascent GX10 con chip NVIDIA GB10 Grace Blackwell corre modelos de última generación on-premise: DeepSeek V4, Kimi, Gemma 4, Qwen, Llama 4. SIGAB Copilot funciona a máxima capacidad, sin costo por consulta.',
     flow: 'Personal del hospital → SIGAB Copilot → modelo local (DeepSeek/Gemma/Qwen) → respuesta en segundos → ningún dato sale del hospital',
@@ -105,6 +117,32 @@ export default function NewServices() {
                   <span className="font-data font-normal text-[10px] text-white/80 uppercase tracking-wider">Premium</span>
                 </div>
               )}
+
+              {/* Ventana con imagen (y video) de la herramienta */}
+              <div className={`rounded-lg overflow-hidden mb-5 border ${t.premium ? 'border-white/15' : 'border-border'}`}>
+                <div className={`flex items-center gap-1.5 px-3 py-2 border-b ${t.premium ? 'border-white/10 bg-white/5' : 'border-border bg-slate-50'}`}>
+                  <span className="w-2 h-2 rounded-full bg-red-400/70" />
+                  <span className="w-2 h-2 rounded-full bg-amber-400/70" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-400/70" />
+                  <span className={`ml-2 font-data font-normal text-[10px] truncate ${t.premium ? 'text-white/50' : 'text-slate-400'}`}>
+                    {t.tag}
+                  </span>
+                </div>
+                <div className="h-44 overflow-hidden bg-slate-900 flex items-center justify-center">
+                  <img src={t.image} alt={t.title} loading="lazy" className={`w-full h-full ${t.imgClass}`} />
+                </div>
+                {t.video && (
+                  <div className={`${t.premium ? 'border-t border-white/10' : 'border-t border-border'}`}>
+                    <iframe
+                      src={`https://www.youtube.com/embed/${t.video}`}
+                      title={t.videoLabel}
+                      className="w-full aspect-video block"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+              </div>
 
               <div className="flex items-center gap-3 mb-5">
                 <span className={`w-11 h-11 flex items-center justify-center rounded-lg ${
