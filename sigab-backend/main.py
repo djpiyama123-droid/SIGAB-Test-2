@@ -87,6 +87,9 @@ app.include_router(admin_routes.router, prefix="/api", tags=["SuperAdmin"])
 app.include_router(formatos.router, prefix="/api/formatos", tags=["Formatos Oficiales IMSS"])
 app.include_router(twilio_whatsapp.router, prefix="/api/twilio", tags=["WhatsApp OCR (Twilio)"])
 
+from routes import monitor
+app.include_router(monitor.router, prefix="/api/monitor", tags=["Monitor SIGAH"])
+
 
 @app.get("/health")
 def health():
