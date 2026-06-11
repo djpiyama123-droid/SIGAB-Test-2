@@ -41,7 +41,8 @@ async def test_put_equipo_ubicacion_none_se_deriva_de_area_y_piso(
     r2 = await client.get(
         f"/api/equipos/{equipo_existente.id}", headers=auth_headers_admin
     )
-    eq = r2.json()
+    # El GET /api/equipos/{id} devuelve el equipo anidado bajo la clave "equipo".
+    eq = r2.json()["equipo"]
     assert eq["ubicacion"] == "Quirófano 3 · Segundo"
     assert eq["estado"] == "en_mantenimiento"
 
@@ -68,7 +69,7 @@ async def test_put_equipo_ubicacion_none_y_sin_area_piso_preserva_actual(
         f"/api/equipos/{equipo_existente_con_ubicacion.id}",
         headers=auth_headers_admin,
     )
-    eq = r2.json()
+    eq = r2.json()["equipo"]
     assert eq["ubicacion"] == ubicacion_previa  # se preservó
 
 
@@ -92,4 +93,4 @@ async def test_put_equipo_ubicacion_explicita_se_respeta(
     r2 = await client.get(
         f"/api/equipos/{equipo_existente.id}", headers=auth_headers_admin
     )
-    assert r2.json()["ubicacion"] == "Almacén central · Piso 1"
+    assert r2.json()["equipo"]["ubicacion"] == "Almacén central · Piso 1"
