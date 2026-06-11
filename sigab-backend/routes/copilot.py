@@ -22,6 +22,7 @@ from config import get_db, GEMMA_MODEL, DISABLE_COPILOT
 from auth.dependencies import get_current_user
 from auth.tenancy import get_current_tenant
 from services import gemma_service
+from services import llm_service  # router híbrido Ollama↔MiniMax (generación de texto)
 
 def _check_copilot_enabled():
     if DISABLE_COPILOT:
@@ -197,7 +198,7 @@ async def copilot_chat(
             pass
 
     return StreamingResponse(
-        gemma_service.chat_stream(messages, contexto),
+        llm_service.chat_stream(messages, contexto),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -265,7 +266,7 @@ async def diagnostico_falla(
                 contexto["historial_ordenes"] = ordenes
 
     prompt = gemma_service.prompt_diagnostico(falla, equipo_tipo, marca, modelo)
-    analisis = await gemma_service.analizar_no_stream(prompt, contexto)
+    analisis = await llm_service.analizar_no_stream(prompt, contexto)
 
     return {
         "ok": True,
@@ -328,7 +329,7 @@ async def sugerir_causa_raiz(
     prompt = gemma_service.prompt_causa_raiz(
         dispositivo, tipo_evento, severidad, descripcion
     )
-    analisis = await gemma_service.analizar_no_stream(prompt, contexto)
+    analisis = await llm_service.analizar_no_stream(prompt, contexto)
 
     return {
         "ok": True,
@@ -351,7 +352,7 @@ async def resumen_ejecutivo_ia(
     """
     datos = await _get_resumen_db(conn, tenant_id)
     prompt = gemma_service.prompt_resumen_diario(datos)
-    resumen = await gemma_service.analizar_no_stream(prompt)
+    resumen = await llm_service.analizar_no_stream(prompt)
 
     return {
         "ok": True,

@@ -54,6 +54,22 @@ GEMMA_MODEL = os.getenv("SIGAH_GEMMA_MODEL", "gemma3:4b")
 QWEN_MODEL  = os.getenv("SIGAH_QWEN_MODEL",  "qwen2.5:7b")
 DISABLE_COPILOT = os.getenv("SIGAH_DISABLE_COPILOT", "0").strip() in ("1", "true", "yes")
 
+# ── Proveedor de IA (router híbrido Ollama local ↔ MiniMax nube) ───
+# ollama  = local on-premise (default, edición Premium; PHI nunca sale del hospital)
+# minimax = nube (edición Cloud; requiere clave sk-api + plan contratado)
+# El selector por ENV permite que la MISMA imagen sirva ambas ediciones.
+LLM_PROVIDER       = os.getenv("SIGAH_LLM_PROVIDER", "ollama").strip().lower()
+# Failover automático a Ollama local si la nube no responde (resiliencia luz/nube)
+LLM_FALLBACK_LOCAL = os.getenv("SIGAH_LLM_FALLBACK_LOCAL", "1").strip() in ("1", "true", "yes")
+
+# ── MiniMax M3 (nube) — API compatible con OpenAI ─────────────────
+# Solo se usa si LLM_PROVIDER=minimax. La clave SIEMPRE viene de env var
+# (NUNCA hardcodear). En on-premise se deja vacía y el módulo no se invoca.
+MINIMAX_API_KEY  = os.getenv("SIGAH_MINIMAX_API_KEY", "")
+MINIMAX_BASE_URL = os.getenv("SIGAH_MINIMAX_BASE_URL", "https://api.minimax.io/v1")
+MINIMAX_MODEL    = os.getenv("SIGAH_MINIMAX_MODEL", "MiniMax-M3")
+MINIMAX_TIMEOUT  = float(os.getenv("SIGAH_MINIMAX_TIMEOUT", "60"))
+
 # ── OCR Pipeline Config ──────────────────────────────────────────
 OCR_CONFIDENCE_THRESHOLD = float(os.getenv("SIGAH_OCR_CONFIDENCE", "0.85"))
 OCR_MIN_WORDS_THRESHOLD = int(os.getenv("SIGAH_OCR_MIN_WORDS", "5"))
