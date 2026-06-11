@@ -36,6 +36,7 @@ export const NAV_ITEMS = [
   // { path: '/metrologia', label: 'Metrología', icon_name: 'ShieldCheck' },
   // { path: '/capacitaciones', label: 'Capacitaciones', icon_name: 'GraduationCap' },
   { path: '/qrbatch', label: 'Lote QR', icon_name: 'QrCode' },
+  { path: '/scan-gun', label: 'Pistola QR', icon_name: 'Scan' },
   // { path: '/auditoria', label: 'Auditoría', icon_name: 'ShieldCheck' },
   // { path: '/checklists', label: 'Compliance', icon_name: 'CheckSquare' },
 ];

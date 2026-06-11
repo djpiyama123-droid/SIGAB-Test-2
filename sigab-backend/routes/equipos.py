@@ -305,6 +305,83 @@ async def historial_equipo(equipo_id: int, session: AsyncSession = Depends(get_a
     }
 
 
+@router.get("/lookup")
+async def lookup_equipo(
+    q: str,
+    user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """Lookup rápido de equipo por qr_token, serie o inventario.
+
+    Diseñado para escaneo con pistola lectora HID (Zebra, Honeywell, Datalogic):
+    el escáner emite el contenido del QR como texto + Enter. El frontend extrae
+    el token de la URL completa o usa el string crudo.
+
+    Acepta:
+      - URL completa: https://sigah.mx/equipo/abc123def456 → extrae token
+      - qr_token opaco: abc123def456
+      - serie: SN-12345
+      - inventario: INV-2024-001
+
+    Devuelve los campos mínimos para abrir la ficha sin exponer datos sensibles
+    si el usuario no tiene `view_confidential`.
+    """
+    if not q or len(q.strip()) < 3:
+        raise HTTPException(status_code=400, detail="Consulta vacía o demasiado corta")
+
+    needle = q.strip()
+    # Extraer token de URL pública del QR si viene como link completo
+    if "/equipo/" in needle:
+        needle = needle.rsplit("/equipo/", 1)[-1].split("?")[0].split("#")[0].strip()
+
+    # Búsqueda por qr_token primero (caso más común desde pistola)
+    stmt = select(Equipo).where(Equipo.qr_token == needle)
+    equipo = (await session.execute(stmt)).scalar_one_or_none()
+
+    # Fallback: buscar por serie exacta
+    if not equipo:
+        stmt = select(Equipo).where(Equipo.serie == needle)
+        equipo = (await session.execute(stmt)).scalar_one_or_none()
+
+    # Fallback: buscar por inventario exacto
+    if not equipo:
+        stmt = select(Equipo).where(Equipo.inventario == needle)
+        equipo = (await session.execute(stmt)).scalar_one_or_none()
+
+    if not equipo:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Sin coincidencia para '{q}'. Probado: qr_token, serie, inventario."
+        )
+
+    equipo_dict = equipo.model_dump()
+    if not can(user, "view_confidential"):
+        equipo_dict = filter_equipo_publico(equipo_dict)
+
+    return {
+        "match": {
+            "id": equipo.id,
+            "nombre": equipo.nombre,
+            "serie": equipo.serie,
+            "inventario": equipo.inventario,
+            "marca": equipo.marca,
+            "modelo": equipo.modelo,
+            "ubicacion": equipo.ubicacion,
+            "area": equipo.area,
+            "piso": equipo.piso,
+            "estado": equipo.estado,
+            "criticidad": equipo.criticidad,
+            "qr_token": equipo.qr_token,
+            "imagen_url": equipo.imagen_url,
+        },
+        "matched_by": (
+            "qr_token" if equipo.qr_token == needle
+            else "serie" if equipo.serie == needle
+            else "inventario"
+        ),
+    }
+
+
 @router.get("/")
 async def listar_equipos(
     estado: Optional[str] = None,

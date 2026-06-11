@@ -68,6 +68,7 @@ export const api = {
   // ── Equipos ───────────────────────────────────────────────
   getEquipos: (params = {}) => client.get('/equipos', { params }),
   getEquipo: (id) => client.get(`/equipos/${id}`),
+  lookupEquipo: (q) => client.get('/equipos/lookup', { params: { q } }),
   crearEquipo: (data) => client.post('/equipos/', data),
   updateEquipo: (id, data) => client.put(`/equipos/${id}`, data),
   eliminarEquipo: (id) => client.delete(`/equipos/${id}`),

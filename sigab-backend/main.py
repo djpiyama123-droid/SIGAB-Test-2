@@ -26,7 +26,8 @@ from routes import (
     tecnovigilancia, auditoria, checklists,
     almacen, metrologia, capacitaciones,
     auth as auth_routes,
-    ocr, events, casillas
+    ocr, events, casillas,
+    marcado_fisico,
 )
 _COPILOT_ON = os.getenv("SIGAB_DISABLE_COPILOT", "0") != "1"
 if _COPILOT_ON:
@@ -79,6 +80,7 @@ if _COPILOT_ON:
 app.include_router(almacen.router, prefix="/api/almacen", tags=["Gestión de Almacén"])
 app.include_router(metrologia.router, prefix="/api/metrologia", tags=["Metrología y Calibración"])
 app.include_router(capacitaciones.router, prefix="/api/capacitaciones", tags=["Capacitación de Personal"])
+app.include_router(marcado_fisico.router, prefix="/api/marcado-fisico", tags=["Marcado Físico de Activos"])
 app.include_router(events.router, prefix="/api/v1/events", tags=["Eventos"])
 app.include_router(casillas.router, tags=["Casillas CENEVAL (Conservación)"])
 
