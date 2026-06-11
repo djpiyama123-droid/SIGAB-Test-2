@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SIGAB Monitor</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+
+/* ── Layout principal ── */
+.page-wrap{max-width:1440px;margin:0 auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+
+/* Fila flexible que contiene cards */
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch}
+
+/* Cards */
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:14px;
+      min-width:0;overflow:hidden;flex:1 1 0}
+.card-sm-inner{background:#0f172a;border:1px solid #1e3a5f;border-radius:8px;padding:10px;min-width:0;overflow:hidden}
+
+/* Anchos declarativos */
+.w-full {flex:0 0 100%;max-width:100%}
+.w-half {flex:1 1 340px;min-width:0;max-width:100%}
+.w-third{flex:1 1 260px;min-width:0;max-width:100%}
+.w-2of3 {flex:2 1 500px;min-width:0;max-width:100%}
+
+/* Tipografía */
+.sec{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+     color:#64748b;margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.num{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;
+     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:5px;
+       font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;max-width:100%;
+       text-overflow:ellipsis}
+.ok    {background:#052e16;color:#4ade80;border:1px solid #16a34a44}
+.warn  {background:#2d1a00;color:#fbbf24;border:1px solid #d9770644}
+.err   {background:#2d0a0a;color:#f87171;border:1px solid #dc262644}
+.info  {background:#0c1a2d;color:#60a5fa;border:1px solid #1d4ed844}
+.violet{background:#1a0d2e;color:#c4b5fd;border:1px solid #7c3aed44}
+.muted {background:#1e293b;color:#64748b;border:1px solid #33415544}
+
+/* Filas de datos */
+.data-row{display:flex;justify-content:space-between;align-items:center;
+          padding:5px 0;border-bottom:1px solid #1e3a5f22;gap:8px;overflow:hidden}
+.data-row:last-child{border:0}
+.data-row .label{font-size:12px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1}
+.data-row .val  {flex-shrink:0}
+
+/* Progress */
+.prog-track{height:7px;background:#0f172a;border-radius:4px;overflow:hidden;flex:1}
+.prog-bar  {height:100%;border-radius:4px;transition:width .5s ease}
+
+/* Acciones */
+.act-btn{display:flex;align-items:center;gap:6px;padding:8px 10px;
+         border-radius:8px;border:1px solid #334155;background:#0f172a;
+         color:#94a3b8;font-size:12px;font-weight:500;cursor:pointer;
+         transition:all .15s;white-space:nowrap;overflow:hidden;width:100%}
+.act-btn:hover{border-color:#006CB7;color:#60a5fa;background:#0c1a2d}
+.act-btn.green:hover{border-color:#16a34a;color:#4ade80;background:#052e16}
+.act-btn.red:hover  {border-color:#dc2626;color:#f87171;background:#2d0a0a}
+
+/* Model card */
+.model-card{background:#0f172a;border:1px solid #1e3a5f;border-radius:8px;
+            padding:9px;overflow:hidden;min-width:0}
+.model-card.live{border-color:#16a34a55;background:#052e1622}
+
+/* Commit line */
+.commit-line{display:flex;gap:6px;align-items:flex-start;overflow:hidden;min-width:0}
+.commit-sha {font-size:10px;color:#fbbf24;font-family:'JetBrains Mono';flex-shrink:0}
+.commit-msg {font-size:11px;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+
+/* Log pre */
+.log-box{background:#070d19;border:1px solid #1e3a5f;border-radius:6px;padding:10px;
+         font-family:'JetBrains Mono';font-size:11px;color:#7dd3fc;
+         max-height:200px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+
+/* Modal */
+#modal{display:none;position:fixed;inset:0;background:#000000aa;z-index:60;
+       align-items:center;justify-content:center;padding:20px}
+#modal.open{display:flex}
+.modal-box{background:#1e293b;border:1px solid #334155;border-radius:14px;
+           padding:20px;width:100%;max-width:640px;overflow:hidden}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;z-index:80;padding:11px 16px;
+       border-radius:9px;font-size:13px;font-weight:500;
+       animation:fadeUp .25s ease;pointer-events:none;max-width:320px;
+       overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@keyframes fadeUp{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* Animations */
+.pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* Canvas responsive */
+canvas{max-width:100%;display:block}
+
+/* Header */
+.hdr{position:sticky;top:0;z-index:50;background:#0f172a;
+     border-bottom:1px solid #1e293b;padding:8px 14px}
+.hdr-inner{max-width:1440px;margin:0 auto;display:flex;align-items:center;
+           justify-content:space-between;gap:10px;flex-wrap:wrap}
+.hdr-logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.hdr-stats{display:flex;gap:6px;flex-wrap:wrap}
+.hdr-stat{background:#1e293b;border:1px solid #334155;border-radius:8px;
+          padding:5px 10px;display:flex;gap:6px;align-items:center;white-space:nowrap}
+.hdr-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════════ -->
+<header class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-logo">
+      <div style="width:30px;height:30px;background:#006CB7;border-radius:7px;
+                  display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0
+               002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2
+               2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2
+               2 0 01-2-2z"/>
+        </svg>
+      </div>
+      <div>
+        <div style="font-weight:700;font-size:13px;white-space:nowrap">SIGAB Monitor</div>
+        <div style="font-size:10px;color:#64748b;white-space:nowrap">HGR No.1 IMSS Tijuana</div>
+      </div>
+    </div>
+
+    <div class="hdr-stats">
+      <div class="hdr-stat">
+        <span style="font-size:10px;color:#64748b">Costo hoy</span>
+        <span id="qs-cost" class="mono" style="font-size:12px;color:#4ade80;font-weight:700">—</span>
+      </div>
+      <div class="hdr-stat">
+        <span style="font-size:10px;color:#64748b">Budget</span>
+        <span id="qs-pct" class="mono" style="font-size:12px;color:#fbbf24;font-weight:700">—</span>
+      </div>
+      <div class="hdr-stat">
+        <span class="dot pulse" id="hb-dot" style="background:#64748b"></span>
+        <span id="qs-svc" style="font-size:11px;color:#94a3b8">Cargando…</span>
+      </div>
+    </div>
+
+    <div class="hdr-actions">
+      <span id="last-ts" class="mono" style="font-size:10px;color:#475569">—</span>
+      <button onclick="fetchAll(true)"
+        style="padding:5px 12px;border-radius:7px;background:#006CB720;
+               border:1px solid #006CB740;color:#60a5fa;font-size:11px;cursor:pointer">
+        ↻ Refresh
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ══ CONTENIDO ═══════════════════════════════════════════ -->
+<div class="page-wrap">
+
+  <!-- Fila 1: Claude tokens (ancho completo) -->
+  <div class="row">
+    <div class="card w-full">
+      <div class="sec">🤖 Claude Code — Tokens &amp; Costo</div>
+      <!-- 4 stats boxes -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <div class="card-sm-inner" style="flex:1 1 120px;text-align:center;min-width:0">
+          <div style="font-size:10px;color:#64748b;margin-bottom:3px">Input total</div>
+          <div id="c-input" class="num" style="color:#60a5fa">—</div>
+        </div>
+        <div class="card-sm-inner" style="flex:1 1 120px;text-align:center;min-width:0">
+          <div style="font-size:10px;color:#64748b;margin-bottom:3px">Output total</div>
+          <div id="c-output" class="num" style="color:#c4b5fd">—</div>
+        </div>
+        <div class="card-sm-inner" style="flex:1 1 120px;text-align:center;min-width:0">
+          <div style="font-size:10px;color:#64748b;margin-bottom:3px">Cache creado</div>
+          <div id="c-cc" class="num" style="color:#fbbf24">—</div>
+        </div>
+        <div class="card-sm-inner" style="flex:1 1 120px;text-align:center;min-width:0">
+          <div style="font-size:10px;color:#64748b;margin-bottom:3px">Cache leído</div>
+          <div id="c-cr" class="num" style="color:#4ade80">—</div>
+        </div>
+      </div>
+      <!-- Plan info + chart -->
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start">
+        <!-- Plan badge + sesiones -->
+        <div style="flex:1 1 260px;min-width:0">
+          <div style="display:inline-flex;align-items:center;gap:8px;background:#0c1a2d;
+               border:1px solid #1d4ed844;border-radius:8px;padding:6px 10px;margin-bottom:10px;max-width:100%;overflow:hidden">
+            <span style="font-size:18px;flex-shrink:0">🤖</span>
+            <div style="min-width:0">
+              <div style="font-size:10px;color:#64748b">Plan activo</div>
+              <div id="c-plan-label" style="font-size:12px;font-weight:700;color:#60a5fa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Claude.ai $20/mes</div>
+            </div>
+            <span class="badge ok" style="font-size:9px;flex-shrink:0">Suscripción fija</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <div class="card-sm-inner" style="flex:1 1 80px;min-width:0">
+              <div style="font-size:10px;color:#64748b">Input hoy</div>
+              <div id="c-today-in" class="mono" style="font-size:13px;font-weight:700;color:#60a5fa">—</div>
+            </div>
+            <div class="card-sm-inner" style="flex:1 1 80px;min-width:0">
+              <div style="font-size:10px;color:#64748b">Output hoy</div>
+              <div id="c-today-out" class="mono" style="font-size:13px;font-weight:700;color:#c4b5fd">—</div>
+            </div>
+            <div class="card-sm-inner" style="flex:1 1 80px;min-width:0">
+              <div style="font-size:10px;color:#64748b">Sesiones hoy</div>
+              <div id="c-today" class="mono" style="font-size:13px;font-weight:700;color:#4ade80">—</div>
+            </div>
+            <div class="card-sm-inner" style="flex:1 1 80px;min-width:0">
+              <div style="font-size:10px;color:#64748b">Total sesiones</div>
+              <div id="c-sessions" class="mono" style="font-size:13px;font-weight:700;color:#fbbf24">—</div>
+            </div>
+          </div>
+        </div>
+        <!-- Hourly chart -->
+        <div style="flex:1 1 260px;min-width:0">
+          <div style="font-size:10px;color:#64748b;margin-bottom:5px">Output tokens por hora (hoy)</div>
+          <div style="height:90px;position:relative"><canvas id="hourChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fila 2: SIGAH KPIs · Tareas · VPS+Ollama -->
+  <div class="row">
+    <!-- SIGAH KPIs -->
+    <div class="card w-third" style="min-width:280px">
+      <div class="sec">🏥 Equipos &amp; Órdenes</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <div class="card-sm-inner" style="flex:1 1 100px;text-align:center;min-width:0">
+          <div style="font-size:10px;color:#64748b">Equipos</div>
+          <div id="s-total" class="num" style="font-size:22px;color:#e2e8f0">—</div>
+        </div>
+        <div class="card-sm-inner" style="flex:1 1 100px;text-align:center;min-width:0">
+          <div style="font-size:10px;color:#64748b">OS totales</div>
+          <div id="s-os-total" class="num" style="font-size:22px;color:#60a5fa">—</div>
+        </div>
+      </div>
+      <!-- donut + estados -->
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+        <div style="width:80px;height:80px;flex-shrink:0"><canvas id="equipoChart"></canvas></div>
+        <div style="flex:1;min-width:0">
+          <div class="data-row"><span class="label">Operativos</span><span id="s-op" class="badge ok val">—</span></div>
+          <div class="data-row"><span class="label">Mantenimiento</span><span id="s-mant" class="badge warn val">—</span></div>
+          <div class="data-row"><span class="label">Fuera servicio</span><span id="s-fs" class="badge err val">—</span></div>
+          <div class="data-row"><span class="label">Baja</span><span id="s-baja" class="badge muted val">—</span></div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#64748b;margin-bottom:5px">Órdenes de Servicio</div>
+      <div id="os-bars"></div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+        <div class="card-sm-inner" style="flex:1 1 80px;text-align:center;min-width:0">
+          <div style="font-size:10px;color:#64748b">Alertas críticas</div>
+          <div id="s-alerta" style="font-size:18px;font-weight:700;color:#f87171">—</div>
+        </div>
+        <div class="card-sm-inner" style="flex:1 1 80px;text-align:center;min-width:0">
+          <div style="font-size:10px;color:#64748b">Alertas pend.</div>
+          <div id="s-alerta-pend" style="font-size:18px;font-weight:700;color:#fbbf24">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tareas -->
+    <div class="card w-third" style="min-width:260px">
+      <div class="sec">📋 Mantenimiento Preventivo</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+        <div class="card-sm-inner" style="flex:1 1 70px;text-align:center;min-width:0">
+          <div style="font-size:10px;color:#64748b">Pendientes</div>
+          <div id="t-pend" style="font-size:22px;font-weight:700;color:#fbbf24">—</div>
+        </div>
+        <div class="card-sm-inner" style="flex:1 1 70px;text-align:center;min-width:0">
+          <div style="font-size:10px;color:#64748b">En proceso</div>
+          <div id="t-proc" style="font-size:22px;font-weight:700;color:#60a5fa">—</div>
+        </div>
+        <div class="card-sm-inner" style="flex:1 1 70px;text-align:center;min-width:0">
+          <div style="font-size:10px;color:#64748b">Completadas</div>
+          <div id="t-comp" style="font-size:22px;font-weight:700;color:#4ade80">—</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+        <div style="width:80px;height:80px;flex-shrink:0"><canvas id="taskChart"></canvas></div>
+        <div style="flex:1;min-width:0" id="t-bars"></div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <div class="card-sm-inner" style="flex:1 1 80px;text-align:center;min-width:0;border-color:#d9770655">
+          <div style="font-size:10px;color:#fbbf24">Vencen hoy</div>
+          <div id="t-hoy" style="font-size:18px;font-weight:700;color:#fbbf24">—</div>
+        </div>
+        <div class="card-sm-inner" style="flex:1 1 80px;text-align:center;min-width:0;border-color:#dc262655">
+          <div style="font-size:10px;color:#f87171">Vencidas</div>
+          <div id="t-venc" style="font-size:18px;font-weight:700;color:#f87171">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VPS + Ollama -->
+    <div class="card w-third" style="min-width:260px;display:flex;flex-direction:column;gap:14px">
+      <!-- VPS -->
+      <div>
+        <div class="sec">🖥️ VPS — 129.121.100.147</div>
+        <div class="data-row">
+          <span class="label">Backend FastAPI</span>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+            <span id="vps-be-ms" class="mono" style="font-size:10px;color:#475569">—</span>
+            <span id="vps-be-badge"></span>
+          </div>
+        </div>
+        <div class="data-row">
+          <span class="label">Bot WhatsApp</span>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+            <span id="vps-bot-ms" class="mono" style="font-size:10px;color:#475569">—</span>
+            <span id="vps-bot-badge"></span>
+          </div>
+        </div>
+        <div id="vps-bot-grupo" style="font-size:11px;color:#475569;padding:3px 0;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+        <div id="vps-bot-nombre" style="font-size:10px;color:#334155;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+      </div>
+      <!-- Ollama -->
+      <div>
+        <div class="sec">🧠 Ollama / Gemma</div>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+          <span id="ol-badge"></span>
+          <span id="ol-run-badge"></span>
+        </div>
+        <!-- Active model highlight -->
+        <div id="ol-active" style="display:none;margin-bottom:8px">
+          <div style="background:#052e1622;border:1px solid #16a34a55;border-radius:8px;padding:8px;overflow:hidden">
+            <div style="font-size:10px;color:#4ade80;font-weight:700;margin-bottom:2px">⚡ ACTIVO</div>
+            <div id="ol-active-name" style="font-size:12px;font-weight:600;color:#4ade80;
+                 overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+            <div id="ol-active-info" style="font-size:10px;color:#64748b;margin-top:1px;
+                 overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+          </div>
+        </div>
+        <!-- Model list (scrollable) -->
+        <div id="ol-list" style="display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto;overflow-x:hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fila 3: GitHub+Git · Acciones · Feed -->
+  <div class="row">
+    <!-- GitHub + Git Local -->
+    <div class="card w-half" style="min-width:280px">
+      <div class="sec">🐙 GitHub &amp; Git Local</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <!-- GitHub -->
+        <div style="flex:1 1 180px;min-width:0">
+          <div style="font-size:10px;color:#64748b;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="gh-repo">—</div>
+          <div style="margin-bottom:6px"><span id="gh-branches" class="badge info">—</span></div>
+          <ul id="gh-commits" style="list-style:none;display:flex;flex-direction:column;gap:4px;min-width:0;overflow:hidden"></ul>
+        </div>
+        <!-- Git -->
+        <div style="flex:1 1 180px;min-width:0">
+          <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+            <span id="git-branch" class="badge violet">—</span>
+            <span id="git-dirty"></span>
+          </div>
+          <ul id="git-commits" style="list-style:none;display:flex;flex-direction:column;gap:4px;min-width:0;overflow:hidden"></ul>
+          <div id="git-status" style="margin-top:5px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="card w-third" style="min-width:240px">
+      <div class="sec">⚡ Acciones Rápidas — VPS</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <button class="act-btn green" onclick="runAction('dc-up')">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l14 9-14 9V3z"/></svg>
+          Levantar SIGAH
+        </button>
+        <button class="act-btn red" onclick="runAction('dc-down')">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h6v4H9z"/></svg>
+          Detener SIGAH
+        </button>
+        <button class="act-btn" onclick="runAction('dc-restart')" style="grid-column:span 2">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Reiniciar todo (down → up)
+        </button>
+        <button class="act-btn" onclick="runAction('restart-backend')">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Restart Backend
+        </button>
+        <button class="act-btn" onclick="runAction('restart-bot')">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Restart Bot WA
+        </button>
+        <button class="act-btn" onclick="runAction('dc-ps')">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Estado Docker
+        </button>
+        <button class="act-btn" onclick="runAction('bot-logs')">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+          Logs Bot
+        </button>
+        <button class="act-btn" onclick="runAction('backend-logs')">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Logs Backend
+        </button>
+      </div>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="card w-third" style="min-width:220px">
+      <div class="sec">📡 Activity Feed</div>
+      <ul id="feed-list" style="list-style:none;display:flex;flex-direction:column;gap:8px;overflow:hidden"></ul>
+    </div>
+  </div>
+
+  <!-- Fila 3.5: Roadmap SIGAH + Workbook -->
+  <div class="row">
+    <!-- Fases SIGAH -->
+    <div class="card w-2of3" style="min-width:320px">
+      <div class="sec">🗺️ Roadmap SIGAH — 7 Fases</div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+
+        <div style="display:flex;align-items:center;gap:8px;overflow:hidden">
+          <span class="badge ok" style="flex-shrink:0;min-width:82px;justify-content:center">EN CURSO</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;font-weight:600;color:#e2e8f0;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fase 0 — Fundación legal + rebrand + infra VPS</div>
+            <div class="prog-track"><div class="prog-bar" style="width:60%;background:#3b82f6"></div></div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;overflow:hidden">
+          <span class="badge warn" style="flex-shrink:0;min-width:82px;justify-content:center">SCAFFOLD</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;font-weight:600;color:#e2e8f0;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fase 1 — Multi-tenancy BD (tabla hospitales + tenant_id)</div>
+            <div class="prog-track"><div class="prog-bar" style="width:40%;background:#d97706"></div></div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;overflow:hidden">
+          <span class="badge warn" style="flex-shrink:0;min-width:82px;justify-content:center">SCAFFOLD</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;font-weight:600;color:#e2e8f0;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fase 2 — Aislamiento backend (get_current_tenant en routes)</div>
+            <div class="prog-track"><div class="prog-bar" style="width:35%;background:#d97706"></div></div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;overflow:hidden">
+          <span class="badge muted" style="flex-shrink:0;min-width:82px;justify-content:center">PENDIENTE</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;color:#64748b;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fase 3 — Panel SuperAdmin SIGAH</div>
+            <div class="prog-track"><div class="prog-bar" style="width:0%;background:#475569"></div></div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;overflow:hidden">
+          <span class="badge muted" style="flex-shrink:0;min-width:82px;justify-content:center">PENDIENTE</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;color:#64748b;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fase 4 — Despliegue cloud Hetzner + Edge Nodes</div>
+            <div class="prog-track"><div class="prog-bar" style="width:0%;background:#475569"></div></div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;overflow:hidden">
+          <span class="badge muted" style="flex-shrink:0;min-width:82px;justify-content:center">PENDIENTE</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;color:#64748b;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fase 5 — Módulo de Formatos IMSS parametrizables</div>
+            <div class="prog-track"><div class="prog-bar" style="width:0%;background:#475569"></div></div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;overflow:hidden">
+          <span class="badge muted" style="flex-shrink:0;min-width:82px;justify-content:center">PENDIENTE</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;color:#64748b;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fase 6 — Comercialización (CFDI + onboarding + hardening)</div>
+            <div class="prog-track"><div class="prog-bar" style="width:0%;background:#475569"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Pendientes Fase 0 + Comandos rápidos -->
+    <div class="card w-third" style="min-width:240px;display:flex;flex-direction:column;gap:14px">
+      <!-- Pendientes -->
+      <div>
+        <div class="sec">📋 Pendientes Fase 0</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:flex-start;gap:7px;font-size:11px;color:#94a3b8">
+            <span style="color:#dc2626;flex-shrink:0;margin-top:1px">☐</span>
+            <span>Citas SAT e.firma — Gustavo + Carlos</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:7px;font-size:11px;color:#94a3b8">
+            <span style="color:#dc2626;flex-shrink:0;margin-top:1px">☐</span>
+            <span>Reservar "SIGAH" en Secretaría de Economía</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:7px;font-size:11px;color:#94a3b8">
+            <span style="color:#dc2626;flex-shrink:0;margin-top:1px">☐</span>
+            <span>Crear cuenta Hetzner + provisionar CX32</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:7px;font-size:11px;color:#94a3b8">
+            <span style="color:#dc2626;flex-shrink:0;margin-top:1px">☐</span>
+            <span>Registrar dominio <code style="color:#fbbf24;font-size:10px">sigah.mx</code></span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:7px;font-size:11px;color:#94a3b8">
+            <span style="color:#dc2626;flex-shrink:0;margin-top:1px">☐</span>
+            <span>Aplicar migración Fase 1 en staging Hetzner</span>
+          </div>
+        </div>
+      </div>
+      <!-- Comandos rápidos copy -->
+      <div>
+        <div class="sec">📎 Copiar comando</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <button class="act-btn" onclick="copyCmd('ssh -L 3306:127.0.0.1:3306 sigah-bluehost','SSH Tunnel MySQL')">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            SSH Tunnel MySQL VPS
+          </button>
+          <button class="act-btn" onclick="copyCmd('bash quick_deploy.sh --full','Deploy completo')">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Deploy completo VPS
+          </button>
+          <button class="act-btn" onclick="copyCmd('alembic upgrade head','Alembic upgrade')">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Alembic upgrade head
+          </button>
+          <button class="act-btn" onclick="copyCmd('pytest tests/test_tenant_isolation.py -v','Tests multi-tenant')">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Tests aislamiento multi-tenant
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fila 4: Cerebro SIGAB — Knowledge Graph -->
+  <div class="row">
+    <div class="card w-full" style="min-height:520px;padding:16px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <span class="sec" style="margin-bottom:0">🧠 Cerebro SIGAB — Ecosistema de Archivos</span>
+        <div id="graph-legend" style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:#94a3b8;align-items:center"></div>
+      </div>
+      <div id="graph-container" style="width:100%;height:460px;border-radius:8px;overflow:hidden;background:#0d1117;position:relative;border:1px solid #1e293b">
+        <svg id="graph-svg" width="100%" height="100%"></svg>
+        <div id="graph-tooltip" style="position:absolute;background:#1e293b;color:#e2e8f0;padding:8px 12px;border-radius:6px;font-size:12px;pointer-events:none;display:none;border:1px solid #334155;max-width:240px;line-height:1.5;z-index:10"></div>
+        <div id="graph-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#475569;font-size:13px">Cargando grafo…</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end page-wrap -->
+
+<!-- ══ MODAL ═══════════════════════════════════════════════ -->
+<div id="modal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;overflow:hidden">
+      <span id="modal-title" style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Resultado</span>
+      <button onclick="closeModal()" style="color:#64748b;font-size:18px;cursor:pointer;background:0;border:0;flex-shrink:0">✕</button>
+    </div>
+    <span id="modal-status" class="badge" style="margin-bottom:8px;display:inline-flex"></span>
+    <pre id="modal-out" class="log-box" style="margin-top:8px"></pre>
+  </div>
+</div>
+
+<script>
+const API = "http://localhost:4001";
+let hourChart, equipoChart, taskChart;
+let graphInited = false;
+
+const GROUP_COLORS = {
+  machine:"#64748b", ai:"#10b981", db:"#f59e0b",
+  infra:"#94a3b8", backend:"#3b82f6", frontend:"#8b5cf6", config:"#6b7280"
+};
+const GROUP_LABELS = {
+  machine:"Máquinas", ai:"IA / Modelos", db:"Base de datos",
+  infra:"Infraestructura", backend:"Backend", frontend:"Frontend", config:"Config / Memoria"
+};
+
+// ── Helpers ───────────────────────────────────────────────
+const fmt = n => n==null?"—": n>=1e6?(n/1e6).toFixed(2)+"M": n>=1e3?(n/1e3).toFixed(1)+"K": String(n);
+const esc = s => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const badgeOk = ok => ok ? '<span class="badge ok">✓ OK</span>' : '<span class="badge err">✗ Down</span>';
+const pct = (v,t) => t>0 ? Math.round(v/t*100) : 0;
+
+function progBar(label, val, total, color){
+  const p = pct(val,total);
+  return `<div style="margin-bottom:5px;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;gap:6px">
+      <span style="color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${label}</span>
+      <span style="color:#e2e8f0;flex-shrink:0;white-space:nowrap">${val} <span style="color:#475569">(${p}%)</span></span>
+    </div>
+    <div class="prog-track"><div class="prog-bar" style="width:${p}%;background:${color}"></div></div>
+  </div>`;
+}
+
+function toast(msg, ok=true){
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.style.cssText = `background:${ok?"#052e16":"#2d0a0a"};border:1px solid ${ok?"#16a34a":"#dc2626"};color:${ok?"#4ade80":"#f87171"}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 3200);
+}
+
+// ── Charts ────────────────────────────────────────────────
+function initHourChart(b){
+  const ctx = document.getElementById("hourChart").getContext("2d");
+  const labels = Object.keys(b), data = Object.values(b);
+  if(hourChart){hourChart.data.datasets[0].data=data;hourChart.update();return;}
+  hourChart = new Chart(ctx,{
+    type:"bar",
+    data:{labels,datasets:[{data,backgroundColor:"#006CB755",borderColor:"#006CB7",borderWidth:1,borderRadius:2}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>"Out: "+fmt(c.raw)}}},
+      scales:{x:{ticks:{color:"#475569",font:{size:8}},grid:{color:"#1e293b"}},
+              y:{ticks:{color:"#475569",font:{size:8}},grid:{color:"#1e293b33"}}}}
+  });
+}
+
+function initEquipoChart(op,mant,fs,baja){
+  const ctx = document.getElementById("equipoChart").getContext("2d");
+  const data=[op,mant,fs,baja];
+  if(equipoChart){equipoChart.data.datasets[0].data=data;equipoChart.update();return;}
+  equipoChart = new Chart(ctx,{
+    type:"doughnut",
+    data:{labels:["Operativo","Mantenimiento","Fuera servicio","Baja"],
+      datasets:[{data,backgroundColor:["#16a34a","#d97706","#dc2626","#475569"],
+        borderColor:"#1e293b",borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},cutout:"72%"}
+  });
+}
+
+function initTaskChart(pend,proc,comp){
+  const ctx = document.getElementById("taskChart").getContext("2d");
+  const data=[pend,proc,comp];
+  if(taskChart){taskChart.data.datasets[0].data=data;taskChart.update();return;}
+  taskChart = new Chart(ctx,{
+    type:"doughnut",
+    data:{labels:["Pendiente","En proceso","Completado"],
+      datasets:[{data,backgroundColor:["#d97706","#3b82f6","#16a34a"],
+        borderColor:"#1e293b",borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},cutout:"72%"}
+  });
+}
+
+// ── Renderers ─────────────────────────────────────────────
+function renderClaude(d){
+  document.getElementById("c-input").textContent  = fmt(d.total_input_tokens);
+  document.getElementById("c-output").textContent = fmt(d.total_output_tokens);
+  document.getElementById("c-cc").textContent     = fmt(d.cache_create_tokens);
+  document.getElementById("c-cr").textContent     = fmt(d.cache_read_tokens);
+  if(d.plan) document.getElementById("c-plan-label").textContent = d.plan;
+  document.getElementById("c-today-in").textContent  = fmt(d.today_input_tokens);
+  document.getElementById("c-today-out").textContent = fmt(d.today_output_tokens);
+  document.getElementById("c-today").textContent    = d.sessions_today||0;
+  document.getElementById("c-sessions").textContent = d.total_sessions||0;
+  document.getElementById("qs-cost").textContent = (d.sessions_today||0)+" sesiones hoy";
+  document.getElementById("qs-pct").textContent  = fmt(d.today_output_tokens||0)+" out";
+  if(d.hour_buckets) initHourChart(d.hour_buckets);
+}
+
+function renderVPS(d){
+  const be=d.backend||{}, bo=d.bot||{};
+  document.getElementById("vps-be-ms").textContent  = be.ok?be.ms+"ms":"—";
+  document.getElementById("vps-be-badge").innerHTML = badgeOk(be.ok);
+  document.getElementById("vps-bot-ms").textContent  = bo.ok?bo.ms+"ms":"—";
+  document.getElementById("vps-bot-badge").innerHTML = badgeOk(bo.ok);
+  document.getElementById("vps-bot-grupo").textContent  = bo.grupo_resuelto?"📱 grupo ✅":"⚠️ sin grupo";
+  document.getElementById("vps-bot-nombre").textContent = bo.grupo_nombre?`"${bo.grupo_nombre}"`:"";
+  const up = [be.ok,bo.ok].filter(Boolean).length;
+  document.getElementById("qs-svc").textContent  = `VPS ${up}/2 activos`;
+  document.getElementById("hb-dot").style.background = up===2?"#4ade80":up===1?"#fbbf24":"#f87171";
+}
+
+function renderOllama(d){
+  const src = d.source ? ` <span class="badge muted" style="font-size:9px">${esc(d.source)}</span>` : "";
+  document.getElementById("ol-badge").innerHTML = d.ok
+    ? `<span class="badge ok">✓ Ollama online · ${d.model_count} modelos</span>${src}`
+    : `<span class="badge err">✗ Ollama no accesible</span>`;
+
+  const activeEl = document.getElementById("ol-active");
+  if(d.running && d.running.length>0){
+    activeEl.style.display="block";
+    document.getElementById("ol-active-name").textContent = d.running[0].name;
+    document.getElementById("ol-active-info").textContent =
+      `${d.running[0].vram_gb} GB VRAM · expira ${(d.running[0].expires||"").replace("T"," ").slice(0,16)}`;
+    document.getElementById("ol-run-badge").innerHTML =
+      `<span class="badge ok pulse">⚡ ${d.running.length} activo</span>`;
+  } else {
+    activeEl.style.display="none";
+    document.getElementById("ol-run-badge").innerHTML =
+      `<span class="badge muted">Sin modelo activo</span>`;
+  }
+
+  const list = document.getElementById("ol-list");
+  if(!d.ok){
+    list.innerHTML = `<div style="font-size:11px;color:#f87171;padding:4px">
+      No se puede conectar a Ollama en ${esc(d.host||"")}<br>
+      <span style="color:#64748b;font-size:10px">Verifica que Ollama esté corriendo: <code>ollama serve</code></span>
+    </div>`;
+    return;
+  }
+  if(!d.models||d.models.length===0){
+    list.innerHTML = `<div style="font-size:11px;color:#475569;padding:4px">
+      Sin modelos instalados.<br>
+      <span style="font-size:10px">Instala uno: <code style="color:#fbbf24">ollama pull gemma3:4b</code></span>
+    </div>`;
+    return;
+  }
+  const running = d.running||[];
+  list.innerHTML = d.models.map(m=>{
+    const live = running.some(r=>r.name===m.name);
+    return `<div class="model-card${live?" live":""}">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;overflow:hidden">
+        <span style="font-size:11px;font-weight:600;color:${live?"#4ade80":"#e2e8f0"};
+               overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(m.name)}</span>
+        <span class="mono" style="font-size:10px;color:#475569;flex-shrink:0">${m.size_gb}GB</span>
+      </div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">
+        ${m.family?`<span class="badge info" style="font-size:9px">${esc(m.family)}</span>`:""}
+        ${m.params?`<span class="badge violet" style="font-size:9px">${esc(m.params)}</span>`:""}
+        ${m.quantization?`<span class="badge muted" style="font-size:9px">${esc(m.quantization)}</span>`:""}
+        ${live?`<span class="badge ok" style="font-size:9px">▶ activo</span>`:""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderSIGAH(d){
+  if(d._error === "sin_credenciales"){
+    const warn = `<div style="background:#2d1a00;border:1px solid #d9770644;border-radius:8px;padding:10px;font-size:12px;color:#fbbf24;margin-bottom:8px">
+      ⚠️ Configura tus credenciales SIGAH para ver datos en vivo.<br>
+      <span style="font-size:11px;color:#94a3b8">Crea <code>sigab-monitor/.monitor.env</code> con SIGAH_MATRICULA y SIGAH_PASSWORD</span>
+    </div>`;
+    document.getElementById("s-total").parentElement.insertAdjacentHTML("beforebegin", warn);
+  }
+  document.getElementById("s-total").textContent    = d.equipos_total||0;
+  document.getElementById("s-os-total").textContent = d.ordenes_total||0;
+  document.getElementById("s-op").textContent   = d.equipos_operativos||0;
+  document.getElementById("s-mant").textContent = d.equipos_mantenim||0;
+  document.getElementById("s-fs").textContent   = d.equipos_fuera||0;
+  document.getElementById("s-baja").textContent = d.equipos_baja||0;
+  document.getElementById("s-alerta").textContent      = d.alertas_criticas||0;
+  document.getElementById("s-alerta-pend").textContent = d.alertas_pendientes||0;
+  const tot = d.ordenes_total||1;
+  document.getElementById("os-bars").innerHTML =
+    progBar("Abiertas",  d.ordenes_abiertas||0,  tot,"#3b82f6")+
+    progBar("En proceso",d.ordenes_en_proceso||0,tot,"#d97706")+
+    progBar("Cerradas",  d.ordenes_cerradas||0,  tot,"#16a34a");
+  initEquipoChart(d.equipos_operativos||0,d.equipos_mantenim||0,d.equipos_fuera||0,d.equipos_baja||0);
+}
+
+function renderTasks(d){
+  document.getElementById("t-pend").textContent = d.preventivos_pendientes||0;
+  document.getElementById("t-proc").textContent = d.preventivos_en_proceso||0;
+  document.getElementById("t-comp").textContent = d.preventivos_completados||0;
+  document.getElementById("t-hoy").textContent  = d.preventivos_vencen_hoy||0;
+  document.getElementById("t-venc").textContent = d.preventivos_vencidos||0;
+  const tot = Math.max(d.preventivos_total||1,1);
+  document.getElementById("t-bars").innerHTML =
+    progBar("Pendientes", d.preventivos_pendientes||0,tot,"#d97706")+
+    progBar("En proceso", d.preventivos_en_proceso||0,tot,"#3b82f6")+
+    progBar("Completadas",d.preventivos_completados||0,tot,"#16a34a");
+  initTaskChart(d.preventivos_pendientes||0,d.preventivos_en_proceso||0,d.preventivos_completados||0);
+}
+
+function renderGitHub(d){
+  document.getElementById("gh-repo").textContent      = d.repo||"—";
+  document.getElementById("gh-branches").textContent  = (d.branch_count||0)+" ramas";
+  document.getElementById("gh-commits").innerHTML = (d.commits||[]).map(c=>`
+    <li class="commit-line" style="list-style:none">
+      <span class="commit-sha">${esc(c.sha)}</span>
+      <span class="commit-msg">${esc((c.message||"").split("\n")[0])}</span>
+    </li>`).join("") || '<li style="font-size:11px;color:#475569">Sin datos</li>';
+}
+
+function renderGit(d){
+  document.getElementById("git-branch").textContent = d.branch||"—";
+  document.getElementById("git-dirty").innerHTML = d.dirty_files>0
+    ? `<span class="badge warn">${d.dirty_files} sin commit</span>`
+    : `<span class="badge ok">limpio</span>`;
+  document.getElementById("git-commits").innerHTML = (d.recent_commits||[]).map(c=>`
+    <li class="commit-line" style="list-style:none">
+      <span class="commit-sha">${esc(c.sha)}</span>
+      <span class="commit-msg">${esc(c.message)}</span>
+    </li>`).join("") || '<li style="font-size:11px;color:#475569">—</li>';
+  document.getElementById("git-status").innerHTML = (d.status_lines||[]).map(l=>
+    `<div class="mono" style="font-size:10px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l)}</div>`
+  ).join("");
+}
+
+function renderFeed(d){
+  const icons={claude:"🤖",bot:"📱",sigah:"🏥",github:"🐙"};
+  document.getElementById("feed-list").innerHTML = (d.events||[]).map(ev=>`
+    <li style="display:flex;gap:6px;align-items:flex-start;overflow:hidden;list-style:none">
+      <span style="font-size:13px;flex-shrink:0">${icons[ev.type]||"📌"}</span>
+      <div style="min-width:0;flex:1;overflow:hidden">
+        <div style="font-size:11px;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(ev.text)}</div>
+        <div class="mono" style="font-size:10px;color:#475569">${ev.time||""}</div>
+      </div>
+    </li>`).join("") || '<li style="font-size:11px;color:#475569">Sin eventos</li>';
+}
+
+function renderGraph(d){
+  if(!d||!d.nodes||!d.nodes.length) return;
+
+  // Leyenda (solo 1 vez)
+  const leg = document.getElementById("graph-legend");
+  if(!leg.children.length){
+    const groups = [...new Set(d.nodes.map(n=>n.group))];
+    leg.innerHTML = groups.map(g=>`
+      <span style="display:flex;align-items:center;gap:4px">
+        <span style="width:8px;height:8px;border-radius:50%;background:${GROUP_COLORS[g]||"#94a3b8"};flex-shrink:0;display:inline-block"></span>
+        <span>${GROUP_LABELS[g]||g}</span>
+      </span>`).join("");
+  }
+
+  if(graphInited) return;
+  graphInited = true;
+  document.getElementById("graph-loading").style.display = "none";
+
+  const container = document.getElementById("graph-container");
+  const W = container.clientWidth  || 900;
+  const H = container.clientHeight || 460;
+  const tooltip = document.getElementById("graph-tooltip");
+
+  // Deep copy para que D3 mute sus props sin afectar la fuente
+  const nodes = d.nodes.map(n=>({...n}));
+  const links = d.links.map(l=>({...l}));
+
+  const svg = d3.select("#graph-svg");
+  const g   = svg.append("g");
+
+  // Zoom / pan
+  svg.call(d3.zoom().scaleExtent([0.25,4]).on("zoom", evt=>{
+    g.attr("transform", evt.transform);
+  }));
+
+  // Simulación de fuerzas
+  const sim = d3.forceSimulation(nodes)
+    .force("link",    d3.forceLink(links).id(n=>n.id).distance(95).strength(0.65))
+    .force("charge",  d3.forceManyBody().strength(-320))
+    .force("center",  d3.forceCenter(W/2, H/2))
+    .force("collide", d3.forceCollide(n=>(n.size||12)+16));
+
+  // Links (líneas)
+  const link = g.append("g")
+    .selectAll("line").data(links).join("line")
+    .attr("stroke","#334155").attr("stroke-width",1.2).attr("stroke-opacity",0.45);
+
+  // Nodos (grupos SVG)
+  const node = g.append("g")
+    .selectAll("g").data(nodes).join("g")
+    .attr("cursor","pointer")
+    .call(d3.drag()
+      .on("start",(e,n)=>{ if(!e.active) sim.alphaTarget(0.3).restart(); n.fx=n.x; n.fy=n.y; })
+      .on("drag", (e,n)=>{ n.fx=e.x; n.fy=e.y; })
+      .on("end",  (e,n)=>{ if(!e.active) sim.alphaTarget(0); n.fx=null; n.fy=null; })
+    );
+
+  // Círculo del nodo
+  node.append("circle")
+    .attr("r", n=>n.size||12)
+    .attr("fill", n=>(GROUP_COLORS[n.group]||"#64748b")+"28")
+    .attr("stroke", n=>GROUP_COLORS[n.group]||"#64748b")
+    .attr("stroke-width",2);
+
+  // Etiquetas multilinea
+  node.each(function(n){
+    const el   = d3.select(this);
+    const r    = n.size||12;
+    const parts= (n.label||n.id).split("\n");
+    parts.forEach((p,i)=>{
+      el.append("text")
+        .attr("y", r+11+i*11)
+        .attr("text-anchor","middle")
+        .attr("fill", i===0?"#cbd5e1":"#64748b")
+        .attr("font-size", i===0?"9px":"8px")
+        .attr("font-weight", i===0?"600":"400")
+        .attr("pointer-events","none")
+        .text(p);
+    });
+  });
+
+  // Tooltip hover
+  node.on("mouseover",(evt,n)=>{
+    tooltip.style.display="block";
+    tooltip.innerHTML=`<strong style="color:#e2e8f0">${esc((n.label||n.id).replace("\n"," · "))}</strong><br><span style="color:#94a3b8;font-size:11px">${esc(n.desc||"")}</span>`;
+  }).on("mousemove",evt=>{
+    const rect=container.getBoundingClientRect();
+    let x=evt.clientX-rect.left+14, y=evt.clientY-rect.top-10;
+    if(x+250>W) x=x-264;
+    if(y+80>H)  y=y-90;
+    tooltip.style.left=x+"px"; tooltip.style.top=y+"px";
+  }).on("mouseout",()=>{ tooltip.style.display="none"; });
+
+  // Click: resaltar nodos conectados
+  node.on("click",(evt,clicked)=>{
+    evt.stopPropagation();
+    const conn = new Set([clicked.id]);
+    links.forEach(l=>{
+      const s=typeof l.source==="object"?l.source.id:l.source;
+      const t=typeof l.target==="object"?l.target.id:l.target;
+      if(s===clicked.id) conn.add(t);
+      if(t===clicked.id) conn.add(s);
+    });
+    node.select("circle")
+      .attr("opacity", n=>conn.has(n.id)?1:0.12)
+      .attr("stroke-width", n=>n.id===clicked.id?4:2);
+    node.selectAll("text").attr("opacity", n=>conn.has(n.id)?1:0.15);
+    link.attr("stroke-opacity", l=>{
+      const s=typeof l.source==="object"?l.source.id:l.source;
+      const t=typeof l.target==="object"?l.target.id:l.target;
+      return (conn.has(s)&&conn.has(t))?0.85:0.04;
+    });
+  });
+
+  // Click en fondo: resetear
+  svg.on("click",()=>{
+    node.select("circle").attr("opacity",1).attr("stroke-width",2);
+    node.selectAll("text").attr("opacity",1);
+    link.attr("stroke-opacity",0.45);
+  });
+
+  // Tick: actualizar posiciones
+  sim.on("tick",()=>{
+    link
+      .attr("x1",l=>l.source.x).attr("y1",l=>l.source.y)
+      .attr("x2",l=>l.target.x).attr("y2",l=>l.target.y);
+    node.attr("transform",n=>`translate(${n.x},${n.y})`);
+  });
+}
+
+// ── Fetch ─────────────────────────────────────────────────
+async function fetchAll(manual=false){
+  if(manual) toast("Actualizando…");
+  try{
+    const d = await fetch(API+"/api/all").then(r=>r.json());
+    renderClaude(d.claude||{});
+    renderVPS(d.vps||{});
+    renderOllama(d.ollama||{});
+    renderSIGAH(d.sigah||{});
+    renderTasks(d.tasks||{});
+    renderGitHub(d.github||{});
+    renderGit(d.git||{});
+    renderFeed(d.feed||{});
+    renderGraph(d.graph||{});
+    document.getElementById("last-ts").textContent =
+      "Act: "+new Date().toLocaleTimeString("es-MX");
+  }catch(e){
+    toast("Error: ¿Corre server.py?", false);
+  }
+}
+
+// ── Actions ───────────────────────────────────────────────
+const actionLabels={
+  "dc-up":"Levantando SIGAH…","dc-down":"Deteniendo SIGAH…",
+  "dc-restart":"Reiniciando SIGAH…","restart-backend":"Reiniciando Backend…",
+  "restart-bot":"Reiniciando Bot WA…","bot-logs":"Logs del Bot WA",
+  "backend-logs":"Logs del Backend","dc-ps":"Estado contenedores"
+};
+
+async function runAction(action){
+  const modal=document.getElementById("modal");
+  document.getElementById("modal-title").textContent = actionLabels[action]||action;
+  document.getElementById("modal-status").className  = "badge warn";
+  document.getElementById("modal-status").textContent= "⏳ Ejecutando…";
+  document.getElementById("modal-out").textContent   = "";
+  modal.classList.add("open");
+  try{
+    const r = await fetch(API+"/api/action/"+action,{method:"POST"});
+    const d = await r.json();
+    document.getElementById("modal-status").className   = "badge "+(d.ok?"ok":"err");
+    document.getElementById("modal-status").textContent = d.ok?"✓ Completado":"✗ Error";
+    document.getElementById("modal-out").textContent    = d.output||d.error||"(sin salida)";
+    toast(d.ok?`✓ ${action} completado`:`✗ ${action} falló`, d.ok);
+  }catch(e){
+    document.getElementById("modal-status").className   = "badge err";
+    document.getElementById("modal-status").textContent = "✗ Sin conexión";
+    document.getElementById("modal-out").textContent    = "server.py no responde.\n"+e;
+    toast("Error de conexión",false);
+  }
+}
+
+function closeModal(){document.getElementById("modal").classList.remove("open")}
+
+function copyCmd(text, label){
+  navigator.clipboard.writeText(text)
+    .then(()=>toast("✓ Copiado: "+label))
+    .catch(()=>{
+      const el=document.createElement("textarea");
+      el.value=text; el.style.position="fixed"; el.style.opacity="0";
+      document.body.appendChild(el); el.select();
+      document.execCommand("copy"); document.body.removeChild(el);
+      toast("✓ Copiado: "+label);
+    });
+}
+document.getElementById("modal").addEventListener("click",e=>{if(e.target===e.currentTarget)closeModal()});
+
+fetchAll();
+setInterval(fetchAll,30000);
+</script>
+</body>
+</html>

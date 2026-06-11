@@ -18,10 +18,14 @@ import json
 from datetime import date
 from cachetools import TTLCache
 
-from config import get_db, GEMMA_MODEL
+from config import get_db, GEMMA_MODEL, DISABLE_COPILOT
 from auth.dependencies import get_current_user
 from auth.tenancy import get_current_tenant
 from services import gemma_service
+
+def _check_copilot_enabled():
+    if DISABLE_COPILOT:
+        raise HTTPException(status_code=503, detail="Copilot IA desactivado en esta instancia (SIGAH_DISABLE_COPILOT=1)")
 from services.reliability_service import obtener_metricas_fiabilidad
 
 router = APIRouter()
@@ -144,6 +148,7 @@ async def _get_equipo_contexto(conn, equipo_id: int, tenant_id: int) -> dict | N
 async def estado_ollama(user: dict = Depends(get_current_user)):
     """Verifica si Ollama está corriendo y si Gemma está disponible."""
     resultado = await gemma_service.verificar_ollama()
+    resultado["copilot_habilitado"] = not DISABLE_COPILOT
     return resultado
 
 
@@ -161,6 +166,7 @@ async def copilot_chat(
       equipo_id: int  (opcional, para inyectar contexto de equipo),
     }
     """
+    _check_copilot_enabled()
     messages = data.get("messages", [])
     contexto_tipo = data.get("contexto_tipo", "general")
     equipo_id = data.get("equipo_id")
