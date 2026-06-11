@@ -17,15 +17,21 @@ class AuditService:
         datos: dict,
         session: Optional[AsyncSession] = None
     ):
-        """Registra un evento en el log de auditoría inalterable con hashing encadenado."""
+        """Registra un evento en el log de auditoría inalterable con hashing encadenado.
+
+        Si se pasa una `session` externa (la del request), la auditoría se vuelve
+        atómica con la mutación: el INSERT se hace con `flush()` y el `commit()` lo
+        controla el request (consistencia NOM-016 + compatibilidad con el harness de
+        tests transaccional). Si no hay sesión, se abre una propia y se commitea aquí.
+        """
         if session is None:
             async with AsyncSessionLocal() as new_session:
-                return await AuditService._execute_log(usuario_id, accion, entidad, entidad_id, datos, new_session)
+                return await AuditService._execute_log(usuario_id, accion, entidad, entidad_id, datos, new_session, owns_session=True)
         else:
-            return await AuditService._execute_log(usuario_id, accion, entidad, entidad_id, datos, session)
+            return await AuditService._execute_log(usuario_id, accion, entidad, entidad_id, datos, session, owns_session=False)
 
     @staticmethod
-    async def _execute_log(usuario_id, accion, entidad, entidad_id, datos, session: AsyncSession):
+    async def _execute_log(usuario_id, accion, entidad, entidad_id, datos, session: AsyncSession, owns_session: bool = True):
         # 1. Obtener el hash del último registro
         stmt = select(AuditLog.hash_registro).order_by(desc(AuditLog.id)).limit(1)
         result = await session.execute(stmt)
@@ -49,7 +55,13 @@ class AuditService:
             datos_json=datos_json
         )
         session.add(nuevo_log)
-        await session.commit()
+        if owns_session:
+            # Sesión propia: cerramos la transacción aquí.
+            await session.commit()
+        else:
+            # Sesión externa (request): el commit lo controla el request para que
+            # la auditoría sea atómica con la mutación. Solo flusheamos.
+            await session.flush()
         return hash_registro
 
     @staticmethod

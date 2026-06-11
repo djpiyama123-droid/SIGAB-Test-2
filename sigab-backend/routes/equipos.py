@@ -177,10 +177,10 @@ async def crear_equipo(
 
     try:
         session.add(nuevo_equipo)
-        await session.commit()
+        await session.flush()
         await session.refresh(nuevo_equipo)
 
-        # Auditoría NOM-016
+        # Auditoría NOM-016 (atómica con la mutación: mismo commit del request)
         await AuditService.log_event(
             usuario_id=user["id"],
             accion="CREATE_EQUIPO",
@@ -189,6 +189,8 @@ async def crear_equipo(
             datos=data,
             session=session
         )
+        await session.commit()
+        await session.refresh(nuevo_equipo)
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=409, detail=f"Error al crear: {str(e)}")
@@ -255,16 +257,18 @@ async def eliminar_equipo(
         await session.execute(stmt_alert)
 
         await session.delete(equipo)
-        await session.commit()
+        await session.flush()
 
-        # Auditoría NOM-016
+        # Auditoría NOM-016 (atómica con la mutación: mismo commit del request)
         await AuditService.log_event(
             usuario_id=user["id"],
             accion="DELETE_EQUIPO",
             entidad="equipos",
             entidad_id=equipo_id,
-            datos={"nombre": nombre_equipo}
+            datos={"nombre": nombre_equipo},
+            session=session
         )
+        await session.commit()
     except IntegrityError as e:
         await session.rollback()
         raise HTTPException(
@@ -754,16 +758,18 @@ async def actualizar_equipo(
         setattr(equipo, k, v)
 
     try:
-        await session.commit()
-        
-        # Auditoría NOM-016
+        await session.flush()
+
+        # Auditoría NOM-016 (atómica con la mutación: mismo commit del request)
         await AuditService.log_event(
             usuario_id=user["id"],
             accion="UPDATE_EQUIPO",
             entidad="equipos",
             entidad_id=equipo_id,
-            datos=updates
+            datos=updates,
+            session=session
         )
+        await session.commit()
     except IntegrityError as e:
         await session.rollback()
         # Mensaje accionable para el frontend (P2-01).
