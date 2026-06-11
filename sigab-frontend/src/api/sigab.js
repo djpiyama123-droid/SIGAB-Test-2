@@ -1,6 +1,6 @@
 /**
- * @module api/sigab
- * @description Cliente HTTP centralizado del frontend SIGAB.
+ * @module api/sigah
+ * @description Cliente HTTP centralizado del frontend SIGAH.
  *
  * Provee un objeto `api` con métodos para todos los endpoints del backend.
  * Utiliza Axios con interceptores automáticos para:
@@ -9,7 +9,7 @@
  * - Gestión de blobs para descargas PDF/Excel (responseType: 'blob')
  *
  * Patrón de uso:
- *   import { api } from '../api/sigab';
+ *   import { api } from '../api/sigah';
  *   const equipos = await api.getEquipos({ estado: 'operativo' });
  *
  * @requires axios
@@ -47,7 +47,7 @@ client.interceptors.response.use(
          window.location.href = '/login';
       }
     }
-    console.error('SIGAB API Error:', err.response?.status, err.config?.url);
+    console.error('SIGAH API Error:', err.response?.status, err.config?.url);
     return Promise.reject(err);
   }
 );
@@ -57,6 +57,18 @@ export const api = {
   login: (data) => client.post('/auth/login', data),
   getMe: () => client.get('/auth/me'),
   changePassword: (data) => client.post('/auth/change-password', data),
+
+  // Helper para descargas
+  triggerDownload: (blob, filename) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  },
 
   // ── Dashboard ─────────────────────────────────────────────
   getDashboard: () => client.get('/dashboard/resumen'),
@@ -75,6 +87,7 @@ export const api = {
   getAreasCatalogo: () => client.get('/equipos/areas/catalogo'),
   getZonasCatalogo: () => client.get('/equipos/zonas/catalogo'),
   getHistorialEquipo: (id) => client.get(`/equipos/${id}/historial`),
+  descargarEquiposCsv: (params = {}) => client.get('/equipos/exportar/csv', { params, responseType: 'blob' }),
   subirImagenEquipo: (id, file) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -88,6 +101,7 @@ export const api = {
   getArchivosHistoricos: (params = {}) => client.get('/ordenes/archivos-historicos', { params }),
   getOrden: (id) => client.get(`/ordenes/${id}`),
   crearOrden: (data) => client.post('/ordenes', data),
+  updateOrden: (id, data) => client.put(`/ordenes/${id}`, data),
   cerrarOrden: (id) => client.put(`/ordenes/${id}/cerrar`),
   cambiarEstadoOrden: (id, estado) =>
     client.put(`/ordenes/${id}/estado`, { estado }),
@@ -105,8 +119,22 @@ export const api = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+  scanImssOS: (file, autoCreate = false) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return client.post(`/ordenes/scan-imss?auto_create=${autoCreate}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000,
+    });
+  },
   finalizarOrden: (id, data) => client.put(`/ordenes/${id}/finalizar`, data),
   getPdfOrdenUrl: (id) => `${client.defaults.baseURL}/ordenes/${id}/pdf`,
+  getPdfOrdenFisicaUrl: (id) => `${client.defaults.baseURL}/ordenes/${id}/pdf-fisico`,
+  // Descargas con auth via interceptor (window.open NO envía Authorization)
+  descargarPdfOrden: (id) =>
+    client.get(`/ordenes/${id}/pdf`, { responseType: 'blob' }),
+  descargarPdfOrdenFisica: (id) =>
+    client.get(`/ordenes/${id}/pdf-fisico`, { responseType: 'blob' }),
 
   // ── Casillas CENEVAL (Conservación) ──────────────────────
   getCasillas: (ordenId) => client.get(`/casillas/${ordenId}`),
@@ -143,6 +171,7 @@ export const api = {
   // ── Reservas ──────────────────────────────────────────────
   getReservas: () => client.get('/reservas'),
   crearReserva: (data) => client.post('/reservas', data),
+  cambiarEstadoReserva: (id, data) => client.put(`/reservas/${id}/estado`, data),
 
   // ── Reportes ──────────────────────────────────────────────
   getReporteDiario: () => client.get('/reportes/diario'),
@@ -180,7 +209,7 @@ export const api = {
   descargarPdfNom240: (id) =>
     client.get(`/tecnovigilancia/${id}/pdf`, { responseType: 'blob' }),
 
-  // ── SIGAB Copilot (IA Local Gemma) ────────────────────────────
+  // ── SIGAH Copilot (IA Local Gemma) ────────────────────────────
   getCopilotEstado: () => client.get('/copilot/estado'),
   getCopilotPromptsRapidos: () => client.get('/copilot/prompts-rapidos'),
   copilotDiagnostico: (data) => client.post('/copilot/diagnostico', data),
@@ -194,15 +223,21 @@ export const api = {
   // ── Almacén de Refacciones ─────────────────────────────────
   getAlmacen: (params = {}) => client.get('/almacen/', { params }),
   crearRefaccion: (data) => client.post('/almacen/', data),
-  ajustarStock: (id, data) => client.put(`/almacen/${id}/ajustar`, data),
+  ajustarStock: (id, data) => client.put(`/almacen/${id}/stock`, data),
 
   // ── Metrología y Calibración ───────────────────────────────
   getMetrologia: () => client.get('/metrologia/'),
   crearCalibracion: (data) => client.post('/metrologia/', data),
+  getMetrologiaVencidas: () => client.get('/metrologia/vencidas'),
 
   // ── Capacitación de Personal ───────────────────────────────
   getCapacitaciones: () => client.get('/capacitaciones/'),
   crearCapacitacion: (data) => client.post('/capacitaciones/', data),
+
+  // ── SuperAdmin SIGAH ──────────────────────────────────────
+  getAdminStats: () => client.get('/admin/stats'),
+  getAdminHospitales: () => client.get('/admin/hospitales'),
+  getAdminActividad: () => client.get('/admin/actividad-reciente'),
 
   // ── Auditoría NOM-016 ──────────────────────────────────────
   getAuditLogs: () => client.get('/auditoria/'),

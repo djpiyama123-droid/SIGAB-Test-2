@@ -1,6 +1,6 @@
 /**
  * @module pages/Dashboard
- * @description Centro de Control principal del sistema SIGAB.
+ * @description Centro de Control principal del sistema SIGAH.
  *
  * Muestra KPIs en tiempo real vía SSE (Server-Sent Events):
  * - Total de equipos, operativos, fallas críticas, mantenimiento pendiente
@@ -55,7 +55,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#0f172a]">
+      <div className="flex items-center justify-center h-screen" style={{ background: 'var(--content-bg)' }}>
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -69,7 +69,7 @@ export default function Dashboard() {
             />
             <Activity className="absolute inset-0 m-auto h-8 w-8 text-emerald-500 animate-pulse" />
           </div>
-          <p className="text-slate-400 font-medium animate-pulse">Iniciando SIGAB Engine...</p>
+          <p className="text-[var(--content-muted)] font-medium animate-pulse">Iniciando SIGAH Engine...</p>
         </motion.div>
       </div>
     );
@@ -83,11 +83,11 @@ export default function Dashboard() {
           <Title className="text-white">Error de Enlace</Title>
           <Text className="text-rose-200/60 mt-2">{error}</Text>
           <Divider />
-          <button 
+          <button
             onClick={() => window.location.reload()}
-            className="px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-2 bg-rose-600 hover:bg-rose-500 active:scale-[0.97] text-white text-sm font-medium rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f172a]"
           >
-            Reintentar Conexión
+            Reintentar conexión
           </button>
         </Card>
       </div>
@@ -115,40 +115,42 @@ export default function Dashboard() {
     >
       {/* Header Conquistador */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-        <motion.div variants={containerVariants} className="flex items-center gap-5">
-          <div className="relative">
-            <div className="absolute -inset-1 bg-emerald-500/20 blur-lg rounded-full animate-pulse" />
-            <img 
-              src="/imss_logo.png" 
-              alt="IMSS Logo" 
+        <motion.div variants={containerVariants} className="flex items-center gap-6 md:gap-8 flex-wrap md:flex-nowrap">
+          <div className="relative flex-shrink-0">
+            {/* Halo contenido al área del logo (no se desparrama hacia el título) */}
+            <div className="absolute inset-0 bg-emerald-500/15 blur-md rounded-full pointer-events-none" />
+            <img
+              src="/imss_logo.png"
+              alt="IMSS Logo"
               className="relative h-14 md:h-16 w-auto object-contain brightness-110 contrast-125"
             />
           </div>
-          <div className="h-12 w-px bg-slate-800 hidden md:block" />
-          <div>
-            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight flex items-center gap-2">
-              CENTRO DE CONTROL <span className="text-emerald-500">SIGAB</span>
+          <div className="h-12 w-px bg-[var(--content-surface)] hidden md:block flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tight flex items-center gap-2 flex-wrap">
+              <span>CENTRO DE CONTROL</span>
+              <span className="text-emerald-500">SIGAH</span>
             </h1>
-            <p className="text-slate-400 text-sm md:text-base font-medium mt-1">
+            <p className="text-[var(--content-muted)] text-sm md:text-base font-medium mt-1">
               HGR No.1 — IMSS | <span className="text-emerald-500/80">Monitor Biotecnológico en Tiempo Real</span>
             </p>
           </div>
         </motion.div>
         
         <div className="flex gap-3">
-          <button 
+          <button
             onClick={() => setShowPokaYoke(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-lg shadow-emerald-900/10"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 rounded-xl hover:bg-emerald-600 hover:text-white active:scale-[0.97] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
           >
-            <ShieldCheck className="h-5 w-5" />
-            <span className="font-bold text-sm hidden sm:inline">Poka-Yoke</span>
+            <ShieldCheck className="h-4 w-4" />
+            <span className="text-sm font-medium hidden sm:inline">Poka-Yoke</span>
           </button>
-          <button 
+          <button
             onClick={() => navigate('/checklists')}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-lg shadow-blue-900/10"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#006CB7]/20 border border-[#006CB7]/40 text-[#5bb3e8] rounded-xl hover:bg-[#006CB7] hover:text-white active:scale-[0.97] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#006CB7]/50"
           >
-            <ClipboardCheck className="h-5 w-5" />
-            <span className="font-bold text-sm hidden sm:inline">NOM-016</span>
+            <ClipboardCheck className="h-4 w-4" />
+            <span className="text-sm font-medium hidden sm:inline">NOM-016</span>
           </button>
         </div>
       </div>
@@ -208,8 +210,8 @@ export default function Dashboard() {
 
         {/* Mapa de Activos — ancho completo */}
         <GridItem span={isControlRoom ? 4 : 3}>
-          <Card className="bg-slate-900/40 border-slate-800 backdrop-blur-sm p-0 overflow-hidden">
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+          <Card className="bg-[var(--content-bg)]/40 border-[var(--content-border)] backdrop-blur-sm p-0 overflow-hidden">
+            <div className="p-5 border-b border-[var(--content-border)] flex items-center justify-between">
               <Title className="text-white">Mapa de Activos por Zona</Title>
               <StatusIndicator status="green" icon="Wifi" />
             </div>
@@ -221,12 +223,12 @@ export default function Dashboard() {
 
         {/* Cumplimiento de Mantenimiento — debajo del mapa */}
         <GridItem span={isControlRoom ? 4 : 3}>
-          <Card className="bg-slate-900/40 border-slate-800 backdrop-blur-sm">
+          <Card className="bg-[var(--content-bg)]/40 border-[var(--content-border)] backdrop-blur-sm">
             <Title className="text-white flex items-center gap-2">
               <ClipboardCheck className="h-5 w-5 text-blue-500" />
               Cumplimiento de Mantenimiento
             </Title>
-            <Text className="text-slate-500 text-xs mb-6">Programado vs. Ejecutado por mes</Text>
+            <Text className="text-[var(--content-muted)] text-xs mb-6">Programado vs. Ejecutado por mes</Text>
             <MaintenanceChart />
           </Card>
         </GridItem>

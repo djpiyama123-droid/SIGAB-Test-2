@@ -4,51 +4,242 @@
 
 /* ── Tipografía global ── */
 body {
-  font-family: 'Lexend', 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Variables CSS — Design tokens de SIGAB ── */
-:root {
-  --color-primary:     #4F46E5;
-  --color-secondary:   #6366F1;
-  --color-accent:      #818CF8;
-  --color-glow:        rgba(79, 70, 229, 0.15);
-  --color-bg:          #0F172A;
-  --color-surface:     rgba(255, 255, 255, 0.04);
-  --color-border:      rgba(255, 255, 255, 0.08);
+/* ══════════════════════════════════════════════════════════
+   SISTEMA DE TEMAS — 3 modos seleccionables
+   ══════════════════════════════════════════════════════════ */
 
-  /* Z-index scale */
+/* Tema por defecto: Azul IMSS */
+:root,
+[data-theme="blue"] {
+  --sidebar-bg:        #006CB7;
+  --sidebar-text:      #fff;
+  --sidebar-border:    rgba(255,255,255,0.2);
+  --sidebar-active:    rgba(255,255,255,0.2);
+  --sidebar-hover:     rgba(255,255,255,0.12);
+  --content-bg:        #F8FAFC;
+  --content-surface:   #fff;
+  --content-border:    #E2E8F0;
+  --content-text:      #1E293B;
+  --content-muted:     #64748B;
+  --accent:            #006CB7;
+  --accent-dark:       #00497D;
+  --accent-light:      #DCEBF7;
+  --header-bg:         #fff;
+  --header-border:     #E2E8F0;
+  --header-text:       #1E293B;
+  --header-muted:      #64748B;
+  --bottom-nav-bg:     rgba(255,255,255,0.9);
+  --bottom-nav-border: #E2E8F0;
+  --bottom-nav-active: #006CB7;
+  --bottom-nav-muted:  #94A3B8;
+
   --z-dropdown:     20;
   --z-sticky:       30;
   --z-overlay:      40;
+  --z-tooltip:      45;
   --z-modal:        50;
   --z-modal-nested: 60;
   --z-confirm:      70;
   --z-toast:        80;
 }
 
+/* Tema Verde SIGAH */
+[data-theme="green"] {
+  --sidebar-bg:        #059669;
+  --sidebar-text:      #fff;
+  --sidebar-border:    rgba(255,255,255,0.2);
+  --sidebar-active:    rgba(255,255,255,0.2);
+  --sidebar-hover:     rgba(255,255,255,0.12);
+  --content-bg:        #F8FAFC;
+  --content-surface:   #fff;
+  --content-border:    #E2E8F0;
+  --content-text:      #1E293B;
+  --content-muted:     #64748B;
+  --accent:            #059669;
+  --accent-dark:       #047857;
+  --accent-light:      #DCFCE7;
+  --header-bg:         #fff;
+  --header-border:     #E2E8F0;
+  --header-text:       #1E293B;
+  --header-muted:      #64748B;
+  --bottom-nav-bg:     rgba(255,255,255,0.9);
+  --bottom-nav-border: #E2E8F0;
+  --bottom-nav-active: #059669;
+  --bottom-nav-muted:  #94A3B8;
+
+  --z-dropdown:     20;
+  --z-sticky:       30;
+  --z-overlay:      40;
+  --z-tooltip:      45;
+  --z-modal:        50;
+  --z-modal-nested: 60;
+  --z-confirm:      70;
+  --z-toast:        80;
+}
+
+/* Tema Oscuro SIGAH */
+[data-theme="dark"] {
+  --sidebar-bg:        #0F172A;
+  --sidebar-text:      #fff;
+  --sidebar-border:    rgba(255,255,255,0.1);
+  --sidebar-active:    rgba(5,150,105,0.25);
+  --sidebar-hover:     rgba(255,255,255,0.07);
+  --content-bg:        #0F172A;
+  --content-surface:   #1E293B;
+  --content-border:    #334155;
+  --content-text:      #F1F5F9;
+  --content-muted:     #94A3B8;
+  --accent:            #059669;
+  --accent-dark:       #047857;
+  --accent-light:      rgba(5,150,105,0.15);
+  --header-bg:         #1E293B;
+  --header-border:     #334155;
+  --header-text:       #F1F5F9;
+  --header-muted:      #94A3B8;
+  --bottom-nav-bg:     rgba(15,23,42,0.92);
+  --bottom-nav-border: #334155;
+  --bottom-nav-active: #059669;
+  --bottom-nav-muted:  #64748B;
+
+  --z-dropdown:     20;
+  --z-sticky:       30;
+  --z-overlay:      40;
+  --z-tooltip:      45;
+  --z-modal:        50;
+  --z-modal-nested: 60;
+  --z-confirm:      70;
+  --z-toast:        80;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TEMA "GLASS" — Clinical Precision Glass (Stitch / Apple-Medical)
+   Listo para activarse vía toggle (Fase 2). NO es default todavía.
+   ══════════════════════════════════════════════════════════ */
+[data-theme="glass"] {
+  --sidebar-bg:        #060e20;
+  --sidebar-text:      #dae2fd;
+  --sidebar-border:    rgba(34,211,238,0.1);
+  --sidebar-active:    rgba(0,108,183,0.8);
+  --sidebar-hover:     rgba(0,108,183,0.2);
+  --content-bg:        #020617;
+  --content-surface:   rgba(11,18,38,0.55);
+  --content-border:    rgba(34,211,238,0.18);
+  --content-text:      #dae2fd;
+  --content-muted:     #bbc9cd;
+  --accent:            #006CB7;
+  --accent-dark:       #00497D;
+  --accent-light:      rgba(34,211,238,0.12);
+  --header-bg:         rgba(11,19,38,0.8);
+  --header-border:     rgba(34,211,238,0.18);
+  --header-text:       #ffffff;
+  --header-muted:      #bbc9cd;
+  --bottom-nav-bg:     rgba(11,19,38,0.92);
+  --bottom-nav-border: rgba(34,211,238,0.18);
+  --bottom-nav-active: #22D3EE;
+  --bottom-nav-muted:  #859397;
+
+  --z-dropdown:     20;
+  --z-sticky:       30;
+  --z-overlay:      40;
+  --z-tooltip:      45;
+  --z-modal:        50;
+  --z-modal-nested: 60;
+  --z-confirm:      70;
+  --z-toast:        80;
+}
+
+/* ── Utilidades Glassmorphism (usadas por la landing y, en Fase 2+, por la app) ── */
+.glass-panel {
+  background: rgba(11, 18, 38, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  transition: all 0.3s ease;
+}
+.glass-panel:hover {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-color: rgba(34, 211, 238, 0.36);
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.1);
+}
+.ai-card {
+  background: rgba(30, 20, 50, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 2px solid #8B5CF6;
+  box-shadow: 0 -4px 20px rgba(139, 92, 246, 0.1);
+}
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(135deg, #8aebff, #9fcaff);
+}
+.btn-primary {
+  background: linear-gradient(135deg, #22D3EE, #056db9);
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(34, 217, 244, 0.4);
+}
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+.radial-bg {
+  background: radial-gradient(circle at 50% 0%, rgba(5, 109, 185, 0.15) 0%, rgba(2, 6, 23, 1) 60%);
+}
+/* Slider de la calculadora (landing) */
+.glass-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #8aebff;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(138, 235, 255, 0.5);
+}
+.glass-range::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border: none;
+  border-radius: 50%;
+  background: #8aebff;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(138, 235, 255, 0.5);
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer { animation: shimmer 3s infinite linear; }
+
 /* ── Focus ring global — accesibilidad ── */
 *:focus-visible {
-  outline: 2px solid #6366F1;
+  outline: 2px solid var(--accent, #006CB7);
   outline-offset: 2px;
 }
 
-/* Scrollbar personalizado para modo oscuro */
+/* Scrollbar — responde al tema activo */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: var(--content-bg, #F8FAFC);
 }
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: var(--content-border, #CBD5E1);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: var(--content-muted, #64748B);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -196,7 +387,7 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.qr-zebra-sigab {
+.qr-zebra-sigah {
   font-size: 5px;
   color: #9ca3af;
   font-weight: 700;
@@ -347,14 +538,63 @@ body {
     color: #000 !important;
   }
 
-  html[data-print-mode="zebra"] .qr-zebra-sigab {
+  html[data-print-mode="zebra"] .qr-zebra-sigah {
     color: #666 !important;
   }
 }
 
-/* @page rules — default Carta format.
-   For Zebra, we dynamically inject a <style> from JS to override. */
+/* ── Animaciones ── */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* ── Soporte UTF-8 / Acentos ── */
+.text-accent-fix {
+  font-feature-settings: "kern", "liga", "clig", "calt";
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Hide scrollbar but keep functionality ── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 @page {
   size: letter portrait;
   margin: 10mm;
+}
+
+/* ── Ajustes Mapa Dashboard (Antirecortes) ── */
+.map-zone-container {
+  overflow: visible !important;
+}
+
+.map-tooltip-layer {
+  pointer-events: none;
+  z-index: var(--z-tooltip);
+}
+
+/* ── Custom Scrollbar para el mapa ── */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  display: block !important;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.8);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(94, 114, 143, 1);
 }

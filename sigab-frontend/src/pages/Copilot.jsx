@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import { api } from '../api/sigah';
+import toast from '../lib/toast';
 
 // ── Iconos inline ─────────────────────────────────────────────────
 const IconIA = () => (
@@ -39,7 +39,7 @@ function ChatMessage({ msg }) {
   if (isUser) {
     return (
       <div className="flex justify-end mb-4">
-        <div className="max-w-[75%] bg-emerald-700/50 border border-emerald-600/40 rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm text-white">
+        <div className="max-w-[75%] bg-emerald-700/50 border border-emerald-600/40 rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm text-[var(--content-text)]">
           {msg.content}
         </div>
       </div>
@@ -54,7 +54,7 @@ function ChatMessage({ msg }) {
       <div className={`max-w-[80%] rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm ${
         isError
           ? 'bg-red-900/30 border border-red-500/40 text-red-300'
-          : 'bg-slate-700/70 border border-slate-600/40 text-slate-200'
+          : 'bg-slate-700/70 border border-[var(--content-border)]/40 text-[var(--content-text)]'
       }`}>
         {isError ? (
           <p className="text-xs">{msg.content}</p>
@@ -65,13 +65,13 @@ function ChatMessage({ msg }) {
                 return <p key={i} className="font-bold text-emerald-400 mt-2 mb-1">{line.replace(/\*\*/g, '')}</p>;
               }
               if (line.startsWith('- ') || line.startsWith('• ')) {
-                return <p key={i} className="pl-3 text-slate-300">• {line.slice(2)}</p>;
+                return <p key={i} className="pl-3 text-[var(--content-muted)]">• {line.slice(2)}</p>;
               }
               if (/^\d+\. /.test(line)) {
-                return <p key={i} className="pl-3 text-slate-300">{line}</p>;
+                return <p key={i} className="pl-3 text-[var(--content-muted)]">{line}</p>;
               }
               if (line.trim() === '') return <br key={i} />;
-              return <p key={i} className="text-slate-200">{line}</p>;
+              return <p key={i} className="text-[var(--content-text)]">{line}</p>;
             })}
           </div>
         )}
@@ -127,16 +127,16 @@ function DiagnosticoPanel({ onClose }) {
   };
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
+    <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 space-y-3">
       <div className="flex justify-between items-center">
         <h3 className="text-sm font-semibold text-yellow-400">Diagnóstico de Falla con IA</h3>
-        <button onClick={onClose} className="text-slate-500 hover:text-white text-xs">✕ Cerrar</button>
+        <button onClick={onClose} className="text-[var(--content-muted)] hover:text-white text-xs">✕ Cerrar</button>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div className="col-span-2">
-          <label className="text-xs text-slate-400 block mb-1">Equipo (opcional)</label>
+          <label className="text-xs text-[var(--content-muted)] block mb-1">Equipo (opcional)</label>
           <select value={equipoId} onChange={handleEquipoChange}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white">
+            className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]">
             <option value="">— Sin seleccionar —</option>
             {equipos.map(eq => (
               <option key={eq.id} value={eq.id}>{eq.nombre} — {eq.serie}</option>
@@ -144,20 +144,20 @@ function DiagnosticoPanel({ onClose }) {
           </select>
         </div>
         <div>
-          <label className="text-xs text-slate-400 block mb-1">Marca</label>
+          <label className="text-xs text-[var(--content-muted)] block mb-1">Marca</label>
           <input value={marca} onChange={e => setMarca(e.target.value)} placeholder="GE, Philips..."
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white" />
+            className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]" />
         </div>
         <div>
-          <label className="text-xs text-slate-400 block mb-1">Modelo</label>
+          <label className="text-xs text-[var(--content-muted)] block mb-1">Modelo</label>
           <input value={modelo} onChange={e => setModelo(e.target.value)} placeholder="CARESCAPE B650..."
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white" />
+            className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]" />
         </div>
         <div className="col-span-2">
-          <label className="text-xs text-slate-400 block mb-1">Falla reportada *</label>
+          <label className="text-xs text-[var(--content-muted)] block mb-1">Falla reportada *</label>
           <textarea rows={2} value={falla} onChange={e => setFalla(e.target.value)}
             placeholder="Ej: El monitor no enciende, hace click al intentar prender..."
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+            className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)]" />
         </div>
       </div>
       <button onClick={analizar} disabled={cargando || !falla.trim()}
@@ -166,7 +166,7 @@ function DiagnosticoPanel({ onClose }) {
       </button>
 
       {resultado && (
-        <div className="bg-slate-900/60 border border-yellow-500/20 rounded-lg p-3 text-xs text-slate-300 space-y-1 max-h-60 overflow-y-auto">
+        <div className="bg-[var(--content-bg)]/60 border border-yellow-500/20 rounded-lg p-3 text-xs text-[var(--content-muted)] space-y-1 max-h-60 overflow-y-auto">
           {resultado.split('\n').map((line, i) => {
             if (line.startsWith('**') && line.endsWith('**'))
               return <p key={i} className="font-bold text-yellow-400 mt-2">{line.replace(/\*\*/g, '')}</p>;
@@ -212,34 +212,34 @@ function VisionPanel({ onClose }) {
   };
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
+    <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 space-y-3">
       <div className="flex justify-between items-center">
         <h3 className="text-sm font-semibold text-blue-400">Análisis de Imagen (Gemma Vision)</h3>
-        <button onClick={onClose} className="text-slate-500 hover:text-white text-xs">✕ Cerrar</button>
+        <button onClick={onClose} className="text-[var(--content-muted)] hover:text-white text-xs">✕ Cerrar</button>
       </div>
 
       <div>
-        <label className="text-xs text-slate-400 block mb-1">Tipo de documento</label>
+        <label className="text-xs text-[var(--content-muted)] block mb-1">Tipo de documento</label>
         <select value={tipDoc} onChange={e => setTipDoc(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white">
+          className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]">
           <option value="etiqueta_equipo">Etiqueta / placa del equipo</option>
           <option value="reporte_servicio">Reporte de servicio externo</option>
           <option value="general">Análisis general</option>
         </select>
       </div>
 
-      <div className="border-2 border-dashed border-slate-600 rounded-lg p-4 text-center">
+      <div className="border-2 border-dashed border-[var(--content-border)] rounded-lg p-4 text-center">
         {imagen ? (
           <div className="space-y-2">
             <img src={imagen.preview} alt="preview" className="max-h-32 mx-auto rounded object-contain" />
-            <p className="text-xs text-slate-400">{imagen.name}</p>
+            <p className="text-xs text-[var(--content-muted)]">{imagen.name}</p>
             <button onClick={() => setImagen(null)} className="text-xs text-red-400 hover:text-red-300">Cambiar</button>
           </div>
         ) : (
           <label className="cursor-pointer space-y-2">
             <IconImage />
-            <p className="text-xs text-slate-400 mt-2">Click para seleccionar imagen</p>
-            <p className="text-[10px] text-slate-600">PNG, JPG, WEBP — máx 10MB</p>
+            <p className="text-xs text-[var(--content-muted)] mt-2">Click para seleccionar imagen</p>
+            <p className="text-[10px] text-[var(--content-muted)]">PNG, JPG, WEBP — máx 10MB</p>
             <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
           </label>
         )}
@@ -251,16 +251,16 @@ function VisionPanel({ onClose }) {
       </button>
 
       {resultado && (
-        <div className="bg-slate-900/60 border border-blue-500/20 rounded-lg p-3 text-xs text-slate-300 space-y-2 max-h-60 overflow-y-auto">
+        <div className="bg-[var(--content-bg)]/60 border border-blue-500/20 rounded-lg p-3 text-xs text-[var(--content-muted)] space-y-2 max-h-60 overflow-y-auto">
           {resultado.datos_extraidos && (
             <div className="mb-2">
               <p className="text-blue-400 font-semibold mb-1">Datos extraídos:</p>
               {Object.entries(resultado.datos_extraidos).map(([k, v]) =>
-                v ? <p key={k}><span className="text-slate-500">{k}:</span> {v}</p> : null
+                v ? <p key={k}><span className="text-[var(--content-muted)]">{k}:</span> {v}</p> : null
               )}
             </div>
           )}
-          <p className="text-slate-400 text-[10px] font-semibold">Análisis completo:</p>
+          <p className="text-[var(--content-muted)] text-[10px] font-semibold">Análisis completo:</p>
           <p className="whitespace-pre-wrap">{resultado.analisis}</p>
         </div>
       )}
@@ -314,7 +314,7 @@ export default function Copilot() {
   useEffect(() => {
     setMessages([{
       role: 'assistant',
-      content: `¡Hola! Soy **SIGAB Copilot**, tu asistente de IA biomédica local.
+      content: `¡Hola! Soy **SIGAH Copilot**, tu asistente de IA biomédica local.
 
 Estoy potenciado por **Gemma** ejecutándose directamente en el servidor del HGR No.1 — sin dependencias de nube, 100% on-premise.
 
@@ -478,7 +478,7 @@ Puedo ayudarte con:
   };
 
   const StatusBadge = () => {
-    if (!ollamaStatus) return <span className="text-xs text-slate-500">Verificando...</span>;
+    if (!ollamaStatus) return <span className="text-xs text-[var(--content-muted)]">Verificando...</span>;
     if (!ollamaStatus.ollama_activo) {
       return (
         <span className="flex items-center gap-1.5 text-xs text-red-400">
@@ -508,11 +508,11 @@ Puedo ayudarte con:
       {/* Header */}
       <div className="flex justify-between items-center mb-4 flex-shrink-0">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-[var(--content-text)] flex items-center gap-2">
             <span className="text-2xl">✦</span>
-            SIGAB Copilot
+            SIGAH Copilot
           </h1>
-          <p className="text-sm text-slate-400 mt-0.5 flex items-center gap-2">
+          <p className="text-sm text-[var(--content-muted)] mt-0.5 flex items-center gap-2">
             Asistente biomédico · IA local on-premise
             <StatusBadge />
           </p>
@@ -520,13 +520,13 @@ Puedo ayudarte con:
         <div className="flex gap-2">
           {/* Contexto */}
           <select value={contextoTipo} onChange={e => setContextoTipo(e.target.value)}
-            className="bg-slate-800 border border-slate-700 text-xs text-slate-300 rounded-lg px-2 py-1.5">
+            className="bg-[var(--content-surface)] border border-[var(--content-border)] text-xs text-[var(--content-muted)] rounded-lg px-2 py-1.5">
             <option value="general">Contexto: General</option>
             <option value="fiabilidad">Contexto: MTBF/Fiabilidad</option>
             <option value="equipo">Contexto: Equipo activo</option>
           </select>
           <button onClick={limpiarChat} title="Limpiar chat"
-            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-lg transition-colors">
+            className="p-2 bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-muted)] rounded-lg transition-colors">
             <IconClear />
           </button>
         </div>
@@ -537,7 +537,7 @@ Puedo ayudarte con:
         <div className="mb-4 bg-orange-900/20 border border-orange-500/40 rounded-xl p-4 text-sm flex-shrink-0">
           <p className="text-orange-300 font-semibold">Ollama no detectado</p>
           <p className="text-orange-400/80 text-xs mt-1">
-            Para usar SIGAB Copilot, instala Ollama en el servidor (Lenovo ThinkCentre) y ejecuta:
+            Para usar SIGAH Copilot, instala Ollama en el servidor (Lenovo ThinkCentre) y ejecuta:
           </p>
           <code className="block mt-2 bg-black/30 rounded p-2 text-xs text-orange-200 font-mono">
             ollama serve &amp;&amp; ollama pull gemma3:4b
@@ -560,9 +560,9 @@ Puedo ayudarte con:
         </div>
       )}
 
-      <div className="flex gap-4 flex-1 min-h-0">
+      <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 relative">
         {/* ── Chat principal ── */}
-        <div className="flex flex-col flex-1 min-h-0 bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
+        <div className="flex flex-col flex-1 min-h-0 border border-[var(--content-border)] rounded-xl overflow-hidden order-1 lg:order-1" style={{ background: 'var(--content-surface)' }}>
           {/* Mensajes */}
           <div className="flex-1 overflow-y-auto p-4 space-y-1">
             {messages.map((msg, i) => (
@@ -576,7 +576,7 @@ Puedo ayudarte con:
             <div className="px-4 pb-2 flex flex-wrap gap-2">
               {promptsRapidos.map(p => (
                 <button key={p.id} onClick={() => usarPromptRapido(p)}
-                  className="text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 rounded-full transition-colors">
+                  className="text-xs px-3 py-1.5 bg-[var(--content-surface)] hover:bg-[var(--content-border)] border border-[var(--content-border)] text-[var(--content-muted)] rounded-full transition-colors">
                   {p.label}
                 </button>
               ))}
@@ -584,7 +584,7 @@ Puedo ayudarte con:
           )}
 
           {/* Input */}
-          <div className="border-t border-slate-700 p-3">
+          <div className="border-t border-[var(--content-border)] p-3 bg-[var(--content-surface)]">
             <div className="flex gap-2 items-end">
               <textarea
                 ref={inputRef}
@@ -596,10 +596,10 @@ Puedo ayudarte con:
                     enviarMensaje();
                   }
                 }}
-                placeholder="Pregunta sobre equipos, mantenimiento, NOM-240, diagnósticos... (Enter para enviar)"
-                rows={2}
+                placeholder="Pregunta... (Enter para enviar)"
+                rows={1}
                 disabled={streaming}
-                className="flex-1 bg-slate-900/60 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-600 resize-none disabled:opacity-50"
+                className="flex-1 bg-[var(--content-bg)]/60 border border-[var(--content-border)] rounded-xl px-3 py-2 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-emerald-600 resize-none disabled:opacity-50"
               />
               {streaming ? (
                 <button onClick={detenerStream}
@@ -613,27 +613,36 @@ Puedo ayudarte con:
                 </button>
               )}
             </div>
-            <p className="text-[10px] text-slate-600 mt-1 text-center">
-              Shift+Enter para nueva línea · Enter para enviar · IA local — sin datos a la nube
-            </p>
           </div>
         </div>
 
-        {/* ── Panel lateral ── */}
-        <div className="w-72 flex-shrink-0 space-y-3 overflow-y-auto">
+        {/* ── Panel lateral / Pestañas de herramientas (Responsivo) ── */}
+        <div className={`
+          fixed lg:relative inset-x-0 bottom-0 lg:inset-auto
+          lg:w-72 flex-shrink-0 space-y-3 
+          bg-[var(--content-bg)] lg:bg-transparent p-4 lg:p-0
+          border-t lg:border-none border-[var(--content-border)]
+          transition-transform duration-300 z-30
+          ${showDiagnostico || showVision ? 'translate-y-0' : 'translate-y-[85%] lg:translate-y-0'}
+          max-h-[80vh] lg:max-h-none overflow-y-auto order-2 lg:order-2
+        `}>
+          {/* Botón retráctil para móviles */}
+          <div className="lg:hidden flex justify-center mb-2 -mt-2">
+            <button 
+              onClick={() => { setShowDiagnostico(false); setShowVision(false); }}
+              className="w-12 h-1 bg-[var(--content-surface)] rounded-full"
+            />
+          </div>
           {/* Diagnóstico rápido */}
           {showDiagnostico ? (
             <DiagnosticoPanel onClose={() => setShowDiagnostico(false)} />
           ) : (
             <button onClick={() => { setShowDiagnostico(true); setShowVision(false); }}
-              className="w-full text-left p-4 bg-slate-800 border border-slate-700 hover:border-yellow-500/50 rounded-xl transition-colors group">
-              <div className="flex items-center gap-2 mb-1">
+              className="w-full text-left p-4 bg-[var(--content-surface)] border border-[var(--content-border)] hover:border-yellow-500/50 rounded-xl transition-colors group">
+              <div className="flex items-center gap-2">
                 <span className="text-yellow-400">⚡</span>
-                <span className="text-sm font-semibold text-white">Diagnóstico de Falla</span>
+                <span className="text-sm font-semibold text-[var(--content-text)]">Diagnóstico de Falla</span>
               </div>
-              <p className="text-xs text-slate-400">
-                Describe la falla de un equipo y Gemma sugiere causas, verificaciones y acciones.
-              </p>
             </button>
           )}
 
@@ -642,32 +651,29 @@ Puedo ayudarte con:
             <VisionPanel onClose={() => setShowVision(false)} />
           ) : (
             <button onClick={() => { setShowVision(true); setShowDiagnostico(false); }}
-              className="w-full text-left p-4 bg-slate-800 border border-slate-700 hover:border-blue-500/50 rounded-xl transition-colors group">
-              <div className="flex items-center gap-2 mb-1">
+              className="w-full text-left p-4 bg-[var(--content-surface)] border border-[var(--content-border)] hover:border-blue-500/50 rounded-xl transition-colors group">
+              <div className="flex items-center gap-2">
                 <span className="text-blue-400"><IconImage /></span>
-                <span className="text-sm font-semibold text-white">Vision (Gemma 4)</span>
+                <span className="text-sm font-semibold text-[var(--content-text)]">Vision (Gemma 4)</span>
               </div>
-              <p className="text-xs text-slate-400">
-                Sube foto de etiqueta o reporte de servicio. Gemma extrae datos automáticamente.
-              </p>
             </button>
           )}
 
           {/* Resumen IA diario */}
-          <div className="p-4 bg-slate-800 border border-slate-700 rounded-xl space-y-2">
+          <div className="p-4 bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl space-y-2">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-emerald-400">📊</span>
-              <span className="text-sm font-semibold text-white">Resumen Ejecutivo IA</span>
+              <span className="text-sm font-semibold text-[var(--content-text)]">Resumen Ejecutivo IA</span>
             </div>
-            <p className="text-xs text-slate-400">
-              Gemma analiza el estado actual del SIGAB y genera un resumen narrativo para el jefe.
+            <p className="text-xs text-[var(--content-muted)]">
+              Gemma analiza el estado actual del SIGAH y genera un resumen narrativo para el jefe.
             </p>
             <button onClick={generarResumenIA} disabled={cargandoResumen}
               className="w-full py-1.5 bg-emerald-700/50 hover:bg-emerald-700 border border-emerald-600/40 text-emerald-300 text-xs font-semibold rounded-lg transition-colors disabled:opacity-50">
               {cargandoResumen ? 'Generando...' : 'Generar resumen del día'}
             </button>
             {resumenIA && (
-              <div className="mt-2 bg-slate-900/60 rounded-lg p-3 text-xs text-slate-300 max-h-48 overflow-y-auto">
+              <div className="mt-2 bg-[var(--content-bg)]/60 rounded-lg p-3 text-xs text-[var(--content-muted)] max-h-48 overflow-y-auto">
                 <p className="text-emerald-400 font-semibold mb-1 text-[10px]">
                   {resumenIA.fecha} · {resumenIA.modelo}
                 </p>
@@ -678,19 +684,19 @@ Puedo ayudarte con:
 
           {/* Info del modelo */}
           {ollamaStatus?.ollama_activo && (
-            <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl">
-              <p className="text-xs font-semibold text-slate-400 mb-2">Configuración del modelo</p>
-              <div className="space-y-1 text-[10px] text-slate-500">
-                <p>Modelo: <span className="text-slate-300 font-mono">{ollamaStatus.modelo}</span></p>
-                <p>Host: <span className="text-slate-300 font-mono">localhost:11434</span></p>
+            <div className="p-4 border border-[var(--content-border)] rounded-xl" style={{ background: 'var(--content-surface)' }}>
+              <p className="text-xs font-semibold text-[var(--content-muted)] mb-2">Configuración del modelo</p>
+              <div className="space-y-1 text-[10px] text-[var(--content-muted)]">
+                <p>Modelo: <span className="text-[var(--content-muted)] font-mono">{ollamaStatus.modelo}</span></p>
+                <p>Host: <span className="text-[var(--content-muted)] font-mono">localhost:11434</span></p>
                 <p>Modo: <span className="text-emerald-400">100% on-premise</span></p>
                 <p>Datos: <span className="text-emerald-400">No salen del servidor</span></p>
               </div>
               {ollamaStatus.modelos_instalados?.length > 0 && (
                 <div className="mt-2">
-                  <p className="text-[10px] text-slate-500 mb-1">Modelos instalados:</p>
+                  <p className="text-[10px] text-[var(--content-muted)] mb-1">Modelos instalados:</p>
                   {ollamaStatus.modelos_instalados.map(m => (
-                    <span key={m} className="inline-block mr-1 mb-1 px-1.5 py-0.5 bg-slate-700 text-slate-400 text-[9px] rounded font-mono">
+                    <span key={m} className="inline-block mr-1 mb-1 px-1.5 py-0.5 bg-[var(--content-surface)] text-[var(--content-muted)] text-[9px] rounded font-mono">
                       {m}
                     </span>
                   ))}

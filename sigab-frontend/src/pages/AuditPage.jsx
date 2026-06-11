@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import { ShieldCheck, RefreshCw, FileText, Verified, ShieldAlert } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../lib/toast';
 
 const AuditPage = () => {
   const [logs, setLogs] = useState([]);
@@ -63,7 +63,7 @@ const AuditPage = () => {
             <ShieldCheck className="h-8 w-8 text-emerald-500" />
             Auditoría NOM-016 Compliance
           </h1>
-          <p className="mt-1 text-slate-400">Log inalterable con hashing encadenado SHA-256 según normativa NOM-016-SSA3-2012.</p>
+          <p className="mt-1 text-[var(--content-muted)]">Log inalterable con hashing encadenado SHA-256 según normativa NOM-016-SSA3-2012.</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -76,7 +76,7 @@ const AuditPage = () => {
           </button>
           <button
             onClick={handleGenerarBitacora}
-            className="flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-300 transition-all hover:bg-slate-700">
+            className="flex items-center gap-2 rounded-xl bg-[var(--content-surface)] px-4 py-2 text-sm font-semibold text-[var(--content-muted)] transition-all hover:bg-[var(--content-border)]">
             <FileText className="h-4 w-4" />
             Generar Bitácora PDF
           </button>
@@ -97,21 +97,21 @@ const AuditPage = () => {
       )}
 
       {/* Audit Table */}
-      <div className="overflow-x-auto rounded-2xl border border-slate-700 bg-slate-900 shadow-xl">
+      <div className="overflow-x-auto rounded-2xl border border-[var(--content-border)] bg-[var(--content-bg)] shadow-xl">
         <table className="w-full text-left">
-          <thead className="border-b border-slate-800 bg-slate-900/50">
+          <thead className="border-b border-[var(--content-border)] bg-[var(--content-bg)]/50">
             <tr>
-              <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Timestamp</th>
-              <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Usuario</th>
-              <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Acción</th>
-              <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Entidad</th>
-              <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Hash Registro (SHA-256)</th>
+              <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[var(--content-muted)]">Timestamp</th>
+              <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[var(--content-muted)]">Usuario</th>
+              <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[var(--content-muted)]">Acción</th>
+              <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[var(--content-muted)]">Entidad</th>
+              <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[var(--content-muted)]">Hash Registro (SHA-256)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
             {logs.map((log) => (
               <tr key={log.id} className="transition-colors hover:bg-slate-800/30">
-                <td className="whitespace-nowrap px-6 py-4 text-sm font-mono text-slate-400">
+                <td className="whitespace-nowrap px-6 py-4 text-sm font-mono text-[var(--content-muted)]">
                   {new Date(log.timestamp).toLocaleString()}
                 </td>
                 <td className="px-6 py-4 text-sm font-medium text-white">{log.usuario_nombre || 'SISTEMA'}</td>
@@ -120,18 +120,18 @@ const AuditPage = () => {
                     log.accion === 'INSERT' ? 'bg-emerald-500/10 text-emerald-400' :
                     log.accion === 'UPDATE' ? 'bg-blue-500/10 text-blue-400' :
                     log.accion === 'DELETE' ? 'bg-red-500/10 text-red-400' :
-                    'bg-slate-500/10 text-slate-400'
+                    'bg-slate-500/10 text-[var(--content-muted)]'
                   }`}>
                     {log.accion}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-slate-400">
-                  <span className="font-bold text-slate-300">{log.entidad}</span> #{log.entidad_id}
+                <td className="px-6 py-4 text-sm text-[var(--content-muted)]">
+                  <span className="font-bold text-[var(--content-muted)]">{log.entidad}</span> #{log.entidad_id}
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                    <span className="font-mono text-[10px] text-slate-500 truncate w-32" title={log.hash_registro}>
+                    <span className="font-mono text-[10px] text-[var(--content-muted)] truncate w-32" title={log.hash_registro}>
                       {log.hash_registro}
                     </span>
                   </div>

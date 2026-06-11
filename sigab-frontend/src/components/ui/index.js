@@ -3,3 +3,4 @@ export { default as PageHeading }  from './PageHeading';
 export { default as GlassCard }    from './GlassCard';
 export { default as TableWrapper } from './TableWrapper';
 export { default as ModalWrapper } from './ModalWrapper';
+export { default as Button }       from './Button';

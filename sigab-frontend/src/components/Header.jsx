@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+
+const THEMES = [
+  { id: 'glass', color: '#22D3EE', label: 'Glass (Clinical Precision)' },
+  { id: 'blue',  color: '#006CB7', label: 'Azul IMSS (claro)' },
+  { id: 'green', color: '#059669', label: 'Verde SIGAH (claro)' },
+];
 
 export default function Header({ onMenuClick }) {
   const navigate = useNavigate();
   const [alertCount, setAlertCount] = useState(0);
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const cargar = () =>
@@ -20,13 +28,20 @@ export default function Header({ onMenuClick }) {
   }, []);
 
   return (
-    <header className="h-14 bg-slate-950 border-b border-slate-800 flex items-center justify-between px-4 md:px-6 gap-4">
-
+    <header
+      className="h-14 flex items-center justify-between px-4 md:px-6 gap-4"
+      style={{
+        background: 'var(--header-bg)',
+        borderBottom: '1px solid var(--header-border)',
+        color: 'var(--header-text)',
+      }}
+    >
       {/* ── Botón hamburguesa (solo móvil) ── */}
       <button
         type="button"
         onClick={onMenuClick}
-        className="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex-shrink-0"
+        className="lg:hidden p-2 rounded-lg transition-colors flex-shrink-0"
+        style={{ color: 'var(--header-muted)' }}
         aria-label="Abrir menú"
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -35,18 +50,41 @@ export default function Header({ onMenuClick }) {
       </button>
 
       {/* ── Nombre hospital (oculto en xs) ── */}
-      <div className="hidden sm:block text-sm text-slate-400 truncate flex-1 min-w-0">
+      <div className="hidden sm:block text-sm truncate flex-1 min-w-0" style={{ color: 'var(--header-muted)' }}>
         Hospital General Regional No. 1 — IMSS Tijuana
       </div>
 
       {/* ── Acciones derecha ── */}
-      <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0 ml-auto">
+      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 ml-auto">
+
+        {/* ── Toggle de Tema — 3 círculos ── */}
+        <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl" style={{ background: 'var(--content-bg, #F1F5F9)' }}>
+          {THEMES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTheme(t.id)}
+              title={t.label}
+              aria-label={`Tema ${t.label}`}
+              className="rounded-full transition-all duration-200 flex-shrink-0"
+              style={{
+                width: theme === t.id ? '18px' : '14px',
+                height: theme === t.id ? '18px' : '14px',
+                background: t.color,
+                boxShadow: theme === t.id
+                  ? `0 0 0 2px var(--header-bg), 0 0 0 4px ${t.color}`
+                  : 'none',
+                opacity: theme === t.id ? 1 : 0.6,
+              }}
+            />
+          ))}
+        </div>
 
         {/* Alertas */}
         <button
           type="button"
           aria-label="Ver alertas"
-          className="relative p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+          className="relative p-2 rounded-lg transition-colors"
+          style={{ color: 'var(--header-muted)' }}
           onClick={() => navigate('/alertas')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -61,22 +99,26 @@ export default function Header({ onMenuClick }) {
 
         {/* Usuario */}
         <div className="hidden sm:flex flex-col items-end">
-          <span className="text-sm font-medium text-slate-200 leading-none">{user?.nombre || 'Usuario'}</span>
-          <span className="text-xs text-slate-500 capitalize mt-0.5">{user?.rol?.replace('_', ' ') || ''}</span>
+          <span className="text-sm font-medium leading-none" style={{ color: 'var(--header-text)' }}>
+            {user?.nombre || 'Usuario'}
+          </span>
+          <span className="text-xs capitalize mt-0.5" style={{ color: 'var(--header-muted)' }}>
+            {user?.rol?.replace('_', ' ') || ''}
+          </span>
         </div>
 
         {/* Salir */}
         <button
           onClick={() => { logout(); navigate('/login'); }}
-          className="text-xs text-red-400 hover:text-red-300 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
+          className="text-xs text-red-500 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10"
           title="Cerrar sesión"
         >
           Salir
         </button>
 
         {/* Status online */}
-        <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-900/40 text-emerald-400 text-xs font-medium border border-emerald-800/30">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-medium border border-emerald-500/20">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           En línea
         </span>
       </div>

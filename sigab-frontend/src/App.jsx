@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from 'sileo';
+import 'sileo/styles.css';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
@@ -23,23 +25,41 @@ import Metrologia from './pages/Metrologia';
 import Capacitaciones from './pages/Capacitaciones';
 import QRBatch from './pages/QRBatch';
 import QRScanner from './pages/QRScanner';
+import AdminGlobal from './pages/AdminGlobal';
+import CommandCenter from './pages/CommandCenter';
+import Reservas from './pages/Reservas';
+import Formatos from './pages/Formatos';
+import LandingPage from './pages/LandingPage';
+import SuperAdmin from './pages/SuperAdmin';
+
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Toaster position="top-right" toastOptions={{ style: { background: '#1e293b', color: '#fff' } }} />
-      <BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+      <Toaster position="top-right" theme="light" />
+      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/landing" element={<LandingPage />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/equipo/:token" element={<EquipoPublico />} />
           <Route path="/scan" element={<QRScanner />} />
           <Route path="/tv" element={<TVDashboard />} />
           <Route path="/analitica" element={<Layout><Analitica /></Layout>} />
           
+          {/* Rutas Protegidas — SuperAdmin */}
+          <Route element={<ProtectedRoute allowedRoles={['superadmin']} />}>
+            <Route path="/superadmin" element={<SuperAdmin />} />
+            <Route path="/" element={<Layout />}>
+              <Route path="admin-global" element={<AdminGlobal />} />
+            </Route>
+          </Route>
+
           {/* Rutas Protegidas */}
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Layout />}>
-              <Route index element={<Dashboard />} />
+              <Route path="dashboard" element={<Dashboard />} />
               <Route path="equipos" element={<Equipos />} />
               <Route path="ordenes" element={<Ordenes />} />
               <Route path="trazabilidad" element={<Trazabilidad />} />
@@ -53,11 +73,15 @@ export default function App() {
               <Route path="almacen" element={<Almacen />} />
               <Route path="metrologia" element={<Metrologia />} />
               <Route path="capacitaciones" element={<Capacitaciones />} />
+              <Route path="reservas" element={<Reservas />} />
               <Route path="qrbatch" element={<QRBatch />} />
+              <Route path="command-center" element={<CommandCenter />} />
+              <Route path="formatos" element={<Formatos />} />
             </Route>
           </Route>
         </Routes>
       </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

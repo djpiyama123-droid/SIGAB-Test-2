@@ -10,10 +10,11 @@
  *   onCerrar      — callback para cerrar el modal
  */
 import { useState, useCallback } from 'react';
-import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import { api } from '../api/sigah';
+import toast from '../lib/toast';
+import { usePrintFormato } from '../hooks/usePrintFormato';
 
-// ─── Paleta SIGAB ────────────────────────────────────────────────────────────
+// ─── Paleta SIGAH ────────────────────────────────────────────────────────────
 const C = {
   cobalt: '#1B3A5C',
   teal: '#0D9488',
@@ -141,17 +142,17 @@ const estadoInicial = () => ({
 
 function RadioGroup({ opciones, valor, onChange, cols = 3 }) {
   return (
-    <div className={`grid gap-2 ${cols === 2 ? 'grid-cols-2' : cols === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3'}`}>
+    <div className={`grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-${cols}`}>
       {opciones.map((op) => (
         <label
           key={op.value}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm
             ${valor === op.value
               ? 'border-teal-500 bg-teal-900/30 text-teal-200'
-              : 'border-slate-600 bg-slate-800/50 text-slate-400 hover:border-slate-400'}`}
+              : 'border-[var(--content-border)] bg-[var(--content-surface)] text-[var(--content-muted)] hover:border-[var(--content-muted)]'}`}
         >
           <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center
-            ${valor === op.value ? 'border-teal-400' : 'border-slate-500'}`}>
+            ${valor === op.value ? 'border-teal-400' : 'border-[var(--content-border)]'}`}>
             {valor === op.value && <span className="w-2 h-2 rounded-full bg-teal-400" />}
           </span>
           <input
@@ -170,7 +171,7 @@ function RadioGroup({ opciones, valor, onChange, cols = 3 }) {
 
 function CheckboxGrid({ campos, form, onChange }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
       {campos.map(({ key, label }) => {
         const marcado = form[key] === 1;
         return (
@@ -179,10 +180,10 @@ function CheckboxGrid({ campos, form, onChange }) {
             className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm
               ${marcado
                 ? 'border-orange-500 bg-orange-900/30 text-orange-200'
-                : 'border-slate-600 bg-slate-800/40 text-slate-400 hover:border-slate-400'}`}
+                : 'border-[var(--content-border)] bg-[var(--content-surface)] text-[var(--content-muted)] hover:border-[var(--content-muted)]'}`}
           >
             <span className={`w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center
-              ${marcado ? 'border-orange-400 bg-orange-500/30' : 'border-slate-500'}`}>
+              ${marcado ? 'border-orange-400 bg-orange-500/30' : 'border-[var(--content-border)]'}`}>
               {marcado && <span className="text-orange-300 text-xs leading-none">✓</span>}
             </span>
             <input
@@ -201,14 +202,26 @@ function CheckboxGrid({ campos, form, onChange }) {
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
-export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado, onCerrar }) {
+export default function OrdenCasillasForm({ ordenId: ordenIdProp, equipoData = {}, onGuardado, onCerrar }) {
+  const { print: printFormato } = usePrintFormato();
   const [form, setForm] = useState(estadoInicial);
+  const [osForm, setOsForm] = useState({
+    equipo_nombre: equipoData.nombre || '',
+    equipo_serie: equipoData.serie || '',
+    falla_reportada: '',
+    tecnico_nombre: '',
+    area: equipoData.area || '',
+    piso: equipoData.piso || '',
+    prioridad: 'media',
+  });
+  const [localOrdenId, setLocalOrdenId] = useState(ordenIdProp || null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState(null);
   const [exito, setExito] = useState(false);
   const [fotoOCR, setFotoOCR] = useState(null);
   const [procesandoOCR, setProcesandoOCR] = useState(false);
   const [gruposAbiertos, setGruposAbiertos] = useState({ 0: true, 1: true });
+  const ordenId = localOrdenId;
 
   const setRadio = (campo) => (valor) => setForm((f) => ({ ...f, [campo]: valor }));
   const setCheck = useCallback((campo, valor) => setForm((f) => ({ ...f, [campo]: valor })), []);
@@ -219,24 +232,38 @@ export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado
   // ── Guardar ─────────────────────────────────────────────────────────────
   const handleGuardar = async (e) => {
     e.preventDefault();
-    if (!ordenId) {
-      setError('⚠ Debes seleccionar o crear una Orden de Servicio primero');
-      return;
-    }
     setGuardando(true);
     setError(null);
     try {
+      let idOrden = ordenId;
+
+      // Si no hay OS, crear una automáticamente con los datos del formulario superior
+      if (!idOrden) {
+        if (!osForm.falla_reportada.trim() && !osForm.equipo_nombre.trim()) {
+          setError('⚠ Ingresa al menos el equipo o la descripción del servicio');
+          setGuardando(false);
+          return;
+        }
+        const resOS = await api.crearOrden({
+          ...osForm,
+          tipo_mantenimiento: form.tipo_servicio === 'preventivo' ? 'preventivo' : 'correctivo',
+          origen: 'casillas',
+        });
+        idOrden = resOS.orden_id;
+        setLocalOrdenId(idOrden);
+      }
+
       const payload = {
         ...form,
         observaciones_breves: form.observaciones_breves || null,
         refacciones_solicitadas: form.refacciones_solicitadas || null,
       };
-      const res = await api.post(`/casillas/${ordenId}`, payload);
+      const res = await api.post(`/casillas/${idOrden}`, payload);
       setExito(true);
       onGuardado?.(res.data);
       setTimeout(() => setExito(false), 3000);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Error al guardar casillas');
+      setError(err.response?.data?.detail || 'Error al guardar');
     } finally {
       setGuardando(false);
     }
@@ -263,7 +290,7 @@ export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado
   };
 
   // ── Imprimir hoja física ────────────────────────────────────────────────────
-  const handleImprimir = () => window.print();
+  const handleImprimir = () => printFormato();
 
   const toggleGrupo = (i) => setGruposAbiertos((g) => ({ ...g, [i]: !g[i] }));
 
@@ -279,31 +306,31 @@ export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado
       `}</style>
 
       {/* ── Modal overlay ── */}
-      <div className="fixed inset-0 bg-black/70 z-50 flex items-start justify-center p-4 overflow-y-auto">
-        <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl shadow-2xl my-4">
+      <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-start justify-center p-0 sm:p-4 overflow-y-auto">
+        <div className="bg-[var(--content-bg)] border-t sm:border border-[var(--content-border)] rounded-t-2xl sm:rounded-2xl w-full max-w-4xl shadow-2xl h-[95vh] sm:h-auto overflow-y-auto">
 
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 sticky top-0 bg-slate-900 z-10 rounded-t-2xl">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--content-border)] sticky top-0 bg-[var(--content-bg)] z-10 rounded-t-2xl">
             <div>
-              <h2 className="text-lg font-bold text-white">📋 Orden de Servicio — Casillas CENEVAL</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <h2 className="text-lg font-bold text-[var(--content-text)]">📋 Orden de Servicio — Casillas CENEVAL</h2>
+              <p className="text-xs text-[var(--content-muted)] mt-0.5">
                 {ordenId ? `OS #${ordenId}` : 'Sin OS asignada'} ·{' '}
                 {equipoData.nombre && <span className="text-teal-400">{equipoData.nombre}</span>}{' '}
-                {equipoData.serie && <span className="text-slate-500">· {equipoData.serie}</span>}
+                {equipoData.serie && <span className="text-[var(--content-muted)]">· {equipoData.serie}</span>}
               </p>
             </div>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={handleImprimir}
-                className="px-3 py-1.5 text-xs rounded-lg border border-slate-600 text-slate-300 hover:border-teal-500 hover:text-teal-300 transition-colors"
+                className="px-3 py-1.5 text-xs rounded-lg border border-[var(--content-border)] text-[var(--content-muted)] hover:border-teal-500 hover:text-teal-300 transition-colors"
               >
                 🖨 Imprimir hoja
               </button>
               <button
                 type="button"
                 onClick={onCerrar}
-                className="px-3 py-1.5 text-xs rounded-lg border border-slate-600 text-slate-400 hover:border-red-500 hover:text-red-400 transition-colors"
+                className="px-3 py-1.5 text-xs rounded-lg border border-[var(--content-border)] text-[var(--content-muted)] hover:border-red-500 hover:text-red-400 transition-colors"
               >
                 ✕ Cerrar
               </button>
@@ -311,6 +338,48 @@ export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado
           </div>
 
           <form onSubmit={handleGuardar} className="p-6 space-y-6">
+
+            {/* ── Datos de la OS (solo si no hay ordenId) ─── */}
+            {!ordenIdProp && (
+              <section className="bg-blue-950/40 border border-blue-700/50 rounded-xl p-4 space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-widest text-blue-400 mb-1">
+                  📝 Nueva Orden de Servicio
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    placeholder="Equipo / activo *"
+                    value={osForm.equipo_nombre}
+                    onChange={(e) => setOsForm((f) => ({ ...f, equipo_nombre: e.target.value }))}
+                    className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-teal-500"
+                  />
+                  <input
+                    placeholder="No. de serie"
+                    value={osForm.equipo_serie}
+                    onChange={(e) => setOsForm((f) => ({ ...f, equipo_serie: e.target.value }))}
+                    className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-teal-500"
+                  />
+                  <input
+                    placeholder="Técnico responsable"
+                    value={osForm.tecnico_nombre}
+                    onChange={(e) => setOsForm((f) => ({ ...f, tecnico_nombre: e.target.value }))}
+                    className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-teal-500"
+                  />
+                  <input
+                    placeholder="Área"
+                    value={osForm.area}
+                    onChange={(e) => setOsForm((f) => ({ ...f, area: e.target.value }))}
+                    className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-teal-500"
+                  />
+                </div>
+                <textarea
+                  placeholder="Descripción de la falla / servicio requerido *"
+                  value={osForm.falla_reportada}
+                  onChange={(e) => setOsForm((f) => ({ ...f, falla_reportada: e.target.value }))}
+                  rows={2}
+                  className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-teal-500 resize-none"
+                />
+              </section>
+            )}
 
             {/* ── Bloque A: Dominio ─── */}
             <section>
@@ -337,27 +406,27 @@ export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado
                 <span className={`text-xs px-2 py-0.5 rounded-full border ${
                   fallasSeleccionadas > 0
                     ? 'border-orange-600 bg-orange-900/30 text-orange-300'
-                    : 'border-slate-600 text-slate-500'
+                    : 'border-[var(--content-border)] text-[var(--content-muted)]'
                 }`}>
                   {fallasSeleccionadas} marcada{fallasSeleccionadas !== 1 ? 's' : ''}
                 </span>
               </div>
               <div className="space-y-3">
                 {GRUPOS_FALLA.map((grupo, i) => (
-                  <div key={i} className="border border-slate-700 rounded-xl overflow-hidden">
+                  <div key={i} className="border border-[var(--content-border)] rounded-xl overflow-hidden">
                     <button
                       type="button"
                       onClick={() => toggleGrupo(i)}
-                      className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-800/50 hover:bg-slate-800 transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-2.5 bg-[var(--content-bg)] hover:bg-[var(--content-surface)] transition-colors"
                     >
-                      <span className="text-sm font-medium text-slate-300">{grupo.titulo}</span>
-                      <span className="text-slate-500 text-xs">
+                      <span className="text-sm font-medium text-[var(--content-muted)]">{grupo.titulo}</span>
+                      <span className="text-[var(--content-muted)] text-xs">
                         {grupo.campos.filter(({ key }) => form[key] === 1).length} / {grupo.campos.length} ·{' '}
                         {gruposAbiertos[i] ? '▲' : '▼'}
                       </span>
                     </button>
                     {gruposAbiertos[i] && (
-                      <div className="px-4 py-3 bg-slate-900/40">
+                      <div className="px-4 py-3 bg-[var(--content-bg)]/40">
                         <CheckboxGrid campos={grupo.campos} form={form} onChange={setCheck} />
                       </div>
                     )}
@@ -390,21 +459,21 @@ export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1.5">Observaciones breves</label>
+                  <label className="block text-xs text-[var(--content-muted)] mb-1.5">Observaciones breves</label>
                   <textarea
-                    className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:border-teal-500 focus:outline-none resize-none"
+                    className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] placeholder-slate-500 focus:border-teal-500 focus:outline-none resize-none"
                     rows={3}
                     maxLength={140}
                     placeholder="Máx 140 caracteres..."
                     value={form.observaciones_breves}
                     onChange={(e) => setForm((f) => ({ ...f, observaciones_breves: e.target.value }))}
                   />
-                  <p className="text-xs text-slate-600 text-right">{form.observaciones_breves.length}/140</p>
+                  <p className="text-xs text-[var(--content-muted)] text-right">{form.observaciones_breves.length}/140</p>
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1.5">Refacciones solicitadas</label>
+                  <label className="block text-xs text-[var(--content-muted)] mb-1.5">Refacciones solicitadas</label>
                   <textarea
-                    className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:border-teal-500 focus:outline-none resize-none"
+                    className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] placeholder-slate-500 focus:border-teal-500 focus:outline-none resize-none"
                     rows={3}
                     maxLength={255}
                     placeholder="SKU o nombre genérico..."
@@ -416,15 +485,15 @@ export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado
             </section>
 
             {/* ── OCR desde foto ─── */}
-            <section className="border border-dashed border-slate-600 rounded-xl p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">
+            <section className="border border-dashed border-[var(--content-border)] rounded-xl p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-[var(--content-muted)] mb-3">
                 📷 OCR automático desde foto del formato físico
               </h3>
               <div className="flex items-center gap-3">
                 <input
                   type="file"
                   accept="image/*"
-                  className="text-sm text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-slate-700 file:text-slate-300 hover:file:bg-slate-600"
+                  className="text-sm text-[var(--content-muted)] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-[var(--content-surface)] file:text-[var(--content-muted)] hover:file:bg-[var(--content-border)]"
                   onChange={(e) => setFotoOCR(e.target.files?.[0] || null)}
                 />
                 <button
@@ -436,7 +505,7 @@ export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado
                   {procesandoOCR ? '⏳ Analizando...' : '🔍 Leer casillas'}
                 </button>
               </div>
-              <p className="text-xs text-slate-600 mt-2">
+              <p className="text-xs text-[var(--content-muted)] mt-2">
                 Sube la foto y el sistema usará Gemini Vision para detectar casillas marcadas automáticamente.
               </p>
             </section>
@@ -454,11 +523,11 @@ export default function OrdenCasillasForm({ ordenId, equipoData = {}, onGuardado
             )}
 
             {/* ── Botones principales ─── */}
-            <div className="flex justify-end gap-3 pt-2 border-t border-slate-700">
+            <div className="flex justify-end gap-3 pt-2 border-t border-[var(--content-border)]">
               <button
                 type="button"
                 onClick={onCerrar}
-                className="px-5 py-2 text-sm rounded-lg border border-slate-600 text-slate-400 hover:text-slate-200 hover:border-slate-400 transition-colors"
+                className="px-5 py-2 text-sm rounded-lg border border-[var(--content-border)] text-[var(--content-muted)] hover:text-[var(--content-text)] hover:border-[var(--content-muted)] transition-colors"
               >
                 Cancelar
               </button>
@@ -498,7 +567,7 @@ function HojaFisicaCeneval({ form, ordenId, equipoData }) {
         <div style={{ textAlign: 'right', fontSize: '10px' }}>
           <div>No. Orden: <strong>{ordenId || '________'}</strong></div>
           <div>Fecha: <strong>{new Date().toLocaleDateString('es-MX')}</strong></div>
-          <div>Sistema SIGAB v1.0</div>
+          <div>Sistema SIGAH v1.0</div>
         </div>
       </div>
 

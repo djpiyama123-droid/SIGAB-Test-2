@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 
 export default function FilterBar({ filtros = {}, onChange }) {
   const [areas, setAreas] = useState([]);
@@ -18,8 +18,8 @@ export default function FilterBar({ filtros = {}, onChange }) {
   const handleBuscar = (e) => {
     const val = e.target.value;
     setBuscar(val);
-    clearTimeout(window._sigabSearch);
-    window._sigabSearch = setTimeout(() => {
+    clearTimeout(window._sigahSearch);
+    window._sigahSearch = setTimeout(() => {
       onChange({ ...filtros, buscar: val || undefined });
     }, 400);
   };
@@ -28,7 +28,7 @@ export default function FilterBar({ filtros = {}, onChange }) {
     <div className="flex flex-wrap gap-3 mb-4">
       {/* Buscador */}
       <div className="relative flex-1 min-w-[200px]">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--content-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <input
@@ -36,7 +36,7 @@ export default function FilterBar({ filtros = {}, onChange }) {
           placeholder="Buscar equipo, serie, marca..."
           value={buscar}
           onChange={handleBuscar}
-          className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-600"
+          className="w-full pl-10 pr-4 py-2 bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg text-sm text-[var(--content-text)] placeholder-slate-500 focus:outline-none focus:border-emerald-600"
         />
       </div>
 
@@ -44,7 +44,7 @@ export default function FilterBar({ filtros = {}, onChange }) {
       <select
         value={filtros.estado || ''}
         onChange={(e) => onChange({ ...filtros, estado: e.target.value || undefined })}
-        className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-300 focus:outline-none focus:border-emerald-600"
+        className="px-3 py-2 bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg text-sm text-[var(--content-muted)] focus:outline-none focus:border-emerald-600"
       >
         <option value="">Todos los estados</option>
         <option value="operativo">Operativo</option>
@@ -58,7 +58,7 @@ export default function FilterBar({ filtros = {}, onChange }) {
       <select
         value={filtros.area || ''}
         onChange={(e) => onChange({ ...filtros, area: e.target.value || undefined })}
-        className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-300 focus:outline-none focus:border-emerald-600"
+        className="px-3 py-2 bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg text-sm text-[var(--content-muted)] focus:outline-none focus:border-emerald-600"
       >
         <option value="">Todas las areas</option>
         {areas.map((a) => (
@@ -70,7 +70,7 @@ export default function FilterBar({ filtros = {}, onChange }) {
       <select
         value={filtros.piso || ''}
         onChange={(e) => onChange({ ...filtros, piso: e.target.value || undefined })}
-        className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-300 focus:outline-none focus:border-emerald-600"
+        className="px-3 py-2 bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg text-sm text-[var(--content-muted)] focus:outline-none focus:border-emerald-600"
       >
         <option value="">Todos los pisos</option>
         {pisos.map((p) => (
@@ -82,7 +82,7 @@ export default function FilterBar({ filtros = {}, onChange }) {
       {Object.keys(filtros).filter(k => filtros[k]).length > 0 && (
         <button
           onClick={() => { setBuscar(''); onChange({}); }}
-          className="px-3 py-2 text-sm text-slate-400 hover:text-white transition-colors"
+          className="px-3 py-2 text-sm text-[var(--content-muted)] hover:text-white transition-colors"
         >
           Limpiar
         </button>

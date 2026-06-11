@@ -13,7 +13,7 @@ const STATUS_CONFIG = {
 const CRITICIDAD_BADGE = {
   alta:  'bg-red-500/20 text-red-300 border-red-500/40',
   media: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
-  baja:  'bg-slate-500/20 text-slate-300 border-slate-500/40',
+  baja:  'bg-slate-500/20 text-[var(--content-muted)] border-[var(--content-border)]/40',
 };
 
 export default function EquipoPublico() {
@@ -42,8 +42,8 @@ export default function EquipoPublico() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="flex gap-3 items-center text-slate-400">
+      <div className="min-h-screen bg-[var(--content-bg)] flex items-center justify-center">
+        <div className="flex gap-3 items-center text-[var(--content-muted)]">
           <span className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
           Cargando información del equipo...
         </div>
@@ -53,14 +53,14 @@ export default function EquipoPublico() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-[var(--content-bg)] flex items-center justify-center p-6">
         <div className="text-center space-y-4 max-w-md">
           <div className="text-6xl">📋</div>
-          <h1 className="text-xl font-bold text-white">Equipo no encontrado</h1>
-          <p className="text-slate-400 text-sm">{error}</p>
-          <div className="pt-4 border-t border-slate-800">
-            <p className="text-slate-600 text-xs">SIGAB — Hospital General Regional No. 1</p>
-            <p className="text-slate-700 text-xs">IMSS Tijuana, B.C.</p>
+          <h1 className="text-xl font-bold text-[var(--content-text)]">Equipo no encontrado</h1>
+          <p className="text-[var(--content-muted)] text-sm">{error}</p>
+          <div className="pt-4 border-t border-[var(--content-border)]">
+            <p className="text-[var(--content-muted)] text-xs">SIGAH — Hospital General Regional No. 1</p>
+            <p className="text-[var(--content-muted)] text-xs">IMSS Tijuana, B.C.</p>
           </div>
         </div>
       </div>
@@ -73,14 +73,14 @@ export default function EquipoPublico() {
     new Date(equipo.fecha_proximo_mantenimiento) < new Date();
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-[var(--content-bg)] text-white">
       {/* Header institucional */}
-      <header className="bg-slate-900 border-b border-slate-800">
+      <header className="bg-[var(--content-bg)] border-b border-[var(--content-border)]">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-sm font-bold">S</div>
           <div>
-            <div className="text-sm font-semibold text-white">SIGAB</div>
-            <div className="text-[10px] text-slate-500">Hospital General Regional No. 1 · IMSS Tijuana</div>
+            <div className="text-sm font-semibold text-[var(--content-text)]">SIGAH</div>
+            <div className="text-[10px] text-[var(--content-muted)]">Hospital General Regional No. 1 · IMSS Tijuana</div>
           </div>
         </div>
       </header>
@@ -120,9 +120,9 @@ export default function EquipoPublico() {
         </div>
 
         {/* Datos Técnicos */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 divide-y divide-slate-800">
+        <div className="bg-[var(--content-bg)] rounded-xl border border-[var(--content-border)] divide-y divide-slate-800">
           <div className="px-4 py-3">
-            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Datos Técnicos</h2>
+            <h2 className="text-xs font-bold text-[var(--content-muted)] uppercase tracking-widest">Datos Técnicos</h2>
           </div>
           {[
             ['N° Serie', equipo.serie],
@@ -134,27 +134,27 @@ export default function EquipoPublico() {
             ['No. Contrato', equipo.numero_contrato_servicio],
           ].filter(([, v]) => v).map(([label, value]) => (
             <div key={label} className="px-4 py-2.5 flex justify-between items-center">
-              <span className="text-xs text-slate-500">{label}</span>
-              <span className="text-sm text-slate-200 font-medium text-right max-w-[55%] truncate">{value}</span>
+              <span className="text-xs text-[var(--content-muted)]">{label}</span>
+              <span className="text-sm text-[var(--content-text)] font-medium text-right max-w-[55%] truncate">{value}</span>
             </div>
           ))}
         </div>
 
         {/* Mantenimiento */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 divide-y divide-slate-800">
+        <div className="bg-[var(--content-bg)] rounded-xl border border-[var(--content-border)] divide-y divide-slate-800">
           <div className="px-4 py-3">
-            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Mantenimiento</h2>
+            <h2 className="text-xs font-bold text-[var(--content-muted)] uppercase tracking-widest">Mantenimiento</h2>
           </div>
           <div className="px-4 py-2.5 flex justify-between items-center">
-            <span className="text-xs text-slate-500">Último</span>
-            <span className="text-sm text-slate-200">
+            <span className="text-xs text-[var(--content-muted)]">Último</span>
+            <span className="text-sm text-[var(--content-text)]">
               {equipo.fecha_ultimo_mantenimiento
                 ? new Date(equipo.fecha_ultimo_mantenimiento).toLocaleDateString('es-MX')
                 : 'Sin registros'}
             </span>
           </div>
           <div className="px-4 py-2.5 flex justify-between items-center">
-            <span className="text-xs text-slate-500">Próximo Programado</span>
+            <span className="text-xs text-[var(--content-muted)]">Próximo Programado</span>
             <span className={`text-sm font-semibold ${mantenimientoVencido ? 'text-red-400' : 'text-emerald-400'}`}>
               {equipo.fecha_proximo_mantenimiento
                 ? `${new Date(equipo.fecha_proximo_mantenimiento).toLocaleDateString('es-MX')}${mantenimientoVencido ? ' ⚠ VENCIDO' : ''}`
@@ -165,12 +165,12 @@ export default function EquipoPublico() {
           {preventivos.length > 0 && (
             <>
               <div className="px-4 py-2.5">
-                <span className="text-xs text-slate-500">Procedimientos Programados:</span>
+                <span className="text-xs text-[var(--content-muted)]">Procedimientos Programados:</span>
               </div>
               {preventivos.map((p, i) => (
                 <div key={i} className="px-4 py-2 flex justify-between items-start gap-2">
-                  <span className="text-xs text-slate-300">{p.tipo_preventivo}</span>
-                  <span className="text-[11px] text-slate-500 whitespace-nowrap">
+                  <span className="text-xs text-[var(--content-muted)]">{p.tipo_preventivo}</span>
+                  <span className="text-[11px] text-[var(--content-muted)] whitespace-nowrap">
                     Cada {p.frecuencia_dias}d · Prox: {p.proxima_ejecucion ? new Date(p.proxima_ejecucion).toLocaleDateString('es-MX') : '—'}
                   </span>
                 </div>
@@ -181,9 +181,9 @@ export default function EquipoPublico() {
 
         {/* Historial reciente */}
         {ordenes_recientes.length > 0 && (
-          <div className="bg-slate-900 rounded-xl border border-slate-800 divide-y divide-slate-800">
+          <div className="bg-[var(--content-bg)] rounded-xl border border-[var(--content-border)] divide-y divide-slate-800">
             <div className="px-4 py-3">
-              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Últimos Servicios</h2>
+              <h2 className="text-xs font-bold text-[var(--content-muted)] uppercase tracking-widest">Últimos Servicios</h2>
             </div>
             {ordenes_recientes.map((os, i) => (
               <div key={i} className="px-4 py-3 flex items-start gap-3">
@@ -192,16 +192,16 @@ export default function EquipoPublico() {
                 }`} />
                 <div className="min-w-0 flex-1">
                   <div className="flex justify-between items-start">
-                    <span className="text-xs font-mono text-slate-400">{os.numero_orden}</span>
-                    <span className="text-[10px] text-slate-600">
+                    <span className="text-xs font-mono text-[var(--content-muted)]">{os.numero_orden}</span>
+                    <span className="text-[10px] text-[var(--content-muted)]">
                       {os.fecha ? new Date(os.fecha).toLocaleDateString('es-MX') : ''}
                     </span>
                   </div>
-                  <div className="text-xs text-slate-300 mt-0.5 capitalize">
+                  <div className="text-xs text-[var(--content-muted)] mt-0.5 capitalize">
                     {os.tipo_mantenimiento} · {os.estado?.replace('_', ' ')}
                   </div>
                   {os.tecnico_nombre && (
-                    <div className="text-[10px] text-slate-600 mt-0.5">Técnico: {os.tecnico_nombre}</div>
+                    <div className="text-[10px] text-[var(--content-muted)] mt-0.5">Técnico: {os.tecnico_nombre}</div>
                   )}
                 </div>
               </div>
@@ -211,9 +211,9 @@ export default function EquipoPublico() {
 
         {/* Recursos */}
         {(equipo.manual_url || equipo.video_url) && (
-          <div className="bg-slate-900 rounded-xl border border-slate-800 divide-y divide-slate-800">
+          <div className="bg-[var(--content-bg)] rounded-xl border border-[var(--content-border)] divide-y divide-slate-800">
             <div className="px-4 py-3">
-              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Recursos</h2>
+              <h2 className="text-xs font-bold text-[var(--content-muted)] uppercase tracking-widest">Recursos</h2>
             </div>
             <div className="px-4 py-3 flex gap-3">
               {equipo.manual_url && (
@@ -234,9 +234,9 @@ export default function EquipoPublico() {
 
         {/* Footer */}
         <div className="text-center pt-6 pb-8 space-y-1">
-          <p className="text-slate-700 text-xs">Sistema Integral de Gestión de Activos Biomédicos</p>
-          <p className="text-slate-800 text-[10px]">Departamento de Conservación y Mantenimiento</p>
-          <p className="text-slate-800 text-[10px]">Hospital General Regional No. 1 · IMSS · Tijuana, B.C.</p>
+          <p className="text-[var(--content-muted)] text-xs">Sistema Integral de Gestión de Activos Biomédicos</p>
+          <p className="text-[var(--content-muted)] text-[10px]">Departamento de Conservación y Mantenimiento</p>
+          <p className="text-[var(--content-muted)] text-[10px]">Hospital General Regional No. 1 · IMSS · Tijuana, B.C.</p>
         </div>
       </div>
     </div>

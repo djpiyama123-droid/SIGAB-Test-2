@@ -17,8 +17,11 @@ export default {
         '5xl': '3840px',  // 55" 4K
       },
       fontFamily: {
-        sans: ['Lexend', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        data: ['"Source Sans 3"', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Courier New', 'monospace'],
+        display: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
+        body: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         'xs':   ['clamp(0.75rem, 1vw, 1rem)',     { lineHeight: '1rem' }],
@@ -41,21 +44,41 @@ export default {
           dark:  '#064E3B',
           blue:  '#006CB7',
         },
-        sigab: {
-          primary:   '#4F46E5',  // indigo-600 — marca principal
-          secondary: '#6366F1',  // indigo-500
-          accent:    '#818CF8',  // indigo-400
-          glow:      'rgba(79,70,229,0.15)',
+        sigah: {
+          blue:            '#006CB7',
+          'blue-dark':     '#00497D',
+          'blue-light':    '#DCEBF7',
+          emerald:         '#059669',
+          'emerald-light': '#DCFCE7',
+          amber:           '#B45309',
+          'amber-light':   '#FEF3C7',
+          red:             '#B91C1C',
+          'red-light':     '#FEE2E2',
+          slate:           '#1E293B',
+          gray:            '#64748B',
+          'gray-light':    '#F1F5F9',
+        },
+        // Clinical Precision Glass (Stitch / Apple-Medical) — Fase diseño premium
+        'cyan-glow':  '#22D3EE',
+        'ai-violet':  '#8B5CF6',
+        glass: {
+          0: '#020617',   // fondo base (deep slate)
+          50:'#060e20',
+          100:'#0b1326',
+          200:'#131b2e',
+          300:'#171f33',
+          400:'#222a3d',
+          500:'#2d3449',
         },
       },
       backgroundImage: {
-        'sigab-gradient': 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
-        'glass-gradient': 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+        'sigah-gradient':        'linear-gradient(135deg, #006CB7 0%, #00497D 100%)',
+        'sigah-emerald-gradient':'linear-gradient(135deg, #059669 0%, #047857 100%)',
       },
       boxShadow: {
-        'glass':    '0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
-        'indigo':   '0 4px 20px rgba(79,70,229,0.25)',
-        'indigo-lg':'0 8px 40px rgba(79,70,229,0.35)',
+        'blue-sm':  '0 4px 20px rgba(0,108,183,0.25)',
+        'blue-lg':  '0 8px 40px rgba(0,108,183,0.35)',
+        'green-sm': '0 4px 20px rgba(5,150,105,0.25)',
       },
       backdropBlur: {
         'xs': '4px',

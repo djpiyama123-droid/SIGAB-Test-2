@@ -1,6 +1,6 @@
 /**
  * PageHeading — Encabezado estándar de página con icono, título, subtítulo y acciones.
- * Usa el acento indigo de SIGAB.
+ * Usa el acento indigo de SIGAH.
  */
 export default function PageHeading({ icon: Icon, title, subtitle, actions, badge }) {
   return (
@@ -13,7 +13,7 @@ export default function PageHeading({ icon: Icon, title, subtitle, actions, badg
         )}
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl md:text-2xl font-bold text-white leading-tight">
+            <h1 className="text-xl md:text-2xl font-bold text-[var(--content-text)] leading-tight">
               {title}
             </h1>
             {badge && (
@@ -23,7 +23,7 @@ export default function PageHeading({ icon: Icon, title, subtitle, actions, badg
             )}
           </div>
           {subtitle && (
-            <p className="text-sm text-slate-400 mt-0.5">{subtitle}</p>
+            <p className="text-sm text-[var(--content-muted)] mt-0.5">{subtitle}</p>
           )}
         </div>
       </div>

@@ -1,5 +1,5 @@
 /**
- * SIGAB Design Tokens — Fuente única de verdad
+ * SIGAH Design Tokens — Fuente única de verdad
  * Todos los colores, z-index y estados se definen aquí.
  */
 
@@ -133,6 +133,6 @@ export const CHART_COLORS = [
   STATUS_HEX.fuera_servicio,
   '#8b5cf6',  // violeta
   STATUS_HEX.baja,
-  '#4f46e5',  // indigo sigab
+  '#4f46e5',  // indigo sigah
   '#06b6d4',  // cyan
 ];

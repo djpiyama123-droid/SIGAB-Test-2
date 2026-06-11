@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { api } from '../api/sigab';
-import toast from 'react-hot-toast';
+import { api } from '../api/sigah';
+import toast from '../lib/toast';
 
 function descargarBlob(blob, nombre) {
   const url = URL.createObjectURL(blob);
@@ -18,7 +18,7 @@ function abrirBlobPdf(blob) {
 
 function BtnExport({ onClick, children, variant = 'pdf' }) {
   const cls = variant === 'pdf'
-    ? 'border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white'
+    ? 'border-[var(--content-border)] text-[var(--content-muted)] hover:bg-[var(--content-border)] hover:text-white'
     : 'border-emerald-700 text-emerald-400 hover:bg-emerald-900/40 hover:text-emerald-300';
   return (
     <button
@@ -36,12 +36,12 @@ function StatBox({ label, value, color = 'slate' }) {
     red:     'text-red-400',
     yellow:  'text-yellow-400',
     blue:    'text-blue-400',
-    slate:   'text-slate-300',
+    slate:   'text-[var(--content-muted)]',
   };
   return (
-    <div className="bg-slate-900/50 rounded-lg p-4">
+    <div className="bg-[var(--content-bg)]/50 rounded-lg p-4">
       <div className={`text-3xl font-bold ${colors[color]}`}>{value ?? '—'}</div>
-      <div className="text-xs text-slate-500 mt-1">{label}</div>
+      <div className="text-xs text-[var(--content-muted)] mt-1">{label}</div>
     </div>
   );
 }
@@ -79,7 +79,7 @@ export default function Reportes() {
 
   if (loading) {
     return (
-      <div className="text-slate-400 py-12 text-center">Generando reporte...</div>
+      <div className="text-[var(--content-muted)] py-12 text-center">Generando reporte...</div>
     );
   }
 
@@ -92,8 +92,8 @@ export default function Reportes() {
     <div className="p-4 md:p-6 space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Reportes</h1>
-          <p className="text-slate-400 text-sm">
+          <h1 className="text-2xl font-bold text-[var(--content-text)]">Reportes</h1>
+          <p className="text-[var(--content-muted)] text-sm">
             Resumen del estado del sistema — {reporte?.fecha}
           </p>
         </div>
@@ -144,7 +144,7 @@ export default function Reportes() {
       {/* Reporte diario */}
       {reporte && (
         <section>
-          <h2 className="text-base font-semibold text-white mb-3">
+          <h2 className="text-base font-semibold text-[var(--content-text)] mb-3">
             Reporte del día
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -161,13 +161,13 @@ export default function Reportes() {
       {/* Preventivos próxima semana */}
       {reporte?.preventivos_proxima_semana?.length > 0 && (
         <section>
-          <h2 className="text-base font-semibold text-white mb-3">
+          <h2 className="text-base font-semibold text-[var(--content-text)] mb-3">
             Preventivos próximos 7 días
           </h2>
-          <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-x-auto">
+          <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-900/50 text-slate-400 text-left">
+                <tr className="bg-[var(--content-bg)]/50 text-[var(--content-muted)] text-left">
                   <th className="px-4 py-3 font-medium">Equipo</th>
                   <th className="px-4 py-3 font-medium">Tipo preventivo</th>
                   <th className="px-4 py-3 font-medium">Fecha</th>
@@ -176,15 +176,15 @@ export default function Reportes() {
               <tbody>
                 {reporte.preventivos_proxima_semana.map((pp, i) => (
                   <tr key={i}
-                    className="border-t border-slate-700/50 hover:bg-slate-700/20">
+                    className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/20">
                     <td className="px-4 py-3 text-white">
                       {pp.nombre}
-                      <span className="text-slate-500 ml-1 text-xs font-mono">
+                      <span className="text-[var(--content-muted)] ml-1 text-xs font-mono">
                         ({pp.serie})
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-300">{pp.tipo_preventivo}</td>
-                    <td className="px-4 py-3 font-mono text-slate-400 text-xs">
+                    <td className="px-4 py-3 text-[var(--content-muted)]">{pp.tipo_preventivo}</td>
+                    <td className="px-4 py-3 font-mono text-[var(--content-muted)] text-xs">
                       {pp.proxima_ejecucion}
                     </td>
                   </tr>
@@ -198,19 +198,19 @@ export default function Reportes() {
       {/* Equipos críticos */}
       {criticos.length > 0 && (
         <section>
-          <h2 className="text-base font-semibold text-white mb-3">
+          <h2 className="text-base font-semibold text-[var(--content-text)] mb-3">
             Equipos críticos / fuera de servicio
           </h2>
           <div className="space-y-2">
             {criticos.map((eq) => (
               <div key={eq.id}
-                className="bg-slate-800 border border-slate-700 rounded-lg p-4 flex justify-between items-center">
+                className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg p-4 flex justify-between items-center">
                 <div>
                   <p className="text-white text-sm font-medium">{eq.nombre}</p>
-                  <p className="text-slate-500 text-xs mt-0.5">
+                  <p className="text-[var(--content-muted)] text-xs mt-0.5">
                     {eq.marca} — Serie: <span className="font-mono">{eq.serie}</span>
                   </p>
-                  <p className="text-slate-600 text-xs">{eq.area}</p>
+                  <p className="text-[var(--content-muted)] text-xs">{eq.area}</p>
                 </div>
                 <div className="text-right">
                   <span className={`text-xs font-medium capitalize px-2 py-0.5 rounded ${

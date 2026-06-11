@@ -42,7 +42,7 @@ function ModalWrapper({
         role="dialog"
         aria-modal="true"
         className={`
-          relative bg-slate-800 border border-slate-700
+          relative bg-[var(--content-surface)] border border-[var(--content-border)]
           rounded-2xl shadow-2xl w-full ${maxWidth}
           max-h-[90vh] flex flex-col
           animate-slide-up
@@ -59,7 +59,7 @@ function ModalWrapper({
 // Sub-componente: Header (sticky)
 ModalWrapper.Header = function ModalHeader({ title, subtitle, onClose, icon: Icon }) {
   return (
-    <div className="sticky top-0 z-10 bg-slate-800 border-b border-slate-700 px-5 py-4 rounded-t-2xl flex items-center justify-between gap-3 flex-shrink-0">
+    <div className="sticky top-0 z-10 bg-[var(--content-surface)] border-b border-[var(--content-border)] px-5 py-4 rounded-t-2xl flex items-center justify-between gap-3 flex-shrink-0">
       <div className="flex items-center gap-3 min-w-0">
         {Icon && (
           <div className="p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex-shrink-0">
@@ -67,14 +67,14 @@ ModalWrapper.Header = function ModalHeader({ title, subtitle, onClose, icon: Ico
           </div>
         )}
         <div className="min-w-0">
-          <h2 className="font-semibold text-white truncate">{title}</h2>
-          {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+          <h2 className="font-semibold text-[var(--content-text)] truncate">{title}</h2>
+          {subtitle && <p className="text-xs text-[var(--content-muted)] mt-0.5">{subtitle}</p>}
         </div>
       </div>
       {onClose && (
         <button
           onClick={onClose}
-          className="flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500"
+          className="flex-shrink-0 p-1.5 rounded-lg text-[var(--content-muted)] hover:text-white hover:bg-[var(--content-border)] transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500"
           aria-label="Cerrar"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -89,7 +89,7 @@ ModalWrapper.Header = function ModalHeader({ title, subtitle, onClose, icon: Ico
 // Sub-componente: Footer (sticky bottom)
 ModalWrapper.Footer = function ModalFooter({ children, className = '' }) {
   return (
-    <div className={`sticky bottom-0 bg-slate-800 border-t border-slate-700 px-5 py-4 rounded-b-2xl flex-shrink-0 ${className}`}>
+    <div className={`sticky bottom-0 bg-[var(--content-surface)] border-t border-[var(--content-border)] px-5 py-4 rounded-b-2xl flex-shrink-0 ${className}`}>
       {children}
     </div>
   );

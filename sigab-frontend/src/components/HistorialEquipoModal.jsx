@@ -3,7 +3,7 @@
 // Se invoca desde el botón "Ver Historial Completo" en FichaTecnica
 // ============================================================
 import { useState, useEffect } from 'react';
-import { api } from '../api/sigab';
+import { api } from '../api/sigah';
 import { useToast } from './Toast';
 
 const TABS = [
@@ -42,20 +42,20 @@ export default function HistorialEquipoModal({ equipo, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col my-8"
+        className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col my-8"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-5 border-b border-slate-700 flex justify-between items-start">
+        <div className="p-5 border-b border-[var(--content-border)] flex justify-between items-start">
           <div>
-            <h2 className="text-lg font-bold text-white">Historial Técnico</h2>
-            <p className="text-slate-400 text-sm mt-0.5">
+            <h2 className="text-lg font-bold text-[var(--content-text)]">Historial Técnico</h2>
+            <p className="text-[var(--content-muted)] text-sm mt-0.5">
               {equipo.nombre} · <span className="font-mono">{equipo.serie}</span>
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700"
+            className="text-[var(--content-muted)] hover:text-white p-1 rounded-lg hover:bg-[var(--content-border)]"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -64,7 +64,7 @@ export default function HistorialEquipoModal({ equipo, onClose }) {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-700 px-5">
+        <div className="flex border-b border-[var(--content-border)] px-5">
           {TABS.map((t) => {
             const count = data[t.id]?.length || 0;
             return (
@@ -74,12 +74,12 @@ export default function HistorialEquipoModal({ equipo, onClose }) {
                 className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
                   tab === t.id
                     ? 'text-white border-emerald-500'
-                    : 'text-slate-500 border-transparent hover:text-slate-300'
+                    : 'text-[var(--content-muted)] border-transparent hover:text-[var(--content-muted)]'
                 }`}
               >
                 {t.label}
                 {count > 0 && (
-                  <span className="ml-2 px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 text-xs">
+                  <span className="ml-2 px-2 py-0.5 rounded-full bg-[var(--content-surface)] text-[var(--content-muted)] text-xs">
                     {count}
                   </span>
                 )}
@@ -91,7 +91,7 @@ export default function HistorialEquipoModal({ equipo, onClose }) {
         {/* Contenido */}
         <div className="flex-1 overflow-y-auto p-5">
           {loading ? (
-            <div className="text-center text-slate-400 py-12">Cargando historial...</div>
+            <div className="text-center text-[var(--content-muted)] py-12">Cargando historial...</div>
           ) : tab === 'ordenes' ? (
             <ListaOrdenes ordenes={data.ordenes} />
           ) : tab === 'traslados' ? (
@@ -102,10 +102,10 @@ export default function HistorialEquipoModal({ equipo, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-700 flex justify-end">
+        <div className="p-4 border-t border-[var(--content-border)] flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm rounded-lg"
+            className="px-4 py-2 bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-text)] text-sm rounded-lg"
           >
             Cerrar
           </button>
@@ -117,12 +117,12 @@ export default function HistorialEquipoModal({ equipo, onClose }) {
 
 function ListaOrdenes({ ordenes }) {
   if (ordenes.length === 0) {
-    return <p className="text-slate-500 text-sm text-center py-8">Sin órdenes registradas</p>;
+    return <p className="text-[var(--content-muted)] text-sm text-center py-8">Sin órdenes registradas</p>;
   }
   return (
     <div className="space-y-3">
       {ordenes.map((os) => (
-        <div key={os.id} className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
+        <div key={os.id} className="bg-[var(--content-bg)]/50 border border-[var(--content-border)] rounded-lg p-4">
           <div className="flex justify-between items-start mb-2">
             <div>
               <p className="font-mono text-emerald-400 text-sm">{os.numero_orden}</p>
@@ -136,22 +136,22 @@ function ListaOrdenes({ ordenes }) {
                   os.estado === 'cerrada'
                     ? 'bg-emerald-900/50 text-emerald-400'
                     : os.estado === 'cancelada'
-                    ? 'bg-slate-700 text-slate-400'
+                    ? 'bg-[var(--content-surface)] text-[var(--content-muted)]'
                     : 'bg-yellow-900/50 text-yellow-400'
                 }`}
               >
                 {os.estado?.replace('_', ' ')}
               </span>
-              <p className="text-slate-500 text-xs mt-1">{os.fecha}</p>
+              <p className="text-[var(--content-muted)] text-xs mt-1">{os.fecha}</p>
             </div>
           </div>
           {os.falla_reportada && (
-            <p className="text-slate-400 text-xs mt-2">
-              <span className="text-slate-500">Falla:</span> {os.falla_reportada}
+            <p className="text-[var(--content-muted)] text-xs mt-2">
+              <span className="text-[var(--content-muted)]">Falla:</span> {os.falla_reportada}
             </p>
           )}
           {os.tecnico_nombre && (
-            <p className="text-slate-500 text-xs mt-1">Técnico: {os.tecnico_nombre}</p>
+            <p className="text-[var(--content-muted)] text-xs mt-1">Técnico: {os.tecnico_nombre}</p>
           )}
         </div>
       ))}
@@ -161,25 +161,25 @@ function ListaOrdenes({ ordenes }) {
 
 function ListaTraslados({ traslados }) {
   if (traslados.length === 0) {
-    return <p className="text-slate-500 text-sm text-center py-8">Sin traslados registrados</p>;
+    return <p className="text-[var(--content-muted)] text-sm text-center py-8">Sin traslados registrados</p>;
   }
   return (
     <div className="space-y-3">
       {traslados.map((t) => (
-        <div key={t.id} className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
+        <div key={t.id} className="bg-[var(--content-bg)]/50 border border-[var(--content-border)] rounded-lg p-4">
           <div className="flex items-center gap-2 text-sm">
-            <span className="bg-slate-700 text-slate-300 px-2 py-0.5 rounded text-xs">
+            <span className="bg-[var(--content-surface)] text-[var(--content-muted)] px-2 py-0.5 rounded text-xs">
               {t.area_origen || '—'}
               {t.piso_origen && ` · P${t.piso_origen}`}
             </span>
-            <span className="text-slate-500">→</span>
+            <span className="text-[var(--content-muted)]">→</span>
             <span className="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded text-xs border border-blue-800">
               {t.area_destino}
               {t.piso_destino && ` · P${t.piso_destino}`}
             </span>
           </div>
-          {t.motivo && <p className="text-slate-500 text-xs mt-2">Motivo: {t.motivo}</p>}
-          <p className="text-slate-600 text-xs mt-1">
+          {t.motivo && <p className="text-[var(--content-muted)] text-xs mt-2">Motivo: {t.motivo}</p>}
+          <p className="text-[var(--content-muted)] text-xs mt-1">
             {t.fecha_movimiento && new Date(t.fecha_movimiento).toLocaleString('es-MX')}
           </p>
         </div>
@@ -190,19 +190,19 @@ function ListaTraslados({ traslados }) {
 
 function ListaPreventivos({ preventivos }) {
   if (preventivos.length === 0) {
-    return <p className="text-slate-500 text-sm text-center py-8">Sin preventivos programados</p>;
+    return <p className="text-[var(--content-muted)] text-sm text-center py-8">Sin preventivos programados</p>;
   }
   return (
     <div className="space-y-3">
       {preventivos.map((pp) => (
-        <div key={pp.id} className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
+        <div key={pp.id} className="bg-[var(--content-bg)]/50 border border-[var(--content-border)] rounded-lg p-4">
           <p className="text-white text-sm font-medium">{pp.tipo_preventivo}</p>
-          <div className="flex justify-between text-xs text-slate-500 mt-2">
+          <div className="flex justify-between text-xs text-[var(--content-muted)] mt-2">
             <span>Cada {pp.frecuencia_dias} días</span>
             <span>Próx: {pp.proxima_ejecucion}</span>
           </div>
           {pp.ultima_ejecucion && (
-            <p className="text-slate-600 text-xs mt-1">Última: {pp.ultima_ejecucion}</p>
+            <p className="text-[var(--content-muted)] text-xs mt-1">Última: {pp.ultima_ejecucion}</p>
           )}
         </div>
       ))}
