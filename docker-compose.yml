@@ -108,6 +108,7 @@ services:
       SUPERVISOR_JID_1: ${SUPERVISOR_JID_1:-526645534349@s.whatsapp.net}
       SUPERVISOR_JID_2: ${SUPERVISOR_JID_2:-526643057010@s.whatsapp.net}
       BOT_API_KEY: ${BOT_API_KEY:-}
+      BOT_STANDBY: ${BOT_STANDBY:-0}
     volumes:
       - sigab_bot_auth:/app/auth_sigah
     depends_on:
