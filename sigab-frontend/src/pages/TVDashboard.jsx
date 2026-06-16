@@ -36,7 +36,7 @@ export default function TVDashboard() {
       <div className="h-screen w-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-emerald-400 text-lg font-semibold">SIGAH</p>
+          <p className="text-emerald-400 text-lg font-semibold">SIGAB</p>
           <p className="text-slate-500 text-sm">Cargando Dashboard...</p>
         </div>
       </div>
@@ -51,15 +51,15 @@ export default function TVDashboard() {
       {/* ── Header TV ── */}
       <header className="flex items-center justify-between px-8 py-4 bg-slate-900/80 border-b border-slate-800 flex-shrink-0">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-xl font-black">S</div>
+          <img src="/imss_logo.png" className="w-10 h-10 object-contain" alt="IMSS Logo" />
           <div>
-            <h1 className="text-xl font-bold tracking-tight">SIGAH</h1>
+            <h1 className="text-xl font-bold tracking-tight">SIGAB</h1>
             <p className="text-xs text-slate-500">Sistema Integral de Gestión de Activos Biomédicos</p>
           </div>
         </div>
 
         <div className="text-center">
-          <p className="text-sm text-slate-400">Hospital General Regional No. 1</p>
+          <p className="text-sm text-slate-400">IMSS 1 Clínica General Tijuana</p>
           <p className="text-xs text-slate-600">IMSS · Tijuana, B.C.</p>
         </div>
 

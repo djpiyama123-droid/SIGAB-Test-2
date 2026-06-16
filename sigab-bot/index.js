@@ -297,18 +297,32 @@ app.get('/health', (_req, res) => res.json({
 app.listen(BOT_PORT, () => console.log(`🚀 SIGAH Bot API en :${BOT_PORT}`));
 
 // ── Helpers ───────────────────────────────────────────────
-async function resolverGrupo() {
+async function resolverGrupo(retryCount = 0) {
   try {
     const groups = await sock.groupFetchAllParticipating();
-    for (const [jid, group] of Object.entries(groups)) {
-      if (group.subject?.toLowerCase().includes(GRUPO_BIOMEDICOS.toLowerCase())) {
+    const entries = Object.entries(groups);
+    console.log(`🔍 Grupos encontrados en WhatsApp (${entries.length}):`, entries.map(([_, g]) => g.subject));
+    const target = GRUPO_BIOMEDICOS.toLowerCase().replace(/\s+/g, ' ').trim();
+    for (const [jid, group] of entries) {
+      const subject = (group.subject || '').toLowerCase().replace(/\s+/g, ' ').trim();
+      if (subject.includes(target)) {
         grupoJid = jid;
         console.log(`✅ Grupo encontrado: "${group.subject}" → ${jid}`);
         return;
       }
     }
-    console.warn(`⚠️ Grupo "${GRUPO_BIOMEDICOS}" no encontrado. Verifica el nombre.`);
-  } catch (err) { console.warn('Error buscando grupo:', err.message); }
+    if (retryCount < 6) {
+      console.warn(`⚠️ Grupo "${GRUPO_BIOMEDICOS}" no encontrado. Reintentando en 5s... (intento ${retryCount + 1}/6)`);
+      setTimeout(() => resolverGrupo(retryCount + 1), 5000);
+    } else {
+      console.warn(`❌ Grupo "${GRUPO_BIOMEDICOS}" no encontrado. Asegúrate de que el bot esté en el grupo y que el nombre sea correcto.`);
+    }
+  } catch (err) {
+    console.warn('Error buscando grupo:', err.message);
+    if (retryCount < 6) {
+      setTimeout(() => resolverGrupo(retryCount + 1), 5000);
+    }
+  }
 }
 
 async function sendToGroup(text) {

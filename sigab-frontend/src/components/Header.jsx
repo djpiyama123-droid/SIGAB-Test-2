@@ -51,7 +51,7 @@ export default function Header({ onMenuClick }) {
 
       {/* ── Nombre hospital (oculto en xs) ── */}
       <div className="hidden sm:block text-sm truncate flex-1 min-w-0" style={{ color: 'var(--header-muted)' }}>
-        Hospital General Regional No. 1 — IMSS Tijuana
+        IMSS 1 Clínica General Tijuana
       </div>
 
       {/* ── Acciones derecha ── */}
