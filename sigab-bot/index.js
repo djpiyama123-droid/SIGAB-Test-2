@@ -31,6 +31,7 @@ const FASTAPI_WEBHOOK_URL = `${FASTAPI_BASE}/api/v1/events/whatsapp/webhook`;
 const OPENCLAW_API        = `${FASTAPI_BASE}/api/openclaw`;
 const BOT_PORT            = process.env.BOT_PORT || 3000;
 const BOT_API_KEY         = process.env.BOT_API_KEY;
+const BOT_STANDBY         = process.env.BOT_STANDBY === 'true' || process.env.BOT_STANDBY === '1';
 
 // JIDs que reciben DM de notificaciones (supervisores)
 const SUPERVISORES_JID = [
@@ -144,6 +145,16 @@ async function startBot() {
     browser: ['SIGAH-Bot', 'Chrome', '125.0.0'],
   });
 
+  // Interceptar sock.sendMessage para silenciar salidas en modo Standby
+  const originalSendMessage = sock.sendMessage.bind(sock);
+  sock.sendMessage = async (jid, content, options) => {
+    if (BOT_STANDBY) {
+      console.log(`[STANDBY] Envío de mensaje omitido a ${jid}. Contenido:`, JSON.stringify(content));
+      return { key: { id: 'standby-' + Date.now() } };
+    }
+    return await originalSendMessage(jid, content, options);
+  };
+
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
     if (qr) {
@@ -162,6 +173,9 @@ async function startBot() {
     }
     if (connection === 'open') {
       console.log(`🟢 SIGAH Bot conectado. Buscando grupo "${GRUPO_BIOMEDICOS}"...`);
+      if (BOT_STANDBY) {
+        console.log('⚠️ MODO STANDBY ACTIVO: Las respuestas automáticas y salientes a WhatsApp están desactivadas.');
+      }
       await initBotAuth();
       await resolverGrupo();
       initScheduler(sendToGroup);
