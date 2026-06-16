@@ -58,6 +58,7 @@ services:
       SIGAH_GEMMA_MODEL: ${SIGAH_GEMMA_MODEL:-qwen-claw}
       SIGAH_VISION_MODEL: ${SIGAH_VISION_MODEL:-gemma4-claw}
       SIGAH_DISABLE_COPILOT: ${SIGAH_DISABLE_COPILOT:-0}
+      BOT_API_KEYS: ${BOT_API_KEYS:-}
     extra_hosts:
       - "host-gateway:host-gateway"
     volumes:
@@ -106,6 +107,7 @@ services:
       GRUPO_BIOMEDICOS: ${GRUPO_BIOMEDICOS:-Residentes de biomedica 2025}
       SUPERVISOR_JID_1: ${SUPERVISOR_JID_1:-526645534349@s.whatsapp.net}
       SUPERVISOR_JID_2: ${SUPERVISOR_JID_2:-526643057010@s.whatsapp.net}
+      BOT_API_KEY: ${BOT_API_KEY:-}
     volumes:
       - sigab_bot_auth:/app/auth_sigah
     depends_on:
