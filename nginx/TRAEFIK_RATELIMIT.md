@@ -42,7 +42,9 @@ Notas:
 ## Verificación tras aplicar (en el VPS)
 
 ```bash
-# Debe empezar a devolver 429 al pasar el burst:
+# Debe empezar a devolver 429 al pasar el burst. Nota: /api/cache/stats ahora
+# exige sesión, así que sin token verás 401 hasta que el cubo se agota y luego
+# 429 (el rate limit corre ANTES del auth). El 429 es la señal a observar:
 for i in $(seq 1 60); do \
   curl -s -o /dev/null -w "%{http_code} " https://sigab.129-121-100-147.sslip.io/api/cache/stats; \
 done; echo

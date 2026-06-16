@@ -26,7 +26,9 @@ import ipaddress
 import os
 import threading
 import time
+from collections import OrderedDict
 from typing import Optional
+from urllib.parse import parse_qs
 
 from jose import JWTError, jwt
 
@@ -73,9 +75,12 @@ class _Bucket:
         self.last = time.monotonic()
 
 
-_store: dict[str, _Bucket] = {}
+_store: "OrderedDict[str, _Bucket]" = OrderedDict()
 _lock = threading.Lock()
-# Tope defensivo para no crecer sin límite ante un flood de IPs distintas.
+# Tope DURO real de claves con evicción LRU O(1) (popitem del más antiguo).
+# Acota la memoria incluso bajo flood activo desde muchas identidades distintas
+# (antes solo se descartaban buckets "llenos", que bajo flood nunca lo están →
+# el dict crecía sin límite hasta OOM). Ahora siempre se libera espacio.
 _MAX_KEYS = 50_000
 
 
@@ -85,12 +90,13 @@ def _take(key: str, capacity: int, rate: float):
     with _lock:
         b = _store.get(key)
         if b is None:
-            if len(_store) >= _MAX_KEYS:
-                # Limpieza barata: descarta buckets llenos (inactivos).
-                for k in [k for k, v in _store.items() if v.tokens >= capacity]:
-                    _store.pop(k, None)
+            # Evicción LRU garantizada y O(1): saca el menos usado recientemente.
+            while len(_store) >= _MAX_KEYS:
+                _store.popitem(last=False)
             b = _Bucket(capacity)
             _store[key] = b
+        else:
+            _store.move_to_end(key)  # marca como usado recientemente (LRU)
         # Recarga proporcional al tiempo transcurrido.
         b.tokens = min(float(capacity), b.tokens + (now - b.last) * rate)
         b.last = now
@@ -123,16 +129,31 @@ def _is_lan(ip: str) -> bool:
     return any(addr in net for net in _ALLOW_NETS)
 
 
-def _identity(headers: dict, ip: str) -> str:
+def _sub_de_token(raw: str) -> Optional[str]:
+    """Devuelve el `sub` si el token es un access token válido; si no, None."""
+    try:
+        payload = jwt.decode(raw, JWT_SECRET, algorithms=[JWT_ALG])
+    except (JWTError, ValueError):
+        return None
+    if payload.get("type") != "access":   # ignora refresh tokens (consistencia)
+        return None
+    sub = payload.get("sub")
+    return str(sub) if sub else None
+
+
+def _identity(headers: dict, ip: str, query_token: Optional[str] = None) -> str:
+    # Bearer en header (REST) o ?token= (EventSource no manda headers): así el
+    # SSE se contabiliza por user:<sub> y no cae a ip:<IP> compartida tras un NAT.
+    raw = None
     auth = headers.get(b"authorization")
     if auth and auth.startswith(b"Bearer "):
-        try:
-            payload = jwt.decode(auth[7:].decode("latin-1"), JWT_SECRET, algorithms=[JWT_ALG])
-            sub = payload.get("sub")
-            if sub:
-                return f"user:{sub}"
-        except (JWTError, ValueError):
-            pass
+        raw = auth[7:].decode("latin-1")
+    elif query_token:
+        raw = query_token
+    if raw:
+        sub = _sub_de_token(raw)
+        if sub:
+            return f"user:{sub}"
     return f"ip:{ip}"
 
 
@@ -142,13 +163,17 @@ def _rule(path: str, method: str, is_lan: bool):
     if path == "/api/auth/login" and method == "POST":
         # Anti fuerza bruta: ~5/min LAN, ~3/min fuera.
         return ("login", 5, 5 / 60) if is_lan else ("login", 3, 3 / 60)
+    if path == "/api/v1/events/subscribe":
+        # SSE: 1 conexión persistente (no alta frecuencia). Regla holgada para no
+        # dar 429 a varias pestañas/usuarios tras el mismo NAT al reconectar.
+        return ("sse", 30, 1.0) if is_lan else ("sse", 15, 0.5)
     if path.startswith("/api/copilot"):
         # Inferencia cara en una sola GPU: ~10/min LAN, muy estricto fuera.
         return ("copilot", 10, 10 / 60) if is_lan else ("copilot", 3, 3 / 60)
     if method in ("POST", "PUT", "PATCH", "DELETE"):
         # Escrituras: protegen la BD.
         return ("write", 10, 5.0) if is_lan else ("write", 3, 1.0)
-    # Lecturas (incluye polling del dashboard cada 15s y el handshake SSE).
+    # Lecturas (incluye polling del dashboard cada 15s).
     return ("read", 40, 20.0) if is_lan else ("read", 10, 5.0)
 
 
@@ -182,9 +207,21 @@ class RateLimitMiddleware:
         ip = _client_ip(scope, headers)
         is_lan = _is_lan(ip)
         name, capacity, rate = _rule(path, method, is_lan)
-        subject = _identity(headers, ip)
+
+        # Token por query (?token=) para identificar el SSE por usuario; solo se
+        # parsea si aparece "token=" en el query string (barato en el caso común).
+        query_token = None
+        qs = scope.get("query_string") or b""
+        if b"token=" in qs:
+            vals = parse_qs(qs.decode("latin-1")).get("token")
+            if vals:
+                query_token = vals[0]
+
+        subject = _identity(headers, ip, query_token)
         allowed, remaining, reset = _take(f"{subject}:{name}", capacity, rate)
 
+        # Nota: X-RateLimit-Limit expone el burst (capacity) del cubo, no el rate
+        # sostenido; X-RateLimit-Remaining es el piso entero de tokens disponibles.
         rl_headers = [
             (b"x-ratelimit-limit", str(capacity).encode()),
             (b"x-ratelimit-remaining", str(max(0, remaining)).encode()),
