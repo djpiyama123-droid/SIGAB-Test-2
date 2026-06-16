@@ -56,6 +56,13 @@ def _parse_nets(raw: str):
 
 _ALLOW_NETS = _parse_nets(os.getenv("SIGAH_RL_ALLOWLIST", _DEFAULT_ALLOWLIST))
 
+# Nº de proxies CONFIABLES por delante (Traefik = 1). La IP real del cliente es
+# la que añadió el proxy más cercano: la entrada `depth`-ésima desde la DERECHA
+# del X-Forwarded-For. Tomar la izquierda (default ingenuo) es spoofeable: el
+# cliente manda "X-Forwarded-For: 10.0.0.1" y Traefik antepone su valor, así que
+# la izquierda es atacante-controlada. depth<=0 → ignorar XFF (usar IP directa).
+_XFF_DEPTH = int(os.getenv("SIGAH_RL_XFF_DEPTH", "1"))
+
 
 # ── Token bucket en memoria ──────────────────────────────────────────────────
 class _Bucket:
@@ -96,11 +103,14 @@ def _take(key: str, capacity: int, rate: float):
 
 # ── Identidad / red ──────────────────────────────────────────────────────────
 def _client_ip(scope, headers: dict) -> str:
-    xff = headers.get(b"x-forwarded-for")
-    if xff:
-        first = xff.decode("latin-1").split(",")[0].strip()
-        if first:
-            return first
+    if _XFF_DEPTH > 0:
+        xff = headers.get(b"x-forwarded-for")
+        if xff:
+            parts = [p.strip() for p in xff.decode("latin-1").split(",") if p.strip()]
+            if parts:
+                # depth-ésima desde la derecha; si hay menos saltos, la más a la izq.
+                idx = max(0, len(parts) - _XFF_DEPTH)
+                return parts[idx]
     client = scope.get("client")
     return client[0] if client else "0.0.0.0"
 
