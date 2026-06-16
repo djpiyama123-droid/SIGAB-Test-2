@@ -16,7 +16,6 @@
  * @requires @tremor/react — Componentes de UI para data viz
  */
 import { useDashboard } from '../hooks/useDashboard';
-import { useSSE } from '../hooks/useSSE';
 import { useResponsive } from '../hooks/useResponsive';
 import AlertaBanner from '../components/AlertaBanner';
 import HospitalMap from '../components/HospitalMap';
@@ -45,13 +44,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { isControlRoom } = useResponsive();
 
-  // Integrated SSE for real-time status updates
-  useSSE({
-    onEvent: (type, data) => {
-      console.log(`[Dashboard] SSE Event: ${type}`, data);
-      recargar(); // Refresh data on status change or update
-    }
-  });
+  // El SSE lo gestiona useDashboard (una sola conexión). Antes Dashboard abría
+  // una segunda suscripción aquí → conexiones SSE duplicadas por carga.
 
   if (loading) {
     return (

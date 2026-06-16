@@ -28,6 +28,15 @@ export function useSSE({ assetId = null, onEvent = null } = {}) {
     cleanup();
 
     const token = localStorage.getItem('token') || '';
+    // El SSE ahora exige sesión (antes era público). Sin token no tiene sentido
+    // intentar: evita un bucle de reconexión 401 cuando no hay sesión. Si el
+    // access token EXPIRA con la pestaña abierta, el handshake dará 401 y caerá
+    // al polling de respaldo (useDashboard); renovar el token en caliente queda
+    // como follow-up (hoy se recupera al recargar / re-login).
+    if (!token) {
+      setIsConnected(false);
+      return;
+    }
     // Append necessary query params
     const params = new URLSearchParams();
     if (token) params.append('token', token);

@@ -45,8 +45,8 @@ export function useDashboard() {
           { icon: isCritico ? '🚨' : '⚠️', duration: 5000 }
         );
         cargar(filtros);
-      } else if (type === 'status_change') {
-        // generic refresh for state changes
+      } else if (type === 'status_change' || type === 'equipo_update') {
+        // refresh genérico ante cambios de estado o de equipos
         cargar(filtros);
       }
     }

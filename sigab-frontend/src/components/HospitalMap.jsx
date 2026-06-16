@@ -306,24 +306,12 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
 // El contenedor crece de forma automática según la cantidad de equipos (grid auto-wrap).
 // Además muestra un micro-resumen por estado (operativo / mant. / fuera).
 function ZoneBox({ zona, onEquipoClick }) {
-  const [isVisible, setIsVisible] = useState(false);
-  const containerRef = React.useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect(); // Una vez visible, lo mantenemos (o podemos hacerlo dinámico)
-        }
-      },
-      { threshold: 0.1, rootMargin: '100px' }
-    );
-
-    if (containerRef.current) observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
-
+  // Antes se difería el render de los equipos con un IntersectionObserver y se
+  // mostraba un spinner hasta que la zona entraba al viewport. En un display de
+  // sala de control (sin scroll) las zonas bajo el fold del contenedor de 600px
+  // quedaban en spinner para siempre, pareciendo "datos que no cargan". El mapa
+  // ya llega completo en una sola llamada (/api/dashboard/mapa) y los dots están
+  // memoizados, así que renderizamos directo.
   const equipos = zona.equipos || [];
   const tieneEquipos = equipos.length > 0;
   const conFalla = equipos.some(e => ['fuera_servicio', 'en_mantenimiento'].includes(e.estado));
@@ -336,7 +324,6 @@ function ZoneBox({ zona, onEquipoClick }) {
 
   return (
     <div
-      ref={containerRef}
       className="relative rounded-2xl overflow-visible transition-shadow duration-200 flex flex-col h-fit"
       style={{
         backgroundColor: zona.color_bg || '#1e293b',
@@ -391,10 +378,6 @@ function ZoneBox({ zona, onEquipoClick }) {
         {!tieneEquipos ? (
           <div className="flex items-center justify-center py-4">
             <span className="text-[var(--content-muted)] text-[10px] italic">Sin equipos</span>
-          </div>
-        ) : !isVisible ? (
-          <div className="flex items-center justify-center py-6">
-            <div className="w-4 h-4 border-2 border-[var(--content-border)] border-t-slate-500 rounded-full animate-spin" />
           </div>
         ) : (
           <div
