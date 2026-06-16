@@ -22,6 +22,8 @@ import uvicorn
 from config import UPLOAD_DIR, CORS_EXTRA
 from auth.dependencies import get_current_user, require_roles
 from middleware.rate_limit import RateLimitMiddleware
+# Registrar todos los modelos en SQLAlchemy/SQLModel metadata
+import models
 from routes import (
     equipos, ordenes, trazabilidad, reservas,
     alertas, preventivos, dashboard, openclaw, reportes,
