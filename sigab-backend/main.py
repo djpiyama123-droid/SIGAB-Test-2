@@ -21,6 +21,7 @@ import uvicorn
 
 from config import UPLOAD_DIR, CORS_EXTRA
 from auth.dependencies import get_current_user, require_roles
+from middleware.rate_limit import RateLimitMiddleware
 from routes import (
     equipos, ordenes, trazabilidad, reservas,
     alertas, preventivos, dashboard, openclaw, reportes,
@@ -70,6 +71,13 @@ _origins = [
     "https://sigah.129-121-100-147.sslip.io",
     *CORS_EXTRA,
 ]
+# Rate limiting (Capa 2). En Starlette el ÚLTIMO add_middleware queda más
+# externo; por eso lo registramos ANTES de CORS, para que CORS sea la capa
+# externa y envuelva también las respuestas 429 (el navegador necesita las
+# cabeceras CORS para leer el 429 y respetar Retry-After).
+# Ver DISENO_RATE_LIMITING.md y middleware/rate_limit.py.
+app.add_middleware(RateLimitMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_origins,
