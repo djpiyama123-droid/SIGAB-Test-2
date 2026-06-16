@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Text, Metric, BadgeDelta, Flex } from '@tremor/react';
+import { Card, BadgeDelta, Flex } from '@tremor/react';
 import { motion } from 'framer-motion';
 
 // Static color map — avoids Tailwind purge of dynamic bg-${color}-500/10 classes
@@ -34,11 +34,15 @@ export default function KPICard({ title, value, unit, trend = 'neutral', icon: I
       <Card decoration="top" decorationColor={color} className="bg-[var(--content-bg)]/40 border-[var(--content-border)] backdrop-blur-sm shadow-lg hover:shadow-emerald-500/10 transition-all">
         <Flex alignItems="start">
           <div className="flex flex-col">
-            <Text className="text-[var(--content-muted)] font-medium text-xs uppercase tracking-wider">{title}</Text>
-            <Flex className="items-baseline justify-start space-x-2 mt-1">
-              <Metric className="text-[var(--content-text)] font-bold">{value}</Metric>
-              {unit && <Text className="text-[var(--content-muted)] text-sm">{unit}</Text>}
-            </Flex>
+            {/* Etiqueta y valor con elementos planos + variables theme-aware:
+                no dependemos de los colores por defecto de Tremor (sus variantes
+                dark: no se activan porque la app usa data-theme, no la clase
+                'dark'), que dejaban el texto en gris claro sin contraste AA. */}
+            <span className="text-[var(--content-text)] font-semibold text-xs uppercase tracking-wider opacity-90">{title}</span>
+            <div className="flex items-baseline justify-start space-x-2 mt-1">
+              <span className="text-[var(--content-text)] font-bold text-3xl leading-none tabular-nums">{value}</span>
+              {unit && <span className="text-[var(--content-muted)] text-sm">{unit}</span>}
+            </div>
           </div>
           {Icon && (
             <div className={`p-3 ${colors.bg} rounded-xl`}>
@@ -48,7 +52,7 @@ export default function KPICard({ title, value, unit, trend = 'neutral', icon: I
         </Flex>
         <Flex className="mt-4 justify-start space-x-2">
           <BadgeDelta deltaType={deltaType} size="xs" />
-          <Text className="text-[var(--content-muted)] text-xs truncate">Vs. mes anterior</Text>
+          <span className="text-[var(--content-muted)] text-xs truncate">Vs. mes anterior</span>
         </Flex>
       </Card>
     </motion.div>
