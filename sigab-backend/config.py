@@ -14,6 +14,10 @@ Secciones:
 """
 import aiomysql
 import os
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde .env
+load_dotenv()
 
 DB_CONFIG = {
     "host": os.getenv("SIGAH_DB_HOST", "127.0.0.1"),

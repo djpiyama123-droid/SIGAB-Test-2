@@ -123,10 +123,10 @@ export default function Dashboard() {
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tight flex items-center gap-2 flex-wrap">
               <span>CENTRO DE CONTROL</span>
-              <span className="text-emerald-500">SIGAH</span>
+              <span className="text-emerald-500">SIGAB</span>
             </h1>
             <p className="text-[var(--content-muted)] text-sm md:text-base font-medium mt-1">
-              HGR No.1 — IMSS | <span className="text-emerald-500/80">Monitor Biotecnológico en Tiempo Real</span>
+              IMSS 1 Clínica General Tijuana | <span className="text-emerald-500/80">Sistema Integral de Activos Biomédicos</span>
             </p>
           </div>
         </motion.div>

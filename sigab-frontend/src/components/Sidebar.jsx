@@ -23,14 +23,13 @@ export default function Sidebar({ onClose }) {
       >
         <div>
           <div className="flex items-center gap-2">
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)' }}
-            >
-              <span className="font-bold text-xs" style={{ color: 'var(--sidebar-text)' }}>S</span>
-            </div>
+            <img
+              src="/imss_logo.png"
+              alt="IMSS Logo"
+              className="w-7 h-7 object-contain brightness-110 contrast-125"
+            />
             <h1 className="text-lg font-bold tracking-tight" style={{ color: 'var(--sidebar-text)' }}>
-              SIGAH
+              SIGAB
             </h1>
           </div>
           <p className="text-xs mt-0.5 ml-9" style={{ color: 'rgba(255,255,255,0.65)' }}>
@@ -136,7 +135,7 @@ export default function Sidebar({ onClose }) {
       {/* ── Footer ── */}
       <div className="p-4" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
         <div className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
-          <p className="font-medium" style={{ color: 'rgba(255,255,255,0.75)' }}>HGR No. 1 — IMSS Tijuana</p>
+          <p className="font-medium" style={{ color: 'rgba(255,255,255,0.75)' }}>IMSS 1 Clínica General Tijuana</p>
           <p className="mt-0.5">v2.0 · On-Premise</p>
         </div>
       </div>
