@@ -148,9 +148,18 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
         formNormalizado = { ...form, ubicacion: partes.join(' · ') };
       }
 
-      // Limpiar payload: enviar null donde sea string vacío
+      // Limpiar payload: enviar null para campos opcionales vacíos,
+      // pero conservar strings vacíos en campos requeridos para que
+      // el backend pueda descartarlos sin violar NOT NULL constraints.
+      const NOT_NULL_FIELDS = new Set([
+        'nombre', 'serie', 'marca', 'modelo', 'estado',
+        'criticidad', 'tipo_equipo', 'clase_cofepris', 'ubicacion',
+      ]);
       const payload = Object.fromEntries(
-        Object.entries(formNormalizado).map(([k, v]) => [k, v === '' ? null : v])
+        Object.entries(formNormalizado).map(([k, v]) => [
+          k,
+          v === '' ? (NOT_NULL_FIELDS.has(k) ? v : null) : v,
+        ])
       );
 
       let equipoId;

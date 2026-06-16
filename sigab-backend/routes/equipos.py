@@ -256,15 +256,6 @@ async def eliminar_equipo(
 
         await session.delete(equipo)
         await session.commit()
-
-        # Auditoría NOM-016
-        await AuditService.log_event(
-            usuario_id=user["id"],
-            accion="DELETE_EQUIPO",
-            entidad="equipos",
-            entidad_id=equipo_id,
-            datos={"nombre": nombre_equipo}
-        )
     except IntegrityError as e:
         await session.rollback()
         raise HTTPException(
@@ -274,6 +265,19 @@ async def eliminar_equipo(
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=f"Error al eliminar: {str(e)}")
+
+    # Auditoría NOM-016 — fuera del try/commit para no enmascarar el éxito
+    try:
+        await AuditService.log_event(
+            usuario_id=user["id"],
+            accion="DELETE_EQUIPO",
+            entidad="equipos",
+            entidad_id=equipo_id,
+            datos={"nombre": nombre_equipo}
+        )
+    except Exception:
+        import logging
+        logging.getLogger(__name__).warning("Audit log falló para DELETE_EQUIPO %s", equipo_id)
 
     # Borrar imagen física si existía
     if imagen_url:
@@ -716,6 +720,9 @@ async def actualizar_equipo(
     session: AsyncSession = Depends(get_async_session),
 ):
     """Actualiza campos del equipo. Los campos permitidos dependen del rol."""
+    import logging
+    logger = logging.getLogger(__name__)
+
     # Verificar ownership por tenant antes de modificar.
     stmt_eq = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
     equipo = (await session.execute(stmt_eq)).scalar_one_or_none()
@@ -724,23 +731,37 @@ async def actualizar_equipo(
 
     # Defensivo: nunca permitir que el cliente mueva el equipo a otro tenant.
     data.pop("tenant_id", None)
+    # Limpiar campos de solo-lectura que el frontend puede enviar por accidente.
+    for readonly_key in ("id", "created_at", "updated_at", "qr_token", "qr_code_path"):
+        data.pop(readonly_key, None)
 
     campos_permitidos = allowed_update_fields(user)
     updates = {k: v for k, v in data.items() if k in campos_permitidos}
 
+    # ── Null-guard para columnas NOT NULL en la BD ─────────────────────
+    # Si el frontend manda null para un campo NOT NULL, eliminamos la
+    # clave para que se conserve el valor existente en lugar de crashear.
+    NOT_NULL_COLUMNS = {"nombre", "serie", "marca", "modelo", "estado",
+                        "criticidad", "tipo_equipo", "clase_cofepris"}
+    for col in NOT_NULL_COLUMNS:
+        if col in updates and updates[col] is None:
+            del updates[col]
+
+    # ── Coerción zona_id: string vacía → None (FK nullable) ───────────
+    if "zona_id" in updates:
+        val = updates["zona_id"]
+        if val in (None, "", "null"):
+            updates["zona_id"] = None
+        else:
+            try:
+                updates["zona_id"] = int(val)
+            except (ValueError, TypeError):
+                del updates["zona_id"]
+
     # ── BUGFIX UBICACION (NOT NULL) ────────────────────────────────────
-    # El frontend (EquipoForm.jsx) convierte strings vacíos a null antes
-    # de enviar el payload. Si el usuario llena `area`/`piso` pero deja
-    # `ubicacion` vacío, llega ubicacion=None y el UPDATE viola la
-    # constraint NOT NULL de equipos.ubicacion.
-    #
-    # Estrategia: si llega ubicacion=None, derivarla de los campos
-    # granulares (los del payload o, si no vienen, los actuales del
-    # equipo). Si tampoco hay datos para derivar, se descarta la clave
-    # para no nullificar el valor existente.
     if "ubicacion" in updates and updates["ubicacion"] in (None, ""):
-        area_in = updates["area"] if "area" in updates else equipo.area
-        piso_in = updates["piso"] if "piso" in updates else equipo.piso
+        area_in = updates.get("area", equipo.area)
+        piso_in = updates.get("piso", equipo.piso)
         partes = [p for p in (area_in, piso_in) if p]
         if partes:
             updates["ubicacion"] = " · ".join(partes)
@@ -755,23 +776,27 @@ async def actualizar_equipo(
 
     try:
         await session.commit()
-        
-        # Auditoría NOM-016
+    except IntegrityError as e:
+        await session.rollback()
+        msg = e.orig.args[1] if (hasattr(e, "orig") and len(getattr(e.orig, "args", [])) > 1) else str(e)
+        raise HTTPException(status_code=400, detail=f"Datos inválidos para actualizar el equipo: {msg}")
+    except Exception as e:
+        await session.rollback()
+        logger.exception("Error al actualizar equipo %s", equipo_id)
+        raise HTTPException(status_code=500, detail=f"Error al actualizar: {str(e)}")
+
+    # Auditoría NOM-016 — fuera del try/commit para no enmascarar el éxito
+    # del UPDATE con un posible fallo del log de auditoría.
+    try:
         await AuditService.log_event(
             usuario_id=user["id"],
             accion="UPDATE_EQUIPO",
             entidad="equipos",
             entidad_id=equipo_id,
-            datos=updates
+            datos=updates,
         )
-    except IntegrityError as e:
-        await session.rollback()
-        # Mensaje accionable para el frontend (P2-01).
-        msg = e.orig.args[1] if (hasattr(e, "orig") and len(getattr(e.orig, "args", [])) > 1) else str(e)
-        raise HTTPException(status_code=400, detail=f"Datos inválidos para actualizar el equipo: {msg}")
-    except Exception as e:
-        await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error al actualizar: {str(e)}")
+    except Exception as audit_err:
+        logger.warning("Audit log falló para UPDATE_EQUIPO %s: %s", equipo_id, audit_err)
 
     return {"ok": True, "mensaje": f"Equipo {equipo_id} actualizado"}
 
