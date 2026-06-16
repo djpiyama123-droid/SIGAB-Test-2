@@ -46,8 +46,7 @@ export default function App() {
           <Route path="/equipo/:token" element={<EquipoPublico />} />
           <Route path="/scan" element={<QRScanner />} />
           <Route path="/tv" element={<TVDashboard />} />
-          <Route path="/analitica" element={<Layout><Analitica /></Layout>} />
-          
+
           {/* Rutas Protegidas — SuperAdmin */}
           <Route element={<ProtectedRoute allowedRoles={['superadmin']} />}>
             <Route path="/superadmin" element={<SuperAdmin />} />
@@ -61,6 +60,7 @@ export default function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="analitica" element={<Analitica />} />
               <Route path="equipos" element={<Equipos />} />
               <Route path="ordenes" element={<Ordenes />} />
               <Route path="trazabilidad" element={<Trazabilidad />} />
