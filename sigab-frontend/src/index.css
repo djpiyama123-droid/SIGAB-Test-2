@@ -598,3 +598,83 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(94, 114, 143, 1);
 }
+
+/* ==========================================================================
+   SILEO TOASTS OVERRIDES — Premium UI/UX Redesign
+   ========================================================================== */
+
+/* Forzar la tipografía global Inter en los toasts */
+[data-sileo-viewport] * {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+/* Rediseño del fondo/burbuja SVG del Toast */
+[data-sileo-canvas] svg path {
+  fill: var(--content-surface) !important;
+  stroke: var(--content-border) !important;
+  stroke-width: 1.5px !important;
+  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.08)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.04)) !important;
+}
+
+/* En modo oscuro o glass, añadir un sutil resplandor */
+[data-theme="dark"] [data-sileo-canvas] svg path,
+[data-theme="glass"] [data-sileo-canvas] svg path {
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)) !important;
+}
+
+/* Título de la notificación */
+[data-sileo-title] {
+  color: var(--content-text) !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  line-height: 1.25rem !important;
+  text-transform: none !important; /* Evitar capitalización forzada */
+}
+
+/* Descripción de la notificación (soluciona el bug de contraste) */
+[data-sileo-description] {
+  color: var(--content-muted) !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.25rem !important;
+}
+
+/* Contenedor del header (icono + título) */
+[data-sileo-header] {
+  padding-left: 0.875rem !important;
+  padding-right: 0.875rem !important;
+}
+
+/* Insignia/Círculo del Icono */
+[data-sileo-badge] {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 6px !important; /* Bordes redondeados modernos en vez de círculos perfectos */
+  background-color: var(--sileo-tone-bg) !important;
+  color: var(--sileo-tone) !important;
+}
+
+/* Botón de Acción */
+[data-sileo-button] {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  padding: 0.25rem 0.75rem !important;
+  height: 1.875rem !important;
+  background-color: var(--sileo-btn-bg) !important;
+  color: var(--sileo-btn-color) !important;
+  transition: all 0.2s ease !important;
+}
+[data-sileo-button]:hover {
+  background-color: var(--sileo-btn-bg-hover) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Definiciones de colores de estado integrados al tema de la app */
+[data-sileo-viewport] {
+  --sileo-state-success: #10b981 !important; /* Esmeralda */
+  --sileo-state-error:   #ef4444 !important; /* Rojo */
+  --sileo-state-warning: #f59e0b !important; /* Ámbar */
+  --sileo-state-info:    var(--accent) !important; /* Cambia dinámicamente con el tema de la app */
+  --sileo-state-loading: #64748b !important; /* Slate */
+}
+
