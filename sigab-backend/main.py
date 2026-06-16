@@ -12,7 +12,7 @@ Ejecutar con: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 Autor: Equipo SIGAH — Bioingeniería Xochicalco
 Versión: 2.0.0
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
@@ -20,6 +20,7 @@ import os
 import uvicorn
 
 from config import UPLOAD_DIR, CORS_EXTRA
+from auth.dependencies import get_current_user, require_roles
 from routes import (
     equipos, ordenes, trazabilidad, reservas,
     alertas, preventivos, dashboard, openclaw, reportes,
@@ -45,11 +46,19 @@ async def lifespan(app: FastAPI):
     print("SIGAH Backend detenido")
 
 
+# Swagger/OpenAPI exponen toda la superficie de la API a cualquiera.
+# En producción deben ir apagados: SIGAH_ENABLE_DOCS=0 (default seguro).
+# En local, ponlo a 1 en tu .env para tener /docs.
+_DOCS_ON = os.getenv("SIGAH_ENABLE_DOCS", "0").strip() in ("1", "true", "yes")
+
 app = FastAPI(
     title="SIGAH API",
     description="Sistema Integral de Gestión de Activos Biomédicos — HGR No.1 IMSS",
     version="1.0.0",
     lifespan=lifespan,
+    docs_url="/docs" if _DOCS_ON else None,
+    redoc_url="/redoc" if _DOCS_ON else None,
+    openapi_url="/openapi.json" if _DOCS_ON else None,
 )
 
 _origins = [
@@ -106,15 +115,22 @@ def health():
 
 
 @app.get("/api/cache/stats", tags=["Observabilidad"])
-def cache_stats():
-    """Estadísticas del caché en memoria — útil para monitoreo y tuning."""
+def cache_stats(user: dict = Depends(get_current_user)):
+    """Estadísticas del caché en memoria — útil para monitoreo y tuning.
+
+    Requiere sesión: antes era público y filtraba internals (hit/miss, claves).
+    """
     from services.cache_service import cache_service
     return cache_service.stats()
 
 
 @app.delete("/api/cache/flush", tags=["Observabilidad"])
-def cache_flush():
-    """Vacía todo el caché en memoria — usar solo en mantenimiento."""
+def cache_flush(user: dict = Depends(require_roles("admin", "jefe_biomedica"))):
+    """Vacía todo el caché en memoria — usar solo en mantenimiento.
+
+    Solo admin/jefe_biomedica: antes era público y permitía vaciar el caché a
+    voluntad (cache stampede contra MySQL → mini-DoS).
+    """
     from services.cache_service import cache_service
     cache_service.clear()
     return {"ok": True, "mensaje": "Caché vaciado"}
