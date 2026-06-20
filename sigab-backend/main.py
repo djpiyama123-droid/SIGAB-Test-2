@@ -80,6 +80,18 @@ _origins = [
 # Ver DISENO_RATE_LIMITING.md y middleware/rate_limit.py.
 app.add_middleware(RateLimitMiddleware)
 
+# Guarda CORS: con allow_credentials=True los navegadores rechazan '*' como
+# origin (RFC 6454 / Fetch spec). Si SIGAH_CORS_EXTRA trae un comodín por
+# error de configuración, fallamos en arranque en lugar de silenciar el bug.
+# Nota: allow_methods=["*"] y allow_headers=["*"] son válidos junto con
+# origins explícitos; solo allow_origins='*' es incompatible con credentials.
+_wildcard_origins = [o for o in _origins if o == "*"]
+if _wildcard_origins:
+    raise RuntimeError(
+        "CORS mal configurado: allow_credentials=True es incompatible con "
+        "el origin '*'. Revisa SIGAH_CORS_EXTRA y elimina cualquier comodín."
+    )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_origins,
