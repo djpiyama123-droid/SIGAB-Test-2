@@ -190,7 +190,7 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
 
   const tooltipPortal = showTooltip ? ReactDOM.createPortal(
     <div
-      className="w-64 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[var(--content-border)]/50 overflow-hidden"
+      className="w-64 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.10)] border border-[var(--content-border)]/50 overflow-hidden"
       style={getTooltipFixedStyle()}
     >
       <div className="p-3 border-b border-[var(--content-border)]">
@@ -212,7 +212,7 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
         {equipo.clase_cofepris && (
           <div className="flex justify-between text-xs">
             <span className="text-[var(--content-muted)]">COFEPRIS</span>
-            <span className="text-purple-400 font-semibold">Clase {equipo.clase_cofepris}</span>
+            <span className="text-purple-600 font-semibold">Clase {equipo.clase_cofepris}</span>
           </div>
         )}
         {equipo.fecha_proximo_mantenimiento && (
@@ -326,8 +326,8 @@ function ZoneBox({ zona, onEquipoClick }) {
     <div
       className="relative rounded-2xl overflow-visible transition-shadow duration-200 flex flex-col h-fit"
       style={{
-        backgroundColor: zona.color_bg || 'var(--content-surface)',
-        border: `1px solid ${conFalla ? '#ef444440' : (zona.color_borde || '#334155')}`,
+        backgroundColor: 'var(--content-surface)',
+        border: `1px solid ${conFalla ? '#ef444440' : (zona.color_borde || 'var(--content-border)')}`,
         boxShadow: conFalla ? '0 0 15px #ef444410' : 'none',
       }}
     >
@@ -368,7 +368,7 @@ function ZoneBox({ zona, onEquipoClick }) {
             <span className="text-red-600">● {counts.fuera_servicio} Fuera</span>
           )}
           {counts.en_traslado > 0 && (
-            <span className="text-purple-400">● {counts.en_traslado} Trasl.</span>
+            <span className="text-purple-600">● {counts.en_traslado} Trasl.</span>
           )}
         </div>
       )}
