@@ -1,0 +1,6 @@
+node_modules/
+dist/
+*.timestamp-*.mjs
+.env
+.env.local
+*.log
