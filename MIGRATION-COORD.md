@@ -97,7 +97,7 @@ Tras migrar: el componente no debe tener texto blanco invisible sobre fondo blan
 > Nota: `components/Header.jsx` ya migrado en Fase 1 (no está en ningún lote).
 
 ## Próximos pasos
-- [ ] `npm run dev` y revisar visualmente los módulos más cambiados (Almacen, HospitalMap, Metrologia, TVDashboard)
-- [ ] Crear repo GitHub `sigab-app-web-v3.0` y push (requiere visto bueno)
-- [ ] Deploy a VPS prod `/opt/sigab` (requiere visto bueno explícito)
-- [ ] Cerrar puertos n8n :5678 y bot :3000 expuestos (hallazgo auditoría VPS)
+- [x] `npm run dev` y revisar visualmente los módulos más cambiados — OK visual confirmado
+- [x] Push a GitHub (djpiyama123-droid/SIGAB-Test-2, rama v3.0/verde-blanco-imss)
+- [x] Deploy a VPS prod /opt/sigab-panel — rsync src + build 7.48s + nginx reload (2026-06-20)
+- [x] Cerrar puertos n8n :5678 y bot :3000 — ambos en 127.0.0.1 (2026-06-20)
