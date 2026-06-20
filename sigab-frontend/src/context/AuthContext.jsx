@@ -18,8 +18,9 @@ export const AuthProvider = ({ children }) => {
       }
       api.getMe()
         .then(data => {
-          setUser(data);
-          localStorage.setItem('user', JSON.stringify(data));
+          const normalized = { ...data, rol: data.rol ?? data.role, matricula: data.matricula ?? data.username };
+          setUser(normalized);
+          localStorage.setItem('user', JSON.stringify(normalized));
         })
         .catch(err => {
           console.error("Token inválido o expirado");

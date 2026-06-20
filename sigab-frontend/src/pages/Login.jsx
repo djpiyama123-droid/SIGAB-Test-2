@@ -17,7 +17,7 @@ export default function Login() {
 
     try {
       await login(matricula, password);
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al iniciar sesión. Verifique sus credenciales.');
     } finally {

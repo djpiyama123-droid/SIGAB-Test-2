@@ -8,12 +8,14 @@ export default defineConfig({
     host: '0.0.0.0',
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://panel.129-121-100-147.sslip.io',
         changeOrigin: true,
+        secure: true,
       },
       '/static': {
-        target: 'http://localhost:8000',
+        target: 'https://panel.129-121-100-147.sslip.io',
         changeOrigin: true,
+        secure: true,
       },
     },
   },

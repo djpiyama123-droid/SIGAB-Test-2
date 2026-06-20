@@ -43,7 +43,6 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/landing" element={<LandingPage />} />
-          <Route path="/" element={<LandingPage />} />
           <Route path="/equipo/:token" element={<EquipoPublico />} />
           <Route path="/scan" element={<QRScanner />} />
           <Route path="/tv" element={<TVDashboard />} />
