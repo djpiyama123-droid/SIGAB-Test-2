@@ -100,6 +100,13 @@ services:
       - "traefik.http.middlewares.sigah-security.headers.browserXssFilter=true"
       - "traefik.http.middlewares.sigah-security.headers.referrerPolicy=strict-origin-when-cross-origin"
       - "traefik.http.middlewares.sigah-security.headers.permissionsPolicy=geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+      # Content-Security-Policy (PROD-004 cierre).
+      # Origen único: el dominio público; allowlist explícita para Google Fonts (Inter/Outfit/Source Sans 3/JetBrains Mono)
+      # y data:/blob: para imágenes (favicon SVG, fotos de equipos vía backend) y para el Worker de jsqr.
+      # 'unsafe-inline' en style-src es necesario: el bundle inserta <style> dinámico (Sileo) y setAttribute('style', ...)
+      # de React — calcular hashes de cada uno no es viable en build-time.
+      # NO permite eval(), objetos, ni frames anidados.
+      - "traefik.http.middlewares.sigah-security.headers.contentsecuritypolicy=default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self' blob:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
   # ── SIGAH Bot WhatsApp (Baileys) ──────────────────────────────
   bot:
