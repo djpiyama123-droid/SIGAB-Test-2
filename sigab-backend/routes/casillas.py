@@ -224,6 +224,19 @@ async def ocr_casillas(
     if len(image_bytes) > 10 * 1024 * 1024:  # 10 MB max
         raise HTTPException(status_code=413, detail="Imagen muy grande (máx 10 MB)")
 
+    # Validar que el contenido es realmente una imagen (magic bytes via PIL)
+    try:
+        import io as _io
+        from PIL import Image as _Image
+        _img = _Image.open(_io.BytesIO(image_bytes))
+        _img.verify()
+        _pil_format = _img.format  # e.g. "JPEG", "PNG", "WEBP"
+    except Exception:
+        raise HTTPException(status_code=400, detail="Archivo no es una imagen valida")
+
+    _FORMAT_TO_MIME = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp"}
+    mime_type = _FORMAT_TO_MIME.get(_pil_format or "", "image/jpeg")
+
     # Llamar a Gemini Vision
     gemini_api_key = os.getenv("GEMINI_API_KEY")
     if not gemini_api_key:
@@ -232,7 +245,6 @@ async def ocr_casillas(
     try:
         import httpx
         image_b64 = base64.b64encode(image_bytes).decode()
-        mime_type = foto.content_type or "image/jpeg"
 
         payload = {
             "contents": [{
