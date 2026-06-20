@@ -12,10 +12,10 @@ services:
     container_name: sigah-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-sigah_root_2026}
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASS:?DB_ROOT_PASS requerido - define la variable de entorno antes de iniciar}"
       MYSQL_DATABASE:      ${DB_NAME:-sigah}
       MYSQL_USER:          ${DB_USER:-sigah_user}
-      MYSQL_PASSWORD:      ${DB_PASS:-sigah_pass_2026}
+      MYSQL_PASSWORD:      "${DB_PASS:?DB_PASS requerido - define la variable de entorno antes de iniciar}"
     ports:
       - "3306:3306"
     volumes:
@@ -29,7 +29,7 @@ services:
       --event-scheduler=ON
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1",
-             "-u", "${DB_USER:-sigah_user}", "-p${DB_PASS:-sigah_pass_2026}"]
+             "-u", "${DB_USER:-sigah_user}", "-p${DB_PASS}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -48,10 +48,10 @@ services:
       SIGAH_DB_HOST: mysql
       SIGAH_DB_PORT: 3306
       SIGAH_DB_USER: ${DB_USER:-sigah_user}
-      SIGAH_DB_PASS: ${DB_PASS:-sigah_pass_2026}
+      SIGAH_DB_PASS: "${DB_PASS:?DB_PASS requerido - define la variable de entorno antes de iniciar}"
       SIGAH_DB_NAME: ${DB_NAME:-sigah}
       SIGAH_UPLOAD_DIR: /app/static/uploads
-      SIGAH_JWT_SECRET: ${SIGAH_JWT_SECRET:-dev-secret-CAMBIAR-EN-PRODUCCION}
+      SIGAH_JWT_SECRET: "${SIGAH_JWT_SECRET:?SIGAH_JWT_SECRET requerido - define la variable de entorno antes de iniciar}"
       SIGAH_PUBLIC_BASE_URL: ${SIGAH_PUBLIC_BASE_URL:-http://localhost:5173}
       SIGAH_CORS_EXTRA: ${SIGAH_CORS_EXTRA:-}
       SIGAH_OLLAMA_HOST: ${SIGAH_OLLAMA_HOST:-http://host-gateway:11434}

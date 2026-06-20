@@ -12,6 +12,25 @@ NC='\033[0m'
 
 SIGAH_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# ── Leer passwords de entorno o prompt ───────────────────────────
+if [ -z "${DB_ROOT_PASS:-}" ]; then
+    read -r -s -p "Introduce DB_ROOT_PASS (password root de MySQL): " DB_ROOT_PASS
+    echo ""
+fi
+if [ -z "${DB_ROOT_PASS:-}" ]; then
+    echo -e "${RED}ERROR: DB_ROOT_PASS no puede estar vacío.${NC}"
+    exit 1
+fi
+
+if [ -z "${DB_PASS:-}" ]; then
+    read -r -s -p "Introduce DB_PASS (password del usuario sigah_user): " DB_PASS
+    echo ""
+fi
+if [ -z "${DB_PASS:-}" ]; then
+    echo -e "${RED}ERROR: DB_PASS no puede estar vacío.${NC}"
+    exit 1
+fi
+
 echo -e "${GREEN}╔════════════════════════════════════════════╗${NC}"
 echo -e "${GREEN}║   SIGAH — Instalación Automática           ║${NC}"
 echo -e "${GREEN}║   Sistema de Gestión de Activos Biomédicos  ║${NC}"
@@ -45,13 +64,13 @@ fi
 
 # Configurar usuario y bases de datos
 echo -e "${YELLOW}[4/9] Configurando bases de datos...${NC}"
-sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'sigah_root_2026';" 2>/dev/null || true
+sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_ROOT_PASS}';" 2>/dev/null || true
 
-mysql -u root -psigah_root_2026 -e "
+mysql -u root -p"${DB_ROOT_PASS}" -e "
 CREATE DATABASE IF NOT EXISTS sigah CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS dummyequipomedicoimss CHARACTER SET utf8mb3;
-CREATE USER IF NOT EXISTS 'sigah_user'@'localhost' IDENTIFIED BY 'sigah_pass_2026';
-CREATE USER IF NOT EXISTS 'sigah_user'@'127.0.0.1' IDENTIFIED BY 'sigah_pass_2026';
+CREATE USER IF NOT EXISTS 'sigah_user'@'localhost' IDENTIFIED BY '${DB_PASS}';
+CREATE USER IF NOT EXISTS 'sigah_user'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}';
 GRANT ALL PRIVILEGES ON sigah.* TO 'sigah_user'@'localhost';
 GRANT ALL PRIVILEGES ON sigah.* TO 'sigah_user'@'127.0.0.1';
 GRANT ALL PRIVILEGES ON dummyequipomedicoimss.* TO 'sigah_user'@'localhost';
@@ -67,28 +86,28 @@ cd "$SIGAH_DIR"
 
 # Esquema fresco de SIGAH
 if [ -f database/sigah_schema_fresh.sql ]; then
-    mysql -u sigah_user -psigah_pass_2026 sigah < database/sigah_schema_fresh.sql 2>/dev/null
+    mysql -u sigah_user -p"${DB_PASS}" sigah < database/sigah_schema_fresh.sql 2>/dev/null
     echo "  OK: Esquema SIGAH importado"
 fi
 
 # Migraciones
 for migration in database/migrations/*.sql; do
     if [ -f "$migration" ]; then
-        mysql -u sigah_user -psigah_pass_2026 sigah < "$migration" 2>/dev/null || true
+        mysql -u sigah_user -p"${DB_PASS}" sigah < "$migration" 2>/dev/null || true
         echo "  OK: Migración $(basename $migration)"
     fi
 done
 
 # Seed data
 if [ -f database/seed_data.sql ]; then
-    mysql -u sigah_user -psigah_pass_2026 sigah < database/seed_data.sql 2>/dev/null || true
+    mysql -u sigah_user -p"${DB_PASS}" sigah < database/seed_data.sql 2>/dev/null || true
 fi
 
 # BD real del hospital (si existe el archivo)
 BD_REAL=$(find "$SIGAH_DIR" -name "BaseDeDatos*.sql" -o -name "basededatos*.sql" 2>/dev/null | head -1)
 if [ -n "$BD_REAL" ]; then
     echo "  Importando BD real: $(basename $BD_REAL)"
-    mysql -u sigah_user -psigah_pass_2026 dummyequipomedicoimss < "$BD_REAL" 2>/dev/null || true
+    mysql -u sigah_user -p"${DB_PASS}" dummyequipomedicoimss < "$BD_REAL" 2>/dev/null || true
     echo "  OK: BD real importada"
 fi
 
@@ -144,14 +163,15 @@ echo "  OK: Backend listo"
 
 # Crear .env si no existe
 if [ ! -f .env ]; then
-    cat > .env << 'ENVEOF'
+    JWT=$(python3 -c 'import secrets; print(secrets.token_urlsafe(48))')
+    cat > .env << ENVEOF
 SIGAH_DB_HOST=127.0.0.1
 SIGAH_DB_PORT=3306
 SIGAH_DB_USER=sigah_user
-SIGAH_DB_PASS=sigah_pass_2026
+SIGAH_DB_PASS=${DB_PASS}
 SIGAH_DB_NAME=sigah
 SIGAH_SSL_DISABLED=true
-SIGAH_JWT_SECRET=demo-hgr1-2026-secreto-cambiar-en-produccion
+SIGAH_JWT_SECRET=${JWT}
 SIGAH_PUBLIC_BASE_URL=http://localhost:5173
 ENVEOF
     echo "  OK: .env creado"

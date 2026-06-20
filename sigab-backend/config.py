@@ -19,11 +19,15 @@ from dotenv import load_dotenv
 # Cargar variables de entorno desde .env
 load_dotenv()
 
+_db_pass = os.environ.get("SIGAH_DB_PASS", "")
+if not _db_pass:
+    raise RuntimeError("SIGAH_DB_PASS requerido: define la variable de entorno antes de iniciar.")
+
 DB_CONFIG = {
     "host": os.getenv("SIGAH_DB_HOST", "127.0.0.1"),
     "port": int(os.getenv("SIGAH_DB_PORT", 3306)),
     "user": os.getenv("SIGAH_DB_USER", "sigah_user"),
-    "password": os.getenv("SIGAH_DB_PASS", "sigah_pass_2026"),
+    "password": _db_pass,
     "db": os.getenv("SIGAH_DB_NAME", "sigah"),
     "autocommit": True,
     "charset": "utf8mb4",
@@ -33,12 +37,11 @@ UPLOAD_DIR = os.getenv("SIGAH_UPLOAD_DIR", "./static/uploads")
 MAX_UPLOAD_MB = 10
 
 # ── Autenticación JWT ─────────────────────────────────────────────
-# SIGAH_JWT_SECRET es OBLIGATORIO en producción. En dev cae a un valor
-# fijo (no aleatorio) para no invalidar sesiones al reiniciar.
-JWT_SECRET = os.getenv(
-    "SIGAH_JWT_SECRET",
-    "dev-secret-CAMBIAR-EN-PRODUCCION-usa-secrets.token_urlsafe-48",
-)
+# SIGAH_JWT_SECRET es OBLIGATORIO. El proceso aborta si falta o está vacío.
+_jwt_secret = os.environ.get("SIGAH_JWT_SECRET", "")
+if not _jwt_secret:
+    raise RuntimeError("SIGAH_JWT_SECRET requerido: define la variable de entorno antes de iniciar.")
+JWT_SECRET = _jwt_secret
 JWT_ALG = os.getenv("SIGAH_JWT_ALG", "HS256")
 ACCESS_TTL_MIN = int(os.getenv("SIGAH_ACCESS_TTL_MIN", "60"))
 REFRESH_TTL_DAYS = int(os.getenv("SIGAH_REFRESH_TTL_DAYS", "7"))
