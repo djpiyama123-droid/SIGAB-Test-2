@@ -100,7 +100,7 @@ services:
     container_name: sigah-bot
     restart: always
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       FASTAPI_BASE_URL: http://backend:8000
       BOT_PORT: 3000
