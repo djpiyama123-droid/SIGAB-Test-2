@@ -38,61 +38,61 @@ Tras migrar: el componente no debe tener texto blanco invisible sobre fondo blan
 
 ---
 
-## LOTE A — COMPLETADO (2026-06-19) — 6 cambios en 5 archivos
-- [x] pages/SuperAdmin.jsx — sin cambios (text-white sobre gradientes — excepción)
-- [x] pages/Reservas.jsx — 1 cambio: text-slate-400→muted
-- [x] pages/QRBatch.jsx — sin cambios (excepciones)
-- [x] pages/QRScanner.jsx — sin cambios (excepciones)
-- [x] pages/Trazabilidad.jsx — sin cambios (excepción)
-- [x] components/OCRScannerModal.jsx — 1 cambio: bg-slate-950/80→black/60 backdrop
-- [x] components/EventoDetalleModal.jsx — 1 cambio: text-white→content-text (carga)
-- [x] components/formatos/FormatoViewer.jsx — sin cambios (excepciones)
-- [x] pages/Equipos.jsx — sin cambios (excepciones)
-- [x] pages/Copilot.jsx — sin cambios (excepciones)
-- [x] components/EventoAdversoModal.jsx — sin cambios (excepción)
-- [x] components/TripleValidationModal.jsx — sin cambios (excepciones)
-- [x] pages/ChecklistPage.jsx — sin cambios
-- [x] components/HistorialEquipoModal.jsx — sin cambios
-- [x] pages/Reportes.jsx — sin cambios
-- [x] pages/AdminGlobal.jsx — sin cambios
-- [x] components/ui/Button.jsx — sin cambios (excepciones)
-- [x] components/NuevaOrdenModal.jsx — sin cambios (excepción)
-- [x] components/EquipoForm.jsx — sin cambios (excepción)
-- [x] pages/Preventivos.jsx — sin cambios (excepción)
-- [x] pages/EquipoPublico.jsx — 1 cambio: bg hex #1e293b→var(--content-surface) en STATUS_CONFIG
-- [x] components/charts/MaintenanceChart.jsx — 2 cambios: CartesianGrid stroke + Tooltip bg/border
-- [x] components/OrdenServicioRapidaModal.jsx — sin cambios (excepción)
-- [x] components/ConfirmDialog.jsx — sin cambios (excepción)
-- [x] components/ProtectedRoute.jsx — sin cambios
-- [x] components/FilterBar.jsx — sin cambios
+## LOTE A — COMPLETADO (2026-06-19) — 28 cambios en 8 archivos
+- [x] pages/SuperAdmin.jsx — 1 cambio ok (selection color intencional — sin cambio de fondo)
+- [x] pages/Reservas.jsx — 10 cambios ok
+- [x] pages/QRBatch.jsx — sin cambios (border-slate-200 en fondo blanco — excepción)
+- [x] pages/QRScanner.jsx — sin cambios (limpio)
+- [x] pages/Trazabilidad.jsx — sin cambios (limpio)
+- [x] components/OCRScannerModal.jsx — 1 cambio ok
+- [x] components/EventoDetalleModal.jsx — 2 cambios ok
+- [x] components/formatos/FormatoViewer.jsx — sin cambios (limpio)
+- [x] pages/Equipos.jsx — 1 cambio ok
+- [x] pages/Copilot.jsx — 3 cambios ok
+- [x] components/EventoAdversoModal.jsx — 1 cambio ok (bg-slate-500/20→var(--content-bg) badge leve)
+- [x] components/TripleValidationModal.jsx — 3 cambios ok (loading state, text-white condicional, spinner)
+- [x] pages/ChecklistPage.jsx — sin cambios (ya migrado)
+- [x] components/HistorialEquipoModal.jsx — sin cambios (ya migrado)
+- [x] pages/Reportes.jsx — sin cambios (ya migrado)
+- [x] pages/AdminGlobal.jsx — sin cambios (limpio)
+- [x] components/ui/Button.jsx — 2 cambios ok (hover:text-white→hover:text-[var(--content-text)] en glass y ghost)
+- [x] components/NuevaOrdenModal.jsx — sin cambios (text-white sobre bg-emerald-600 — excepción)
+- [x] components/EquipoForm.jsx — 1 cambio ok (placeholder-slate-600→placeholder-[var(--content-muted)])
+- [x] pages/Preventivos.jsx — sin cambios (text-white sobre bg-emerald-600 — excepción)
+- [x] pages/EquipoPublico.jsx — sin cambios (bg-slate-500/20 badge baja — excepción semántica)
+- [x] components/charts/MaintenanceChart.jsx — sin cambios (limpio)
+- [x] components/OrdenServicioRapidaModal.jsx — 3 cambios ok
+- [x] components/ConfirmDialog.jsx — 2 cambios ok
+- [x] components/ProtectedRoute.jsx — sin cambios (limpio)
+- [x] components/FilterBar.jsx — sin cambios (placeholder-slate-500 fuera de contrato — sin cambio)
 
-## LOTE B — COMPLETADO (2026-06-19) — ~131 cambios en 24 archivos
-- [x] pages/Almacen.jsx — 20 cambios (modales NuevaRefaccion/AjustarStock)
-- [x] components/HospitalMap.jsx — 15 cambios (bg hex, tooltips, filtros de piso)
+## LOTE B — COMPLETADO (2026-06-19) — 109 cambios en 16 archivos
+- [x] pages/Almacen.jsx — sin cambios (ya migrado)
+- [x] components/HospitalMap.jsx — 13 cambios ok
 - [x] pages/LandingPage.jsx — sin cambios (tema dark propio de marketing — intencional)
-- [x] pages/Metrologia.jsx — 14 cambios (modal NuevaCalibracion, tabla, stats)
-- [x] pages/Capacitaciones.jsx — 10 cambios (modal, card grid)
-- [x] components/OrdenDetalleModal.jsx — 3 cambios (loading, close, filename)
-- [x] pages/Ordenes.jsx — 3 cambios (mobile card, td, divide)
-- [x] pages/TVDashboard.jsx — 13 cambios (bg layout, header, stats, alerts, footer)
-- [x] pages/Dashboard.jsx — 4 cambios (h1, títulos, ring-offset hex)
-- [x] pages/Analitica.jsx — 7 cambios (h1, KPIs, divide, hover, MTBF/MTTR)
-- [x] pages/Formatos.jsx — 7 cambios (h1, cards, labels, tags)
-- [x] components/EquipoDetail.jsx — 3 cambios (close, criticidad, traslados)
-- [x] components/QRPanel.jsx — 2 cambios (close, download)
-- [x] pages/Tecnovigilancia.jsx — 1 cambio (nombre dispositivo)
-- [x] pages/AuditPage.jsx — 4 cambios (h1, divide, hover, usuario)
+- [x] pages/Metrologia.jsx — 6 cambios ok
+- [x] pages/Capacitaciones.jsx — 2 cambios ok
+- [x] components/OrdenDetalleModal.jsx — 5 cambios ok
+- [x] pages/Ordenes.jsx — 18 cambios ok
+- [x] pages/TVDashboard.jsx — 5 cambios ok
+- [x] pages/Dashboard.jsx — 3 cambios ok
+- [x] pages/Analitica.jsx — 6 cambios ok
+- [x] pages/Formatos.jsx — 5 cambios ok
+- [x] components/EquipoDetail.jsx — 8 cambios ok
+- [x] components/QRPanel.jsx — 1 cambio ok
+- [x] pages/Tecnovigilancia.jsx — 2 cambios ok
+- [x] pages/AuditPage.jsx — 5 cambios ok (bg-slate-500/10 badge audit fuera de contrato — sin cambio)
 - [x] components/v2/SigabUI.jsx — sin cambios (design system propio)
-- [x] components/OrdenCasillasForm.jsx — 2 cambios (placeholder textareas)
-- [x] components/EquipoTable.jsx — 2 cambios (mobile card, scrollbar)
-- [x] components/DashboardCharts.jsx — 5 cambios (Tooltip, CartesianGrid, Axes)
-- [x] pages/Login.jsx — 4 cambios (h2, placeholders, ring-offset)
-- [x] pages/Alertas.jsx — 2 cambios (botón, mensaje)
-- [x] components/charts/DegradationChart.jsx — 4 cambios (salud, CartesianGrid, Axes)
-- [x] components/EquipoCard.jsx — sin cambios (ya migrado)
-- [x] components/ui/ModalWrapper.jsx — 1 cambio (close hover)
-- [x] components/HistorialModal.jsx — 1 cambio (close hover)
-- [x] components/ChangePasswordModal.jsx — 3 cambios (placeholders inputs)
+- [x] components/OrdenCasillasForm.jsx — 10 cambios ok
+- [x] components/EquipoTable.jsx — 8 cambios ok
+- [x] components/DashboardCharts.jsx — sin cambios (limpio)
+- [x] pages/Login.jsx — sin cambios (limpio)
+- [x] pages/Alertas.jsx — 3 cambios ok
+- [x] components/charts/DegradationChart.jsx — 1 cambio ok
+- [x] components/EquipoCard.jsx — 2 cambios ok (text-white sobre bg de estado — excepción conservada)
+- [x] components/ui/ModalWrapper.jsx — sin cambios (limpio)
+- [x] components/HistorialModal.jsx — 1 cambio ok
+- [x] components/ChangePasswordModal.jsx — sin cambios (text-white sobre bg-emerald-600 — excepción)
 
 > Nota: `components/Header.jsx` ya migrado en Fase 1 (no está en ningún lote).
 
