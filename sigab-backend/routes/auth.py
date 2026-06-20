@@ -126,8 +126,8 @@ async def change_password(
     actual = data.get("password_actual") or ""
     nueva = data.get("password_nueva") or ""
 
-    if not nueva or len(nueva) < 6:
-        raise HTTPException(status_code=400, detail="La nueva contraseña debe tener al menos 6 caracteres")
+    if not nueva or len(nueva) < 12 or not any(c.isalpha() for c in nueva) or not any(c.isdigit() for c in nueva):
+        raise HTTPException(status_code=400, detail="La nueva contraseña debe tener al menos 12 caracteres e incluir letras y números")
 
     stmt = select(Usuario).where(Usuario.id == user["id"])
     result = await session.execute(stmt)
