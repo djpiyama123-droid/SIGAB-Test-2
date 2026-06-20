@@ -1,0 +1,42 @@
+# ponytail: cambio mínimo — solo excluye lo que no debe entrar al build context
+
+# Bytecode y caché de Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Entornos virtuales
+venv/
+.venv/
+
+# Secretos y configuración local
+.env
+.env.*
+
+# Tests
+tests/
+pytest.ini
+
+# Documentación
+*.md
+
+# Control de versiones
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# Scripts de desarrollo/scratch (no son parte del servidor)
+scratch/
+scripts/
+
+# Archivos de migración / verificación sueltos en raíz (utilidades dev)
+check_images.py
+check_images_not_null.py
+link_images.py
+test_db.py
+migrate_historial.py
+migrate_new_modules.py
+migrate_photos.py

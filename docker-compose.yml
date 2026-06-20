@@ -17,7 +17,7 @@ services:
       MYSQL_USER:          ${DB_USER:-sigah_user}
       MYSQL_PASSWORD:      "${DB_PASS:?DB_PASS requerido - define la variable de entorno antes de iniciar}"
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"  # ponytail: bind local-only — MySQL no debe ser alcanzable desde Internet
     volumes:
       - sigah_mysql_data:/var/lib/mysql
       - ./database/sigab_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
@@ -43,7 +43,7 @@ services:
     container_name: sigah-backend
     restart: always
     ports:
-      - "${BACKEND_PORT:-8000}:8000"
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"  # ponytail: bind local-only — backend accesible vía Traefik, no directo desde Internet
     environment:
       SIGAH_DB_HOST: mysql
       SIGAH_DB_PORT: 3306
@@ -100,7 +100,7 @@ services:
     container_name: sigah-bot
     restart: always
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"  # ponytail: bind local-only — bot WhatsApp interno, sin exposición pública necesaria
     environment:
       FASTAPI_BASE_URL: http://backend:8000
       BOT_PORT: 3000

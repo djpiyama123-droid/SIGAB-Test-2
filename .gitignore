@@ -60,6 +60,9 @@ database/migrate_real_data.py
 
 # Vite timestamp files
 *.timestamp-*.mjs
+# ponytail: entradas explícitas solicitadas por el orquestador (el glob de arriba ya las cubría)
+**/vite.config.js.timestamp-*.mjs
+**/vite.config.ts.timestamp-*.mjs
 
 # Docker volumes
 mysql_data/
@@ -90,6 +93,9 @@ sigah-backend/alembic_output.txt
 !.claude/skills/ui-ux-pro-max/
 .agents/
 skills-lock.json
+
+# Credenciales vivas de WhatsApp/Baileys - NUNCA deben estar en git
+sigab-bot/auth_sigah/
 
 # ── Salida generada por herramientas ──
 graphify-out/
