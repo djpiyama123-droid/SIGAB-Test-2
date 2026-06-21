@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sileo';
 import 'sileo/styles.css';
@@ -5,34 +6,47 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
-import Login from './pages/Login';
-import EquipoPublico from './pages/EquipoPublico';
-import TVDashboard from './pages/TVDashboard';
-import Dashboard from './pages/Dashboard';
-import Equipos from './pages/Equipos';
-import Ordenes from './pages/Ordenes';
-import Trazabilidad from './pages/Trazabilidad';
-import Preventivos from './pages/Preventivos';
-import Alertas from './pages/Alertas';
-import Analitica from './pages/Analitica';
-import Reportes from './pages/Reportes';
-import Tecnovigilancia from './pages/Tecnovigilancia';
-import Copilot from './pages/Copilot';
-import AuditPage from './pages/AuditPage';
-import ChecklistPage from './pages/ChecklistPage';
-import Almacen from './pages/Almacen';
-import Metrologia from './pages/Metrologia';
-import Capacitaciones from './pages/Capacitaciones';
-import QRBatch from './pages/QRBatch';
-import QRScanner from './pages/QRScanner';
-import AdminGlobal from './pages/AdminGlobal';
-import CommandCenter from './pages/CommandCenter';
-import Reservas from './pages/Reservas';
-import Formatos from './pages/Formatos';
-import LandingPage from './pages/LandingPage';
-import SuperAdmin from './pages/SuperAdmin';
-import DashboardV3, { DashboardV3Content } from './pages/DashboardV3';
 
+// ponytail: paginas lazy -> code-splitting (portado de 568ca98 del repo main).
+// ProtectedRoute/Layout/Providers quedan eager (shell de auth que protege cada ruta).
+const Login = lazy(() => import('./pages/Login'));
+const EquipoPublico = lazy(() => import('./pages/EquipoPublico'));
+const TVDashboard = lazy(() => import('./pages/TVDashboard'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Equipos = lazy(() => import('./pages/Equipos'));
+const Ordenes = lazy(() => import('./pages/Ordenes'));
+const Trazabilidad = lazy(() => import('./pages/Trazabilidad'));
+const Preventivos = lazy(() => import('./pages/Preventivos'));
+const Alertas = lazy(() => import('./pages/Alertas'));
+const Analitica = lazy(() => import('./pages/Analitica'));
+const Reportes = lazy(() => import('./pages/Reportes'));
+const Tecnovigilancia = lazy(() => import('./pages/Tecnovigilancia'));
+const Copilot = lazy(() => import('./pages/Copilot'));
+const AuditPage = lazy(() => import('./pages/AuditPage'));
+const ChecklistPage = lazy(() => import('./pages/ChecklistPage'));
+const Almacen = lazy(() => import('./pages/Almacen'));
+const Metrologia = lazy(() => import('./pages/Metrologia'));
+const Capacitaciones = lazy(() => import('./pages/Capacitaciones'));
+const QRBatch = lazy(() => import('./pages/QRBatch'));
+const QRScanner = lazy(() => import('./pages/QRScanner'));
+const AdminGlobal = lazy(() => import('./pages/AdminGlobal'));
+const CommandCenter = lazy(() => import('./pages/CommandCenter'));
+const Reservas = lazy(() => import('./pages/Reservas'));
+const Formatos = lazy(() => import('./pages/Formatos'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const SuperAdmin = lazy(() => import('./pages/SuperAdmin'));
+const DashboardV3 = lazy(() => import('./pages/DashboardV3'));
+const DashboardV3Content = lazy(() =>
+  import('./pages/DashboardV3').then((m) => ({ default: m.DashboardV3Content }))
+);
+
+function RouteFallback() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-sigah-emerald border-t-transparent" />
+    </div>
+  );
+}
 
 export default function App() {
   return (
@@ -40,13 +54,14 @@ export default function App() {
       <AuthProvider>
       <Toaster position="top-right" theme="light" />
       <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
+        <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/landing" element={<LandingPage />} />
           <Route path="/equipo/:token" element={<EquipoPublico />} />
           <Route path="/scan" element={<QRScanner />} />
           <Route path="/tv" element={<TVDashboard />} />
-          {/* SIGAB v3.0 — preview público de diseño (sin auth) */}
+          {/* SIGAB v3.0 — preview publico de diseno (sin auth) */}
           <Route path="/v3" element={<DashboardV3 />} />
           {/* Preview del SHELL real (Layout/Sidebar/Header) con tema verde IMSS */}
           <Route path="/v3app" element={<Layout />}>
@@ -87,6 +102,7 @@ export default function App() {
             </Route>
           </Route>
         </Routes>
+        </Suspense>
       </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
