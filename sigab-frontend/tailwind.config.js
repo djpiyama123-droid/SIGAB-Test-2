@@ -18,7 +18,6 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        data: ['"Source Sans 3"', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Courier New', 'monospace'],
         display: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
         body: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],

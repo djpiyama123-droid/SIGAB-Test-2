@@ -23,7 +23,7 @@ Invocar esta skill cuando se trabaje en:
 
 **Paleta SIGAH recomendada**: Medical/Clinical — azul IMSS (#006CB7), verde biomédico (emerald-600), alertas (amber/red)
 **Estilo base**: Minimalism + Dark Mode compatible, componentes con Tailwind utility classes
-**Tipografía**: Inter (UI) + Source Sans Pro (data tables)
+**Tipografía**: Inter (UI global) + JetBrains Mono (folios, series, IDs técnicos) + Outfit (display/body en LandingPage pública)
 
 ## Estructura del Monorepo (SIGAH = empresa; contiene a SIGAB = app)
 ```
