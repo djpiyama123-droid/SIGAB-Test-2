@@ -58,6 +58,16 @@ database/sigah_schema.sql
 database/sigah_schema_fresh.sql
 database/migrate_real_data.py
 
+# Backups manuales del operador — pueden contener .env con secretos reales
+*.bak
+*.bak-*
+*.bak.*
+**/*.bak-*
+**/*.bak
+.env.bak
+*.env.bak
+*.env.bak-*
+
 # Vite timestamp files
 *.timestamp-*.mjs
 
