@@ -33,16 +33,6 @@ export default {
         '4xl':  ['clamp(2.25rem, 4vw, 4rem)',     { lineHeight: '1' }],
       },
       colors: {
-        medical: {
-          green:  '#10B981',
-          yellow: '#F59E0B',
-          red:    '#EF4444',
-        },
-        imss: {
-          green: '#065F46',
-          dark:  '#064E3B',
-          blue:  '#006CB7',
-        },
         sigah: {
           blue:            '#006CB7',
           'blue-dark':     '#00497D',
