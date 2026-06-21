@@ -17,7 +17,7 @@ services:
       MYSQL_USER:          ${DB_USER:-sigah_user}
       MYSQL_PASSWORD:      ${DB_PASS:-sigah_pass_2026}
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
     volumes:
       - sigah_mysql_data:/var/lib/mysql
       - ./database/sigab_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
@@ -43,7 +43,7 @@ services:
     container_name: sigah-backend
     restart: always
     ports:
-      - "${BACKEND_PORT:-8000}:8000"
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     environment:
       SIGAH_DB_HOST: mysql
       SIGAH_DB_PORT: 3306
