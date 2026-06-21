@@ -32,12 +32,12 @@ export default function Navbar({ onLoginClick }: Props) {
         </span>
 
         {/* Desktop nav links */}
-        <ul className="hidden md:flex items-center gap-7">
+        <ul className="hidden xl:flex items-center gap-7">
           {NAV_LINKS.map(link => (
             <li key={link.href}>
               <a
                 href={link.href}
-                className="font-sans font-normal text-sm text-slate-500 hover:text-sigah-blue transition-colors duration-150"
+                className="font-sans font-normal text-sm text-slate-500 hover:text-sigah-blue transition-colors duration-150 whitespace-nowrap"
               >
                 {link.label}
               </a>
@@ -46,7 +46,7 @@ export default function Navbar({ onLoginClick }: Props) {
         </ul>
 
         {/* CTA group */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden xl:flex items-center gap-3">
           {/* Acceder — ghost */}
           <button
             onClick={onLoginClick}
@@ -66,7 +66,7 @@ export default function Navbar({ onLoginClick }: Props) {
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden p-2 text-slate-500 hover:text-sigah-blue transition-colors rounded-lg"
+          className="xl:hidden p-2 text-slate-500 hover:text-sigah-blue transition-colors rounded-lg"
           onClick={() => setMenuOpen(v => !v)}
           aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
         >
@@ -76,7 +76,7 @@ export default function Navbar({ onLoginClick }: Props) {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden bg-white border-t border-border px-6 py-5 flex flex-col gap-4">
+        <div className="xl:hidden bg-white border-t border-border px-6 py-5 flex flex-col gap-4">
           {NAV_LINKS.map(link => (
             <a
               key={link.href}

@@ -39,6 +39,9 @@
 
   html {
     scroll-behavior: smooth;
+    /* Compensa el navbar fixed (h-16 = 4rem) al saltar a un ancla,
+       para que el título de la sección no quede oculto bajo el header. */
+    scroll-padding-top: 5rem;
   }
 
   html, body {

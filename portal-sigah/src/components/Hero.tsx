@@ -13,7 +13,7 @@ const STATS = [
 
 export default function Hero({ onLoginClick }: Props) {
   return (
-    <section id="hero" className="pt-32 pb-24 px-6 bg-bg-principal">
+    <section id="hero" className="pt-20 pb-24 px-6 bg-bg-principal">
       <div className="max-w-7xl mx-auto">
         {/* Active pilot badge */}
         <div className="inline-flex items-center gap-2 bg-esmeralda-bg rounded-[12px] px-3 py-1.5 mb-8">
