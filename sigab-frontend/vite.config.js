@@ -17,4 +17,24 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('recharts') || id.includes('@tremor') || id.includes('framer-motion') || id.includes('d3-')) {
+              return 'charts';
+            }
+            if (id.includes('qrcode') || id.includes('jsqr')) {
+              return 'qr';
+            }
+            if (id.includes('react-router')) {
+              return 'router';
+            }
+          }
+        },
+      },
+    },
+  },
 });
