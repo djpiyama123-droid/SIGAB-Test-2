@@ -165,9 +165,9 @@ export default function Metrologia() {
           <p className="text-orange-600 text-sm font-medium">Próximos a Vencer (30d)</p>
           <p className="text-3xl font-bold text-orange-500 mt-2">{proximos.length}</p>
         </div>
-        <div className="bg-red-50 border border-red-200 p-6 rounded-2xl">
+        <div className="bg-red-500/10 border border-red-500/30 p-6 rounded-2xl">
           <p className="text-red-600 text-sm font-medium">Vencidos / Fuera de Norma</p>
-          <p className="text-3xl font-bold text-red-500 mt-2">
+          <p className="text-3xl font-bold text-red-600 mt-2">
             {calibraciones.filter(c => new Date(c.proxima_calibracion) <= new Date()).length}
           </p>
         </div>

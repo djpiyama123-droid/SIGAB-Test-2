@@ -190,7 +190,7 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
 
   const tooltipPortal = showTooltip ? ReactDOM.createPortal(
     <div
-      className="w-64 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.10)] border border-[var(--content-border)]/50 overflow-hidden"
+      className="w-64 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.25)] border border-[var(--content-border)]/50 overflow-hidden bg-[var(--content-surface)] backdrop-blur-md"
       style={getTooltipFixedStyle()}
     >
       <div className="p-3 border-b border-[var(--content-border)]">
@@ -231,8 +231,8 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       <div className="p-2 border-t border-[var(--content-border)] flex gap-1">
         <button
           onMouseDown={(e) => { e.stopPropagation(); onClick(equipo); }}
-          className="flex-1 py-1.5 px-2 rounded-lg text-xs font-medium bg-[var(--content-surface)] hover:bg-[var(--content-border)]
-                     text-[var(--content-text)] transition-colors pointer-events-auto"
+          className="flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold bg-[var(--content-text)] hover:opacity-90
+                     text-[var(--content-surface)] transition-opacity pointer-events-auto"
         >
           Ver Ficha
         </button>

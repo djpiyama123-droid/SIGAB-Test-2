@@ -79,7 +79,7 @@ export default function Analitica() {
           <Zap className="absolute -bottom-4 -right-4 h-24 w-24 text-emerald-500/5 group-hover:text-emerald-500/10 transition-colors" />
         </div>
 
-        <div className="bg-[var(--content-bg)]/50 border border-red-200 p-6 rounded-3xl relative overflow-hidden group hover:border-red-400 transition-all">
+        <div className="bg-[var(--content-bg)]/50 border border-red-500/30 p-6 rounded-3xl relative overflow-hidden group hover:border-red-400 transition-all">
           <div className="relative z-10">
             <p className="text-[var(--content-muted)] text-xs font-bold uppercase tracking-wider mb-4">Equipos en Riesgo</p>
             <div className="flex items-baseline gap-1">
@@ -114,7 +114,7 @@ export default function Analitica() {
               </p>
               <span className="text-sm font-bold text-[var(--content-muted)]">hrs</span>
             </div>
-            <p className="text-[10px] text-purple-700 font-bold mt-2">Tiempo de respuesta efectivo</p>
+            <p className="text-[10px] text-purple-600 font-bold mt-2">Tiempo de respuesta efectivo</p>
           </div>
           <ShieldCheck className="absolute -bottom-4 -right-4 h-24 w-24 text-purple-500/5 group-hover:text-purple-500/10 transition-colors" />
         </div>
@@ -150,7 +150,7 @@ export default function Analitica() {
                 return (
                   <tr key={m.equipo_id} className="hover:bg-[var(--content-surface)] transition-all group">
                     <td className="px-6 py-5">
-                      <p className="font-bold text-[var(--content-text)] group-hover:text-emerald-700 transition-colors">{m.modelo}</p>
+                      <p className="font-bold text-[var(--content-text)] group-hover:text-emerald-600 transition-colors">{m.modelo}</p>
                       <p className="text-[10px] font-mono text-[var(--content-muted)] uppercase">{m.marca} · {m.serie}</p>
                     </td>
                     <td className="px-6 py-5">

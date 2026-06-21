@@ -259,7 +259,7 @@ export default function SuperAdmin() {
                       <td className="py-4 text-right">
                         <div className="flex items-center justify-end gap-3">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            t.estado === 'activo' ? 'bg-emerald-500/10 text-emerald-700' : 'bg-red-500/10 text-red-700'
+                            t.estado === 'activo' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-600'
                           }`}>
                             {t.estado}
                           </span>
@@ -307,7 +307,7 @@ export default function SuperAdmin() {
                       <h4 className="text-xs font-bold text-[var(--content-text)]">{n.nombre}</h4>
                       <p className="text-[10px] text-[var(--content-muted)] font-mono mt-0.5">{n.ip} • {n.rol}</p>
                     </div>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono text-teal-700 font-bold bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-mono text-teal-600 font-bold bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20">
                       <Wifi className="w-3 h-3 text-teal-600" /> {n.latencia}
                     </span>
                   </div>
@@ -328,9 +328,9 @@ export default function SuperAdmin() {
                   <div className="flex justify-between text-[var(--content-muted)] font-semibold mb-1">
                     <span>{log.time} • Tenant: {log.tenant}</span>
                     <span className={`uppercase font-bold ${
-                      log.tipo === 'success' ? 'text-emerald-700' :
+                      log.tipo === 'success' ? 'text-emerald-600' :
                       log.tipo === 'warning' ? 'text-amber-600' :
-                      log.tipo === 'error' ? 'text-red-700' : 'text-blue-700'
+                      log.tipo === 'error' ? 'text-red-600' : 'text-blue-600'
                     }`}>{log.tipo}</span>
                   </div>
                   <p className="text-[var(--content-text)] text-xs leading-relaxed">{log.msg}</p>

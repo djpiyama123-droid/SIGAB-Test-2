@@ -11,8 +11,8 @@ const STATUS_CONFIG = {
 };
 
 const CRITICIDAD_BADGE = {
-  alta:  'bg-red-500/15 text-red-700 border-red-500/40',
-  media: 'bg-yellow-500/15 text-yellow-700 border-yellow-500/40',
+  alta:  'bg-red-500/15 text-red-500 border-red-500/40',
+  media: 'bg-yellow-500/15 text-yellow-600 border-yellow-500/40',
   baja:  'bg-slate-500/20 text-[var(--content-muted)] border-[var(--content-border)]/40',
 };
 

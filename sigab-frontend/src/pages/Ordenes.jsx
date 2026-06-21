@@ -432,7 +432,7 @@ export default function Ordenes() {
                   {equipoSug.map((eq) => (
                     <li key={eq.id}
                       onMouseDown={() => seleccionarEquipo(eq)}
-                      className="px-3 py-2 text-sm cursor-pointer hover:bg-emerald-50 border-b border-[var(--content-border)] last:border-0">
+                      className="px-3 py-2 text-sm cursor-pointer hover:bg-emerald-500/10 border-b border-[var(--content-border)] last:border-0">
                       <div className="font-medium text-[var(--content-text)]">{eq.nombre}</div>
                       <div className="text-xs text-[var(--content-muted)]">
                         {[eq.marca, eq.modelo].filter(Boolean).join(' ')}

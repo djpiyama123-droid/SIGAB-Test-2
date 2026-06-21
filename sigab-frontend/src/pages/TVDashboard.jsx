@@ -36,7 +36,7 @@ export default function TVDashboard() {
       <div className="h-screen w-screen bg-[var(--content-bg)] flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-emerald-700 text-lg font-semibold">SIGAB</p>
+          <p className="text-emerald-500 text-lg font-semibold">SIGAB</p>
           <p className="text-[var(--content-muted)] text-sm">Cargando Dashboard...</p>
         </div>
       </div>
@@ -64,7 +64,7 @@ export default function TVDashboard() {
         </div>
 
         <div className="text-right">
-          <p className="text-3xl font-bold font-mono text-emerald-700 tabular-nums">
+          <p className="text-3xl font-bold font-mono text-emerald-500 tabular-nums">
             {time.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
           </p>
           <p className="text-xs text-[var(--content-muted)]">
@@ -120,7 +120,7 @@ export default function TVDashboard() {
                   <div key={a.id || i}
                     className={`p-4 rounded-xl border flex items-start gap-3 ${
                       a.prioridad === 'critica'
-                        ? 'bg-red-50 border-red-300'
+                        ? 'bg-red-500/15 border-red-500/40'
                         : 'bg-[var(--content-surface)] border-[var(--content-border)]'
                     }`}>
                     <span className="text-xl">{a.prioridad === 'critica' ? '🚨' : '⚠️'}</span>

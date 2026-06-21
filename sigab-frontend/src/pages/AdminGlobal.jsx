@@ -9,17 +9,17 @@ import TableWrapper from '../components/ui/TableWrapper';
 const SUSCRIPCION_BADGE = {
   activo: {
     dot: 'bg-emerald-500',
-    pill: 'bg-emerald-500/15 text-emerald-700 border border-emerald-500/25',
+    pill: 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/25',
     label: 'Activo',
   },
   trial: {
     dot: 'bg-amber-500',
-    pill: 'bg-amber-500/15 text-amber-700 border border-amber-500/25',
+    pill: 'bg-amber-500/15 text-amber-600 border border-amber-500/25',
     label: 'Trial',
   },
   vencido: {
     dot: 'bg-red-500',
-    pill: 'bg-red-500/15 text-red-700 border border-red-500/25',
+    pill: 'bg-red-500/15 text-red-600 border border-red-500/25',
     label: 'Vencido',
   },
   inactivo: {
@@ -123,7 +123,7 @@ export default function AdminGlobal() {
       </div>
 
       {forbidden && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl px-5 py-4 text-amber-700 text-sm">
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl px-5 py-4 text-amber-600 text-sm">
           ⚠️ Los datos mostrados son de ejemplo. Este panel requiere el rol <code className="font-mono bg-amber-500/10 px-1 rounded">superadmin_sigah</code>.
         </div>
       )}

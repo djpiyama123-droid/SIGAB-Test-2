@@ -36,7 +36,7 @@ export default function FilterBar({ filtros = {}, onChange }) {
           placeholder="Buscar equipo, serie, marca..."
           value={buscar}
           onChange={handleBuscar}
-          className="w-full pl-10 pr-4 py-2 bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg text-sm text-[var(--content-text)] placeholder-slate-500 focus:outline-none focus:border-emerald-600"
+          className="w-full pl-10 pr-4 py-2 bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-emerald-600"
         />
       </div>
 

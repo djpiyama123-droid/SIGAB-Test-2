@@ -124,32 +124,32 @@ const STACK_CARDS = [
 
 const FASE_BADGE = {
   'EN CURSO': {
-    pill: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
+    pill: 'bg-amber-500/15 text-amber-600 border border-amber-500/30',
     dot: 'bg-amber-400',
     icon: Clock,
   },
   'LISTO': {
-    pill: 'bg-blue-500/15 text-blue-400 border border-blue-500/30',
+    pill: 'bg-blue-500/15 text-blue-600 border border-blue-500/30',
     dot: 'bg-blue-400',
     icon: CheckCircle2,
   },
   'EN PROGRESO': {
-    pill: 'bg-blue-500/15 text-blue-400 border border-blue-500/30',
+    pill: 'bg-blue-500/15 text-blue-600 border border-blue-500/30',
     dot: 'bg-blue-400',
     icon: AlertCircle,
   },
   'PENDIENTE': {
-    pill: 'bg-slate-500/15 text-slate-400 border border-slate-500/30',
+    pill: 'bg-slate-500/15 text-slate-500 border border-slate-500/30',
     dot: 'bg-slate-500',
     icon: Circle,
   },
 };
 
 const STACK_COLOR = {
-  emerald: { bg: 'bg-emerald-500/10 border-emerald-500/20', text: 'text-emerald-400', dot: 'bg-emerald-400' },
-  blue: { bg: 'bg-blue-500/10 border-blue-500/20', text: 'text-blue-400', dot: 'bg-blue-400' },
-  purple: { bg: 'bg-purple-500/10 border-purple-500/20', text: 'text-purple-400', dot: 'bg-purple-400' },
-  amber: { bg: 'bg-amber-500/10 border-amber-500/20', text: 'text-amber-400', dot: 'bg-amber-400' },
+  emerald: { bg: 'bg-emerald-500/10 border-emerald-500/20', text: 'text-emerald-600', dot: 'bg-emerald-400' },
+  blue: { bg: 'bg-blue-500/10 border-blue-500/20', text: 'text-blue-600', dot: 'bg-blue-400' },
+  purple: { bg: 'bg-purple-500/10 border-purple-500/20', text: 'text-purple-600', dot: 'bg-purple-400' },
+  amber: { bg: 'bg-amber-500/10 border-amber-500/20', text: 'text-amber-600', dot: 'bg-amber-400' },
 };
 
 // ─── Sub-componentes ──────────────────────────────────────────────────────────
@@ -209,17 +209,17 @@ function MigracionesLista() {
       {MIGRACIONES.map((m) => (
         <li key={m.rev} className="flex items-start gap-2.5">
           {m.aplicada ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
           )}
           <div className="min-w-0">
-            <span className="font-mono text-[10px] text-blue-400 mr-1.5">{m.rev}</span>
+            <span className="font-mono text-[10px] text-blue-600 mr-1.5">{m.rev}</span>
             <span className="text-sm" style={{ color: m.aplicada ? 'var(--content-text)' : 'var(--content-muted)' }}>
               {m.nombre}
             </span>
             {!m.aplicada && (
-              <span className="ml-2 text-[10px] font-semibold text-amber-400 uppercase tracking-wide">(no aplicada)</span>
+              <span className="ml-2 text-[10px] font-semibold text-amber-600 uppercase tracking-wide">(no aplicada)</span>
             )}
           </div>
         </li>
@@ -234,12 +234,12 @@ function QuickCard({ icon: Icon, title, description, color = 'blue', children, h
   const [open, setOpen] = useState(false);
   const hasExpand = !!children;
   const colorMap = {
-    blue: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
-    emerald: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
-    amber: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
-    purple: 'bg-purple-500/10 border-purple-500/20 text-purple-400',
-    slate: 'bg-slate-500/10 border-slate-500/20 text-slate-400',
-    red: 'bg-red-500/10 border-red-500/20 text-red-400',
+    blue: 'bg-blue-500/10 border-blue-500/20 text-blue-600',
+    emerald: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600',
+    amber: 'bg-amber-500/10 border-amber-500/20 text-amber-600',
+    purple: 'bg-purple-500/10 border-purple-500/20 text-purple-600',
+    slate: 'bg-slate-500/10 border-slate-500/20 text-slate-500',
+    red: 'bg-red-500/10 border-red-500/20 text-red-600',
   };
 
   return (
@@ -259,7 +259,7 @@ function QuickCard({ icon: Icon, title, description, color = 'blue', children, h
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors mt-auto"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-300 transition-colors mt-auto"
         >
           <ExternalLink className="w-3 h-3" />
           {hrefLabel || 'Abrir'}
@@ -382,9 +382,9 @@ export default function CommandCenter() {
             color="slate"
           >
             <ul className="space-y-1.5 text-xs" style={{ color: 'var(--content-muted)' }}>
-              <li><span className="font-semibold" style={{ color: 'var(--content-text)' }}>Backend URL:</span> <span className="font-mono text-blue-400">http://localhost:8000</span></li>
-              <li><span className="font-semibold" style={{ color: 'var(--content-text)' }}>Frontend:</span> <span className="font-mono text-blue-400">http://localhost:5173</span></li>
-              <li><span className="font-semibold" style={{ color: 'var(--content-text)' }}>Rama activa:</span> <span className="font-mono text-emerald-400">feat/sileo-toasts-hermes-context</span></li>
+              <li><span className="font-semibold" style={{ color: 'var(--content-text)' }}>Backend URL:</span> <span className="font-mono text-blue-600">http://localhost:8000</span></li>
+              <li><span className="font-semibold" style={{ color: 'var(--content-text)' }}>Frontend:</span> <span className="font-mono text-blue-600">http://localhost:5173</span></li>
+              <li><span className="font-semibold" style={{ color: 'var(--content-text)' }}>Rama activa:</span> <span className="font-mono text-emerald-600">feat/sileo-toasts-hermes-context</span></li>
               <li><span className="font-semibold" style={{ color: 'var(--content-text)' }}>Agentes:</span> 67 agentes (.claude/agents/) + NEXUS</li>
               <li><span className="font-semibold" style={{ color: 'var(--content-text)' }}>Skills activas:</span> ui-ux-pro-max, webapp-testing, ccpm</li>
               <li><span className="font-semibold" style={{ color: 'var(--content-text)' }}>NOM:</span> NOM-016-SSA3 · NOM-240-SSA1 · ISO 13485</li>

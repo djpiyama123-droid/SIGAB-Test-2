@@ -36,12 +36,14 @@ export default function StatsCards({ resumen }) {
     },
   ];
 
+  // Tints suaves + borde de color para el acento semántico; el texto va por
+  // variables de tema para mantener contraste en blue/green/dark/glass.
   const colorMap = {
-    emerald: 'bg-emerald-900/40 border-emerald-700 text-emerald-400',
-    yellow: 'bg-yellow-900/40 border-yellow-700 text-yellow-400',
-    blue: 'bg-blue-900/40 border-blue-700 text-blue-400',
-    red: 'bg-red-900/40 border-red-700 text-red-400',
-    slate: 'bg-[var(--content-surface)] border-[var(--content-border)] text-[var(--content-muted)]',
+    emerald: 'bg-emerald-500/15 border-emerald-500/40',
+    yellow: 'bg-amber-500/15 border-amber-500/40',
+    blue: 'bg-blue-500/15 border-blue-500/40',
+    red: 'bg-red-500/15 border-red-500/40',
+    slate: 'bg-[var(--content-surface)] border-[var(--content-border)]',
   };
 
   return (
@@ -50,7 +52,7 @@ export default function StatsCards({ resumen }) {
         <Link to={card.path} key={i}>
           <div className={`rounded-xl border p-4 transition-transform hover:scale-105 hover:shadow-lg cursor-pointer ${colorMap[card.color]}`}>
             <div className="text-3xl font-bold text-[var(--content-text)]">{card.value}</div>
-            <div className="text-sm mt-1">{card.label}</div>
+            <div className="text-sm mt-1 text-[var(--content-muted)]">{card.label}</div>
           </div>
         </Link>
       ))}

@@ -11,9 +11,9 @@ const TIPOS_EVENTO = [
 ];
 
 const SEVERIDADES = [
-  { value: 'critica', label: 'Critica', color: 'border-red-500 bg-red-600/20 text-red-300' },
-  { value: 'grave', label: 'Grave', color: 'border-orange-500 bg-orange-500/20 text-orange-300' },
-  { value: 'moderada', label: 'Moderada', color: 'border-yellow-500 bg-yellow-500/20 text-yellow-300' },
+  { value: 'critica', label: 'Critica', color: 'border-red-500 bg-red-600/20 text-red-500' },
+  { value: 'grave', label: 'Grave', color: 'border-orange-500 bg-orange-500/20 text-orange-500' },
+  { value: 'moderada', label: 'Moderada', color: 'border-yellow-500 bg-yellow-500/20 text-yellow-600' },
   { value: 'leve', label: 'Leve', color: 'border-[var(--content-border)] bg-[var(--content-bg)] text-[var(--content-muted)]' },
 ];
 

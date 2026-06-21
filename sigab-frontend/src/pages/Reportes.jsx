@@ -19,7 +19,7 @@ function abrirBlobPdf(blob) {
 function BtnExport({ onClick, children, variant = 'pdf' }) {
   const cls = variant === 'pdf'
     ? 'border-[var(--content-border)] text-[var(--content-muted)] hover:bg-[var(--content-border)] hover:text-[var(--content-text)]'
-    : 'border-emerald-600 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800';
+    : 'border-emerald-500/50 text-emerald-600 hover:bg-emerald-500/15 hover:text-emerald-600';
   return (
     <button
       onClick={onClick}
@@ -221,7 +221,7 @@ export default function Reportes() {
                     {eq.estado?.replace(/_/g, ' ')}
                   </span>
                   {eq.tickets_abiertos > 0 && (
-                    <p className="text-yellow-700 text-xs mt-1">
+                    <p className="text-yellow-600 text-xs mt-1">
                       {eq.tickets_abiertos} ticket(s) abierto(s)
                     </p>
                   )}

@@ -28,27 +28,30 @@ export default function MaintenanceChart() {
           barGap={8}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="var(--content-border)" vertical={false} />
-          <XAxis 
-            dataKey="name" 
-            stroke="#64748b" 
-            fontSize={10} 
-            tickLine={false} 
-            axisLine={false} 
+          <XAxis
+            dataKey="name"
+            stroke="var(--content-muted)"
+            fontSize={10}
+            tickLine={false}
+            axisLine={false}
           />
-          <YAxis 
-            stroke="#64748b" 
-            fontSize={10} 
-            tickLine={false} 
-            axisLine={false} 
+          <YAxis
+            stroke="var(--content-muted)"
+            fontSize={10}
+            tickLine={false}
+            axisLine={false}
           />
-          <Tooltip 
-            cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
-            contentStyle={{ 
+          <Tooltip
+            cursor={{ fill: 'rgba(100, 116, 139, 0.08)' }}
+            contentStyle={{
               backgroundColor: 'var(--content-bg)',
               borderColor: 'var(--content-border)',
               borderRadius: '12px',
-              fontSize: '12px'
-            }} 
+              fontSize: '12px',
+              color: 'var(--content-text)'
+            }}
+            itemStyle={{ color: 'var(--content-muted)' }}
+            labelStyle={{ color: 'var(--content-text)' }}
           />
           <Legend 
             verticalAlign="top" 

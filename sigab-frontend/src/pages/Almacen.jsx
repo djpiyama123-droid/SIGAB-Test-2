@@ -142,7 +142,7 @@ function AjustarStockModal({ item, onClose, onSaved }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <p className="text-sm text-[var(--content-text)]">
             <span className="font-bold text-[var(--content-text)]">{item.nombre}</span>{' '}
-            — Stock actual: <span className="font-bold text-emerald-400">{item.cantidad_disponible}</span>
+            — Stock actual: <span className="font-bold text-emerald-600">{item.cantidad_disponible}</span>
           </p>
           <div>
             <label className="text-xs text-[var(--content-muted)] font-medium uppercase mb-2 block">Movimiento</label>
@@ -151,7 +151,7 @@ function AjustarStockModal({ item, onClose, onSaved }) {
                 <button key={t} type="button" onClick={() => setTipo(t)}
                   className={`py-2 rounded-xl text-sm font-semibold border transition-all ${
                     tipo === t
-                      ? t === 'entrada' ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400' : 'bg-red-600/20 border-red-500 text-red-400'
+                      ? t === 'entrada' ? 'bg-emerald-600/20 border-emerald-500 text-emerald-600' : 'bg-red-600/20 border-red-500 text-red-600'
                       : 'border-[var(--content-border)] text-[var(--content-muted)] hover:border-[var(--content-border)] hover:text-[var(--content-muted)]'
                   }`}>
                   {t === 'entrada' ? '+ Entrada' : '- Salida'}
@@ -236,21 +236,21 @@ export default function Almacen() {
           <p className="text-[var(--content-muted)] text-sm font-medium">Items en Inventario</p>
           <p className="text-3xl font-bold text-[var(--content-text)] mt-2">{refacciones.length}</p>
         </div>
-        <div className="bg-red-900/10 border border-red-900/50 p-6 rounded-2xl relative overflow-hidden group">
+        <div className="bg-red-500/10 border border-red-500/30 p-6 rounded-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-red-500">
             <AlertTriangle className="h-16 w-16" />
           </div>
-          <p className="text-red-400/80 text-sm font-medium">Stock Crítico</p>
-          <p className="text-3xl font-bold text-red-500 mt-2">
+          <p className="text-red-600 text-sm font-medium">Stock Crítico</p>
+          <p className="text-3xl font-bold text-red-600 mt-2">
             {refacciones.filter(r => r.cantidad_disponible <= r.cantidad_minima).length}
           </p>
         </div>
-        <div className="bg-emerald-900/10 border border-emerald-900/50 p-6 rounded-2xl relative overflow-hidden group">
+        <div className="bg-emerald-500/10 border border-emerald-500/30 p-6 rounded-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-emerald-500">
             <TrendingDown className="h-16 w-16 rotate-180" />
           </div>
-          <p className="text-emerald-400/80 text-sm font-medium">Valor Estimado Pool</p>
-          <p className="text-3xl font-bold text-emerald-500 mt-2">Premium</p>
+          <p className="text-emerald-600 text-sm font-medium">Valor Estimado Pool</p>
+          <p className="text-3xl font-bold text-emerald-600 mt-2">Premium</p>
         </div>
       </div>
 
@@ -322,7 +322,7 @@ export default function Almacen() {
                   return (
                     <tr key={item.id} className="hover:bg-[var(--content-surface)] transition-colors group">
                       <td className="px-6 py-4">
-                        <p className="font-bold text-[var(--content-text)] group-hover:text-emerald-400 transition-colors">{item.nombre}</p>
+                        <p className="font-bold text-[var(--content-text)] group-hover:text-emerald-600 transition-colors">{item.nombre}</p>
                         <p className="text-xs text-[var(--content-muted)]">{item.proveedor || 'Sin proveedor'}</p>
                       </td>
                       <td className="px-6 py-4 font-mono text-xs text-[var(--content-muted)]">{item.codigo_interno}</td>

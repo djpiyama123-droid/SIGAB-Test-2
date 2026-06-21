@@ -692,3 +692,11 @@ h1, h2, h3, h4, .font-display {
   --sileo-state-loading: #64748b !important; /* Slate */
 }
 
+/* Opciones de <select> nativos: el popup del SO no hereda el tema y puede
+   pintar texto claro sobre fondo blanco. Forzamos fondo/texto del tema para
+   garantizar contraste en blue/green/dark/glass. */
+option {
+  background-color: var(--content-bg);
+  color: var(--content-text);
+}
+

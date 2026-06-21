@@ -69,7 +69,7 @@ const AuditPage = () => {
           <button
             onClick={handleVerify}
             disabled={loading}
-            className={`flex items-center gap-2 rounded-xl border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-700 transition-all hover:bg-emerald-500/20 active:scale-95 ${loading ? 'opacity-50' : ''}`}
+            className={`flex items-center gap-2 rounded-xl border border-emerald-500/50 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-600 transition-all hover:bg-emerald-500/20 active:scale-95 ${loading ? 'opacity-50' : ''}`}
           >
             {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
             Verificar Cadena de Bloques
@@ -86,7 +86,7 @@ const AuditPage = () => {
       {/* Verification Alert */}
       {verification && (
         <div className={`flex items-center gap-3 rounded-2xl border-2 p-4 animate-in zoom-in duration-300 ${
-          verification.integridad_ok ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-700' : 'border-red-500/30 bg-red-500/5 text-red-600'
+          verification.integridad_ok ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-600' : 'border-red-500/30 bg-red-500/5 text-red-600'
         }`}>
           {verification.integridad_ok ? <Verified className="h-6 w-6" /> : <ShieldAlert className="h-6 w-6" />}
           <div>
@@ -117,7 +117,7 @@ const AuditPage = () => {
                 <td className="px-6 py-4 text-sm font-medium text-[var(--content-text)]">{log.usuario_nombre || 'SISTEMA'}</td>
                 <td className="px-6 py-4">
                   <span className={`rounded-full px-3 py-1 text-xs font-bold tracking-tight ${
-                    log.accion === 'INSERT' ? 'bg-emerald-500/10 text-emerald-700' :
+                    log.accion === 'INSERT' ? 'bg-emerald-500/10 text-emerald-600' :
                     log.accion === 'UPDATE' ? 'bg-blue-500/10 text-blue-600' :
                     log.accion === 'DELETE' ? 'bg-red-500/10 text-red-600' :
                     'bg-slate-500/10 text-[var(--content-muted)]'

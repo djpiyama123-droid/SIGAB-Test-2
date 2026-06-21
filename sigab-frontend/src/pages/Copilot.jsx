@@ -535,7 +535,7 @@ Puedo ayudarte con:
       {/* Warning si Ollama no está activo */}
       {ollamaStatus && !ollamaStatus.ollama_activo && (
         <div className="mb-4 bg-orange-50 border border-orange-300 rounded-xl p-4 text-sm flex-shrink-0">
-          <p className="text-orange-700 font-semibold">Ollama no detectado</p>
+          <p className="text-orange-600 font-semibold">Ollama no detectado</p>
           <p className="text-orange-600 text-xs mt-1">
             Para usar SIGAH Copilot, instala Ollama en el servidor (Lenovo ThinkCentre) y ejecuta:
           </p>
@@ -548,7 +548,7 @@ Puedo ayudarte con:
       {/* Warning modelo no descargado */}
       {ollamaStatus?.ollama_activo && !ollamaStatus?.modelo_disponible && (
         <div className="mb-4 bg-amber-50 border border-amber-300 rounded-xl p-4 text-sm flex-shrink-0">
-          <p className="text-amber-700 font-semibold">Modelo {ollamaStatus.modelo} no descargado</p>
+          <p className="text-amber-600 font-semibold">Modelo {ollamaStatus.modelo} no descargado</p>
           <code className="block mt-1 bg-amber-100 rounded p-2 text-xs text-amber-700 font-mono">
             ollama pull {ollamaStatus.modelo}
           </code>

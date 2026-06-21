@@ -252,11 +252,11 @@ export default function Reservas() {
   const getBadgeStyle = (estado) => {
     switch (estado) {
       case 'activa':
-        return 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700';
+        return 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600';
       case 'pendiente':
-        return 'bg-amber-500/10 border-amber-500/30 text-amber-700';
+        return 'bg-amber-500/10 border-amber-500/30 text-amber-600';
       case 'completada':
-        return 'bg-blue-500/10 border-blue-500/30 text-blue-700';
+        return 'bg-blue-500/10 border-blue-500/30 text-blue-600';
       case 'cancelada':
         return 'bg-[var(--content-bg)] border-[var(--content-border)] text-[var(--content-muted)]';
       default:
@@ -293,15 +293,15 @@ export default function Reservas() {
           <p className="text-3xl font-bold text-[var(--content-text)] mt-2">{stats.total}</p>
         </div>
         <div className="bg-emerald-500/5 border border-emerald-500/30 p-5 rounded-2xl">
-          <p className="text-emerald-700 text-xs font-semibold uppercase tracking-wider">Activas Actualmente</p>
+          <p className="text-emerald-600 text-xs font-semibold uppercase tracking-wider">Activas Actualmente</p>
           <p className="text-3xl font-bold text-emerald-600 mt-2">{stats.activas}</p>
         </div>
         <div className="bg-amber-500/5 border border-amber-500/30 p-5 rounded-2xl">
-          <p className="text-amber-700 text-xs font-semibold uppercase tracking-wider font-medium">Pendientes</p>
+          <p className="text-amber-600 text-xs font-semibold uppercase tracking-wider font-medium">Pendientes</p>
           <p className="text-3xl font-bold text-amber-600 mt-2">{stats.pendientes}</p>
         </div>
         <div className="bg-blue-500/5 border border-blue-500/30 p-5 rounded-2xl">
-          <p className="text-blue-700 text-xs font-semibold uppercase tracking-wider">Completadas</p>
+          <p className="text-blue-600 text-xs font-semibold uppercase tracking-wider">Completadas</p>
           <p className="text-3xl font-bold text-blue-600 mt-2">{stats.completadas}</p>
         </div>
       </div>
@@ -316,19 +316,19 @@ export default function Reservas() {
         </button>
         <button
           onClick={() => setFilterEstado('pendiente')}
-          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterEstado === 'pendiente' ? 'bg-amber-500/20 text-amber-700 border border-amber-500/30' : 'text-[var(--content-muted)] hover:text-[var(--content-text)]'}`}
+          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterEstado === 'pendiente' ? 'bg-amber-500/20 text-amber-600 border border-amber-500/30' : 'text-[var(--content-muted)] hover:text-[var(--content-text)]'}`}
         >
           Pendientes
         </button>
         <button
           onClick={() => setFilterEstado('activa')}
-          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterEstado === 'activa' ? 'bg-emerald-500/20 text-emerald-700 border border-emerald-500/30' : 'text-[var(--content-muted)] hover:text-[var(--content-text)]'}`}
+          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterEstado === 'activa' ? 'bg-emerald-500/20 text-emerald-600 border border-emerald-500/30' : 'text-[var(--content-muted)] hover:text-[var(--content-text)]'}`}
         >
           Activas
         </button>
         <button
           onClick={() => setFilterEstado('completada')}
-          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterEstado === 'completada' ? 'bg-blue-500/20 text-blue-700 border border-blue-500/30' : 'text-[var(--content-muted)] hover:text-[var(--content-text)]'}`}
+          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterEstado === 'completada' ? 'bg-blue-500/20 text-blue-600 border border-blue-500/30' : 'text-[var(--content-muted)] hover:text-[var(--content-text)]'}`}
         >
           Listas
         </button>
