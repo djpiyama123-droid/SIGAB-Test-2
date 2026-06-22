@@ -31,7 +31,8 @@ import {
   Activity,
   Wrench,
   AlertTriangle,
-  Zap
+  Zap,
+  Wifi,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -207,7 +208,7 @@ export default function Dashboard() {
           <Card className="bg-[var(--content-bg)]/40 border-[var(--content-border)] backdrop-blur-sm p-0 overflow-hidden">
             <div className="p-5 border-b border-[var(--content-border)] flex items-center justify-between">
               <Title className="text-[var(--content-text)]">Mapa de Activos por Zona</Title>
-              <StatusIndicator status="green" icon="Wifi" />
+              <StatusIndicator status="green" icon={Wifi} />
             </div>
             <div className="p-5">
               <HospitalMap />

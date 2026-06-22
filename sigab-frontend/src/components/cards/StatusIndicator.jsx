@@ -1,9 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import * as Icons from 'lucide-react';
 
-export default function StatusIndicator({ status = 'green', icon: iconName = 'Circle' }) {
-  const Icon = Icons[iconName] || Icons.Circle;
+export default function StatusIndicator({ status = 'green', icon: Icon }) {
+  if (!Icon) return null;
 
   const colors = {
     green: {

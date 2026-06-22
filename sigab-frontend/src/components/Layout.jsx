@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import ChangePasswordModal from './ChangePasswordModal';
 import { useAuth } from '../context/AuthContext';
-import * as Lucide from 'lucide-react';
+import { NAV_ICONS } from '../utils/navIcons';
 
 export default function Layout() {
   const { user } = useAuth();
@@ -81,7 +81,7 @@ export default function Layout() {
                 color: isActive ? 'var(--bottom-nav-active)' : 'var(--bottom-nav-muted)',
               })}
             >
-              {Lucide[item.icon] && React.createElement(Lucide[item.icon], { size: 20 })}
+              {NAV_ICONS[item.icon] && React.createElement(NAV_ICONS[item.icon], { size: 20 })}
               <span className="text-[10px] font-medium">{item.label}</span>
             </NavLink>
           ))}

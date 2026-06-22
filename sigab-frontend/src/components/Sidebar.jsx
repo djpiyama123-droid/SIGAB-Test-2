@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { NAV_ITEMS } from '../utils/constants';
-import * as Lucide from 'lucide-react';
+import { NAV_ICONS } from '../utils/navIcons';
 import { useAuth } from '../context/AuthContext';
 
 export default function Sidebar({ onClose }) {
@@ -81,8 +81,8 @@ export default function Sidebar({ onClose }) {
               }
             }}
           >
-            {item.icon_name && Lucide[item.icon_name] ? (
-              React.createElement(Lucide[item.icon_name], { className: 'w-4 h-4 flex-shrink-0' })
+            {item.icon_name && NAV_ICONS[item.icon_name] ? (
+              React.createElement(NAV_ICONS[item.icon_name], { className: 'w-4 h-4 flex-shrink-0' })
             ) : (
               <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
@@ -125,7 +125,7 @@ export default function Sidebar({ onClose }) {
                 }
               }}
             >
-              <Lucide.Building2 className="w-4 h-4 flex-shrink-0" />
+              <NAV_ICONS.Building2 className="w-4 h-4 flex-shrink-0" />
               <span className="truncate">Panel Admin</span>
             </NavLink>
           </div>
