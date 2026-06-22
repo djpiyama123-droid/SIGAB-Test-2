@@ -240,6 +240,33 @@ h1, h2, h3, h4, .font-display {
   outline-offset: 2px;
 }
 
+/* Skip-link: oculto hasta que recibe foco de teclado.
+   Ancla a #main-content (Layout.jsx) — primer tab salta el sidebar/bottom-nav. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: 100;
+  padding: 0.625rem 1rem;
+  background: var(--accent, #006CB7);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  text-decoration: none;
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  left: 8px;
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+/* Evita scroll-jump cuando el skip-link recibe foco */
+:target {
+  scroll-margin-top: 4rem;
+}
+
 /* Scrollbar — responde al tema activo */
 ::-webkit-scrollbar {
   width: 8px;

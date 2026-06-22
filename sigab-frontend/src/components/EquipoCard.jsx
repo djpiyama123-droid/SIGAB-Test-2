@@ -1,10 +1,20 @@
 import { ESTADO_COLORS, ESTADO_LABELS, ESTADO_DOT_COLORS } from '../utils/constants';
 
 export default function EquipoCard({ equipo, onClick }) {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick?.(equipo);
+    }
+  };
   return (
     <div
-      className="bg-[var(--content-surface)] rounded-xl border border-[var(--content-border)] overflow-hidden hover:border-[var(--content-border)] cursor-pointer transition-all group"
+      role="button"
+      tabIndex={0}
+      aria-label={`Ver detalle de ${equipo.nombre} — ${equipo.marca} ${equipo.modelo}`}
+      className="bg-[var(--content-surface)] rounded-xl border border-[var(--content-border)] overflow-hidden hover:border-[var(--content-border)] cursor-pointer transition-all group focus-visible:border-[var(--accent)]"
       onClick={() => onClick?.(equipo)}
+      onKeyDown={handleKeyDown}
     >
       {/* Imagen del equipo */}
       <div className="relative h-36 bg-[var(--content-bg)]/50 flex items-center justify-center overflow-hidden">

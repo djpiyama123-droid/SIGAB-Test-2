@@ -25,14 +25,27 @@ export default function EquipoTable({ equipos, onChange }) {
     setSelected(eq);
   };
 
+  const handleRowKeyDown = (e, eq) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      // No interceptar Enter/Space de botones internos (tickets, QR).
+      if (e.target !== e.currentTarget) return;
+      e.preventDefault();
+      setSelected(eq);
+    }
+  };
+
   return (
     <>
       {/* Vista móvil: tarjetas compactas */}
       <div className="block md:hidden space-y-2">
         {equipos.map((eq) => (
           <div key={eq.id}
+            role="button"
+            tabIndex={0}
+            aria-label={`Ver detalle de ${eq.nombre}`}
             onClick={() => setSelected(eq)}
-            className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 cursor-pointer hover:border-[var(--content-border)] active:bg-[var(--content-bg)] transition-colors">
+            onKeyDown={(e) => handleRowKeyDown(e, eq)}
+            className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 cursor-pointer hover:border-[var(--content-border)] active:bg-[var(--content-bg)] transition-colors focus-visible:border-[var(--accent)]">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
                 {eq.imagen_url && (
@@ -107,8 +120,12 @@ export default function EquipoTable({ equipos, onChange }) {
               {equipos.map((eq) => (
                 <tr
                   key={eq.id}
-                  className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/30 cursor-pointer transition-colors"
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Ver detalle de ${eq.nombre}`}
+                  className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/30 cursor-pointer transition-colors focus-visible:bg-[var(--content-border)]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent)]"
                   onClick={() => setSelected(eq)}
+                  onKeyDown={(e) => handleRowKeyDown(e, eq)}
                 >
                   {/* Thumbnail */}
                   <td className="px-3 py-2">

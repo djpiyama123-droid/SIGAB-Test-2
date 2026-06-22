@@ -23,6 +23,9 @@ export default function Layout() {
       className="flex h-screen print:block overflow-hidden"
       style={{ background: 'var(--content-bg)', color: 'var(--content-text)' }}
     >
+      {/* Skip-link: primer tab en teclado salta sidebar+bottom-nav hacia el contenido. */}
+      <a href="#main-content" className="skip-link">Saltar al contenido principal</a>
+
       {/* ── Overlay móvil ── */}
       {sidebarOpen && (
         <div
@@ -49,6 +52,8 @@ export default function Layout() {
           <Header onMenuClick={() => setSidebarOpen(true)} />
         </div>
         <main
+          id="main-content"
+          tabIndex={-1}
           className="flex-1 overflow-auto relative print:overflow-visible print:bg-white pb-16 lg:pb-0"
           style={{ background: 'var(--content-bg)' }}
         >
@@ -66,6 +71,7 @@ export default function Layout() {
 
         {/* ── Barra de Navegación Inferior (Solo Móvil) ── */}
         <nav
+          aria-label="Navegación principal móvil"
           className="lg:hidden fixed bottom-0 inset-x-0 backdrop-blur-md flex justify-around items-center px-2 py-1 z-40 border-t"
           style={{
             background: 'var(--bottom-nav-bg)',
