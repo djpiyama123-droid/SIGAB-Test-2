@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from './Toast';
@@ -11,6 +11,13 @@ export default function ChangePasswordModal({ isOpen, onClose, required }) {
   const [confirmar, setConfirmar] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -52,11 +59,19 @@ export default function ChangePasswordModal({ isOpen, onClose, required }) {
       <div className="fixed inset-0 bg-[var(--content-bg)]/75 transition-opacity backdrop-blur-sm" aria-hidden="true" />
 
         <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-[var(--content-surface)] text-left shadow-xl border border-[var(--content-border)]">
-          <form onSubmit={handleSubmit}>
+          <form
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="change-password-title"
+            onSubmit={handleSubmit}
+          >
             <div className="bg-[var(--content-surface)] px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
               <div className="sm:flex sm:items-start">
                 <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                  <h3 className="text-base font-semibold leading-6 text-[var(--content-text)]">
+                  <h3
+                    id="change-password-title"
+                    className="text-base font-semibold leading-6 text-[var(--content-text)]"
+                  >
                     {required ? 'Cambio de Contraseña Obligatorio' : 'Cambiar Contraseña'}
                   </h3>
                   <div className="mt-2 text-sm text-[var(--content-muted)] mb-6">

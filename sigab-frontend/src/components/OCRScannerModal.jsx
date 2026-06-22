@@ -201,7 +201,12 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
   // ── Render ──────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-[var(--content-bg)] border border-[var(--content-border)]/50 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92vh]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ocr-scanner-title"
+        className="bg-[var(--content-bg)] border border-[var(--content-border)]/50 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92vh]"
+      >
         {/* ── Zona Visual (izquierda) ── */}
         <div className="md:w-1/2 p-4 bg-[var(--content-bg)] border-r border-[var(--content-border)] flex flex-col">
           {/* Tabs Cámara / Archivo */}
@@ -312,12 +317,16 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
         <div className="md:w-1/2 p-4 flex flex-col bg-[var(--content-bg)] overflow-hidden">
           <div className="flex justify-between items-center mb-4 border-b border-[var(--content-border)] pb-3">
             <div>
-              <h3 className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
+              <h3 id="ocr-scanner-title" className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
                 <span className="text-emerald-600">✨</span> Extracción IMSS · v3
               </h3>
               <p className="text-xs text-[var(--content-muted)]">Gemma 3:4b local · Gemini fallback · SIGAH-IMSS-OS-V3</p>
             </div>
-            <button onClick={onClose} className="text-[var(--content-muted)] hover:text-[var(--content-text)] p-2">
+            <button
+              onClick={onClose}
+              aria-label="Cerrar"
+              className="text-[var(--content-muted)] hover:text-[var(--content-text)] p-2 rounded-lg hover:bg-[var(--content-surface)] focus-visible:ring-2 focus-visible:ring-emerald-500"
+            >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>

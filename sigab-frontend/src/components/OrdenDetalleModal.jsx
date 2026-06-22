@@ -191,11 +191,16 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-      <div className="bg-[var(--content-surface)] rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-[var(--content-border)] flex flex-col">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="orden-detalle-title"
+        className="bg-[var(--content-surface)] rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-[var(--content-border)] flex flex-col"
+      >
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-[var(--content-border)] sticky top-0 bg-[var(--content-surface)] z-10">
           <div>
-            <h2 className="text-lg font-bold text-[var(--content-text)] flex items-center gap-3">
+            <h2 id="orden-detalle-title" className="text-lg font-bold text-[var(--content-text)] flex items-center gap-3">
               Orden {orden.numero_orden}
               {orden.estado === 'cancelada' && <span className="text-xs bg-red-600 px-2 py-0.5 rounded text-white">CANCELADA</span>}
             </h2>
@@ -204,19 +209,23 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
           <div className="flex gap-2 flex-wrap">
             <button
               onClick={handleImprimir}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg flex items-center gap-1"
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-blue-400"
               title="PDF de cierre con materiales y firmas"
             >
               🖨️ PDF
             </button>
             <button
               onClick={handleImprimirFisico}
-              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-sm rounded-lg flex items-center gap-1"
+              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-sm rounded-lg flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-amber-400"
               title="Formato físico Poka-Yoke v2 imprimible (campo)"
             >
               📋 Físico
             </button>
-            <button onClick={onClose} className="p-2 text-[var(--content-muted)] hover:text-[var(--content-text)] bg-[var(--content-surface)] rounded-lg">✕</button>
+            <button
+              onClick={onClose}
+              aria-label="Cerrar"
+              className="p-2 text-[var(--content-muted)] hover:text-[var(--content-text)] bg-[var(--content-surface)] rounded-lg focus-visible:ring-2 focus-visible:ring-emerald-500"
+            >✕</button>
           </div>
         </div>
 

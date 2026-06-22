@@ -178,12 +178,17 @@ export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-      <div className="bg-[var(--content-surface)] rounded-xl w-full max-w-5xl max-h-[92vh] overflow-y-auto border border-[var(--content-border)] flex flex-col">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="evento-detalle-title"
+        className="bg-[var(--content-surface)] rounded-xl w-full max-w-5xl max-h-[92vh] overflow-y-auto border border-[var(--content-border)] flex flex-col"
+      >
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-[var(--content-border)] sticky top-0 bg-[var(--content-surface)] z-10">
           <div className="flex items-center gap-3">
             <div>
-              <h2 className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
+              <h2 id="evento-detalle-title" className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
                 {evento.numero_reporte}
                 <span className={`px-2 py-0.5 rounded text-xs font-semibold ${TV_SEVERIDAD_COLORS[evento.severidad] || ''}`}>
                   {evento.severidad?.toUpperCase()}
@@ -200,10 +205,14 @@ export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
           </div>
           <div className="flex gap-2">
             <button onClick={handleDescargarPdf}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg flex items-center gap-1">
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-blue-400">
               PDF NOM-240
             </button>
-            <button onClick={onClose} className="p-2 text-[var(--content-muted)] hover:text-[var(--content-text)] bg-[var(--content-surface)] rounded-lg">✕</button>
+            <button
+              onClick={onClose}
+              aria-label="Cerrar"
+              className="p-2 text-[var(--content-muted)] hover:text-[var(--content-text)] bg-[var(--content-surface)] rounded-lg focus-visible:ring-2 focus-visible:ring-emerald-500"
+            >✕</button>
           </div>
         </div>
 

@@ -117,14 +117,23 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-      <div className="bg-[var(--content-surface)] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-[var(--content-border)]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="evento-adverso-title"
+        className="bg-[var(--content-surface)] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-[var(--content-border)]"
+      >
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-[var(--content-border)] sticky top-0 bg-[var(--content-surface)] z-10">
           <div>
-            <h2 className="text-lg font-bold text-[var(--content-text)]">Reportar Evento Adverso</h2>
+            <h2 id="evento-adverso-title" className="text-lg font-bold text-[var(--content-text)]">Reportar Evento Adverso</h2>
             <p className="text-xs text-[var(--content-muted)]">NOM-240-SSA1-2012 — Paso {paso} de 3</p>
           </div>
-          <button onClick={onClose} className="p-2 text-[var(--content-muted)] hover:text-[var(--content-text)] bg-[var(--content-surface)] rounded-lg">
+          <button
+            onClick={onClose}
+            aria-label="Cerrar"
+            className="p-2 text-[var(--content-muted)] hover:text-[var(--content-text)] bg-[var(--content-surface)] rounded-lg focus-visible:ring-2 focus-visible:ring-red-500"
+          >
             ✕
           </button>
         </div>

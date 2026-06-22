@@ -66,13 +66,16 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="orden-rapida-title"
         className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="p-5 border-b border-[var(--content-border)] flex justify-between items-start">
           <div>
-            <h2 className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
+            <h2 id="orden-rapida-title" className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
               <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
               </svg>
@@ -85,7 +88,8 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
           <button
             type="button"
             onClick={onClose}
-            className="text-[var(--content-muted)] hover:text-[var(--content-text)] p-1 rounded-lg hover:bg-[var(--content-border)]"
+            aria-label="Cerrar"
+            className="text-[var(--content-muted)] hover:text-[var(--content-text)] p-1 rounded-lg hover:bg-[var(--content-border)] focus-visible:ring-2 focus-visible:ring-emerald-500"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

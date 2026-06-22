@@ -52,16 +52,20 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
 
       {/* Modal */}
       <form
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="nueva-orden-title"
         onSubmit={handleCrear}
         className="relative bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-[var(--content-text)]">Nueva Orden de Servicio</h2>
+          <h2 id="nueva-orden-title" className="text-lg font-semibold text-[var(--content-text)]">Nueva Orden de Servicio</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[var(--content-border)]"
+            aria-label="Cerrar"
+            className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[var(--content-border)] focus-visible:ring-2 focus-visible:ring-emerald-500"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
               <path d="M18 6L6 18M6 6l12 12" />

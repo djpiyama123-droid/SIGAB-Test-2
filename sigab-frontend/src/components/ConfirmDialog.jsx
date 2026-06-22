@@ -1,6 +1,8 @@
 // ============================================================
 // ConfirmDialog.jsx — Diálogo de confirmación reutilizable
 // ============================================================
+import { useEffect } from 'react';
+
 export default function ConfirmDialog({
   open,
   titulo = '¿Confirmar acción?',
@@ -11,6 +13,13 @@ export default function ConfirmDialog({
   onConfirmar,
   onCancelar,
 }) {
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (e.key === 'Escape') onCancelar?.(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, onCancelar]);
+
   if (!open) return null;
 
   const colorBoton =
@@ -24,6 +33,9 @@ export default function ConfirmDialog({
       onClick={onCancelar}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-dialog-title"
         className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl shadow-2xl max-w-md w-full p-6"
         onClick={(e) => e.stopPropagation()}
       >
@@ -40,7 +52,7 @@ export default function ConfirmDialog({
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-[var(--content-text)] text-base font-semibold">{titulo}</h3>
+            <h3 id="confirm-dialog-title" className="text-[var(--content-text)] text-base font-semibold">{titulo}</h3>
             <p className="text-[var(--content-muted)] text-sm mt-1">{mensaje}</p>
           </div>
         </div>
@@ -48,13 +60,13 @@ export default function ConfirmDialog({
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={onCancelar}
-            className="px-4 py-2 rounded-lg bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-text)] text-sm font-medium transition-colors"
+            className="px-4 py-2 rounded-lg bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-text)] text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500"
           >
             {textoCancelar}
           </button>
           <button
             onClick={onConfirmar}
-            className={`px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors ${colorBoton}`}
+            className={`px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-${variante === 'peligro' ? 'red' : 'emerald'}-500 ${colorBoton}`}
           >
             {textoConfirmar}
           </button>

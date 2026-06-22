@@ -32,18 +32,22 @@ export default function HistorialModal({ equipoId, equipoNombre, open, onClose }
 
       {/* Modal */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="historial-title"
         className="relative bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-[var(--content-border)]">
           <div>
-            <h2 className="text-base font-semibold text-[var(--content-text)]">Historial Completo</h2>
+            <h2 id="historial-title" className="text-base font-semibold text-[var(--content-text)]">Historial Completo</h2>
             <p className="text-xs text-[var(--content-muted)] mt-0.5">{equipoNombre}</p>
           </div>
           <button
             onClick={onClose}
-            className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[var(--content-border)]"
+            aria-label="Cerrar"
+            className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[var(--content-border)] focus-visible:ring-2 focus-visible:ring-emerald-500"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
               <path d="M18 6L6 18M6 6l12 12" />

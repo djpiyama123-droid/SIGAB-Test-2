@@ -41,19 +41,24 @@ const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-emerald-500/30 bg-[var(--content-bg)] shadow-2xl flex flex-col">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="triple-validation-title"
+        className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-emerald-500/30 bg-[var(--content-bg)] shadow-2xl flex flex-col"
+      >
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-6 text-white">
           <div className="flex items-center gap-4">
             <div className="rounded-lg bg-white/10 p-2 backdrop-blur-md">
-              <img 
-                src="/imss_logo.png" 
-                alt="IMSS" 
+              <img
+                src="/imss_logo.png"
+                alt="IMSS"
                 className="h-10 w-auto brightness-200"
               />
             </div>
             <div>
-              <h2 className="text-xl font-bold tracking-tight">Poka-Yoke: Triple Validación</h2>
+              <h2 id="triple-validation-title" className="text-xl font-bold tracking-tight">Poka-Yoke: Triple Validación</h2>
               <p className="text-sm text-emerald-100 italic">Validación obligatoria de integridad del activo</p>
             </div>
           </div>
