@@ -11,14 +11,11 @@ export default {
   theme: {
     extend: {
       screens: {
-        'xs': '320px',
         '3xl': '1920px',  // 24" Full HD
-        '4xl': '2560px',  // 27" 1440p / 2K
         '5xl': '3840px',  // 55" 4K
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        data: ['"Source Sans 3"', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Courier New', 'monospace'],
         display: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
         body: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
@@ -34,62 +31,24 @@ export default {
         '4xl':  ['clamp(2.25rem, 4vw, 4rem)',     { lineHeight: '1' }],
       },
       colors: {
-        medical: {
-          green:  '#10B981',
-          yellow: '#F59E0B',
-          red:    '#EF4444',
-        },
-        imss: {
-          green: '#065F46',
-          dark:  '#064E3B',
-          blue:  '#006CB7',
-        },
         sigah: {
-          blue:            '#006CB7',
-          'blue-dark':     '#00497D',
-          'blue-light':    '#DCEBF7',
-          emerald:         '#059669',
-          'emerald-light': '#DCFCE7',
-          amber:           '#B45309',
-          'amber-light':   '#FEF3C7',
-          red:             '#B91C1C',
-          'red-light':     '#FEE2E2',
-          slate:           '#1E293B',
-          gray:            '#64748B',
-          'gray-light':    '#F1F5F9',
+          blue:    '#006CB7',
+          emerald: '#059669',
         },
         // Clinical Precision Glass (Stitch / Apple-Medical) — Fase diseño premium
         'cyan-glow':  '#22D3EE',
         'ai-violet':  '#8B5CF6',
         glass: {
           0: '#020617',   // fondo base (deep slate)
-          50:'#060e20',
-          100:'#0b1326',
-          200:'#131b2e',
-          300:'#171f33',
-          400:'#222a3d',
-          500:'#2d3449',
         },
-      },
-      backgroundImage: {
-        'sigah-gradient':        'linear-gradient(135deg, #006CB7 0%, #00497D 100%)',
-        'sigah-emerald-gradient':'linear-gradient(135deg, #059669 0%, #047857 100%)',
       },
       boxShadow: {
         'blue-sm':  '0 4px 20px rgba(0,108,183,0.25)',
-        'blue-lg':  '0 8px 40px rgba(0,108,183,0.35)',
-        'green-sm': '0 4px 20px rgba(5,150,105,0.25)',
-      },
-      backdropBlur: {
-        'xs': '4px',
       },
       animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4,0,0.6,1) infinite',
-        'fade-in':    'fadeIn 0.2s ease-out',
         'slide-up':   'slideUp 0.25s cubic-bezier(0.16,1,0.3,1)',
       },
       keyframes: {
-        fadeIn:  { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
         slideUp: { '0%': { opacity: '0', transform: 'translateY(8px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
       },
     },
