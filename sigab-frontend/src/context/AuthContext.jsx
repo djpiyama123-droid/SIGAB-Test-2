@@ -1,7 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 
-const AuthContext = createContext(null);
+// Exportado para que tests puedan envolver con un AuthContext.Provider
+// sin montar el AuthProvider real (que requiere mockear `api` entero).
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
