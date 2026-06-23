@@ -19,6 +19,12 @@ export default function HistorialEquipoModal({ equipo, onClose }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  useEffect(() => {
     if (!equipo?.id) return;
     setLoading(true);
     api.getHistorialEquipo(equipo.id)

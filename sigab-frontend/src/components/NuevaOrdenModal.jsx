@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 
 /**
@@ -24,6 +24,13 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
   });
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, onClose]);
 
   if (!open) return null;
 

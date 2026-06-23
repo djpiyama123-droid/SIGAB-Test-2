@@ -2,7 +2,7 @@
 // OrdenServicioRapidaModal.jsx — Crear OS pre-llenada desde el mapa
 // Se invoca desde el botón "Abrir Orden de Servicio" en FichaTecnica
 // ============================================================
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import { useToast } from './Toast';
 
@@ -16,6 +16,12 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
     descripcion_servicio: '',
   });
   const [guardando, setGuardando] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 

@@ -103,6 +103,12 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
     setStreaming(false);
   }, []);
 
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
   // Arranca/detiene cámara cuando cambia el modo
   useEffect(() => {
     if (mode === 'camera' && !preview) {

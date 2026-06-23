@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, CheckCircle, XCircle, ShieldCheck, QrCode, ClipboardList, PenTool } from 'lucide-react';
 import { useToast } from './Toast';
 
@@ -7,6 +7,13 @@ const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
   const [data, setData] = useState({ qr_token: '', inventario: '', serie: '' });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isOpen, onClose]);
 
   const handleValidate = async () => {
     setLoading(true);

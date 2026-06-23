@@ -24,6 +24,12 @@ export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
   const [evidDesc, setEvidDesc] = useState('');
   const [subiendo, setSubiendo] = useState(false);
 
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
   useEffect(() => { cargarEvento(); }, [eventoId]);
 
   const cargarEvento = async () => {

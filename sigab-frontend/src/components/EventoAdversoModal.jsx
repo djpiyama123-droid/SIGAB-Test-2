@@ -49,6 +49,12 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
   });
 
   useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  useEffect(() => {
     const cargar = async () => {
       try {
         const res = await api.getEquipos({ limit: 500 });

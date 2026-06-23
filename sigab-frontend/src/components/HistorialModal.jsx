@@ -23,6 +23,13 @@ export default function HistorialModal({ equipoId, equipoNombre, open, onClose }
       .finally(() => setLoading(false));
   }, [open, equipoId]);
 
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (e.key === 'Escape') onClose?.(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   return (
