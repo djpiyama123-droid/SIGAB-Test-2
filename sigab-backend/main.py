@@ -34,6 +34,7 @@ from routes import (
     admin as admin_routes,
     twilio_whatsapp,
     monitor, tokens, cerebro,
+    equipos_batch,
 )
 _COPILOT_ON = os.getenv("SIGAH_DISABLE_COPILOT", "0") != "1"
 if _COPILOT_ON:
@@ -129,6 +130,7 @@ app.include_router(twilio_whatsapp.router, prefix="/api/twilio", tags=["WhatsApp
 app.include_router(monitor.router,   prefix="/api/monitor",  tags=["Monitor SIGAB WebPanel"])
 app.include_router(tokens.router,    prefix="/api/tokens",   tags=["Tokens API (WebPanel)"])
 app.include_router(cerebro.router,   prefix="/api/cerebro",  tags=["Cerebro / Sesiones Claude Code"])
+app.include_router(equipos_batch.router, prefix="/api/equipos", tags=["Equipos · Batch QR + Import (Piloto HGR1)"])
 
 
 @app.get("/health")
