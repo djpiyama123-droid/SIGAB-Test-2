@@ -627,18 +627,27 @@ export default function HospitalMap() {
   const navigate = useNavigate();
 
   const fetchMapa = useCallback(async () => {
+    // ponytail: timeout duro de 12s. Sin esto, un fetch colgado (proxy/red) nunca
+    // resuelve y las zone-cards quedan en spinner infinito (bug T8). El AbortController
+    // fuerza un AbortError → estado de error con reintento, en vez de loading eterno.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 12000);
     try {
       const res = await fetch('/api/dashboard/mapa', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        signal: ctrl.signal,
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setZonas(data.zonas || []);
       setError(null);
     } catch (err) {
-      setError('No se pudo cargar el mapa. Verificar que el backend esté corriendo.');
+      setError(err.name === 'AbortError'
+        ? 'El mapa tardó demasiado en responder. Reintenta.'
+        : 'No se pudo cargar el mapa. Verificar que el backend esté corriendo.');
       console.error('Error cargando mapa:', err);
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   }, []);
