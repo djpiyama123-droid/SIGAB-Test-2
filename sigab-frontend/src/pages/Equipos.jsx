@@ -19,7 +19,6 @@ import EquipoTable from '../components/EquipoTable';
 import EquipoDetail from '../components/EquipoDetail';
 import EquipoForm from '../components/EquipoForm';
 import { useToast } from '../components/Toast';
-import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
 import { Download, Plus, LayoutGrid, List } from 'lucide-react';
 
 const VISTAS = { tarjeta: 'tarjeta', tabla: 'tabla' };
