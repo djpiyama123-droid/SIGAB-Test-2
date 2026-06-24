@@ -130,4 +130,15 @@ OLLAMA_HOST=http://172.17.0.1:11434
 - Carpetas con prefijo `sigah-` (sigah-backend, sigah-frontend, sigah-bot) se renombran a `sigah-` en Fase 1 cuando empiece la migración multi-tenant — hacerlo antes rompería los servicios en producción.
 
 ---
+
+## 13. Carriles multi-agente (trabajo en paralelo)
+
+> Al arrancar, lee el canal del día en `Bioingeneria/COORDINACION_SPRINT_<fecha>.md`. NO existe ningún "daemon Open Design :7456"; la coordinación es ese `.md` + este archivo + git worktrees.
+
+**Regla de concurrencia (sin colisión):**
+- **OpenCode / Hermes = capa visual.** Solo CSS/Tailwind y tokens vía `sigab-frontend/DESIGN.md` (fuente de verdad de diseño) + `portal-sigah/`. **No toca lógica de backend.** Worktree: `.claude/worktrees/opencode-styles-*`.
+- **Claude-Code = backend + lógica de datos.** `sigab-backend/`, validación, seguridad y data-fetch del frontend. **No toca `DESIGN.md` ni estilos visuales.** Worktree: `.claude/worktrees/claude-backend-*`.
+- Cada agente commitea en SU rama/worktree. Deploy a prod solo con OK explícito de Gustavo.
+
+---
 _Este documento es la referencia institucional de contexto para los agentes LLM que trabajan sobre el repositorio SIGAH/SIGAH. Úsalo al arrancar conversaciones sobre el proyecto._
