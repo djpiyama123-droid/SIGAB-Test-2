@@ -379,7 +379,7 @@ function DiaReservasModal({ dia, reservas, onClose, onNueva, onEditar, onElimina
                     <div className="flex items-center gap-1.5 anim-fade-in">
                       <span className="text-[11px] text-[var(--content-muted)]">¿Borrar?</span>
                       <button
-                        onClick={() => { setConfirmId(null); onEliminar(r.id); }}
+                        onClick={() => { setConfirmId(null); onEliminar(r.id); if (lista.length === 1) onClose(); }}
                         className="px-2 py-1 text-[11px] font-bold rounded-lg bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 transition-all active:scale-95"
                       >
                         Sí, borrar
