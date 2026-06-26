@@ -174,6 +174,8 @@ export const api = {
   getReservas: () => client.get('/reservas'),
   crearReserva: (data) => client.post('/reservas', data),
   cambiarEstadoReserva: (id, data) => client.put(`/reservas/${id}/estado`, data),
+  editarReserva: (id, data) => client.put(`/reservas/${id}`, data),
+  eliminarReserva: (id) => client.delete(`/reservas/${id}`),
 
   // ── Reportes ──────────────────────────────────────────────
   getReporteDiario: () => client.get('/reportes/diario'),
