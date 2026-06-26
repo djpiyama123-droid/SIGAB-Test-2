@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
+import { absUrl } from '../utils/url';
 import OCRScannerModal from './OCRScannerModal';
 import { useToast } from './Toast';
 
@@ -267,9 +268,10 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
                   {evidencias.length === 0 ? <p className="text-xs text-[var(--content-muted)]">Sin evidencias aún</p> : 
                     evidencias.map(ev => {
                       const isPDF = ev.ruta_archivo?.toLowerCase().endsWith('.pdf');
+                      const url = absUrl(ev.ruta_archivo);
                       return (
-                        <div key={ev.id} 
-                             onClick={() => window.open(ev.ruta_archivo, '_blank')}
+                        <div key={ev.id}
+                             onClick={() => window.open(url, '_blank')}
                              className="relative flex-shrink-0 w-24 h-24 bg-black rounded overflow-hidden group cursor-pointer border border-transparent hover:border-emerald-500 transition-colors">
                           {isPDF ? (
                             <div className="flex flex-col items-center justify-center w-full h-full bg-[var(--content-surface)] text-[var(--content-muted)] group-hover:bg-[var(--content-border)] transition-colors">
@@ -279,7 +281,7 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
                                </span>
                             </div>
                           ) : (
-                            <img src={ev.ruta_archivo} className="object-cover w-full h-full group-hover:opacity-75 transition-opacity" alt={ev.tipo} />
+                            <img src={url} loading="lazy" className="object-cover w-full h-full group-hover:opacity-75 transition-opacity" alt={ev.tipo} />
                           )}
                           <div className="absolute bottom-0 inset-x-0 bg-black/60 text-[10px] text-white text-center p-0.5 uppercase tracking-wide">
                             {ev.tipo}

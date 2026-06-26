@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
+import { absUrl, parseFotos } from '../utils/url';
 import { useToast } from './Toast';
 import EquipoForm from './EquipoForm';
 import ConfirmDialog from './ConfirmDialog';
@@ -153,25 +154,24 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
 
             {/* Fotos adicionales */}
             {(() => {
-              try {
-                const fotosArr = equipo.fotos ? JSON.parse(equipo.fotos) : [];
-                if (fotosArr.length > 1) { // Only show if more than 1 image (first one is already at the top)
-                  return (
-                    <div className="mb-6">
-                      <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-3">Galería de Imágenes</h3>
-                      <div className="flex gap-2 overflow-x-auto pb-2">
-                        {fotosArr.map((foto, idx) => (
-                           <div key={idx} className="relative flex-shrink-0 w-24 h-24 bg-black rounded-lg overflow-hidden border border-[var(--content-border)] hover:border-emerald-500 cursor-pointer shadow-lg" onClick={() => window.open(foto, '_blank')}>
-                             <img src={foto} className="object-cover w-full h-full hover:opacity-75 transition-opacity" />
-                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-              } catch (e) {
-                return null;
-              }
+              // equipo.fotos puede venir como array, JSON string, CSV o una sola URL.
+              const fotosArr = parseFotos(equipo.fotos);
+              if (fotosArr.length === 0) return null;
+              return (
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-3">Galería de Imágenes ({fotosArr.length})</h3>
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {fotosArr.map((foto, idx) => {
+                      const url = absUrl(foto);
+                      return (
+                        <div key={idx} className="relative flex-shrink-0 w-24 h-24 bg-black rounded-lg overflow-hidden border border-[var(--content-border)] hover:border-emerald-500 cursor-pointer shadow-lg" onClick={() => window.open(url, '_blank')}>
+                          <img src={url} loading="lazy" alt={`Foto ${idx + 1}`} className="object-cover w-full h-full hover:opacity-75 transition-opacity" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
             })()}
 
             {/* Tickets / Órdenes de Servicio */}
@@ -213,7 +213,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                             </span>
                             {os.pdf_url && (
                               <a
-                                href={os.pdf_url}
+                                href={absUrl(os.pdf_url)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
