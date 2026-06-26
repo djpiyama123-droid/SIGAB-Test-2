@@ -1,22 +1,28 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import { useAuth } from '../context/AuthContext';
-import { 
-  CalendarClock, 
-  Plus, 
-  Search, 
-  MapPin, 
-  User, 
-  Clock, 
-  FileText, 
-  X, 
-  CheckCircle2, 
-  AlertCircle, 
+import {
+  CalendarClock,
+  Plus,
+  Search,
+  MapPin,
+  User,
+  Clock,
+  FileText,
+  X,
+  CheckCircle2,
+  AlertCircle,
   Ban,
   Activity,
-  Play
+  Play,
+  Flame,
+  CalendarRange,
+  TrendingUp
 } from 'lucide-react';
 import toast from '../lib/toast';
+import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { ymd, etiquetaCorta, agruparPorDia, statsReservas, serieDiaria, reservasDelDia } from '../utils/fechas';
+import { generarReservasMock } from '../utils/reservasMock';
 
 // ─── Modal: Nueva Reserva de Equipo ──────────────────────────────────────────
 function NuevaReservaModal({ onClose, onSaved }) {
@@ -77,7 +83,7 @@ function NuevaReservaModal({ onClose, onSaved }) {
   };
 
   // Filtrar equipos por búsqueda de nombre o número de serie
-  const filteredEquipos = equipos.filter(eq => 
+  const filteredEquipos = equipos.filter(eq =>
     eq.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
     eq.serie.toLowerCase().includes(searchQuery.toLowerCase()) ||
     eq.modelo?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -85,35 +91,35 @@ function NuevaReservaModal({ onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-900 bg-slate-900/40">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+      <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--content-border)] bg-[var(--content-bg)]/40">
+          <h2 className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
             <CalendarClock className="h-5 w-5 text-blue-500" />
             Nueva Reserva de Equipo
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/* Selector de Equipo */}
           <div>
-            <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Equipo Biomédico *</label>
+            <label className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Equipo Biomédico *</label>
             <div className="relative mb-2">
-              <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
-              <input 
+              <Search className="absolute left-3.5 top-3 h-4 w-4 text-[var(--content-muted)]" />
+              <input
                 type="text"
                 placeholder="Buscar por nombre, serie o modelo..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-900/60 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500/80 transition-colors"
+                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl pl-10 pr-4 py-2 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-blue-500/80 transition-colors"
               />
             </div>
-            <select 
-              required 
-              value={form.equipo_id} 
+            <select
+              required
+              value={form.equipo_id}
               onChange={e => set('equipo_id', e.target.value)}
-              className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors text-sm"
+              className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-[var(--content-text)] focus:outline-none focus:border-blue-500 transition-colors text-sm"
             >
               <option value="">— Seleccionar equipo ({filteredEquipos.length}) —</option>
               {filteredEquipos.map(eq => (
@@ -127,69 +133,69 @@ function NuevaReservaModal({ onClose, onSaved }) {
           <div className="grid grid-cols-2 gap-4">
             {/* Ubicación Destino */}
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Área Destino *</label>
-              <input 
-                required 
-                value={form.area_reserva} 
+              <label className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Área Destino *</label>
+              <input
+                required
+                value={form.area_reserva}
                 onChange={e => set('area_reserva', e.target.value)}
-                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500 transition-colors"
-                placeholder="Ej. Quirófano 3, UCIN" 
+                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-blue-500 transition-colors"
+                placeholder="Ej. Quirófano 3, UCIN"
               />
             </div>
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Piso / Nivel</label>
-              <input 
-                value={form.piso_reserva} 
+              <label className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Piso / Nivel</label>
+              <input
+                value={form.piso_reserva}
                 onChange={e => set('piso_reserva', e.target.value)}
-                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500 transition-colors"
-                placeholder="Ej. 1er Piso, Sótano" 
+                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-blue-500 transition-colors"
+                placeholder="Ej. 1er Piso, Sótano"
               />
             </div>
 
             {/* Fechas */}
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Fecha / Hora Inicio *</label>
-              <input 
-                type="datetime-local" 
-                required 
-                value={form.fecha_inicio} 
+              <label className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Fecha / Hora Inicio *</label>
+              <input
+                type="datetime-local"
+                required
+                value={form.fecha_inicio}
                 onChange={e => set('fecha_inicio', e.target.value)}
-                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors" 
+                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Fecha / Hora Fin</label>
-              <input 
-                type="datetime-local" 
-                value={form.fecha_fin} 
+              <label className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Fecha / Hora Fin</label>
+              <input
+                type="datetime-local"
+                value={form.fecha_fin}
                 onChange={e => set('fecha_fin', e.target.value)}
-                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors" 
+                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
           </div>
 
           {/* Motivo */}
           <div>
-            <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Motivo de Reserva</label>
-            <textarea 
-              value={form.motivo} 
+            <label className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Motivo de Reserva</label>
+            <textarea
+              value={form.motivo}
               onChange={e => set('motivo', e.target.value)}
               rows={3}
-              className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500 transition-colors resize-none"
+              className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-blue-500 transition-colors resize-none"
               placeholder="Indica el procedimiento quirúrgico o clínico, estudio o traslado de paciente para el cual se requiere el equipo..."
             />
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-900 transition-all text-sm font-semibold"
+              className="flex-1 py-2.5 rounded-xl border border-[var(--content-border)] text-[var(--content-muted)] hover:bg-[var(--content-bg)] transition-all text-sm font-semibold"
             >
               Cancelar
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={saving}
               className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all disabled:opacity-50 text-sm"
             >
@@ -202,67 +208,190 @@ function NuevaReservaModal({ onClose, onSaved }) {
   );
 }
 
-// ─── Página Principal ────────────────────────────────────────────────────────
+// Verde IMSS; para volver al rojo/naranja estilo MiniMax, cambia este array.
+const NIVEL_COLORES = ['var(--content-bg)', '#bbf7d0', '#4ade80', '#16a34a', '#15803d'];
+const NOMBRE_MES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+const DOW = ['', 'Lun', '', 'Mié', '', 'Vie', ''];
+
+function horaCorta(value) {
+  const d = value && new Date(String(value).replace(' ', 'T'));
+  if (!d || isNaN(d.getTime())) return '';
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+// ─── Heatmap de actividad (estilo GitHub · grilla CSS · 0 deps) ───────────────
+function ActividadHeatmap({ porDia, onDiaClick, semanas = 26 }) {
+  const hoy = new Date();
+  const inicio = new Date(hoy);
+  inicio.setDate(inicio.getDate() - (semanas * 7 - 1));
+  inicio.setDate(inicio.getDate() - inicio.getDay()); // retrocede al domingo
+
+  const columnas = [];
+  const etiquetasMes = [];
+  const cursor = new Date(inicio);
+  let max = 1;
+  let mesPrev = -1;
+  for (let w = 0; w < semanas; w++) {
+    const semana = [];
+    for (let d = 0; d < 7; d++) {
+      const key = ymd(cursor);
+      const count = porDia[key] || 0;
+      if (count > max) max = count;
+      semana.push({ key, count, futuro: cursor > hoy });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    const mes = new Date(`${semana[0].key}T00:00:00`).getMonth();
+    etiquetasMes.push(mes !== mesPrev ? NOMBRE_MES[mes] : '');
+    mesPrev = mes;
+    columnas.push(semana);
+  }
+  const nivel = (c) => (c <= 0 ? 0 : c / max > 0.75 ? 4 : c / max > 0.5 ? 3 : c / max > 0.25 ? 2 : 1);
+
+  return (
+    <div className="overflow-x-auto">
+      <div className="inline-flex flex-col gap-1 min-w-max">
+        <div className="flex gap-1 pl-9">
+          {etiquetasMes.map((m, w) => (
+            <div key={w} className="w-3.5 text-[9px] text-[var(--content-muted)]">{m}</div>
+          ))}
+        </div>
+        <div className="flex gap-1">
+          <div className="flex flex-col gap-1 pr-1.5 w-8">
+            {DOW.map((l, i) => (
+              <div key={i} className="h-3.5 text-[9px] text-[var(--content-muted)] leading-[14px] text-right">{l}</div>
+            ))}
+          </div>
+          {columnas.map((semana, w) => (
+            <div key={w} className="flex flex-col gap-1">
+              {semana.map((celda) => (
+                <button
+                  key={celda.key}
+                  type="button"
+                  disabled={celda.futuro || celda.count === 0}
+                  onClick={() => onDiaClick(celda.key)}
+                  title={`${celda.key}: ${celda.count} reserva${celda.count !== 1 ? 's' : ''}`}
+                  className={`w-3.5 h-3.5 rounded-sm transition-transform ${celda.futuro ? 'opacity-25' : celda.count > 0 ? 'hover:scale-125 cursor-pointer ring-1 ring-black/5' : 'cursor-default'}`}
+                  style={{ backgroundColor: NIVEL_COLORES[nivel(celda.count)] }}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center gap-1 justify-end pt-1 text-[10px] text-[var(--content-muted)]">
+          <span>Menos</span>
+          {NIVEL_COLORES.map((c, i) => (
+            <span key={i} className="w-3.5 h-3.5 rounded-sm inline-block" style={{ backgroundColor: c }} />
+          ))}
+          <span>Más</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Modal: reservas de un día ────────────────────────────────────────────────
+function DiaReservasModal({ dia, reservas, onClose, onNueva }) {
+  const lista = reservasDelDia(reservas, dia);
+  const [y, m, d] = dia.split('-');
+  const fechaLabel = `${Number(d)} ${NOMBRE_MES[Number(m) - 1]} ${y}`;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--content-border)] bg-[var(--content-bg)]/40">
+          <h2 className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
+            <CalendarClock className="h-5 w-5 text-emerald-500" />
+            {fechaLabel}
+            <span className="text-xs text-[var(--content-muted)] font-normal">({lista.length})</span>
+          </h2>
+          <button onClick={onClose} className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="p-4 max-h-[60vh] overflow-y-auto space-y-2">
+          {lista.length === 0 ? (
+            <p className="text-sm text-[var(--content-muted)] text-center py-8">Sin reservas este día.</p>
+          ) : (
+            lista.map((r) => (
+              <div key={r.id} className="bg-[var(--content-bg)]/50 border border-[var(--content-border)] rounded-xl p-3">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm text-[var(--content-text)] truncate">{r.equipo_nombre}</p>
+                    <p className="text-[10px] text-[var(--content-muted)] uppercase">{r.equipo_serie}</p>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-[var(--content-border)] text-[var(--content-muted)] flex-shrink-0">
+                    {String(r.estado || '').toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-[var(--content-muted)]">
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {horaCorta(r.fecha_inicio)}{r.fecha_fin ? `–${horaCorta(r.fecha_fin)}` : ''}
+                  </span>
+                  <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{r.area_reserva}</span>
+                  {r.solicitante_nombre && (
+                    <span className="flex items-center gap-1"><User className="h-3 w-3" />{r.solicitante_nombre}</span>
+                  )}
+                </div>
+                {r.motivo && <p className="text-xs text-[var(--content-muted)] mt-1.5 italic">{r.motivo}</p>}
+              </div>
+            ))
+          )}
+        </div>
+        <div className="px-4 py-3 border-t border-[var(--content-border)] flex justify-end">
+          <button onClick={onNueva} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all">
+            <Plus className="h-4 w-4" /> Nueva reserva
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ icon, valor, label }) {
+  return (
+    <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-5">
+      <div className="flex items-center gap-2 text-[var(--content-muted)]">{icon}</div>
+      <p className="text-3xl font-bold text-[var(--content-text)] mt-2">{valor}</p>
+      <p className="text-[var(--content-muted)] text-sm mt-1">{label}</p>
+    </div>
+  );
+}
+
+// ─── Página principal ─────────────────────────────────────────────────────────
 export default function Reservas() {
   const [reservas, setReservas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [usandoMock, setUsandoMock] = useState(false);
   const [modalNueva, setModalNueva] = useState(false);
-  const [filterEstado, setFilterEstado] = useState('');
+  const [diaSel, setDiaSel] = useState(null);
 
   const cargarReservas = async () => {
     setLoading(true);
     try {
       const data = await api.getReservas();
-      setReservas(data.reservas ?? data ?? []);
+      const lista = data.reservas ?? data ?? [];
+      if (lista.length === 0) {
+        // Sin reservas sembradas: datos de muestra para tunear el dashboard.
+        setReservas(generarReservasMock());
+        setUsandoMock(true);
+      } else {
+        setReservas(lista);
+        setUsandoMock(false);
+      }
     } catch {
-      toast.error('Error al cargar la bitácora de reservas');
+      // Backend no disponible (frontend-first): caemos a datos de muestra.
+      setReservas(generarReservasMock());
+      setUsandoMock(true);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    cargarReservas();
-  }, []);
+  useEffect(() => { cargarReservas(); }, []);
 
-  const handleCambiarEstado = async (id, nuevoEstado) => {
-    try {
-      await api.cambiarEstadoReserva(id, { estado: nuevoEstado });
-      toast.success(`Reserva marcada como ${nuevoEstado} exitosamente`);
-      cargarReservas();
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Error al actualizar el estado de la reserva');
-    }
-  };
-
-  // Filtrado local por estado
-  const filteredReservas = filterEstado 
-    ? reservas.filter(r => r.estado === filterEstado)
-    : reservas;
-
-  // Estadísticas KPI
-  const stats = {
-    total: reservas.length,
-    activas: reservas.filter(r => r.estado === 'activa').length,
-    pendientes: reservas.filter(r => r.estado === 'pendiente').length,
-    completadas: reservas.filter(r => r.estado === 'completada').length,
-  };
-
-  // Helper para renderizar los badges de estado
-  const getBadgeStyle = (estado) => {
-    switch (estado) {
-      case 'activa':
-        return 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400';
-      case 'pendiente':
-        return 'bg-amber-500/10 border-amber-500/30 text-amber-400';
-      case 'completada':
-        return 'bg-blue-500/10 border-blue-500/30 text-blue-400';
-      case 'cancelada':
-        return 'bg-slate-500/10 border-slate-500/30 text-slate-400';
-      default:
-        return 'bg-slate-500/10 border border-slate-500/20 text-slate-400';
-    }
-  };
+  const porDia = agruparPorDia(reservas);
+  const stats = statsReservas(reservas);
+  const serie = serieDiaria(reservas, 30).map((p) => ({ ...p, label: etiquetaCorta(p.fecha) }));
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -270,11 +399,16 @@ export default function Reservas() {
       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[var(--content-text)] flex items-center gap-3">
-            <CalendarClock className="h-8 w-8 text-blue-500" />
+            <CalendarClock className="h-8 w-8 text-emerald-500" />
             Reservas de Equipos
           </h1>
           <p className="text-[var(--content-muted)] mt-1">
-            Programación y control de uso compartido de equipos médicos críticos entre servicios hospitalarios.
+            Actividad de uso compartido de equipos biomédicos entre servicios.
+            {usandoMock && (
+              <span className="ml-2 text-[11px] font-semibold text-amber-600 bg-amber-500/10 border border-amber-500/30 rounded-full px-2 py-0.5">
+                datos de muestra
+              </span>
+            )}
           </p>
         </div>
         <button
@@ -286,188 +420,75 @@ export default function Reservas() {
         </button>
       </div>
 
-      {/* KPI Tiles */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <div className="bg-slate-900/40 border border-[var(--content-border)] p-5 rounded-2xl">
-          <p className="text-[var(--content-muted)] text-xs font-semibold uppercase tracking-wider">Total Reservado</p>
-          <p className="text-3xl font-bold text-[var(--content-text)] mt-2">{stats.total}</p>
+      {loading ? (
+        <div className="py-20 text-center text-[var(--content-muted)] text-sm">
+          <Activity className="h-6 w-6 animate-pulse text-emerald-500 mx-auto mb-2" />
+          Cargando actividad de reservas...
         </div>
-        <div className="bg-emerald-950/10 border border-emerald-900/40 p-5 rounded-2xl">
-          <p className="text-emerald-400/80 text-xs font-semibold uppercase tracking-wider">Activas Actualmente</p>
-          <p className="text-3xl font-bold text-emerald-500 mt-2">{stats.activas}</p>
-        </div>
-        <div className="bg-amber-950/10 border border-amber-900/40 p-5 rounded-2xl">
-          <p className="text-amber-400/80 text-xs font-semibold uppercase tracking-wider font-medium">Pendientes</p>
-          <p className="text-3xl font-bold text-amber-500 mt-2">{stats.pendientes}</p>
-        </div>
-        <div className="bg-blue-950/10 border border-blue-900/40 p-5 rounded-2xl">
-          <p className="text-blue-400/80 text-xs font-semibold uppercase tracking-wider">Completadas</p>
-          <p className="text-3xl font-bold text-blue-500 mt-2">{stats.completadas}</p>
-        </div>
-      </div>
+      ) : (
+        <>
+          {/* Line chart — reservas por día */}
+          <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-5">
+            <h3 className="text-sm font-semibold text-[var(--content-text)] mb-3 flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-emerald-500" />
+              Reservas por día · últimos 30 días
+            </h3>
+            <ResponsiveContainer width="100%" height={180}>
+              <AreaChart data={serie} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="grad-reservas" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#16a34a" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="#16a34a" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 11, fill: 'var(--content-muted)' }}
+                  interval="preserveStartEnd"
+                  minTickGap={28}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{ background: 'var(--content-surface)', border: '1px solid var(--content-border)', borderRadius: 12, fontSize: 12 }}
+                  labelStyle={{ color: 'var(--content-text)' }}
+                  formatter={(v) => [`${v} reserva${v !== 1 ? 's' : ''}`, '']}
+                />
+                <Area type="monotone" dataKey="count" stroke="#16a34a" strokeWidth={2} fill="url(#grad-reservas)" dot={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
 
-      {/* Controles de Filtro */}
-      <div className="flex gap-2 bg-slate-900/30 p-1.5 rounded-xl border border-slate-900 max-w-md">
-        <button 
-          onClick={() => setFilterEstado('')}
-          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${!filterEstado ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400 hover:text-slate-200'}`}
-        >
-          Todas
-        </button>
-        <button 
-          onClick={() => setFilterEstado('pendiente')}
-          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterEstado === 'pendiente' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'text-slate-400 hover:text-slate-200'}`}
-        >
-          Pendientes
-        </button>
-        <button 
-          onClick={() => setFilterEstado('activa')}
-          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterEstado === 'activa' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-400 hover:text-slate-200'}`}
-        >
-          Activas
-        </button>
-        <button 
-          onClick={() => setFilterEstado('completada')}
-          className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${filterEstado === 'completada' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:text-slate-200'}`}
-        >
-          Listas
-        </button>
-      </div>
+          {/* Heatmap de actividad */}
+          <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-5">
+            <h3 className="text-sm font-semibold text-[var(--content-text)] mb-4">Mapa de actividad</h3>
+            <ActividadHeatmap porDia={porDia} onDiaClick={setDiaSel} />
+          </div>
 
-      {/* Tabla de Datos */}
-      <div className="bg-[var(--content-bg)]/50 border border-[var(--content-border)] rounded-2xl overflow-hidden shadow-xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-950/80 border-b border-[var(--content-border)]">
-              <tr>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase tracking-wider">Equipo / Serie</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase tracking-wider">Área Destino</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase tracking-wider">Solicitante</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase tracking-wider">Fecha Programada</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase tracking-wider">Estado</th>
-                <th className="px-6 py-4 text-xs font-bold text-[var(--content-muted)] uppercase tracking-wider text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-900 bg-slate-950/15">
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-[var(--content-muted)] text-sm">
-                    <Activity className="h-6 w-6 animate-pulse text-blue-500 mx-auto mb-2" />
-                    Cargando bitácora de reservas biomédicas...
-                  </td>
-                </tr>
-              ) : filteredReservas.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center bg-slate-900/10 rounded-2xl">
-                    <CalendarClock className="h-10 w-10 text-slate-700 mx-auto mb-3" />
-                    <p className="text-slate-500 font-medium text-sm">Sin reservas registradas para este filtro.</p>
-                  </td>
-                </tr>
-              ) : (
-                filteredReservas.map((res) => {
-                  const ini = new Date(res.fecha_inicio).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
-                  const fin = res.fecha_fin 
-                    ? new Date(res.fecha_fin).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })
-                    : 'Indefinida';
+          {/* Stat cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <StatCard icon={<CalendarRange className="h-5 w-5" />} valor={stats.total} label="Reservas totales" />
+            <StatCard icon={<Flame className="h-5 w-5" />} valor={stats.diaPico} label="Día pico · máx por día" />
+            <StatCard icon={<Activity className="h-5 w-5" />} valor={stats.diasActivos} label="Días con reservas" />
+          </div>
+        </>
+      )}
 
-                  return (
-                    <tr key={res.id} className="hover:bg-slate-900/30 transition-colors group">
-                      <td className="px-6 py-4">
-                        <p className="font-bold text-[var(--content-text)] group-hover:text-blue-400 transition-colors text-sm">
-                          {res.equipo_nombre}
-                        </p>
-                        <p className="text-[10px] text-[var(--content-muted)] uppercase font-semibold">{res.equipo_serie}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1.5 text-sm text-[var(--content-text)] font-medium">
-                          <MapPin className="h-3.5 w-3.5 text-slate-500 flex-shrink-0" />
-                          <span>{res.area_reserva}</span>
-                        </div>
-                        {res.piso_reserva && (
-                          <span className="text-[10px] text-[var(--content-muted)] uppercase pl-5 block">
-                            {res.piso_reserva}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1.5 text-sm text-[var(--content-muted)]">
-                          <User className="h-3.5 w-3.5 text-slate-500 flex-shrink-0" />
-                          <span>{res.solicitante_nombre || 'Asignado General'}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="space-y-0.5 text-xs">
-                          <div className="flex items-center gap-1 text-[var(--content-text)] font-semibold">
-                            <Clock className="h-3 w-3 text-emerald-500" />
-                            <span>Ini: {ini}</span>
-                          </div>
-                          {res.fecha_fin && (
-                            <div className="flex items-center gap-1 text-[var(--content-muted)]">
-                              <Clock className="h-3 w-3 text-slate-600" />
-                              <span>Fin: {fin}</span>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${getBadgeStyle(res.estado)}`}>
-                          {res.estado.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-1.5">
-                          {res.estado === 'pendiente' && (
-                            <button
-                              onClick={() => handleCambiarEstado(res.id, 'activa')}
-                              title="Iniciar Reserva"
-                              className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500/25 border border-emerald-500/30 rounded-lg text-emerald-400 transition-all hover:scale-105 active:scale-95"
-                            >
-                              <Play className="h-4 w-4" />
-                            </button>
-                          )}
-                          {res.estado === 'activa' && (
-                            <button
-                              onClick={() => handleCambiarEstado(res.id, 'completada')}
-                              title="Completar Reserva"
-                              className="p-1.5 bg-blue-500/10 hover:bg-blue-500/25 border border-blue-500/30 rounded-lg text-blue-400 transition-all hover:scale-105 active:scale-95"
-                            >
-                              <CheckCircle2 className="h-4 w-4" />
-                            </button>
-                          )}
-                          {(res.estado === 'pendiente' || res.estado === 'activa') && (
-                            <button
-                              onClick={() => handleCambiarEstado(res.id, 'cancelada')}
-                              title="Cancelar Reserva"
-                              className="p-1.5 bg-red-500/10 hover:bg-red-500/25 border border-red-500/30 rounded-lg text-red-400 transition-all hover:scale-105 active:scale-95"
-                            >
-                              <Ban className="h-4 w-4" />
-                            </button>
-                          )}
-                          {res.motivo && (
-                            <button
-                              onClick={() => toast(res.motivo, { icon: '📝', duration: 4000 })}
-                              title="Ver Motivo"
-                              className="p-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-300 transition-all"
-                            >
-                              <FileText className="h-4 w-4" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Modal de Creación */}
+      {/* Modal de creación */}
       {modalNueva && (
         <NuevaReservaModal
           onClose={() => setModalNueva(false)}
           onSaved={() => { setModalNueva(false); cargarReservas(); }}
+        />
+      )}
+
+      {/* Modal de día */}
+      {diaSel && (
+        <DiaReservasModal
+          dia={diaSel}
+          reservas={reservas}
+          onClose={() => setDiaSel(null)}
+          onNueva={() => { setDiaSel(null); setModalNueva(true); }}
         />
       )}
     </div>
