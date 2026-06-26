@@ -4,8 +4,12 @@
  * Página pública servida en `/`. Diseño premium dark glassmorphism (Stitch / Apple-Medical).
  * Es visualmente independiente del tema de la app: fuerza su propio fondo oscuro (#020617).
  * Si el usuario ya tiene sesión, redirige al dashboard de la app.
+ *
+ * Dirección visual "Quirófano de datos": scroll storytelling sobrio (reveals escalonados,
+ * mockup 2.5D que se asienta, parallax lento, count-up de métricas). Todo CSS-first, sin
+ * librería de animación nueva, y respeta prefers-reduced-motion en cada efecto.
  */
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -47,19 +51,176 @@ const TESTIMONIALS = [
   { quote: 'El cumplimiento regulatorio quedó integrado al flujo de trabajo diario. La IA local corre dentro del hospital, sin enviar datos a la nube.', name: 'Dr. Antonio Vega', role: 'Director de Operaciones', org: 'Instituto de Especialidades' },
 ];
 
+const SPY_IDS = ['plataforma', 'ecosistema', 'casos', 'planes', 'cumplimiento'];
+
+const TRUST_SEALS = [
+  { icon: ShieldCheck, label: 'NOM-016-SSA3' },
+  { icon: Activity,    label: 'NOM-240-SSA1' },
+  { icon: Database,    label: 'ISO 13485' },
+  { icon: Cpu,         label: 'IA local On-Premise' },
+];
+
+/* ── Hooks de animación (vanilla, 0 kb de lib) ───────────────────────── */
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(
+    () => typeof window !== 'undefined' &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const on = () => setReduced(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return reduced;
+}
+
+// Revela todos los [data-reveal] una sola vez al entrar en viewport.
+function useReveal(reduced) {
+  useEffect(() => {
+    const els = Array.from(document.querySelectorAll('[data-reveal]'));
+    if (reduced) { els.forEach((el) => el.classList.add('is-visible')); return; }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [reduced]);
+}
+
+// Nav compacto al scrollear + expone --scroll-y para el parallax del hero.
+function useScrollFx(reduced) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const y = window.scrollY;
+        setScrolled(y > 8);
+        if (!reduced) document.documentElement.style.setProperty('--scroll-y', String(y));
+      });
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { window.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, [reduced]);
+  return scrolled;
+}
+
+// Link de nav activo según la sección visible (scroll-spy).
+function useScrollSpy(ids) {
+  const [active, setActive] = useState(ids[0]);
+  useEffect(() => {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) setActive(e.target.id); });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    ids.forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
+    return () => io.disconnect();
+  }, [ids]);
+  return active;
+}
+
+// Número que persigue suavemente su objetivo (tween del precio al mover el slider).
+function useSpringNumber(target, reduced) {
+  const [val, setVal] = useState(target);
+  const cur = useRef(target);
+  const raf = useRef(0);
+  useEffect(() => {
+    if (reduced) { cur.current = target; setVal(target); return; }
+    cancelAnimationFrame(raf.current);
+    const step = () => {
+      const d = target - cur.current;
+      if (Math.abs(d) < 0.5) { cur.current = target; setVal(target); return; }
+      cur.current += d * 0.18;            // ponytail: lerp simple, sin lib de spring
+      setVal(cur.current);
+      raf.current = requestAnimationFrame(step);
+    };
+    raf.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf.current);
+  }, [target, reduced]);
+  return Math.round(val);
+}
+
+/* ── Componentes de presentación ─────────────────────────────────────── */
+
+// Titular que entra palabra por palabra (escalonado).
+function Words({ text, start = 0, step = 55, className = '' }) {
+  const words = text.split(' ');
+  // El espacio va como text node FUERA del span: un inline-block colapsa su
+  // whitespace interno y pegaría las palabras.
+  return words.flatMap((w, i) => {
+    const span = (
+      <span
+        key={`${w}-${i}`}
+        data-reveal
+        className={`reveal-word ${className}`}
+        style={{ '--d': `${start + i * step}ms` }}
+      >
+        {w}
+      </span>
+    );
+    return i < words.length - 1 ? [span, ' '] : [span];
+  });
+}
+
+// Métrica de impacto con count-up al entrar en viewport. Preserva signo y sufijo.
+function AnimatedMetric({ value, reduced }) {
+  const m = String(value).match(/^([+-]?)(\d+)(.*)$/);
+  const sign = m ? m[1] : '';
+  const end = m ? parseInt(m[2], 10) : 0;
+  const suffix = m ? m[3] : '';
+  const ref = useRef(null);
+  const [n, setN] = useState(reduced || !m ? end : 0);
+
+  useEffect(() => {
+    if (reduced || !m) { setN(end); return; }
+    const node = ref.current;
+    let raf = 0, started = false;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && !started) {
+        started = true;
+        const dur = 1400, t0 = performance.now();
+        const tick = (t) => {
+          const p = Math.min(1, (t - t0) / dur);
+          setN(Math.round(end * (1 - Math.pow(1 - p, 3))));   // easeOutCubic
+          if (p < 1) raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        io.disconnect();
+      }
+    }, { threshold: 0.4 });
+    if (node) io.observe(node);
+    return () => { io.disconnect(); if (raf) cancelAnimationFrame(raf); };
+    // deps por `value` (estable), NO por `m` (array nuevo cada render → reiniciaría el tick).
+  }, [value, reduced]);
+
+  if (!m) return <span ref={ref}>{value}</span>;
+  return <span ref={ref}>{sign}{n}{suffix}</span>;
+}
+
 export default function LandingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [beds, setBeds] = useState(500);
 
+  // Hooks de animación — todos antes de cualquier return condicional (reglas de hooks).
+  const reduced = usePrefersReducedMotion();
+  const scrolled = useScrollFx(reduced);
+  const active = useScrollSpy(SPY_IDS);
+  useReveal(reduced);
+  const animatedPrice = useSpringNumber(500 + beds * 4, reduced);   // base $500 + $4/cama
+
   // En "/" con sesión activa → directo a la app. En "/landing" siempre se muestra
   // (útil como preview de marketing aunque haya sesión iniciada).
   if (user && location.pathname === '/') return <Navigate to="/dashboard" replace />;
 
-  // Calculadora: base $500 + $4 por cama censable.
-  const price = (500 + beds * 4).toLocaleString('es-MX');
-
+  const price = animatedPrice.toLocaleString('es-MX');
   const goLogin = () => navigate('/login');
 
   return (
@@ -67,21 +228,30 @@ export default function LandingPage() {
       className="min-h-screen flex flex-col font-body text-[#dae2fd] antialiased"
       style={{ backgroundColor: '#020617' }}
     >
-      {/* ── Navegación fija ── */}
-      <nav className="fixed top-0 w-full z-50 bg-[#0b1326]/55 backdrop-blur-[20px] border-b border-cyan-glow/10 shadow-[0_0_20px_rgba(34,217,244,0.05)]">
-        <div className="flex justify-between items-center px-6 md:px-8 h-16 max-w-7xl mx-auto">
+      {/* ── Navegación fija (se compacta al scrollear, link activo por sección) ── */}
+      <nav
+        className={`fixed top-0 w-full z-50 backdrop-blur-[20px] border-b border-cyan-glow/10 transition-all duration-300 ${
+          scrolled
+            ? 'bg-[#0b1326]/80 shadow-[0_4px_24px_rgba(34,217,244,0.08)]'
+            : 'bg-[#0b1326]/55 shadow-[0_0_20px_rgba(34,217,244,0.05)]'
+        }`}
+      >
+        <div className={`flex justify-between items-center px-6 md:px-8 max-w-7xl mx-auto transition-all duration-300 ${scrolled ? 'h-14' : 'h-16'}`}>
           <div className="flex items-center gap-6">
             <span className="font-display font-extrabold text-xl text-cyan-glow tracking-tighter">SIGAH</span>
             <div className="hidden md:flex items-center gap-5 ml-4">
-              {NAV_LINKS.map((l) => (
-                <a
-                  key={l.href}
-                  href={l.href}
-                  className="text-sm text-[#bbc9cd] hover:text-cyan-glow transition-colors"
-                >
-                  {l.label}
-                </a>
-              ))}
+              {NAV_LINKS.map((l) => {
+                const isActive = active === l.href.slice(1);
+                return (
+                  <a
+                    key={l.href}
+                    href={l.href}
+                    className={`text-sm transition-colors ${isActive ? 'text-cyan-glow' : 'text-[#bbc9cd] hover:text-cyan-glow'}`}
+                  >
+                    {l.label}
+                  </a>
+                );
+              })}
             </div>
           </div>
           <Button variant="primary" size="sm" onClick={goLogin} className="hidden md:inline-flex">
@@ -99,20 +269,46 @@ export default function LandingPage() {
           id="plataforma"
           className="relative px-6 md:px-8 py-20 md:py-28 flex flex-col items-center text-center radial-bg overflow-hidden"
         >
+          {/* Video ambiental de fondo (muy tenue) — desactivado en reduced-motion */}
+          {!reduced && (
+            <video
+              className="absolute inset-0 w-full h-full object-cover opacity-[0.16] pointer-events-none"
+              src="/landing/hero-loop.webm"
+              poster="/landing/hero-loop-poster.webp"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-hidden="true"
+            />
+          )}
+          {/* Overlay para legibilidad del texto sobre el video */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#020617]/40 via-[#020617]/10 to-[#020617]"
+          />
+          {/* Glow decorativo con parallax lento */}
+          <div
+            aria-hidden="true"
+            className="hero-parallax pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[min(90vw,720px)] h-[480px] rounded-full blur-[120px] opacity-40"
+            style={{ background: 'radial-gradient(circle, rgba(34,211,238,0.35) 0%, rgba(34,211,238,0) 70%)' }}
+          />
           <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center gap-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border border-sigah-blue text-[#9fcaff] bg-[#0b1326]/50 backdrop-blur-sm">
+            <div data-reveal className="reveal inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border border-sigah-blue text-[#9fcaff] bg-[#0b1326]/50 backdrop-blur-sm">
               <ShieldCheck size={15} />
               Validado en HGR No. 1 IMSS Tijuana
             </div>
             <h1 className="font-display font-extrabold text-4xl md:text-6xl tracking-tighter leading-tight">
-              Gestión biomédica inteligente.<br />
-              <span className="text-gradient">Cumplimiento NOM-016 en automático.</span>
+              <Words text="Gestión biomédica inteligente." start={120} />
+              <br />
+              <Words text="Cumplimiento NOM-016 en automático." start={420} className="text-gradient" />
             </h1>
-            <p className="text-lg text-[#bbc9cd] max-w-2xl leading-relaxed">
+            <p data-reveal className="reveal text-lg text-[#bbc9cd] max-w-2xl leading-relaxed" style={{ '--d': '760ms' }}>
               El sistema operativo clínico que digitaliza bitácoras, predice fallas en equipos vitales
               y asegura el cumplimiento regulatorio sin esfuerzo cognitivo.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 mt-4">
+            <div data-reveal className="reveal flex flex-col sm:flex-row gap-4 mt-4" style={{ '--d': '900ms' }}>
               <Button variant="primary" size="lg" icon={ArrowRight} iconPosition="right" onClick={goLogin}>
                 Comenzar ahora
               </Button>
@@ -122,38 +318,29 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Preview abstracto del dashboard */}
-          <div className="relative w-full max-w-5xl mt-16 mx-auto z-10 glass-panel rounded-xl p-6 overflow-hidden aspect-video hidden md:block group">
-            <div className="relative z-10 flex flex-col h-full gap-4 opacity-70 group-hover:opacity-100 transition-opacity duration-500">
-              <div className="flex justify-between items-center border-b border-cyan-glow/20 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-[#10B981] animate-pulse" />
-                  <span className="text-xs text-[#bbc9cd] uppercase tracking-wider">Sistema en línea</span>
-                </div>
-                <div className="flex gap-2">
-                  <div className="h-6 w-24 bg-[#171f33] rounded" />
-                  <div className="h-6 w-6 bg-[#171f33] rounded-full" />
-                </div>
-              </div>
-              <div className="flex-grow grid grid-cols-3 gap-4">
-                <div className="col-span-2 flex flex-col gap-4">
-                  <div className="bg-[#0b1326]/50 rounded-lg flex-grow border border-cyan-glow/10" />
-                  <div className="bg-[#0b1326]/50 rounded-lg h-24 border border-cyan-glow/10" />
-                </div>
-                <div className="col-span-1 flex flex-col gap-4">
-                  <div className="bg-[#0b1326]/50 rounded-lg h-1/3 border border-cyan-glow/10" />
-                  <div className="ai-card rounded-lg flex-grow" />
-                </div>
-              </div>
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent z-20" />
+          {/* Preview real del dashboard — mockup con efecto 2.5D al entrar */}
+          <div
+            data-reveal
+            className="hero-rise relative w-full max-w-5xl mt-16 mx-auto z-10 glass-panel rounded-xl p-2 overflow-hidden hidden md:block"
+            style={{ '--d': '300ms' }}
+          >
+            <img
+              src="/landing/dashboard-hero.webp"
+              alt="Tablero SIGAB de gestión de activos biomédicos del HGR No. 1 IMSS Tijuana"
+              width={1500}
+              height={1222}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-auto rounded-lg"
+            />
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-[#020617] via-transparent to-transparent pointer-events-none" />
           </div>
         </section>
 
         {/* ── Ecosistema SIGAH vs SIGAB ── */}
         <section id="ecosistema" className="py-20 px-6 md:px-8">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-14">
+            <div data-reveal className="reveal text-center mb-14">
               <h2 className="font-display font-bold text-3xl md:text-5xl mb-4">Ecosistema SIGAH</h2>
               <p className="text-lg text-[#bbc9cd] max-w-2xl mx-auto">
                 Módulos especializados para cubrir cada aspecto operativo y clínico de tu institución médica.
@@ -161,7 +348,7 @@ export default function LandingPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* SIGAH Comercial */}
-              <div className="glass-panel rounded-xl p-6 flex flex-col gap-4 relative overflow-hidden group">
+              <div data-reveal className="reveal reveal-left glass-panel rounded-xl p-6 flex flex-col gap-4 relative overflow-hidden group">
                 <Building2 className="absolute top-4 right-4 text-cyan-glow opacity-20 group-hover:opacity-100 transition-opacity" size={56} />
                 <h3 className="font-display font-semibold text-xl text-cyan-glow flex items-center gap-2">
                   <Building2 size={22} /> SIGAH Comercial
@@ -176,7 +363,7 @@ export default function LandingPage() {
                 </ul>
               </div>
               {/* SIGAB Clínico */}
-              <div className="glass-panel rounded-xl p-6 flex flex-col gap-4 relative overflow-hidden group border-ai-violet/30">
+              <div data-reveal className="reveal reveal-right glass-panel rounded-xl p-6 flex flex-col gap-4 relative overflow-hidden group border-ai-violet/30" style={{ '--d': '120ms' }}>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-ai-violet to-transparent opacity-50" />
                 <HeartPulse className="absolute top-4 right-4 text-ai-violet opacity-20 group-hover:opacity-100 transition-opacity" size={56} />
                 <h3 className="font-display font-semibold text-xl text-[#cbb5ff] flex items-center gap-2">
@@ -195,10 +382,11 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── Casos de éxito + impacto ── */}
-        <section id="casos" className="py-20 px-6 md:px-8 bg-[#060e20]">
+        {/* ── Casos de éxito + impacto (fondo fotográfico con overlay) ── */}
+        <section id="casos" className="photo-section py-20 px-6 md:px-8 bg-[#060e20]">
+          <div className="photo-layer" style={{ backgroundImage: "url('/landing/casos-bg.webp')" }} />
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-14">
+            <div data-reveal className="reveal text-center mb-14">
               <h2 className="font-display font-bold text-3xl md:text-5xl mb-4">Casos de éxito</h2>
               <p className="text-lg text-[#bbc9cd] max-w-2xl mx-auto">
                 Instituciones médicas que ya operan con cumplimiento automatizado y mantenimiento predictivo.
@@ -207,10 +395,12 @@ export default function LandingPage() {
 
             {/* Testimonios */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-              {TESTIMONIALS.map((t) => (
+              {TESTIMONIALS.map((t, i) => (
                 <figure
                   key={t.name}
-                  className="glass-panel rounded-xl p-6 flex flex-col gap-4 relative overflow-hidden group"
+                  data-reveal
+                  className="reveal glass-panel rounded-xl p-6 flex flex-col gap-4 relative overflow-hidden group"
+                  style={{ '--d': `${i * 110}ms` }}
                 >
                   <Quote className="text-cyan-glow opacity-30 group-hover:opacity-100 transition-opacity" size={28} />
                   <blockquote className="text-[#dae2fd] leading-relaxed flex-grow">{t.quote}</blockquote>
@@ -223,17 +413,21 @@ export default function LandingPage() {
               ))}
             </div>
 
-            {/* Métricas de impacto */}
+            {/* Métricas de impacto (count-up al entrar) */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {IMPACT_METRICS.map((m) => {
+              {IMPACT_METRICS.map((m, i) => {
                 const Icon = m.icon;
                 return (
                   <div
                     key={m.label}
-                    className="glass-panel rounded-xl p-6 flex flex-col items-center text-center gap-2"
+                    data-reveal
+                    className="reveal glass-panel rounded-xl p-6 flex flex-col items-center text-center gap-2"
+                    style={{ '--d': `${i * 90}ms` }}
                   >
                     <Icon className="text-cyan-glow mb-1" size={26} />
-                    <span className="font-display font-extrabold text-3xl md:text-4xl text-white">{m.value}</span>
+                    <span className="font-display font-extrabold text-3xl md:text-4xl text-white">
+                      <AnimatedMetric value={m.value} reduced={reduced} />
+                    </span>
                     <span className="text-sm text-[#dae2fd] leading-snug">{m.label}</span>
                     <span className="text-xs text-[#859397]">{m.sub}</span>
                   </div>
@@ -245,7 +439,7 @@ export default function LandingPage() {
 
         {/* ── Calculadora de inversión ── */}
         <section id="planes" className="py-20 px-6 md:px-8 bg-[#060e20]">
-          <div className="max-w-4xl mx-auto glass-panel rounded-xl p-8 md:p-10 flex flex-col md:flex-row gap-10 items-center">
+          <div data-reveal className="reveal max-w-4xl mx-auto glass-panel rounded-xl p-8 md:p-10 flex flex-col md:flex-row gap-10 items-center">
             <div className="flex-1 w-full">
               <h2 className="font-display font-bold text-3xl mb-2">Calculadora de inversión</h2>
               <p className="text-[#bbc9cd] mb-8">Escala tu licencia según la capacidad de tu institución.</p>
@@ -270,9 +464,9 @@ export default function LandingPage() {
                 <span>2000</span>
               </div>
             </div>
-            <div className="flex-1 w-full bg-[#171f33] rounded-lg p-6 border border-cyan-glow/20 text-center shadow-inner">
+            <div className="flex-1 w-full bg-[#171f33] rounded-lg p-6 border border-cyan-glow/20 text-center shadow-inner transition-shadow duration-300 hover:shadow-[0_0_30px_rgba(34,211,238,0.12)]">
               <div className="text-xs text-[#bbc9cd] uppercase tracking-wider mb-2">Inversión mensual estimada</div>
-              <div className="font-display font-extrabold text-5xl text-cyan-glow mb-2 flex justify-center items-start">
+              <div className="font-display font-extrabold text-5xl text-cyan-glow mb-2 flex justify-center items-start" style={{ textShadow: '0 0 24px rgba(34,211,238,0.25)' }}>
                 <span className="text-xl mt-1">$</span>
                 <span>{price}</span>
                 <span className="text-xl mt-auto mb-1 text-[#bbc9cd]">/mes</span>
@@ -285,9 +479,10 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── Formulario de auditoría (lead) ── */}
-        <section id="cumplimiento" className="py-20 px-6 md:px-8 bg-[#060e20]">
-          <div className="max-w-3xl mx-auto glass-panel rounded-xl p-8 md:p-10 border border-cyan-glow/30 relative overflow-hidden">
+        {/* ── Formulario de auditoría (lead) con fondo fotográfico ── */}
+        <section id="cumplimiento" className="photo-section py-20 px-6 md:px-8 bg-[#060e20]">
+          <div className="photo-layer" style={{ backgroundImage: "url('/landing/cta-bg.webp')" }} />
+          <div data-reveal className="reveal max-w-3xl mx-auto glass-panel rounded-xl p-8 md:p-10 border border-cyan-glow/30 relative overflow-hidden">
             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-glow/0 via-cyan-glow/20 to-cyan-glow/0 opacity-50 pointer-events-none animate-shimmer" />
             <div className="text-center mb-8 relative z-10">
               <h2 className="font-display font-bold text-3xl mb-2">Agenda tu auditoría gratuita NOM-016</h2>
@@ -335,13 +530,19 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── Tira de confianza ── */}
-        <section className="py-12 px-6 md:px-8 border-t border-cyan-glow/10">
-          <div className="max-w-5xl mx-auto flex flex-wrap justify-center items-center gap-8 text-[#859397]">
-            <span className="flex items-center gap-2 text-sm"><ShieldCheck size={18} className="text-cyan-glow" /> NOM-016-SSA3</span>
-            <span className="flex items-center gap-2 text-sm"><Activity size={18} className="text-cyan-glow" /> NOM-240-SSA1</span>
-            <span className="flex items-center gap-2 text-sm"><Database size={18} className="text-cyan-glow" /> ISO 13485</span>
-            <span className="flex items-center gap-2 text-sm"><Cpu size={18} className="text-cyan-glow" /> IA local On-Premise</span>
+        {/* ── Tira de confianza (marquee suave, pausable, estático en reduced-motion) ── */}
+        <section className="py-12 px-6 md:px-8 border-t border-cyan-glow/10 overflow-hidden">
+          <div className="marquee-mask max-w-5xl mx-auto">
+            <div className="marquee-track gap-8 text-[#859397]">
+              {[...TRUST_SEALS, ...TRUST_SEALS].map((s, i) => {
+                const Icon = s.icon;
+                return (
+                  <span key={i} aria-hidden={i >= TRUST_SEALS.length} className="flex items-center gap-2 text-sm whitespace-nowrap px-4">
+                    <Icon size={18} className="text-cyan-glow" /> {s.label}
+                  </span>
+                );
+              })}
+            </div>
           </div>
         </section>
       </main>
