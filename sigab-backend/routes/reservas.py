@@ -122,3 +122,88 @@ async def cambiar_estado_reserva(
             "UPDATE reservas SET estado = %s WHERE id = %s", (estado, reserva_id)
         )
     return {"ok": True}
+
+
+@router.put("/{reserva_id}")
+async def editar_reserva(
+    reserva_id: int,
+    data: dict,
+    tenant_id: int = Depends(get_current_tenant),
+    conn=Depends(get_db),
+):
+    """Edita una reserva. Verifica ownership vía equipo, valida fechas y
+    solapamiento (excluyendo la propia reserva). Campos no enviados se conservan."""
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        # Ownership: la reserva debe colgar de un equipo del tenant. 404, nunca 403.
+        await cur.execute(
+            """SELECT r.* FROM reservas r
+               JOIN equipos e ON r.equipo_id = e.id
+               WHERE r.id = %s AND e.tenant_id = %s""",
+            (reserva_id, tenant_id),
+        )
+        actual = await cur.fetchone()
+        if not actual:
+            raise HTTPException(status_code=404, detail="Reserva no encontrada")
+
+        # Merge: usar el valor nuevo si vino en el body, si no conservar el actual.
+        equipo_id = data.get("equipo_id", actual["equipo_id"])
+        fecha_inicio = data.get("fecha_inicio", actual["fecha_inicio"])
+        fecha_fin = data.get("fecha_fin", actual["fecha_fin"])
+        area_reserva = data.get("area_reserva", actual["area_reserva"])
+        piso_reserva = data.get("piso_reserva", actual["piso_reserva"])
+        motivo = data.get("motivo", actual["motivo"])
+
+        # Si cambia el equipo, validar que el nuevo también sea del tenant.
+        if equipo_id != actual["equipo_id"]:
+            await cur.execute(
+                "SELECT id FROM equipos WHERE id = %s AND tenant_id = %s",
+                (equipo_id, tenant_id),
+            )
+            if not await cur.fetchone():
+                raise HTTPException(status_code=404, detail="Equipo no encontrado")
+
+        # Validación: si hay fecha_fin, debe ser posterior al inicio.
+        if fecha_fin and str(fecha_fin) <= str(fecha_inicio):
+            raise HTTPException(status_code=400, detail="La fecha de fin debe ser posterior al inicio")
+
+        # Solapamiento con otra reserva activa del mismo equipo (excluye la propia).
+        await cur.execute(
+            """SELECT id FROM reservas
+               WHERE equipo_id = %s AND id != %s AND estado IN ('pendiente','activa')
+               AND fecha_inicio < %s AND (fecha_fin IS NULL OR fecha_fin > %s)""",
+            (equipo_id, reserva_id, fecha_fin, fecha_inicio),
+        )
+        if await cur.fetchone():
+            raise HTTPException(status_code=409, detail="Conflicto de reserva existente")
+
+    async with conn.cursor() as cur:
+        await cur.execute(
+            """UPDATE reservas
+               SET equipo_id = %s, area_reserva = %s, piso_reserva = %s,
+                   fecha_inicio = %s, fecha_fin = %s, motivo = %s
+               WHERE id = %s""",
+            (equipo_id, area_reserva, piso_reserva, fecha_inicio, fecha_fin, motivo, reserva_id),
+        )
+    return {"ok": True}
+
+
+@router.delete("/{reserva_id}")
+async def eliminar_reserva(
+    reserva_id: int,
+    tenant_id: int = Depends(get_current_tenant),
+    conn=Depends(get_db),
+):
+    """Elimina una reserva. Verifica ownership vía equipo antes de borrar."""
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        await cur.execute(
+            """SELECT r.id FROM reservas r
+               JOIN equipos e ON r.equipo_id = e.id
+               WHERE r.id = %s AND e.tenant_id = %s""",
+            (reserva_id, tenant_id),
+        )
+        if not await cur.fetchone():
+            raise HTTPException(status_code=404, detail="Reserva no encontrada")
+
+    async with conn.cursor() as cur:
+        await cur.execute("DELETE FROM reservas WHERE id = %s", (reserva_id,))
+    return {"ok": True}
