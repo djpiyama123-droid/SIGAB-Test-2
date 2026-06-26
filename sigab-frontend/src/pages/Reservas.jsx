@@ -17,19 +17,52 @@ import {
   Play,
   Flame,
   CalendarRange,
-  TrendingUp
+  TrendingUp,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 import toast from '../lib/toast';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { ymd, etiquetaCorta, agruparPorDia, statsReservas, serieDiaria, reservasDelDia } from '../utils/fechas';
 import { generarReservasMock } from '../utils/reservasMock';
 
-// ─── Modal: Nueva Reserva de Equipo ──────────────────────────────────────────
-function NuevaReservaModal({ onClose, onSaved }) {
+// Cuenta animada de 0 → target (easeOutCubic). Respeta prefers-reduced-motion.
+function useCountUp(target, duration = 700) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { setVal(target); return; }
+    let raf, start;
+    const tick = (t) => {
+      if (!start) start = t;
+      const p = Math.min(1, (t - start) / duration);
+      setVal(Math.round(target * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return val;
+}
+
+function toDatetimeLocal(s) {
+  return s ? String(s).replace(' ', 'T').slice(0, 16) : '';
+}
+
+// ─── Modal: Nueva / Editar Reserva de Equipo ─────────────────────────────────
+function NuevaReservaModal({ onClose, onSaved, reserva }) {
   const { user } = useAuth();
+  const editando = !!reserva;
   const [equipos, setEquipos] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [form, setForm] = useState({
+  const [form, setForm] = useState(editando ? {
+    equipo_id: String(reserva.equipo_id ?? ''),
+    area_reserva: reserva.area_reserva ?? '',
+    piso_reserva: reserva.piso_reserva ?? '',
+    fecha_inicio: toDatetimeLocal(reserva.fecha_inicio),
+    fecha_fin: toDatetimeLocal(reserva.fecha_fin),
+    motivo: reserva.motivo ?? '',
+  } : {
     equipo_id: '',
     area_reserva: '',
     piso_reserva: '',
@@ -60,16 +93,21 @@ function NuevaReservaModal({ onClose, onSaved }) {
 
     setSaving(true);
     try {
-      await api.crearReserva({
+      const payload = {
         equipo_id: Number(form.equipo_id),
         area_reserva: form.area_reserva,
         piso_reserva: form.piso_reserva || null,
-        solicitante_id: user?.id || null,
         fecha_inicio: form.fecha_inicio.replace('T', ' ') + ':00',
         fecha_fin: form.fecha_fin ? form.fecha_fin.replace('T', ' ') + ':00' : null,
         motivo: form.motivo || '',
-      });
-      toast.success('Reserva creada exitosamente');
+      };
+      if (editando) {
+        await api.editarReserva(reserva.id, payload);
+        toast.success('Reserva actualizada');
+      } else {
+        await api.crearReserva({ ...payload, solicitante_id: user?.id || null });
+        toast.success('Reserva creada exitosamente');
+      }
       onSaved();
     } catch (err) {
       if (err.response?.status === 409) {
@@ -90,12 +128,12 @@ function NuevaReservaModal({ onClose, onSaved }) {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 anim-fade-in" onClick={onClose}>
+      <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden anim-scale-in" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--content-border)] bg-[var(--content-bg)]/40">
           <h2 className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
             <CalendarClock className="h-5 w-5 text-blue-500" />
-            Nueva Reserva de Equipo
+            {editando ? 'Editar Reserva' : 'Nueva Reserva de Equipo'}
           </h2>
           <button onClick={onClose} className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors">
             <X className="h-5 w-5" />
@@ -197,9 +235,9 @@ function NuevaReservaModal({ onClose, onSaved }) {
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all disabled:opacity-50 text-sm"
+              className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all disabled:opacity-50 text-sm active:scale-95"
             >
-              {saving ? 'Creando Reserva...' : 'Confirmar Reserva'}
+              {saving ? (editando ? 'Guardando...' : 'Creando Reserva...') : (editando ? 'Guardar cambios' : 'Confirmar Reserva')}
             </button>
           </div>
         </form>
@@ -270,8 +308,8 @@ function ActividadHeatmap({ porDia, onDiaClick, semanas = 26 }) {
                   disabled={celda.futuro || celda.count === 0}
                   onClick={() => onDiaClick(celda.key)}
                   title={`${celda.key}: ${celda.count} reserva${celda.count !== 1 ? 's' : ''}`}
-                  className={`w-3.5 h-3.5 rounded-sm transition-transform ${celda.futuro ? 'opacity-25' : celda.count > 0 ? 'hover:scale-125 cursor-pointer ring-1 ring-black/5' : 'cursor-default'}`}
-                  style={{ backgroundColor: NIVEL_COLORES[nivel(celda.count)] }}
+                  className={`anim-cell-pop w-3.5 h-3.5 rounded-sm transition-transform ${celda.futuro ? 'opacity-25' : celda.count > 0 ? 'hover:scale-[1.35] cursor-pointer ring-1 ring-black/5' : 'cursor-default'}`}
+                  style={{ backgroundColor: NIVEL_COLORES[nivel(celda.count)], animationDelay: `${w * 14}ms` }}
                 />
               ))}
             </div>
@@ -290,13 +328,14 @@ function ActividadHeatmap({ porDia, onDiaClick, semanas = 26 }) {
 }
 
 // ─── Modal: reservas de un día ────────────────────────────────────────────────
-function DiaReservasModal({ dia, reservas, onClose, onNueva }) {
+function DiaReservasModal({ dia, reservas, onClose, onNueva, onEditar, onEliminar }) {
+  const [confirmId, setConfirmId] = useState(null);
   const lista = reservasDelDia(reservas, dia);
   const [y, m, d] = dia.split('-');
   const fechaLabel = `${Number(d)} ${NOMBRE_MES[Number(m) - 1]} ${y}`;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 anim-fade-in" onClick={onClose}>
+      <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden anim-scale-in" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--content-border)] bg-[var(--content-bg)]/40">
           <h2 className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
             <CalendarClock className="h-5 w-5 text-emerald-500" />
@@ -311,8 +350,8 @@ function DiaReservasModal({ dia, reservas, onClose, onNueva }) {
           {lista.length === 0 ? (
             <p className="text-sm text-[var(--content-muted)] text-center py-8">Sin reservas este día.</p>
           ) : (
-            lista.map((r) => (
-              <div key={r.id} className="bg-[var(--content-bg)]/50 border border-[var(--content-border)] rounded-xl p-3">
+            lista.map((r, idx) => (
+              <div key={r.id} className="anim-fade-up bg-[var(--content-bg)]/50 border border-[var(--content-border)] rounded-xl p-3" style={{ animationDelay: `${idx * 50}ms` }}>
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">
                     <p className="font-semibold text-sm text-[var(--content-text)] truncate">{r.equipo_nombre}</p>
@@ -333,12 +372,50 @@ function DiaReservasModal({ dia, reservas, onClose, onNueva }) {
                   )}
                 </div>
                 {r.motivo && <p className="text-xs text-[var(--content-muted)] mt-1.5 italic">{r.motivo}</p>}
+
+                {/* Acciones: editar / borrar (con confirmación inline) */}
+                <div className="flex justify-end gap-1.5 mt-2">
+                  {confirmId === r.id ? (
+                    <div className="flex items-center gap-1.5 anim-fade-in">
+                      <span className="text-[11px] text-[var(--content-muted)]">¿Borrar?</span>
+                      <button
+                        onClick={() => { setConfirmId(null); onEliminar(r.id); }}
+                        className="px-2 py-1 text-[11px] font-bold rounded-lg bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 transition-all active:scale-95"
+                      >
+                        Sí, borrar
+                      </button>
+                      <button
+                        onClick={() => setConfirmId(null)}
+                        className="px-2 py-1 text-[11px] font-semibold rounded-lg border border-[var(--content-border)] text-[var(--content-muted)] hover:bg-[var(--content-bg)] transition-all"
+                      >
+                        No
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => onEditar(r)}
+                        title="Editar reserva"
+                        className="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/25 border border-blue-500/30 text-blue-400 transition-all hover:scale-105 active:scale-95"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setConfirmId(r.id)}
+                        title="Eliminar reserva"
+                        className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/25 border border-red-500/30 text-red-400 transition-all hover:scale-105 active:scale-95"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             ))
           )}
         </div>
         <div className="px-4 py-3 border-t border-[var(--content-border)] flex justify-end">
-          <button onClick={onNueva} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all">
+          <button onClick={onNueva} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95">
             <Plus className="h-4 w-4" /> Nueva reserva
           </button>
         </div>
@@ -347,11 +424,12 @@ function DiaReservasModal({ dia, reservas, onClose, onNueva }) {
   );
 }
 
-function StatCard({ icon, valor, label }) {
+function StatCard({ icon, valor, label, delay = 0 }) {
+  const animado = useCountUp(valor);
   return (
-    <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-5">
+    <div className="anim-fade-up bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-5 transition-transform hover:-translate-y-0.5" style={{ animationDelay: `${delay}ms` }}>
       <div className="flex items-center gap-2 text-[var(--content-muted)]">{icon}</div>
-      <p className="text-3xl font-bold text-[var(--content-text)] mt-2">{valor}</p>
+      <p className="text-3xl font-bold text-[var(--content-text)] mt-2 tabular-nums">{animado}</p>
       <p className="text-[var(--content-muted)] text-sm mt-1">{label}</p>
     </div>
   );
@@ -363,6 +441,7 @@ export default function Reservas() {
   const [loading, setLoading] = useState(true);
   const [usandoMock, setUsandoMock] = useState(false);
   const [modalNueva, setModalNueva] = useState(false);
+  const [reservaEditar, setReservaEditar] = useState(null);
   const [diaSel, setDiaSel] = useState(null);
 
   const cargarReservas = async () => {
@@ -388,6 +467,18 @@ export default function Reservas() {
   };
 
   useEffect(() => { cargarReservas(); }, []);
+
+  const handleEliminar = async (id) => {
+    try {
+      await api.eliminarReserva(id);
+      toast.success('Reserva eliminada');
+      cargarReservas();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Error al eliminar la reserva');
+    }
+  };
+
+  const cerrarModal = () => { setModalNueva(false); setReservaEditar(null); };
 
   const porDia = agruparPorDia(reservas);
   const stats = statsReservas(reservas);
@@ -428,7 +519,7 @@ export default function Reservas() {
       ) : (
         <>
           {/* Line chart — reservas por día */}
-          <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-5">
+          <div className="anim-fade-up bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-5">
             <h3 className="text-sm font-semibold text-[var(--content-text)] mb-3 flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-emerald-500" />
               Reservas por día · últimos 30 días
@@ -460,25 +551,26 @@ export default function Reservas() {
           </div>
 
           {/* Heatmap de actividad */}
-          <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-5">
+          <div className="anim-fade-up bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-5" style={{ animationDelay: '60ms' }}>
             <h3 className="text-sm font-semibold text-[var(--content-text)] mb-4">Mapa de actividad</h3>
             <ActividadHeatmap porDia={porDia} onDiaClick={setDiaSel} />
           </div>
 
           {/* Stat cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <StatCard icon={<CalendarRange className="h-5 w-5" />} valor={stats.total} label="Reservas totales" />
-            <StatCard icon={<Flame className="h-5 w-5" />} valor={stats.diaPico} label="Día pico · máx por día" />
-            <StatCard icon={<Activity className="h-5 w-5" />} valor={stats.diasActivos} label="Días con reservas" />
+            <StatCard icon={<CalendarRange className="h-5 w-5" />} valor={stats.total} label="Reservas totales" delay={0} />
+            <StatCard icon={<Flame className="h-5 w-5" />} valor={stats.diaPico} label="Día pico · máx por día" delay={80} />
+            <StatCard icon={<Activity className="h-5 w-5" />} valor={stats.diasActivos} label="Días con reservas" delay={160} />
           </div>
         </>
       )}
 
-      {/* Modal de creación */}
-      {modalNueva && (
+      {/* Modal de creación / edición */}
+      {(modalNueva || reservaEditar) && (
         <NuevaReservaModal
-          onClose={() => setModalNueva(false)}
-          onSaved={() => { setModalNueva(false); cargarReservas(); }}
+          reserva={reservaEditar}
+          onClose={cerrarModal}
+          onSaved={() => { cerrarModal(); cargarReservas(); }}
         />
       )}
 
@@ -489,6 +581,8 @@ export default function Reservas() {
           reservas={reservas}
           onClose={() => setDiaSel(null)}
           onNueva={() => { setDiaSel(null); setModalNueva(true); }}
+          onEditar={(r) => { setDiaSel(null); setReservaEditar(r); }}
+          onEliminar={handleEliminar}
         />
       )}
     </div>

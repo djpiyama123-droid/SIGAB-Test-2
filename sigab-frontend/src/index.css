@@ -700,3 +700,18 @@ option {
   color: var(--content-text);
 }
 
+
+/* ── Animaciones módulo Reservas ─────────────────────────────────────────── */
+@keyframes sigab-fade-up   { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes sigab-scale-in  { from { opacity: 0; transform: scale(.96); }       to { opacity: 1; transform: scale(1); } }
+@keyframes sigab-fade-in   { from { opacity: 0; }                              to { opacity: 1; } }
+@keyframes sigab-cell-pop  { from { opacity: 0; transform: scale(.3); }        to { opacity: 1; transform: scale(1); } }
+
+.anim-fade-up  { animation: sigab-fade-up  .45s ease-out backwards; }
+.anim-scale-in { animation: sigab-scale-in .2s  ease-out; }
+.anim-fade-in  { animation: sigab-fade-in  .2s  ease-out; }
+.anim-cell-pop { animation: sigab-cell-pop .35s ease-out backwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-fade-up, .anim-scale-in, .anim-fade-in, .anim-cell-pop { animation: none !important; }
+}
