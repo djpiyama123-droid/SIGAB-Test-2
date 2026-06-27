@@ -25,6 +25,7 @@ from middleware.rate_limit import RateLimitMiddleware
 # Registrar todos los modelos en SQLAlchemy/SQLModel metadata
 import models
 from routes import (
+    equipo_documentos,
     equipos, ordenes, trazabilidad, reservas,
     alertas, preventivos, dashboard, openclaw, reportes,
     tecnovigilancia, auditoria, checklists,
@@ -93,6 +94,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth_routes.router, prefix="/api/auth", tags=["Autenticación"])
 app.include_router(ocr.router, prefix="/api/ocr", tags=["OCR Inteligente (Local + Cloud)"])
 app.include_router(equipos.router, prefix="/api/equipos", tags=["Equipos"])
+app.include_router(equipo_documentos.router, tags=["Expediente del Equipo"])
 app.include_router(ordenes.router, prefix="/api/ordenes", tags=["Órdenes de Servicio"])
 app.include_router(trazabilidad.router, prefix="/api/trazabilidad", tags=["Trazabilidad"])
 app.include_router(reservas.router, prefix="/api/reservas", tags=["Reservas"])
