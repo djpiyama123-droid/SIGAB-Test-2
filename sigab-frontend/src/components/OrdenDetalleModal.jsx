@@ -203,20 +203,39 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
           </div>
           <div className="flex gap-2 flex-wrap">
             <button
+              type="button"
               onClick={handleImprimir}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg flex items-center gap-1"
-              title="PDF de cierre con materiales y firmas"
+              aria-label="Generar PDF de cierre de la orden (documento de contrato / OS) en nueva pestaña"
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-[var(--content-surface)] transition-colors"
+              title="PDF de cierre con materiales y firmas — abrir en nueva pestaña"
             >
-              🖨️ PDF
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              PDF / Contrato
             </button>
             <button
+              type="button"
               onClick={handleImprimirFisico}
-              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-sm rounded-lg flex items-center gap-1"
-              title="Formato físico Poka-Yoke v2 imprimible (campo)"
+              aria-label="Generar hoja de servicio (formato físico Poka-Yoke v2) en nueva pestaña"
+              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-sm rounded-lg flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-[var(--content-surface)] transition-colors"
+              title="Hoja de servicio — formato físico Poka-Yoke v2 imprimible (campo)"
             >
-              📋 Físico
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              Hoja de Servicio
             </button>
-            <button onClick={onClose} className="p-2 text-[var(--content-muted)] hover:text-white bg-[var(--content-surface)] rounded-lg">✕</button>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Cerrar detalle de la orden"
+              className="p-2 text-[var(--content-muted)] hover:text-white bg-[var(--content-surface)] rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
 
