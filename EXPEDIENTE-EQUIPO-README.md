@@ -33,3 +33,12 @@ que Gustavo revise y apruebe.
 ## Frontend (pendiente de Claude Code)
 `sigab-frontend/src/components/EquipoDetail.jsx` (sección Contrato + Órdenes) y
 `OrdenDetalleModal.jsx` (formatos funcionales). Consumir `GET /api/equipos/{id}/expediente`.
+
+## ⚠️ AVISO CRÍTICO PARA EL DEPLOY (descubierto 2026-06-26 23:30)
+El working tree de prod `/opt/sigab` tiene cambios SIN COMMITEAR del import de
+contratos de hoy: `sigab-backend/main.py`, `models/equipo.py`, `routes/equipos.py`.
+Esta rama parte de `a1e8ac4` y NO los incluye. ANTES de mergear/deployar esta rama:
+1. Commitear o respaldar esos cambios de /opt/sigab (`git -C /opt/sigab stash` o commit).
+2. Integrar este feature SIN pisar el registro de `admin_contratos.router` ni `tipo_adquisicion`.
+Recomendado: hacer el deploy por cherry-pick de los 2 commits de esta rama
+(0de7386 backend, ab9adcd frontend) sobre el estado real de prod, no por reset de rama.
