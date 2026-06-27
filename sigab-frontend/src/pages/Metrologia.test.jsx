@@ -469,7 +469,8 @@ describe('Metrologia — modal Nueva Calibración', () => {
     fireEvent.click(screen.getByRole('button', { name: /nueva calibración/i }));
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue('2026-06-26')).toBeInTheDocument();
+      expect(screen.getByDisplayValue(new Date().toISOString().split('T')[0]))
+        .toBeInTheDocument();
     });
   });
 
@@ -645,7 +646,7 @@ describe('Metrologia — submit exitoso', () => {
     expect(callArgs.entidad_calibradora).toBe('Lab. MetroCal');
     expect(callArgs.certificado_numero).toBe('CERT-2026-099');
     // fecha_calibracion es hoy (default, no se cambió).
-    expect(callArgs.fecha_calibracion).toBe('2026-06-26');
+    expect(callArgs.fecha_calibracion).toBe(new Date().toISOString().split('T')[0]);
   });
 
   it('submit exitoso muestra toast.success "Calibración registrada correctamente"', async () => {

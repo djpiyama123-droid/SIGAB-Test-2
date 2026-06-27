@@ -353,7 +353,8 @@ describe('Capacitaciones — modal Nuevo Registro', () => {
     fireEvent.click(screen.getByRole('button', { name: /nuevo registro/i }));
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue('2026-06-26')).toBeInTheDocument();
+      expect(screen.getByDisplayValue(new Date().toISOString().split('T')[0]))
+        .toBeInTheDocument();
     });
   });
 
@@ -540,7 +541,7 @@ describe('Capacitaciones — submit exitoso', () => {
     expect(callArgs.instructor).toBe('Dr. Pérez');
     expect(callArgs.personal_capacitado).toBe('Enf. García, Enf. López');
     // fecha_capacitacion es hoy (default, no se cambió).
-    expect(callArgs.fecha_capacitacion).toBe('2026-06-26');
+    expect(callArgs.fecha_capacitacion).toBe(new Date().toISOString().split('T')[0]);
   });
 
   it('submit exitoso muestra toast.success "Capacitación registrada — cumplimiento NOM-016"', async () => {
