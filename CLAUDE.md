@@ -125,10 +125,23 @@ SIGAH/  (este repo en GitHub: djpiyama123-droid/SIGAH)
 ## ⚡ Reglas Críticas del VPS (Memoria de Agentes)
 
 ### 1. Regla del Dominio y Traefik (Evitar Bad Gateway)
-- **IMPORTANTE**: La aplicación debe ser accesible a través de ambos dominios: `sigab.129-121-100-147.sslip.io` y `sigah.129-121-100-147.sslip.io`.
-- Cualquier modificación en `docker-compose.yml` en los labels de Traefik para backend o frontend **DEBE** incluir ambos hosts. Ejemplo:
+
+**Mapeo real de hosts** (verificado 2026-06-26, ISSUE-3 cerrado):
+
+| Host | Sirve | Stack (Traefik priority) |
+|---|---|---|
+| `sigab.129-121-100-147.sslip.io` | App hospitalaria SIGAB | `sigah-frontend` (priority 10) + `sigah-backend` (priority 100) |
+| `sigah.129-121-100-147.sslip.io` | Landing/portal comercial SIGAH (**otro stack**) | `sigah-portal` (priority 20) |
+| `panel.129-121-100-147.sslip.io` | Panel admin | `sigab-panel` |
+| `monitor.sigah.129-121-100-147.sslip.io` | Monitor | `sigah-monitor` |
+
+**IMPORTANTE — `/api/*` en `sigah.*`**: las rutas API del backend SÍ se exponen en `sigah.*` (router `sigah-api-s` priority 100 matchea antes que el portal). El landing comercial (`/`, `/landing/*`) NO se ve en `sigab.*`.
+
+**Reglas Traefik al editar labels:**
+- Para `sigah-frontend` / `sigah-backend`: incluir **ambos** `sigab.*` y `sigah.*` (las rutas API/match del frontend funcionan en ambos). Ejemplo:
   `"traefik.http.routers.sigah-fe.rule=Host(\`129.121.100.147\`) || Host(\`sigab.129-121-100-147.sslip.io\`) || Host(\`sigah.129-121-100-147.sslip.io\`)"`
-- Si no se incluyen ambos hosts en Traefik, las peticiones HTTP del dominio que no coincida fallarán inmediatamente con **Bad Gateway (502)** o **404 Not Found**.
+- Para `sigah-portal` (otro stack): SOLO `sigah.*` — es el landing comercial, no la app hospitalaria.
+- Si no se incluyen los hosts correctos, las peticiones fallan con **Bad Gateway (502)** o **404 Not Found**.
 
 ### 2. Refresco del Docker Socket
 - **SÍNTOMA**: Si el daemon de docker se reinicia o actualiza en la VPS, el bind mount de `/var/run/docker.sock` dentro de Traefik se vuelve **stale** (descriptor de archivo huérfano/roto), lo que causa que Traefik arroje errores de conexión y devuelva `Bad Gateway` para todos los dominios.
