@@ -24,12 +24,30 @@
   - Dry-run vs dump legacy `equipomedico` (~751 series): **337 match por serie (78%)**, 95 sin match, 29 sin serie.
   - `staging/no_match.csv` para revisión.
 
+## PASO 3 — Carga aditiva (DRY-RUN) ✅ listo, pendiente OK para aplicar
+- Acceso prod vía **túnel SSH read-only** (`sigab-vps` → `docker exec sigah-mysql`). Prod real: **882 equipos** (no 778), todos con serie, 515 con inventario, **192 sin foto**.
+- Cruce real: **421/431 series cruzan (97%)**, 10 sin match, 29 sin serie.
+- `load_2026.py` (dry-run, no escribe): plan aditivo solo rellena huecos.
+  - **8 UPDATEs de relleno** (4 tipo_adquisicion null→valor, 5 proveedor vacío→valor).
+  - El grueso YA estaba cargado (413 tipo + 206 proveedor coinciden) — hubo carga previa.
+  - **51 conflictos NO se tocan**: 47 proveedor = mismo proveedor distinta redacción (cosmético), 4 tipo = reclasificación (prod=recurso_propio vs cédula 2026=consolidado/garantía).
+  - Bug corregido: "INICIO DE CONTRATO" (año) ya no se confunde con numero_contrato.
+- `staging/plan_update.sql` (envuelto en ROLLBACK), `staging/conflictos.csv`.
+
+## PASO 5/6 — esquema + exposición + serving ✅ (código), pendiente aplicar migración
+- `imagen_referencial: bool = False` en modelo `Equipo` + migración `c7d8e9f0a1b2` (aditiva, server_default 0). Encadena a `fb21941638ba`.
+- Exposición en API: **automática** (endpoints usan `model_dump()`).
+- Serving `/static/uploads/REFERENCIAL/`: **automático** (`main.py` monta `/static`).
+
+## PASO 4 — fotos históricas (parcial)
+- `migrate_photos.py`/`link_images.py` migran de `dummyequipomedicoimss.equipomedico` (ruta_*) → `equipos.imagen_url`+`fotos`. Prod ya tiene **690/882 con foto**. Falta verificar si la BD vieja en prod aporta fotos a los 192 sin foto.
+
 ## Pendiente / decisiones abiertas
-- [ ] Cruce y carga **definitivos** contra `equipos` de prod (778) → falta acceso (túnel SSH read-only o dump fresco).
-- [ ] PASO 3: UPDATE aditivo por serie (fallback inventario) — solo tras OK de Gustavo y dry-run de conteos.
-- [ ] PASO 4: fotos históricas desde dump legacy (`equipomedico.ruta_*`) — el dump tiene pocas rutas pobladas; verificar `/static/uploads/` en VPS.
-- [ ] PASO 5: `imagen_referencial` + scraping web + watermark (lote de 20, muestra antes).
-- [ ] PASO 6: serving `/static/uploads/REFERENCIAL/` + exponer `imagen_referencial` en schema.
+- [ ] **OK de Gustavo** para aplicar a prod: (a) 8 UPDATEs de relleno, (b) migración `imagen_referencial`.
+- [ ] Política para los 4 conflictos de tipo (reclasificar a la cédula 2026 sí/no).
+- [ ] PASO 5 scraping: fuente de imágenes web, lote de 20 + muestra antes de correr todo.
+- [ ] PASO 4: confirmar BD vieja en prod y fotos para los 192 sin foto.
 
 ## Commits
-- `a49d279` feat(equipos): esquema campos de contrato + endpoint importar-contratos-zip (base).
+- `a49d279` esquema campos de contrato + endpoint importar-contratos-zip (base).
+- `d122cef` parser + cruce + carga aditiva (dry-run) de metadatos 2026.

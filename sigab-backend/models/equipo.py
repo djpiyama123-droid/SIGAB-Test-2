@@ -63,3 +63,5 @@ class Equipo(SQLModel, table=True):
     tipo_adquisicion: str = Field(default="recurso_propio")
     contrato_pdf_url: Optional[str] = Field(default=None)
     hojas_servicio_urls: Optional[str] = Field(default=None)
+    # True = imagen_url es una foto referencial de internet (no el equipo real), con watermark.
+    imagen_referencial: bool = Field(default=False)
