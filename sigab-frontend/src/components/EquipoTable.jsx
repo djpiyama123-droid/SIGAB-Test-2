@@ -10,6 +10,20 @@ const CRITICIDAD_BADGE = {
   baja: 'bg-[var(--content-surface)] text-[var(--content-muted)] border border-[var(--content-border)]',
 };
 
+const ADQUISICION_BADGE = {
+  recurso_propio: 'bg-blue-500/20 text-blue-400 border border-blue-700/40',
+  contrato_consolidado: 'bg-emerald-500/20 text-emerald-400 border border-emerald-700/40',
+  garantia: 'bg-amber-500/20 text-amber-400 border border-amber-700/40',
+  subrogado: 'bg-purple-500/20 text-purple-400 border border-purple-700/40',
+};
+
+const ADQUISICION_LABELS = {
+  recurso_propio: 'Recurso Propio',
+  contrato_consolidado: 'Consolidado',
+  garantia: 'Garantía',
+  subrogado: 'Subrogado',
+};
+
 export default function EquipoTable({ equipos, onChange }) {
   const [selected, setSelected] = useState(null);
   const [qrEquipo, setQrEquipo] = useState(null);
@@ -96,6 +110,7 @@ export default function EquipoTable({ equipos, onChange }) {
                 <th className="px-3 py-3 font-medium">Nombre</th>
                 <th className="px-3 py-3 font-medium">Marca / Modelo</th>
                 <th className="px-3 py-3 font-medium">Criticidad</th>
+                <th className="px-3 py-3 font-medium">Adquisición</th>
                 <th className="px-3 py-3 font-medium">Piso</th>
                 <th className="px-3 py-3 font-medium">Área</th>
                 <th className="px-3 py-3 font-medium">Tipo</th>
@@ -160,6 +175,14 @@ export default function EquipoTable({ equipos, onChange }) {
                     {eq.criticidad && (
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize ${CRITICIDAD_BADGE[eq.criticidad] || ''}`}>
                         {eq.criticidad}
+                      </span>
+                    )}
+                  </td>
+
+                  <td className="px-3 py-3">
+                    {eq.tipo_adquisicion && (
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize ${ADQUISICION_BADGE[eq.tipo_adquisicion] || ADQUISICION_BADGE.recurso_propio}`}>
+                        {ADQUISICION_LABELS[eq.tipo_adquisicion] || 'Recurso Propio'}
                       </span>
                     )}
                   </td>

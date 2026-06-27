@@ -1,5 +1,19 @@
 import { ESTADO_COLORS, ESTADO_LABELS, ESTADO_DOT_COLORS } from '../utils/constants';
 
+const ADQUISICION_LABELS = {
+  recurso_propio: 'Recurso Propio',
+  contrato_consolidado: 'Consolidado',
+  garantia: 'Garantía',
+  subrogado: 'Subrogado'
+};
+
+const ADQUISICION_COLORS = {
+  recurso_propio: 'bg-blue-500/20 text-blue-400 border border-blue-700/40',
+  contrato_consolidado: 'bg-emerald-500/20 text-emerald-400 border border-emerald-700/40',
+  garantia: 'bg-amber-500/20 text-amber-400 border border-amber-700/40',
+  subrogado: 'bg-purple-500/20 text-purple-400 border border-purple-700/40'
+};
+
 export default function EquipoCard({ equipo, onClick }) {
   return (
     <div
@@ -33,12 +47,28 @@ export default function EquipoCard({ equipo, onClick }) {
             Crítico
           </span>
         )}
+        {/* Indicador de imagen referencial (S9 sprint 2026-06-27) */}
+        {equipo.imagen_referencial && (
+          <span
+            title="Imagen referencial (no es el equipo real)"
+            aria-label="Imagen referencial — la foto NO es del equipo real"
+            className="absolute right-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-bold shadow-md ring-2 ring-black/30"
+            style={{ top: equipo.criticidad === 'alta' ? '2.25rem' : '0.5rem' }}
+          >
+            !
+          </span>
+        )}
       </div>
 
       {/* Info */}
       <div className="p-4">
         <h3 className="text-[var(--content-text)] font-semibold text-sm mb-1 truncate">{equipo.nombre}</h3>
         <p className="text-[var(--content-muted)] text-xs truncate">{equipo.marca} — {equipo.modelo}</p>
+        {equipo.tipo_adquisicion && (
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold mt-2 ${ADQUISICION_COLORS[equipo.tipo_adquisicion] || ADQUISICION_COLORS.recurso_propio}`}>
+            {ADQUISICION_LABELS[equipo.tipo_adquisicion] || 'Recurso Propio'}
+          </span>
+        )}
 
         <div className="mt-3 pt-3 border-t border-[var(--content-border)]/50 grid grid-cols-2 gap-2 text-xs">
           <div>
