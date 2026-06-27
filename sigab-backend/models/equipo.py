@@ -60,3 +60,6 @@ class Equipo(SQLModel, table=True):
     fecha_compra: Optional[date] = None
     numero_contrato_servicio: Optional[str] = None
     qr_token: Optional[str] = Field(default=None, index=True)
+    tipo_adquisicion: str = Field(default="recurso_propio")
+    contrato_pdf_url: Optional[str] = Field(default=None)
+    hojas_servicio_urls: Optional[str] = Field(default=None)
