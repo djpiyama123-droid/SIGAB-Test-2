@@ -87,6 +87,7 @@ export const api = {
   getAreasCatalogo: () => client.get('/equipos/areas/catalogo'),
   getZonasCatalogo: () => client.get('/equipos/zonas/catalogo'),
   getHistorialEquipo: (id) => client.get(`/equipos/${id}/historial`),
+  getExpedienteEquipo: (id) => client.get(`/equipos/${id}/expediente`),
   descargarEquiposCsv: (params = {}) => client.get('/equipos/exportar/csv', { params, responseType: 'blob' }),
   subirImagenEquipo: (id, file) => {
     const formData = new FormData();

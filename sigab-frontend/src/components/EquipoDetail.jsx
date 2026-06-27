@@ -15,6 +15,7 @@ import { QRCodeSVG } from 'qrcode.react';
 export default function EquipoDetail({ equipo, onClose, onChange }) {
   const toast = useToast();
   const [historial, setHistorial] = useState({ ordenes: [], traslados: [] });
+  const [documentos, setDocumentos] = useState([]);
   const [editando, setEditando] = useState(false);
   const [confirmandoEliminar, setConfirmandoEliminar] = useState(false);
   const [eliminando, setEliminando] = useState(false);
@@ -32,6 +33,14 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
           console.error(err);
           // No molestamos al usuario si falla, solo dejamos los datos vacíos
         });
+      api.getExpedienteEquipo(equipo.id)
+        .then((res) => {
+          setDocumentos(res.documentos || []);
+          if ((res.ordenes || []).length) {
+            setHistorial((h) => ({ ...h, ordenes: res.ordenes }));
+          }
+        })
+        .catch(() => {});
     }
   }, [equipo?.id]);
 
@@ -173,6 +182,30 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                 return null;
               }
             })()}
+
+            {/* Contrato y Documentos (Expediente del Equipo) */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-[var(--content-muted)]">Contrato y Documentos</h3>
+                {documentos.length > 0 && (
+                  <span className="text-xs text-[var(--content-muted)]">{documentos.length} archivo{documentos.length !== 1 ? 's' : ''}</span>
+                )}
+              </div>
+              {documentos.length === 0 ? (
+                <p className="text-[var(--content-muted)] text-sm">Sin documentos anexos</p>
+              ) : (
+                <div className="space-y-2 mb-4">
+                  {documentos.map((doc) => (
+                    <a key={doc.id} href={doc.url} target="_blank" rel="noopener noreferrer"
+                       className="flex items-center gap-2 p-2 rounded-lg border border-[var(--content-muted)]/20 hover:bg-black/5 text-sm">
+                      <span className="uppercase text-[10px] font-bold px-1.5 py-0.5 rounded border border-[var(--content-muted)]/30">{doc.formato}</span>
+                      <span className="flex-1 truncate">{doc.clase} · {doc.nombre}</span>
+                      <span className="text-[var(--content-muted)]">&#8599;</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Tickets / Órdenes de Servicio */}
             <div>
