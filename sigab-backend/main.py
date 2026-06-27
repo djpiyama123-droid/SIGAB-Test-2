@@ -34,6 +34,7 @@ from routes import (
     admin as admin_routes,
     twilio_whatsapp,
     monitor, tokens, cerebro,
+    equipos_contratos,
 )
 _COPILOT_ON = os.getenv("SIGAH_DISABLE_COPILOT", "0") != "1"
 if _COPILOT_ON:
@@ -105,6 +106,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth_routes.router, prefix="/api/auth", tags=["Autenticación"])
 app.include_router(ocr.router, prefix="/api/ocr", tags=["OCR Inteligente (Local + Cloud)"])
 app.include_router(equipos.router, prefix="/api/equipos", tags=["Equipos"])
+app.include_router(equipos_contratos.router, prefix="/api/equipos", tags=["Equipos"])
 app.include_router(ordenes.router, prefix="/api/ordenes", tags=["Órdenes de Servicio"])
 app.include_router(trazabilidad.router, prefix="/api/trazabilidad", tags=["Trazabilidad"])
 app.include_router(reservas.router, prefix="/api/reservas", tags=["Reservas"])
