@@ -538,6 +538,29 @@ describe('Trazabilidad — modal Registrar Traslado', () => {
         .toBeInTheDocument();
     });
   });
+
+  it('si getEquipos devuelve `{}` (objeto vacío) sin crash → select con placeholder', async () => {
+    // Tras el fix del ciclo 34, pickList(data, 'equipos') tolera `{}`.
+    mocks.mockGetTrazabilidad.mockResolvedValue({ movimientos: [] });
+    mocks.mockGetEquipos.mockResolvedValue({});
+
+    renderT();
+
+    await waitFor(() => {
+      expect(screen.queryByText(/cargando movimientos/i)).not.toBeInTheDocument();
+    });
+
+    await openModal();
+
+    await waitFor(() => {
+      expect(mocks.mockGetEquipos).toHaveBeenCalledWith({ limit: 200 });
+    });
+    // El select del modal debe estar presente (con sólo el placeholder) y
+    // NO debe haber options reales (porque la lista es []).
+    const select = screen.getByRole('combobox');
+    const realOptions = Array.from(select.options).filter(o => o.value !== '');
+    expect(realOptions).toHaveLength(0);
+  });
 });
 
 // ────────────────────────────────────────────────────────────────────────────

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import { MapPin, ArrowRight, Plus, X } from 'lucide-react';
 import toast from '../lib/toast';
+import { pickList } from '../lib/pickList';
 
 // ─── Modal: Registrar Traslado ────────────────────────────────────────────────
 function RegistrarTrasladoModal({ onClose, onSaved }) {
@@ -17,7 +18,7 @@ function RegistrarTrasladoModal({ onClose, onSaved }) {
 
   useEffect(() => {
     api.getEquipos({ limit: 200 })
-      .then(data => setEquipos(data.equipos ?? data ?? []))
+      .then(data => setEquipos(pickList(data, 'equipos')))
       .catch(() => toast.error('Error al cargar equipos'));
   }, []);
 

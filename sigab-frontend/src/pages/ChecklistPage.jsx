@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import { ClipboardList, CheckSquare, Save, Search, History } from 'lucide-react';
 import toast from '../lib/toast';
+import { pickList } from '../lib/pickList';
 
 const ChecklistPage = () => {
   const [templates, setTemplates] = useState([]);
@@ -19,7 +20,7 @@ const ChecklistPage = () => {
   const fetchTemplates = async () => {
     try {
       const data = await api.getChecklistTemplates();
-      setTemplates(data || []);
+      setTemplates(pickList(data));
     } catch (err) {
       console.error(err);
       toast.error('No se pudieron cargar las plantillas de checklist');
@@ -29,7 +30,7 @@ const ChecklistPage = () => {
   const fetchHistory = async () => {
     try {
       const data = await api.getChecklistResultados();
-      setHistory(data || []);
+      setHistory(pickList(data));
     } catch (err) {
       console.error(err);
       toast.error('No se pudo cargar el historial de compliance');

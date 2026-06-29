@@ -1045,13 +1045,18 @@ describe('Reservas — shape tolerance y manejo de errores', () => {
     });
   });
 
-  // NOTA: NO se cubre el shape `{}` (sin propiedad `reservas`) porque
-  // Reservas.jsx línea 216 usa `data.reservas ?? data ?? []` y, cuando
-  // data es `{}`, `data.reservas` es `undefined` pero `data` (`{}`) es
-  // truthy, así que `setReservas({})` → `.filter()` crashea con TypeError.
-  // Mismo bug latente documentado en item #4 del backlog (Capacitaciones +
-  // Metrologia + Trazabilidad + ChecklistPage + AdminGlobal + Almacén).
-  // Reservas se suma al backlog en este ciclo.
+  it('acepta respuesta `{}` (objeto vacío) sin crash → fallback a []', async () => {
+    mocks.mockGetReservas.mockResolvedValue({});
+    renderReservas();
+    await waitFor(() => {
+      expect(screen.queryByText(/cargando bitácora/i)).not.toBeInTheDocument();
+    });
+    expect(screen.getByText(/sin reservas registradas para este filtro/i)).toBeInTheDocument();
+    // KPIs a 0 sin crash: los 4 KPIs ("Total Reservado", "Activas
+    // Actualmente", "Pendientes", "Completadas") renderizan "0".
+    const kpis = screen.getAllByText('0');
+    expect(kpis.length).toBeGreaterThanOrEqual(1);
+  });
 
   it('pasa `undefined` como params en la carga inicial (no se llama con {})', async () => {
     mocks.mockGetReservas.mockResolvedValue({ reservas: ALL_RESERVAS });

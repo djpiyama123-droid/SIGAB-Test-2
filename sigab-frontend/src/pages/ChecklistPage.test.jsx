@@ -291,6 +291,23 @@ describe('ChecklistPage — carga inicial', () => {
     });
   });
 
+  it('tolerancia a {}: getChecklistTemplates resuelve {} → lista vacía (antes crasheaba)', async () => {
+    // Antes del fix del ciclo 34: `data || []` con data={} → {} (truthy) →
+    // .map() / .filter() rompe con TypeError. Tras el fix, pickList(data) → [].
+    mocks.mockGetChecklistTemplates.mockResolvedValue({});
+    mocks.mockGetChecklistResultados.mockResolvedValue({});
+    mocks.mockEjecutarChecklist.mockResolvedValue({ id: 999 });
+
+    renderC();
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', {
+        name: /selecciona una plantilla normativa/i,
+        level: 2,
+      })).toBeInTheDocument();
+    });
+  });
+
   it('getChecklistTemplates falla → toast.error específico', async () => {
     mocks.mockGetChecklistTemplates.mockRejectedValue(new Error('Network'));
     mocks.mockGetChecklistResultados.mockResolvedValue([]);

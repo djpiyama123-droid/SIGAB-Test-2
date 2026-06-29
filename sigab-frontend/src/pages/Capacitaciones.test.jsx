@@ -710,18 +710,15 @@ describe('Capacitaciones — carga inicial y tolerancia a shape', () => {
       .toBeInTheDocument();
   });
 
-  it('NOTA: respuesta {} (objeto vacío) rompería .map() — bug latente del ?? []', async () => {
-    // El fallback `data.capacitaciones ?? data ?? []` solo cubre `null` y
-    // `undefined` — si la API devuelve `{}` (objeto sin la key),
-    // `data.capacitaciones ?? data` evalúa a `{}` y `?? []` no rescata
-    // (porque `{}` no es nullish). Esto NO está cubierto por el código y
-    // causaría un crash en runtime. Documentamos la limitación — si el
-    // backend alguna vez devuelve `{}` parcial, el operador verá pantalla
-    // en blanco + error en consola.
-    // El test sólo verifica que el shape `[]` y el shape array directo
-    // funcionan (ya cubiertos arriba). Si en algún ciclo se quiere tapar
-    // este edge, basta cambiar el fallback a `Array.isArray(...) ? ... : []`.
-    expect(true).toBe(true);
+  it('acepta respuesta `{}` (objeto vacío) sin crash → fallback a []', async () => {
+    // Tras el fix del ciclo 34, pickList(data, 'capacitaciones') tolera `{}`.
+    mocks.mockGetCapacitaciones.mockResolvedValue({});
+    mocks.mockGetEquipos.mockResolvedValue({ equipos: [] });
+
+    renderC();
+    await act(async () => { await Promise.resolve(); });
+
+    expect(screen.getByText(/no hay registros de capacitación aún/i)).toBeInTheDocument();
   });
 
   it('getEquipos falla en el modal muestra toast.error "Error al cargar equipos"', async () => {

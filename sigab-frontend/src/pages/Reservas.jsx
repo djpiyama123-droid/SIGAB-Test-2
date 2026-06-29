@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import { useAuth } from '../context/AuthContext';
+import { pickList } from '../lib/pickList';
 import { 
   CalendarClock, 
   Plus, 
@@ -38,7 +39,7 @@ function NuevaReservaModal({ onClose, onSaved }) {
     api.getEquipos({ limit: 200 })
       .then(data => {
         // Solo permitir equipos en estado operativo, traslado o mantenimiento
-        const list = data.equipos ?? data ?? [];
+        const list = pickList(data, 'equipos');
         setEquipos(list.filter(eq => eq.estado !== 'baja'));
       })
       .catch(() => toast.error('Error al cargar equipos del inventario'));
@@ -213,7 +214,7 @@ export default function Reservas() {
     setLoading(true);
     try {
       const data = await api.getReservas();
-      setReservas(data.reservas ?? data ?? []);
+      setReservas(pickList(data, 'reservas'));
     } catch {
       toast.error('Error al cargar la bitácora de reservas');
     } finally {

@@ -482,12 +482,11 @@ describe('AdminGlobal — tabla de hospitales', () => {
     expect(matches.find((el) => el.closest('tbody'))).toBeTruthy();
   });
 
-  // NOTA: shape `{hospitales: null}` NO se tolera — `hosp.hospitales ?? hosp ?? []`
-  // evalúa `null ?? {hospitales:null}` = `{hospitales:null}` (objeto, truthy),
-  // y luego `hospitales.map` crashea con TypeError. Mismo bug latente que
-  // Capacitaciones / Metrologia / Trazabilidad / ChecklistPage (item #4 del
-  // backlog de STATE.md). NO se cubre con test para no contaminar el árbol
-  // de React entre tests.
+  it('acepta shape `{}` (objeto vacío) sin crash → empty state en tabla', async () => {
+    // Tras el fix del ciclo 34, pickList(data, 'hospitales') tolera `{}`.
+    await renderAndWait({ hospitales: {}, actividad: {} });
+    expect(screen.getByText(/sin hospitales registrados\./i)).toBeInTheDocument();
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────

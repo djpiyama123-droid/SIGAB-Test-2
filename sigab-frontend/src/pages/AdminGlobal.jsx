@@ -5,6 +5,7 @@ import toast from '../components/Toast';
 import GlassCard from '../components/ui/GlassCard';
 import PageHeading from '../components/ui/PageHeading';
 import TableWrapper from '../components/ui/TableWrapper';
+import { pickList } from '../lib/pickList';
 
 const SUSCRIPCION_BADGE = {
   activo: {
@@ -84,8 +85,8 @@ export default function AdminGlobal() {
         api.getAdminActividad(),
       ]);
       setStats(statsRes);
-      setHospitales(hosp.hospitales ?? hosp ?? []);
-      setActividad(act.actividad ?? act ?? []);
+      setHospitales(pickList(hosp, 'hospitales'));
+      setActividad(pickList(act, 'actividad'));
     } catch (err) {
       if (err.response?.status === 403) {
         setForbidden(true);

@@ -811,6 +811,17 @@ describe('Metrologia — carga inicial y tolerancia a shape', () => {
     expect(screen.getByText('Monitor Philips MX450')).toBeInTheDocument();
   });
 
+  it('acepta respuesta `{}` (objeto vacío) sin crash → fallback a []', async () => {
+    // Tras el fix del ciclo 34, pickList(data, 'calibraciones') tolera `{}`.
+    mocks.mockGetMetrologia.mockResolvedValue({});
+    mocks.mockGetEquipos.mockResolvedValue({ equipos: [] });
+
+    renderM();
+    await act(async () => { await Promise.resolve(); });
+
+    expect(screen.getByText(/sin calibraciones registradas/i)).toBeInTheDocument();
+  });
+
   it('getEquipos falla en el modal muestra toast.error "Error al cargar equipos"', async () => {
     mocks.mockGetEquipos.mockRejectedValue(new Error('Network'));
     mocks.mockGetMetrologia.mockResolvedValue({ calibraciones: [] });

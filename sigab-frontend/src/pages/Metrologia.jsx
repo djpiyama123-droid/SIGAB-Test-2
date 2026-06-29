@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import { ShieldCheck, Calendar, AlertCircle, Plus, FileText, X } from 'lucide-react';
 import toast from '../lib/toast';
+import { pickList } from '../lib/pickList';
 
 // ─── Modal: Nueva Calibración ─────────────────────────────────────────────────
 function NuevaCalibracionModal({ onClose, onSaved }) {
@@ -18,7 +19,7 @@ function NuevaCalibracionModal({ onClose, onSaved }) {
 
   useEffect(() => {
     api.getEquipos({ limit: 200 })
-      .then(data => setEquipos(data.equipos ?? data ?? []))
+      .then(data => setEquipos(pickList(data, 'equipos')))
       .catch(() => toast.error('Error al cargar equipos'));
   }, []);
 
@@ -123,7 +124,7 @@ export default function Metrologia() {
     setLoading(true);
     try {
       const data = await api.getMetrologia();
-      setCalibraciones(data.calibraciones ?? data ?? []);
+      setCalibraciones(pickList(data, 'calibraciones'));
     } catch {
       toast.error('Error al cargar metrología');
     } finally {
