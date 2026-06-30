@@ -520,6 +520,7 @@ async def listar_equipos(
     piso: Optional[str] = None,
     buscar: Optional[str] = None,
     criticidad: Optional[str] = None,
+    tipo_adquisicion: Optional[str] = None,
     tipo_equipo: Optional[str] = None,
     marca: Optional[str] = None,
     zona_id: Optional[int] = None,
@@ -544,6 +545,8 @@ async def listar_equipos(
         conditions.append(Equipo.piso == piso)
     if criticidad:
         conditions.append(Equipo.criticidad == criticidad)
+    if tipo_adquisicion:
+        conditions.append(Equipo.tipo_adquisicion == tipo_adquisicion)
     if tipo_equipo:
         conditions.append(Equipo.tipo_equipo == tipo_equipo)
     if marca:
