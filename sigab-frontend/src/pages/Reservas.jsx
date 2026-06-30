@@ -458,94 +458,93 @@ function formatHora(s) {
   return m ? `${m[1]}:${m[2]}` : str.slice(-5);
 }
 function PanelDiaPreview({ hoveredDay, reservas, onClose, onVerDetalle }) {
-  // FIX Bug 1: SIEMPRE se monta el contenedor. Si no hay día hover, muestra
-  // un placeholder (en xl a la derecha del heatmap; en <xl queda oculto
-  // porque el padre es flex-col y el panel es el segundo hijo). Cuando hay
-  // día hover, el panel se vuelve visible en cualquier breakpoint.
-  if (!hoveredDay) {
-    return (
-      <div className="hidden lg:flex flex-col w-72 shrink-0 rounded-xl border border-dashed border-[var(--content-border)] bg-[var(--content-bg)]/40 p-4 text-center items-center justify-center min-h-[140px]">
-        <CalendarClock className="h-6 w-6 text-[var(--content-muted)] mb-2" />
-        <p className="text-xs text-[var(--content-muted)] leading-relaxed">
-          Pasa el cursor sobre una celda del mapa<br />para previsualizar las reservas del día.
-        </p>
-      </div>
-    );
-  }
-  // Con día hover: panel SIEMPRE montado y visible. En <xl se apila debajo
-  // del heatmap a ancho completo; en xl ocupa 320px a la derecha.
-  const lista = reservasDelDia(reservas, hoveredDay);
-  const [y, m, d] = hoveredDay.split('-');
-  const fechaLabel = `${Number(d)} ${NOMBRE_MES[Number(m) - 1]} ${y}`;
+  // FIX Bug 1 FINAL: SIEMPRE mismo wrapper (lg:w-80 a la derecha). Solo cambia
+  // el contenido interno según hoveredDay. Sin esto React reusaba el DOM viejo
+  // con className "hidden lg:flex" cuando hoveredDay cambiaba de null a key.
+  const lista = hoveredDay ? reservasDelDia(reservas, hoveredDay) : [];
+  const fechaLabel = hoveredDay
+    ? (() => { const [y, m, d] = hoveredDay.split('-'); return `${Number(d)} ${NOMBRE_MES[Number(m) - 1]} ${y}`; })()
+    : '';
   return (
-    <div className="flex flex-col w-full lg:w-80 shrink-0 self-stretch rounded-xl border border-[var(--content-border)] bg-[var(--content-bg)]/40 overflow-hidden anim-fade-in">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--content-border)] bg-[var(--content-surface)]/60">
-        <div className="min-w-0">
-          <p className="text-[10px] uppercase tracking-wider text-[var(--content-muted)] font-semibold">Vista previa</p>
-          <h4 className="text-sm font-bold text-[var(--content-text)] truncate flex items-center gap-1.5">
-            <CalendarClock className="h-4 w-4 text-emerald-500 shrink-0" />
-            {fechaLabel}
-          </h4>
+    <div className="hidden lg:flex flex-col w-80 shrink-0 self-stretch rounded-xl border border-[var(--content-border)] bg-[var(--content-bg)]/40 overflow-hidden anim-fade-in">
+      {!hoveredDay ? (
+        <div className="flex flex-col items-center justify-center min-h-[140px] text-center p-4">
+          <CalendarClock className="h-6 w-6 text-[var(--content-muted)] mb-2" />
+          <p className="text-xs text-[var(--content-muted)] leading-relaxed">
+            Pasa el cursor sobre una celda del mapa<br />para previsualizar las reservas del día.
+          </p>
         </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-            {lista.length}
-          </span>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar vista previa"
-            className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors p-1 rounded-lg hover:bg-[var(--content-border)]"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-      <div className="max-h-72 overflow-y-auto p-2 space-y-1.5">
-        {lista.length === 0 && (
-          <p className="text-xs text-[var(--content-muted)] text-center py-6">Sin reservas en este día.</p>
-        )}
-        {lista.map((r) => {
-          const Icon = ESTADO_ICON[r.estado] || Clock;
-          const badgeCls = ESTADO_BADGE[r.estado] || 'bg-slate-500/15 text-slate-300 border-slate-500/30';
-          return (
-            <div
-              key={r.id}
-              className="rounded-lg border border-[var(--content-border)] bg-[var(--content-surface)] p-2.5 text-xs"
-            >
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <p className="font-semibold text-[var(--content-text)] leading-tight truncate">
-                  {r.equipo_nombre || `Equipo #${r.equipo_id}`}
-                </p>
-                <span className={`shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-semibold ${badgeCls}`}>
-                  <Icon className="h-3 w-3" />
-                  {r.estado}
-                </span>
-              </div>
-              <p className="font-mono text-[11px] text-[var(--content-muted)] mb-1.5">{r.equipo_serie || '—'}</p>
-              <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px] text-[var(--content-muted)]">
-                <span className="flex items-center gap-1"><Clock className="h-3 w-3 shrink-0" />{formatHora(r.fecha_inicio)}–{formatHora(r.fecha_fin)}</span>
-                <span className="flex items-center gap-1 truncate"><MapPin className="h-3 w-3 shrink-0" />{r.area_reserva || '—'}</span>
-                <span className="flex items-center gap-1 truncate col-span-2"><User className="h-3 w-3 shrink-0" />{r.solicitante_nombre || '—'}</span>
-              </div>
-              {r.motivo && (
-                <p className="mt-1.5 text-[11px] text-[var(--content-muted)] line-clamp-2 italic">"{r.motivo}"</p>
-              )}
+      ) : (
+        <>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--content-border)] bg-[var(--content-surface)]/60">
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-wider text-[var(--content-muted)] font-semibold">Vista previa</p>
+              <h4 className="text-sm font-bold text-[var(--content-text)] truncate flex items-center gap-1.5">
+                <CalendarClock className="h-4 w-4 text-emerald-500 shrink-0" />
+                {fechaLabel}
+              </h4>
             </div>
-          );
-        })}
-      </div>
-      {lista.length > 0 && (
-        <div className="px-3 py-2.5 border-t border-[var(--content-border)] bg-[var(--content-surface)]/40">
-          <button
-            type="button"
-            onClick={() => onVerDetalle(hoveredDay)}
-            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-colors active:scale-[0.98]"
-          >
-            <Eye className="h-3.5 w-3.5" />
-            Ver detalle / editar día
-          </button>
-        </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                {lista.length}
+              </span>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Cerrar vista previa"
+                className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors p-1 rounded-lg hover:bg-[var(--content-border)]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          <div className="max-h-72 overflow-y-auto p-2 space-y-1.5">
+            {lista.length === 0 && (
+              <p className="text-xs text-[var(--content-muted)] text-center py-6">Sin reservas en este día.</p>
+            )}
+            {lista.map((r) => {
+              const Icon = ESTADO_ICON[r.estado] || Clock;
+              const badgeCls = ESTADO_BADGE[r.estado] || 'bg-slate-500/15 text-slate-300 border-slate-500/30';
+              return (
+                <div
+                  key={r.id}
+                  className="rounded-lg border border-[var(--content-border)] bg-[var(--content-surface)] p-2.5 text-xs"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <p className="font-semibold text-[var(--content-text)] leading-tight truncate">
+                      {r.equipo_nombre || `Equipo #${r.equipo_id}`}
+                    </p>
+                    <span className={`shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-semibold ${badgeCls}`}>
+                      <Icon className="h-3 w-3" />
+                      {r.estado}
+                    </span>
+                  </div>
+                  <p className="font-mono text-[11px] text-[var(--content-muted)] mb-1.5">{r.equipo_serie || '—'}</p>
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px] text-[var(--content-muted)]">
+                    <span className="flex items-center gap-1"><Clock className="h-3 w-3 shrink-0" />{formatHora(r.fecha_inicio)}–{formatHora(r.fecha_fin)}</span>
+                    <span className="flex items-center gap-1 truncate"><MapPin className="h-3 w-3 shrink-0" />{r.area_reserva || '—'}</span>
+                    <span className="flex items-center gap-1 truncate col-span-2"><User className="h-3 w-3 shrink-0" />{r.solicitante_nombre || '—'}</span>
+                  </div>
+                  {r.motivo && (
+                    <p className="mt-1.5 text-[11px] text-[var(--content-muted)] line-clamp-2 italic">"{r.motivo}"</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {lista.length > 0 && (
+            <div className="px-3 py-2.5 border-t border-[var(--content-border)] bg-[var(--content-surface)]/40">
+              <button
+                type="button"
+                onClick={() => onVerDetalle(hoveredDay)}
+                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-colors active:scale-[0.98]"
+              >
+                <Eye className="h-3.5 w-3.5" />
+                Ver detalle / editar día
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
