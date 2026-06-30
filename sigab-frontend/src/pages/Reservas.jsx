@@ -306,12 +306,11 @@ function ActividadHeatmap({ porDia, onDiaClick, onDiaHover, semanas = 26 }) {
                 <button
                   key={celda.key}
                   type="button"
-                  disabled={celda.futuro || celda.count === 0}
                   onClick={() => onDiaClick(celda.key)}
                   onMouseEnter={() => onDiaHover?.(celda.key)}
                   onFocus={() => onDiaHover?.(celda.key)}
                   title={`${celda.key}: ${celda.count} reserva${celda.count !== 1 ? 's' : ''}`}
-                  className={`anim-cell-pop w-3.5 h-3.5 rounded-sm transition-transform ${celda.futuro ? 'opacity-25' : celda.count > 0 ? 'hover:scale-[1.35] cursor-pointer ring-1 ring-black/5' : 'cursor-default'}`}
+                  className={`anim-cell-pop w-3.5 h-3.5 rounded-sm transition-transform ${celda.futuro ? 'opacity-25 cursor-default' : celda.count > 0 ? 'hover:scale-[1.35] cursor-pointer ring-1 ring-black/5' : 'cursor-default'}`}
                   style={{ backgroundColor: NIVEL_COLORES[nivel(celda.count)], animationDelay: `${w * 14}ms` }}
                 />
               ))}
