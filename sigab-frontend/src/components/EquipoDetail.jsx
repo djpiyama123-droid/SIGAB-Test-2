@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { api } from '../api/sigah';
 import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
 import { useToast } from './Toast';
+import { useTheme } from '../context/ThemeContext';
 import EquipoForm from './EquipoForm';
 import ConfirmDialog from './ConfirmDialog';
 import QRPanel from './QRPanel';
@@ -14,6 +15,11 @@ import Lightbox from './Lightbox';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function EquipoDetail({ equipo, onClose, onChange }) {
+  // v3.1 — Modal theme-aware: bg-slate-900 SOLO si tema oscuro (dark/glass).
+  // En blue/green (IMSS institucional claro) se usa la surface del tema para
+  // evitar modal opaco/oscuro que rompe la estética clínica clara.
+  const { theme } = useTheme();
+  const isDark = theme === 'dark' || theme === 'glass';
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxStart, setLightboxStart] = useState(0);
 
@@ -91,7 +97,11 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
         onClick={onClose}
       >
         <div
-          className="bg-slate-900 rounded-2xl border border-slate-700 shadow-2xl text-slate-100 max-w-2xl w-full max-h-[85vh] overflow-auto"
+          className={`rounded-2xl border shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-auto ${
+            isDark
+              ? 'bg-slate-900 border-slate-700 text-slate-100'
+              : 'bg-[var(--content-surface)] border-[var(--content-border)] text-[var(--content-text)]'
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -126,7 +136,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                 </p>
               </div>
             </div>
-            <button onClick={onClose} className="text-[var(--content-muted)] hover:text-white p-1">
+            <button onClick={onClose} className={`p-1 ${isDark ? 'text-[var(--content-muted)] hover:text-white' : 'text-[var(--content-muted)] hover:text-red-500'}`}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -137,16 +147,16 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
             {/* Info grid & QR Code */}
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex-1 grid grid-cols-2 gap-4 text-sm w-full">
-                <div className="col-span-2 bg-slate-800 p-3 rounded-lg border border-slate-700 flex flex-col">
-                  <span className="text-slate-400 text-xs uppercase tracking-wider mb-0.5">N° Serie del Equipo</span>
+                <div className={`col-span-2 p-3 rounded-lg border flex flex-col ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-[var(--content-bg)]/60 border-[var(--content-border)]'}`}>
+                  <span className={`text-xs uppercase tracking-wider mb-0.5 ${isDark ? 'text-slate-400' : 'text-[var(--content-muted)]'}`}>N° Serie del Equipo</span>
                   <p className="text-emerald-400 font-mono text-lg font-semibold">{equipo.serie || 'NO ASIGNADO'}</p>
                 </div>
-                <div className="col-span-2 bg-slate-800 p-3 rounded-lg border border-slate-700 flex flex-col">
-                  <span className="text-slate-400 text-xs uppercase tracking-wider mb-0.5">N° Inventario IMSS</span>
+                <div className={`col-span-2 p-3 rounded-lg border flex flex-col ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-[var(--content-bg)]/60 border-[var(--content-border)]'}`}>
+                  <span className={`text-xs uppercase tracking-wider mb-0.5 ${isDark ? 'text-slate-400' : 'text-[var(--content-muted)]'}`}>N° Inventario IMSS</span>
                   <p className="text-blue-400 font-mono text-lg font-semibold">{equipo.inventario ? `HGR1-${equipo.inventario}` : 'NO ASIGNADO'}</p>
                 </div>
                 <div>
-                  <span className="text-slate-400">Estado</span>
+                  <span className={`${isDark ? 'text-slate-400' : 'text-[var(--content-muted)]'}`}>Estado</span>
                   <p className="mt-1">
                     <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium text-white ${ESTADO_COLORS[equipo.estado]}`}>
                       {ESTADO_LABELS[equipo.estado]}
@@ -154,16 +164,16 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                   </p>
                 </div>
                 <div>
-                  <span className="text-slate-400">Criticidad</span>
-                  <p className="text-white capitalize mt-1">{equipo.criticidad || '—'}</p>
+                  <span className={`${isDark ? 'text-slate-400' : 'text-[var(--content-muted)]'}`}>Criticidad</span>
+                  <p className={`capitalize mt-1 ${isDark ? 'text-white' : 'text-[var(--content-text)]'}`}>{equipo.criticidad || '—'}</p>
                 </div>
                 <div>
-                  <span className="text-slate-400">Piso</span>
-                  <p className="text-slate-100 mt-1">{equipo.piso || '—'}</p>
+                  <span className={`${isDark ? 'text-slate-400' : 'text-[var(--content-muted)]'}`}>Piso</span>
+                  <p className={`mt-1 ${isDark ? 'text-slate-100' : 'text-[var(--content-text)]'}`}>{equipo.piso || '—'}</p>
                 </div>
                 <div>
-                  <span className="text-slate-400">Area</span>
-                  <p className="text-slate-100 mt-1">{equipo.area || '—'}</p>
+                  <span className={`${isDark ? 'text-slate-400' : 'text-[var(--content-muted)]'}`}>Area</span>
+                  <p className={`mt-1 ${isDark ? 'text-slate-100' : 'text-[var(--content-text)]'}`}>{equipo.area || '—'}</p>
                 </div>
               </div>
               
@@ -185,13 +195,13 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
             </div>
 
             {/* Contrato y Adquisición */}
-            <div className="bg-slate-800/90 border border-slate-700 rounded-xl p-4 space-y-3">
-              <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+            <div className={`border rounded-xl p-4 space-y-3 ${isDark ? 'bg-slate-800/90 border-slate-700' : 'bg-[var(--content-bg)]/60 border-[var(--content-border)]'}`}>
+              <h3 className={`text-sm font-semibold flex items-center gap-2 ${isDark ? 'text-slate-300' : 'text-[var(--content-text)]'}`}>
                 📄 Cobertura y Contrato de Servicio
               </h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-slate-400 text-xs block">Tipo de Adquisición</span>
+                  <span className={`text-xs block ${isDark ? 'text-slate-400' : 'text-[var(--content-muted)]'}`}>Tipo de Adquisición</span>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold mt-1 ${
                     equipo.tipo_adquisicion === 'recurso_propio' ? 'bg-blue-500/20 text-blue-400 border border-blue-700/40' :
                     equipo.tipo_adquisicion === 'contrato_consolidado' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-700/40' :
@@ -205,13 +215,13 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-400 text-xs block">N° Contrato / Servicio</span>
-                  <span className="text-white font-medium block mt-1">{equipo.numero_contrato_servicio || equipo.numero_contrato || '—'}</span>
+                  <span className={`text-xs block ${isDark ? 'text-slate-400' : 'text-[var(--content-muted)]'}`}>N° Contrato / Servicio</span>
+                  <span className={`font-medium block mt-1 ${isDark ? 'text-white' : 'text-[var(--content-text)]'}`}>{equipo.numero_contrato_servicio || equipo.numero_contrato || '—'}</span>
                 </div>
                 {equipo.proveedor_servicio && (
                   <div className="col-span-2">
-                    <span className="text-slate-400 text-xs block">Proveedor del Servicio</span>
-                    <span className="text-white block mt-1">{equipo.proveedor_servicio}</span>
+                    <span className={`text-xs block ${isDark ? 'text-slate-400' : 'text-[var(--content-muted)]'}`}>Proveedor del Servicio</span>
+                    <span className={`block mt-1 ${isDark ? 'text-white' : 'text-[var(--content-text)]'}`}>{equipo.proveedor_servicio}</span>
                   </div>
                 )}
                 {/* S9: Aviso prominente de imagen referencial dentro del bloque Contrato */}
@@ -244,7 +254,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                       if (urls && urls.length > 0) {
                         return (
                           <div className="col-span-2 space-y-2">
-                            <span className="text-slate-400 text-xs block">Hojas de Servicio Asociadas</span>
+                            <span className={`text-xs block ${isDark ? 'text-slate-400' : 'text-[var(--content-muted)]'}`}>Hojas de Servicio Asociadas</span>
                             <div className="flex flex-wrap gap-2">
                               {urls.map((url, index) => (
                                 <a
@@ -410,7 +420,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                 <div className="space-y-2">
                   {historial.traslados.slice(0, 5).map((t, i) => (
                     <div key={i} className="bg-[var(--content-bg)]/50 rounded-lg p-3 text-sm flex justify-between">
-                      <span className="text-white">
+                      <span className={isDark ? 'text-white' : 'text-[var(--content-text)]'}>
                         {t.area_origen} → {t.area_destino}
                       </span>
                       <span className="text-[var(--content-muted)]">{t.fecha_movimiento}</span>

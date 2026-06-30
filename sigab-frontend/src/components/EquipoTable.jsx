@@ -99,7 +99,9 @@ export default function EquipoTable({ equipos, onChange }) {
 
       {/* Vista escritorio: tabla completa */}
       <div className="hidden md:block bg-[var(--content-surface)] rounded-xl border border-[var(--content-border)] overflow-hidden">
-        <div className="overflow-x-auto equipo-table-scroll">
+        {/* v.3.1 — Scroll horizontal visible: scroll-horizontal (tema-adaptive CSS vars)
+            + pb-2 para que el thumb no quede pegado al borde del wrapper. */}
+        <div className="overflow-x-auto pb-2 scroll-horizontal equipo-table-scroll">
           <table className="w-full text-sm min-w-max">
             <thead>
               <tr className="bg-[var(--content-bg)]/50 text-[var(--content-muted)] text-left">
