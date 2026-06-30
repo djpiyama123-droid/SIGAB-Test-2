@@ -146,7 +146,7 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
         x = rect.left + rect.width / 2;
         align = 'center';
       }
-      setTooltipCoords({ x, y: rect.top, align });
+      setTooltipCoords({ x, y: rect.bottom, align });
     }
     setShowTooltip(true);
   }, []);
@@ -178,6 +178,9 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
     const GAP = 10;
     const base = {
       position: 'fixed',
+      // FIX Bug 2: usar rect.bottom en lugar de y para que el tooltip se posicione
+      // arriba del dot correctamente (sin esto, queda fuera del viewport si el
+      // dot está cerca del top)
       bottom: `${window.innerHeight - y + GAP}px`,
       zIndex: 9999,
       // FIX Bug 2: fondo oscuro sólido para que el tooltip sea visible sobre

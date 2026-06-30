@@ -465,7 +465,7 @@ function PanelDiaPreview({ hoveredDay, reservas, onClose, onVerDetalle }) {
   // día hover, el panel se vuelve visible en cualquier breakpoint.
   if (!hoveredDay) {
     return (
-      <div className="hidden xl:flex flex-col w-72 shrink-0 rounded-xl border border-dashed border-[var(--content-border)] bg-[var(--content-bg)]/40 p-4 text-center items-center justify-center min-h-[140px]">
+      <div className="hidden lg:flex flex-col w-72 shrink-0 rounded-xl border border-dashed border-[var(--content-border)] bg-[var(--content-bg)]/40 p-4 text-center items-center justify-center min-h-[140px]">
         <CalendarClock className="h-6 w-6 text-[var(--content-muted)] mb-2" />
         <p className="text-xs text-[var(--content-muted)] leading-relaxed">
           Pasa el cursor sobre una celda del mapa<br />para previsualizar las reservas del día.
@@ -479,7 +479,7 @@ function PanelDiaPreview({ hoveredDay, reservas, onClose, onVerDetalle }) {
   const [y, m, d] = hoveredDay.split('-');
   const fechaLabel = `${Number(d)} ${NOMBRE_MES[Number(m) - 1]} ${y}`;
   return (
-    <div className="flex flex-col w-full xl:w-80 shrink-0 self-stretch rounded-xl border border-[var(--content-border)] bg-[var(--content-bg)]/40 overflow-hidden anim-fade-in">
+    <div className="flex flex-col w-full lg:w-80 shrink-0 self-stretch rounded-xl border border-[var(--content-border)] bg-[var(--content-bg)]/40 overflow-hidden anim-fade-in">
       <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--content-border)] bg-[var(--content-surface)]/60">
         <div className="min-w-0">
           <p className="text-[10px] uppercase tracking-wider text-[var(--content-muted)] font-semibold">Vista previa</p>
@@ -674,7 +674,7 @@ export default function Reservas() {
               <h3 className="text-sm font-semibold text-[var(--content-text)]">Mapa de actividad</h3>
               <p className="text-[11px] text-[var(--content-muted)] hidden sm:block">Pasa el cursor sobre una celda para vista previa</p>
             </div>
-            <div className="flex flex-col xl:flex-row xl:items-start gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-start gap-4">
               <div className="flex-1 min-w-0">
                 <ActividadHeatmap
                   porDia={porDia}
