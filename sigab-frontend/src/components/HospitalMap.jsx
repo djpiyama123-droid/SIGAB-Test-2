@@ -180,7 +180,10 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       position: 'fixed',
       bottom: `${window.innerHeight - y + GAP}px`,
       zIndex: 9999,
-      backgroundColor: 'var(--content-bg)',
+      // FIX Bug 2: fondo oscuro sólido para que el tooltip sea visible sobre
+      // cualquier zona blanca. Sin esto, el tooltip se "pierde" contra el
+      // fondo blanco de la ZoneBox (--content-surface: #fff en modo claro).
+      backgroundColor: 'rgb(15 23 42 / 0.95)', // slate-900/95
       backdropFilter: 'blur(12px)',
     };
     if (align === 'right') return { ...base, right: `${window.innerWidth - x}px` };
@@ -190,37 +193,37 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
 
   const tooltipPortal = showTooltip ? ReactDOM.createPortal(
     <div
-      className="w-64 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.25)] border border-[var(--content-border)]/50 overflow-hidden bg-[var(--content-surface)] backdrop-blur-md"
+      className="w-64 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.45)] border border-slate-700/60 overflow-hidden bg-slate-900/95 text-slate-100 backdrop-blur-md"
       style={getTooltipFixedStyle()}
     >
-      <div className="p-3 border-b border-[var(--content-border)]">
+      <div className="p-3 border-b border-slate-700/60">
         <div className="flex items-center gap-2 mb-1">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: status.border }} />
           <span className="text-xs font-medium" style={{ color: status.border }}>
             {status.label}
           </span>
         </div>
-        <p className="text-[var(--content-text)] text-sm font-semibold leading-tight">{equipo.nombre}</p>
-        <p className="text-[var(--content-muted)] text-xs">{equipo.marca} {equipo.modelo}</p>
+        <p className="text-slate-50 text-sm font-semibold leading-tight">{equipo.nombre}</p>
+        <p className="text-slate-300 text-xs">{equipo.marca} {equipo.modelo}</p>
       </div>
 
       <div className="p-3 space-y-1">
         <div className="flex justify-between text-xs">
-          <span className="text-[var(--content-muted)]">Serie</span>
-          <span className="text-[var(--content-muted)] font-mono">{equipo.serie}</span>
+          <span className="text-slate-400">Serie</span>
+          <span className="text-slate-200 font-mono">{equipo.serie}</span>
         </div>
         {equipo.clase_cofepris && (
           <div className="flex justify-between text-xs">
-            <span className="text-[var(--content-muted)]">COFEPRIS</span>
-            <span className="text-purple-600 font-semibold">Clase {equipo.clase_cofepris}</span>
+            <span className="text-slate-400">COFEPRIS</span>
+            <span className="text-purple-300 font-semibold">Clase {equipo.clase_cofepris}</span>
           </div>
         )}
         {equipo.fecha_proximo_mantenimiento && (
           <div className="flex justify-between text-xs">
-            <span className="text-[var(--content-muted)]">Prox. Mant.</span>
+            <span className="text-slate-400">Prox. Mant.</span>
             <span className={`font-medium ${
               new Date(equipo.fecha_proximo_mantenimiento) < new Date()
-                ? 'text-red-600' : 'text-[var(--content-muted)]'
+                ? 'text-red-300' : 'text-slate-200'
             }`}>
               {new Date(equipo.fecha_proximo_mantenimiento).toLocaleDateString('es-MX')}
             </span>
@@ -228,11 +231,11 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
         )}
       </div>
 
-      <div className="p-2 border-t border-[var(--content-border)] flex gap-1">
+      <div className="p-2 border-t border-slate-700/60 flex gap-1">
         <button
           onMouseDown={(e) => { e.stopPropagation(); onClick(equipo); }}
-          className="flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold bg-[var(--content-text)] hover:opacity-90
-                     text-[var(--content-surface)] transition-opacity pointer-events-auto"
+          className="flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold bg-emerald-500 hover:bg-emerald-400
+                     text-white transition-opacity pointer-events-auto"
         >
           Ver Ficha
         </button>
