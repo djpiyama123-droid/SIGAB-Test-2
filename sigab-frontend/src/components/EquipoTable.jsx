@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
 import EquipoDetail from './EquipoDetail';
@@ -28,6 +28,21 @@ export default function EquipoTable({ equipos, onChange }) {
   const [selected, setSelected] = useState(null);
   const [qrEquipo, setQrEquipo] = useState(null);
   const navigate = useNavigate();
+
+  // v.3.1.2 — Scroll horizontal sincronizado (top + bottom) via refs.
+  // Mientras cualquiera de los dos wrappers hace scroll, el otro se alinea.
+  const topScrollRef = useRef(null);
+  const bottomScrollRef = useRef(null);
+  const syncingRef = useRef(false);
+
+  const syncScroll = useCallback((source, target) => {
+    if (syncingRef.current) return;
+    if (!source.current || !target.current) return;
+    syncingRef.current = true;
+    target.current.scrollLeft = source.current.scrollLeft;
+    // Liberamos el lock en el siguiente frame para evitar loops infinitos.
+    requestAnimationFrame(() => { syncingRef.current = false; });
+  }, []);
 
   const handleQR = (e, eq) => {
     e.stopPropagation();
@@ -99,9 +114,44 @@ export default function EquipoTable({ equipos, onChange }) {
 
       {/* Vista escritorio: tabla completa */}
       <div className="hidden md:block bg-[var(--content-surface)] rounded-xl border border-[var(--content-border)] overflow-hidden">
-        {/* v.3.1 — Scroll horizontal visible: scroll-horizontal (tema-adaptive CSS vars)
-            + pb-2 para que el thumb no quede pegado al borde del wrapper. */}
-        <div className="overflow-x-auto pb-2 scroll-horizontal equipo-table-scroll">
+        {/* v.3.1.2 — Scrollbar superior sincronizada.
+            Truco: renderizamos una tabla fantasma con visibility:hidden y los
+            mismos anchos de columna (min-w-max) para que su <thead> ocupe
+            exactamente el ancho de la tabla inferior. Al arrastrar este
+            wrapper, sincronizamos scrollLeft con el wrapper inferior. */}
+        <div
+          ref={topScrollRef}
+          onScroll={() => syncScroll(topScrollRef, bottomScrollRef)}
+          className="overflow-x-auto scroll-horizontal equipo-table-scroll border-b border-[var(--content-border)]"
+          aria-hidden="true"
+        >
+          <table className="w-full text-sm min-w-max" style={{ visibility: 'hidden' }}>
+            <thead>
+              <tr className="bg-[var(--content-bg)]/50 text-[var(--content-muted)] text-left">
+                <th className="px-3 py-3 font-medium w-10"></th>
+                <th className="px-3 py-3 font-medium">Estado</th>
+                <th className="px-3 py-3 font-medium">N° Inventario IMSS</th>
+                <th className="px-3 py-3 font-medium">N° Serie</th>
+                <th className="px-3 py-3 font-medium">Nombre</th>
+                <th className="px-3 py-3 font-medium">Marca / Modelo</th>
+                <th className="px-3 py-3 font-medium">Criticidad</th>
+                <th className="px-3 py-3 font-medium">Adquisición</th>
+                <th className="px-3 py-3 font-medium">Piso</th>
+                <th className="px-3 py-3 font-medium">Área</th>
+                <th className="px-3 py-3 font-medium">Tipo</th>
+                <th className="px-3 py-3 font-medium">Órdenes</th>
+                <th className="px-3 py-3 font-medium text-center">Imprimir QR</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+
+        {/* Tabla inferior con datos (scroll horizontal sincronizado). */}
+        <div
+          ref={bottomScrollRef}
+          onScroll={() => syncScroll(bottomScrollRef, topScrollRef)}
+          className="overflow-x-auto pb-2 scroll-horizontal equipo-table-scroll"
+        >
           <table className="w-full text-sm min-w-max">
             <thead>
               <tr className="bg-[var(--content-bg)]/50 text-[var(--content-muted)] text-left">
