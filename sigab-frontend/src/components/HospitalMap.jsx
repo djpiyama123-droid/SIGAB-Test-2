@@ -125,6 +125,13 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipCoords, setTooltipCoords] = useState({ x: 0, y: 0, align: 'center' });
   const dotRef = React.useRef(null);
+  // FIX Bug 2 (Ver Ficha hover): la tooltip está en un portal en document.body,
+  // así que al mover el ratón del dot a la tooltip se dispara onMouseLeave del
+  // dot y la tooltip desaparece ANTES de que el usuario pueda llegar al
+  // botón "Ver Ficha". Solución: deferir el cierre 120 ms (suficiente para
+  // cruzar al tooltip) y añadir onMouseEnter/onMouseLeave a la tooltip para
+  // cancelar/reprogramar el cierre según dónde esté el cursor.
+  const hideTimerRef = React.useRef(null);
 
   const status = STATUS_CONFIG[equipo.estado] || STATUS_CONFIG.baja;
   const Icon = EQUIPMENT_ICONS[equipo.tipo_equipo] || EQUIPMENT_ICONS.otro;
@@ -148,10 +155,28 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       }
       setTooltipCoords({ x, y: rect.bottom, align });
     }
+    // Cancel any pending hide when re-entering the dot.
+    if (hideTimerRef.current) { clearTimeout(hideTimerRef.current); hideTimerRef.current = null; }
     setShowTooltip(true);
   }, []);
 
-  const handleMouseLeave = useCallback(() => setShowTooltip(false), []);
+  const handleMouseLeave = useCallback(() => {
+    hideTimerRef.current = setTimeout(() => setShowTooltip(false), 120);
+  }, []);
+  const handleTooltipEnter = useCallback(() => {
+    if (hideTimerRef.current) { clearTimeout(hideTimerRef.current); hideTimerRef.current = null; }
+    setShowTooltip(true);
+  }, []);
+  const handleTooltipLeave = useCallback(() => {
+    setShowTooltip(false);
+  }, []);
+
+  // Cleanup pending hide timer on unmount.
+  useEffect(() => {
+    return () => {
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    };
+  }, []);
 
   // Hide tooltip while the scroll container scrolls (tooltip is detached from DOM flow)
   useEffect(() => {
@@ -198,6 +223,8 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
     <div
       className="w-64 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.45)] border border-slate-700/60 overflow-hidden bg-slate-900/95 text-slate-100 backdrop-blur-md"
       style={getTooltipFixedStyle()}
+      onMouseEnter={handleTooltipEnter}
+      onMouseLeave={handleTooltipLeave}
     >
       <div className="p-3 border-b border-slate-700/60">
         <div className="flex items-center gap-2 mb-1">
@@ -238,7 +265,7 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
         <button
           onMouseDown={(e) => { e.stopPropagation(); onClick(equipo); }}
           className="flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold bg-emerald-500 hover:bg-emerald-400
-                     text-white transition-opacity pointer-events-auto"
+                     text-white transition-colors duration-150 active:scale-[0.97] pointer-events-auto"
         >
           Ver Ficha
         </button>

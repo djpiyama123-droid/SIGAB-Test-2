@@ -308,8 +308,10 @@ function ActividadHeatmap({ porDia, onDiaClick, onDiaHover, semanas = 26 }) {
                   type="button"
                   onClick={() => onDiaClick(celda.key)}
                   onMouseEnter={() => onDiaHover?.(celda.key)}
+                  onMouseLeave={() => onDiaHover?.(null)}
                   onFocus={() => onDiaHover?.(celda.key)}
-                  title={`${celda.key}: ${celda.count} reserva${celda.count !== 1 ? 's' : ''}`}
+                  onBlur={() => onDiaHover?.(null)}
+                  aria-label={`${celda.key}: ${celda.count} reserva${celda.count !== 1 ? 's' : ''}`}
                   className={`anim-cell-pop w-3.5 h-3.5 rounded-sm transition-transform ${celda.futuro ? 'opacity-25 cursor-default' : celda.count > 0 ? 'hover:scale-[1.35] cursor-pointer ring-1 ring-black/5' : 'cursor-default'}`}
                   style={{ backgroundColor: NIVEL_COLORES[nivel(celda.count)], animationDelay: `${w * 14}ms` }}
                 />
@@ -461,12 +463,21 @@ function PanelDiaPreview({ hoveredDay, reservas, onClose, onVerDetalle }) {
   // FIX Bug 1 FINAL: SIEMPRE mismo wrapper (lg:w-80 a la derecha). Solo cambia
   // el contenido interno según hoveredDay. Sin esto React reusaba el DOM viejo
   // con className "hidden lg:flex" cuando hoveredDay cambiaba de null a key.
+  //
+  // FIX DEFINITIVO v3 (esta versión): quitamos `hidden` por completo.
+  // Razón: la clase `hidden lg:flex` deja el panel INVISIBLE en cualquier
+  // viewport < 1024px (lg). Esto es lo que está pasando en la demo: Gustavo
+  // ve solo el tooltip nativo (`title=`) porque el panel React NUNCA se monta
+  // en su ancho de navegador. Reemplazamos `hidden lg:flex` por `flex` puro
+  // y dejamos que el wrapper padre (lg:flex-row) decida si apila o pone al
+  // lado — además añadimos `min-h-[140px]` para que el panel siempre tenga
+  // altura visible incluso sin hover, mostrando el call-to-action.
   const lista = hoveredDay ? reservasDelDia(reservas, hoveredDay) : [];
   const fechaLabel = hoveredDay
     ? (() => { const [y, m, d] = hoveredDay.split('-'); return `${Number(d)} ${NOMBRE_MES[Number(m) - 1]} ${y}`; })()
     : '';
   return (
-    <div className="hidden lg:flex flex-col w-80 shrink-0 self-stretch rounded-xl border border-[var(--content-border)] bg-[var(--content-bg)]/40 overflow-hidden anim-fade-in">
+    <div className="flex flex-col w-full lg:w-80 shrink-0 self-stretch rounded-xl border border-[var(--content-border)] bg-[var(--content-bg)]/40 overflow-hidden anim-fade-in min-h-[140px]">
       {!hoveredDay ? (
         <div className="flex flex-col items-center justify-center min-h-[140px] text-center p-4">
           <CalendarClock className="h-6 w-6 text-[var(--content-muted)] mb-2" />
@@ -672,7 +683,10 @@ export default function Reservas() {
               <h3 className="text-sm font-semibold text-[var(--content-text)]">Mapa de actividad</h3>
               <p className="text-[11px] text-[var(--content-muted)] hidden sm:block">Pasa el cursor sobre una celda para vista previa</p>
             </div>
-            <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+            <div
+              className="flex flex-col lg:flex-row lg:items-start gap-4"
+              onMouseLeave={() => setHoveredDay(null)}
+            >
               <div className="flex-1 min-w-0">
                 <ActividadHeatmap
                   porDia={porDia}
