@@ -306,6 +306,20 @@ export default function Equipos() {
             <option value="baja">🟢 Baja</option>
           </select>
 
+          {/* Filtro Tipo de Adquisición — v30.0.1 */}
+          <select
+            value={filtros.tipo_adquisicion || ''}
+            onChange={(e) => updateFiltros({ ...filtros, tipo_adquisicion: e.target.value || undefined })}
+            className="px-3 py-2 bg-[var(--content-bg)]/60 border border-[var(--content-border)] rounded-lg text-sm text-[var(--content-muted)] focus:outline-none focus:border-emerald-600"
+            title="Filtrar por tipo de adquisición"
+          >
+            <option value="">Todos los tipos de adquisición</option>
+            <option value="recurso_propio">🔵 Recurso Propio</option>
+            <option value="contrato_consolidado">🟢 Contrato Consolidado</option>
+            <option value="garantia">🟡 Garantía</option>
+            <option value="subrogado">🟣 Subrogado</option>
+          </select>
+
           <select
             value={filtros.area || ''}
             onChange={(e) => updateFiltros({ ...filtros, area: e.target.value || undefined })}

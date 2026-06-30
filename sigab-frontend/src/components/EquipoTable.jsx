@@ -99,8 +99,8 @@ export default function EquipoTable({ equipos, onChange }) {
 
       {/* Vista escritorio: tabla completa */}
       <div className="hidden md:block bg-[var(--content-surface)] rounded-xl border border-[var(--content-border)] overflow-hidden">
-        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800/50">
-          <table className="w-full text-sm min-w-[1060px]">
+        <div className="overflow-x-auto equipo-table-scroll">
+          <table className="w-full text-sm min-w-max">
             <thead>
               <tr className="bg-[var(--content-bg)]/50 text-[var(--content-muted)] text-left">
                 <th className="px-3 py-3 font-medium w-10"></th>

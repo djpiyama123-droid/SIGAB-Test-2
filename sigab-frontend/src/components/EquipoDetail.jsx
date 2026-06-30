@@ -87,11 +87,11 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+        className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         onClick={onClose}
       >
         <div
-          className="bg-[var(--content-surface)] rounded-2xl border border-[var(--content-border)] max-w-2xl w-full max-h-[85vh] overflow-auto"
+          className="bg-slate-900 rounded-2xl border border-slate-700 shadow-2xl text-slate-100 max-w-2xl w-full max-h-[85vh] overflow-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -137,16 +137,16 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
             {/* Info grid & QR Code */}
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex-1 grid grid-cols-2 gap-4 text-sm w-full">
-                <div className="col-span-2 bg-[var(--content-bg)]/50 p-3 rounded-lg border border-[var(--content-border)]/50 flex flex-col">
-                  <span className="text-[var(--content-muted)] text-xs uppercase tracking-wider mb-0.5">N° Serie del Equipo</span>
+                <div className="col-span-2 bg-slate-800 p-3 rounded-lg border border-slate-700 flex flex-col">
+                  <span className="text-slate-400 text-xs uppercase tracking-wider mb-0.5">N° Serie del Equipo</span>
                   <p className="text-emerald-400 font-mono text-lg font-semibold">{equipo.serie || 'NO ASIGNADO'}</p>
                 </div>
-                <div className="col-span-2 bg-[var(--content-bg)]/50 p-3 rounded-lg border border-[var(--content-border)]/50 flex flex-col">
-                  <span className="text-[var(--content-muted)] text-xs uppercase tracking-wider mb-0.5">N° Inventario IMSS</span>
+                <div className="col-span-2 bg-slate-800 p-3 rounded-lg border border-slate-700 flex flex-col">
+                  <span className="text-slate-400 text-xs uppercase tracking-wider mb-0.5">N° Inventario IMSS</span>
                   <p className="text-blue-400 font-mono text-lg font-semibold">{equipo.inventario ? `HGR1-${equipo.inventario}` : 'NO ASIGNADO'}</p>
                 </div>
                 <div>
-                  <span className="text-[var(--content-muted)]">Estado</span>
+                  <span className="text-slate-400">Estado</span>
                   <p className="mt-1">
                     <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium text-white ${ESTADO_COLORS[equipo.estado]}`}>
                       {ESTADO_LABELS[equipo.estado]}
@@ -154,16 +154,16 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                   </p>
                 </div>
                 <div>
-                  <span className="text-[var(--content-muted)]">Criticidad</span>
+                  <span className="text-slate-400">Criticidad</span>
                   <p className="text-white capitalize mt-1">{equipo.criticidad || '—'}</p>
                 </div>
                 <div>
-                  <span className="text-[var(--content-muted)]">Piso</span>
-                  <p className="text-[var(--content-text)] mt-1">{equipo.piso || '—'}</p>
+                  <span className="text-slate-400">Piso</span>
+                  <p className="text-slate-100 mt-1">{equipo.piso || '—'}</p>
                 </div>
                 <div>
-                  <span className="text-[var(--content-muted)]">Area</span>
-                  <p className="text-[var(--content-text)] mt-1">{equipo.area || '—'}</p>
+                  <span className="text-slate-400">Area</span>
+                  <p className="text-slate-100 mt-1">{equipo.area || '—'}</p>
                 </div>
               </div>
               
@@ -185,13 +185,13 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
             </div>
 
             {/* Contrato y Adquisición */}
-            <div className="bg-[var(--content-bg)]/30 border border-[var(--content-border)]/50 rounded-xl p-4 space-y-3">
-              <h3 className="text-sm font-semibold text-[var(--content-muted)] flex items-center gap-2">
+            <div className="bg-slate-800/90 border border-slate-700 rounded-xl p-4 space-y-3">
+              <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
                 📄 Cobertura y Contrato de Servicio
               </h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-[var(--content-muted)] text-xs block">Tipo de Adquisición</span>
+                  <span className="text-slate-400 text-xs block">Tipo de Adquisición</span>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold mt-1 ${
                     equipo.tipo_adquisicion === 'recurso_propio' ? 'bg-blue-500/20 text-blue-400 border border-blue-700/40' :
                     equipo.tipo_adquisicion === 'contrato_consolidado' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-700/40' :
@@ -205,12 +205,12 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                   </span>
                 </div>
                 <div>
-                  <span className="text-[var(--content-muted)] text-xs block">N° Contrato / Servicio</span>
+                  <span className="text-slate-400 text-xs block">N° Contrato / Servicio</span>
                   <span className="text-white font-medium block mt-1">{equipo.numero_contrato_servicio || equipo.numero_contrato || '—'}</span>
                 </div>
                 {equipo.proveedor_servicio && (
                   <div className="col-span-2">
-                    <span className="text-[var(--content-muted)] text-xs block">Proveedor del Servicio</span>
+                    <span className="text-slate-400 text-xs block">Proveedor del Servicio</span>
                     <span className="text-white block mt-1">{equipo.proveedor_servicio}</span>
                   </div>
                 )}
@@ -244,7 +244,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                       if (urls && urls.length > 0) {
                         return (
                           <div className="col-span-2 space-y-2">
-                            <span className="text-[var(--content-muted)] text-xs block">Hojas de Servicio Asociadas</span>
+                            <span className="text-slate-400 text-xs block">Hojas de Servicio Asociadas</span>
                             <div className="flex flex-wrap gap-2">
                               {urls.map((url, index) => (
                                 <a
