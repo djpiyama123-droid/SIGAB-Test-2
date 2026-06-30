@@ -2,18 +2,42 @@
 // EquipoDetail.jsx — Modal de detalle de equipo con acciones
 // Soporta: ver detalle, editar, eliminar
 // ============================================================
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { api } from '../api/sigah';
 import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
-import { absUrl, parseFotos } from '../utils/url';
 import { useToast } from './Toast';
 import EquipoForm from './EquipoForm';
 import ConfirmDialog from './ConfirmDialog';
 import QRPanel from './QRPanel';
 import OrdenDetalleModal from './OrdenDetalleModal';
+import Lightbox from './Lightbox';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function EquipoDetail({ equipo, onClose, onChange }) {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxStart, setLightboxStart] = useState(0);
+
+  // Normaliza fotos a un array de URLs (puede venir como array, JSON string, CSV o URL única)
+  const fotosArr = useMemo(() => {
+    const f = equipo.fotos;
+    if (!f) return [];
+    if (Array.isArray(f)) return f.filter(Boolean);
+    if (typeof f === 'string') {
+      const s = f.trim();
+      if (!s || s === '[]' || s === 'null') return [];
+      try {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed)) return parsed.filter(Boolean);
+        return [s];
+      } catch {
+        // CSV
+        return s.split(',').map((x) => x.trim()).filter(Boolean);
+      }
+    }
+    return [];
+  }, [equipo.fotos]);
+
+  const allImages = fotosArr.length > 0 ? fotosArr : (equipo.imagen_url ? [equipo.imagen_url] : []);
   const toast = useToast();
   const [historial, setHistorial] = useState({ ordenes: [], traslados: [] });
   const [editando, setEditando] = useState(false);
@@ -82,9 +106,17 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                   <img
                     src={equipo.imagen_url}
                     alt={equipo.nombre}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
+                    onClick={() => { setLightboxStart(0); setLightboxOpen(true); }}
                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   />
+                )}
+                {equipo.imagen_referencial && (
+                  <span
+                    title="Imagen referencial (no es el equipo real)"
+                    aria-label="Imagen referencial"
+                    className="absolute top-2 left-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded shadow-md pointer-events-none"
+                  >REFERENCIAL</span>
                 )}
               </div>
               <div>
@@ -94,7 +126,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                 </p>
               </div>
             </div>
-            <button onClick={onClose} className="text-[var(--content-muted)] hover:text-[var(--content-text)] p-1">
+            <button onClick={onClose} className="text-[var(--content-muted)] hover:text-white p-1">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -107,11 +139,11 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
               <div className="flex-1 grid grid-cols-2 gap-4 text-sm w-full">
                 <div className="col-span-2 bg-[var(--content-bg)]/50 p-3 rounded-lg border border-[var(--content-border)]/50 flex flex-col">
                   <span className="text-[var(--content-muted)] text-xs uppercase tracking-wider mb-0.5">N° Serie del Equipo</span>
-                  <p className="text-emerald-700 font-mono text-lg font-semibold">{equipo.serie || 'NO ASIGNADO'}</p>
+                  <p className="text-emerald-400 font-mono text-lg font-semibold">{equipo.serie || 'NO ASIGNADO'}</p>
                 </div>
                 <div className="col-span-2 bg-[var(--content-bg)]/50 p-3 rounded-lg border border-[var(--content-border)]/50 flex flex-col">
                   <span className="text-[var(--content-muted)] text-xs uppercase tracking-wider mb-0.5">N° Inventario IMSS</span>
-                  <p className="text-blue-600 font-mono text-lg font-semibold">{equipo.inventario ? `HGR1-${equipo.inventario}` : 'NO ASIGNADO'}</p>
+                  <p className="text-blue-400 font-mono text-lg font-semibold">{equipo.inventario ? `HGR1-${equipo.inventario}` : 'NO ASIGNADO'}</p>
                 </div>
                 <div>
                   <span className="text-[var(--content-muted)]">Estado</span>
@@ -123,7 +155,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                 </div>
                 <div>
                   <span className="text-[var(--content-muted)]">Criticidad</span>
-                  <p className="text-[var(--content-text)] capitalize mt-1">{equipo.criticidad || '—'}</p>
+                  <p className="text-white capitalize mt-1">{equipo.criticidad || '—'}</p>
                 </div>
                 <div>
                   <span className="text-[var(--content-muted)]">Piso</span>
@@ -152,27 +184,146 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
               )}
             </div>
 
-            {/* Fotos adicionales */}
-            {(() => {
-              // equipo.fotos puede venir como array, JSON string, CSV o una sola URL.
-              const fotosArr = parseFotos(equipo.fotos);
-              if (fotosArr.length === 0) return null;
-              return (
-                <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-3">Galería de Imágenes ({fotosArr.length})</h3>
-                  <div className="flex gap-2 overflow-x-auto pb-2">
-                    {fotosArr.map((foto, idx) => {
-                      const url = absUrl(foto);
-                      return (
-                        <div key={idx} className="relative flex-shrink-0 w-24 h-24 bg-black rounded-lg overflow-hidden border border-[var(--content-border)] hover:border-emerald-500 cursor-pointer shadow-lg" onClick={() => window.open(url, '_blank')}>
-                          <img src={url} loading="lazy" alt={`Foto ${idx + 1}`} className="object-cover w-full h-full hover:opacity-75 transition-opacity" />
-                        </div>
-                      );
-                    })}
-                  </div>
+            {/* Contrato y Adquisición */}
+            <div className="bg-[var(--content-bg)]/30 border border-[var(--content-border)]/50 rounded-xl p-4 space-y-3">
+              <h3 className="text-sm font-semibold text-[var(--content-muted)] flex items-center gap-2">
+                📄 Cobertura y Contrato de Servicio
+              </h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-[var(--content-muted)] text-xs block">Tipo de Adquisición</span>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold mt-1 ${
+                    equipo.tipo_adquisicion === 'recurso_propio' ? 'bg-blue-500/20 text-blue-400 border border-blue-700/40' :
+                    equipo.tipo_adquisicion === 'contrato_consolidado' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-700/40' :
+                    equipo.tipo_adquisicion === 'garantia' ? 'bg-amber-500/20 text-amber-400 border border-amber-700/40' :
+                    'bg-purple-500/20 text-purple-400 border border-purple-700/40'
+                  }`}>
+                    {equipo.tipo_adquisicion === 'recurso_propio' ? 'Recurso Propio' :
+                     equipo.tipo_adquisicion === 'contrato_consolidado' ? 'Consolidado' :
+                     equipo.tipo_adquisicion === 'garantia' ? 'Garantía' :
+                     equipo.tipo_adquisicion === 'subrogado' ? 'Subrogado' : 'Recurso Propio'}
+                  </span>
                 </div>
-              );
-            })()}
+                <div>
+                  <span className="text-[var(--content-muted)] text-xs block">N° Contrato / Servicio</span>
+                  <span className="text-white font-medium block mt-1">{equipo.numero_contrato_servicio || equipo.numero_contrato || '—'}</span>
+                </div>
+                {equipo.proveedor_servicio && (
+                  <div className="col-span-2">
+                    <span className="text-[var(--content-muted)] text-xs block">Proveedor del Servicio</span>
+                    <span className="text-white block mt-1">{equipo.proveedor_servicio}</span>
+                  </div>
+                )}
+                {/* S9: Aviso prominente de imagen referencial dentro del bloque Contrato */}
+                {equipo.imagen_referencial && (
+                  <div className="col-span-2 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2 flex items-start gap-2">
+                    <svg className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-amber-300 text-xs font-semibold leading-snug">
+                      IMAGEN REFERENCIAL — Esta foto NO es del equipo real, se descargó de internet por marca/modelo con marca de agua.
+                    </span>
+                  </div>
+                )}
+                {equipo.contrato_pdf_url && (
+                  <div className="col-span-2">
+                    <a
+                      href={equipo.contrato_pdf_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 font-medium text-xs bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      📂 Ver Documento de Contrato (PDF/Imagen)
+                    </a>
+                  </div>
+                )}
+                {(() => {
+                  try {
+                    if (equipo.hojas_servicio_urls) {
+                      const urls = JSON.parse(equipo.hojas_servicio_urls);
+                      if (urls && urls.length > 0) {
+                        return (
+                          <div className="col-span-2 space-y-2">
+                            <span className="text-[var(--content-muted)] text-xs block">Hojas de Servicio Asociadas</span>
+                            <div className="flex flex-wrap gap-2">
+                              {urls.map((url, index) => (
+                                <a
+                                  key={index}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 text-xs bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg transition-colors"
+                                >
+                                  📄 Hoja de Servicio #{index + 1}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      }
+                    }
+                  } catch (e) {
+                    console.error("Error parsing hojas_servicio_urls:", e);
+                  }
+                  return null;
+                })()}
+              </div>
+            </div>
+
+            {/* Galería de imágenes (S8: siempre visible si hay ≥1 imagen) */}
+            {allImages.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-3 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Galería de Imágenes
+                  <span className="text-xs font-normal text-[var(--content-muted)]">
+                    ({allImages.length} {allImages.length === 1 ? 'foto' : 'fotos'})
+                  </span>
+                </h3>
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {allImages.map((foto, idx) => (
+                    <button
+                      key={`${foto}-${idx}`}
+                      type="button"
+                      onClick={() => { setLightboxStart(idx); setLightboxOpen(true); }}
+                      aria-label={`Ver foto ${idx + 1} de ${allImages.length} en pantalla completa`}
+                      className="relative flex-shrink-0 w-24 h-24 bg-black rounded-lg overflow-hidden border border-[var(--content-border)] hover:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-lg transition-colors group"
+                    >
+                      <img
+                        src={foto}
+                        alt=""
+                        loading="lazy"
+                        className="object-cover w-full h-full group-hover:opacity-75 transition-opacity"
+                        onError={(e) => { e.currentTarget.style.opacity = '0.3'; }}
+                      />
+                      <span className="absolute top-1 left-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-black/60 text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                        {idx + 1}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[11px] text-[var(--content-muted)] mt-2">
+                  Click en cualquier miniatura abre el visor. Teclado: ← / → navegar, + / − zoom, 0 reset, Esc cerrar.
+                </p>
+              </div>
+            )}
+            {/* S8 placeholder cuando NO hay ninguna imagen */}
+            {allImages.length === 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-3 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Galería de Imágenes
+                </h3>
+                <div className="bg-[var(--content-bg)]/30 border border-dashed border-[var(--content-border)] rounded-lg p-6 text-center">
+                  <p className="text-[var(--content-muted)] text-sm">Sin imágenes disponibles</p>
+                  <p className="text-[var(--content-muted)] text-xs mt-1">Este equipo no tiene foto principal ni fotos adicionales registradas.</p>
+                </div>
+              </div>
+            )}
 
             {/* Tickets / Órdenes de Servicio */}
             <div>
@@ -208,16 +359,16 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                         <div className="flex justify-between items-start gap-2">
                           <div className="flex items-center gap-2 min-w-0">
                             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${os.estado === 'cerrada' ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
-                            <span className="text-emerald-700 font-mono text-xs font-bold truncate">
+                            <span className="text-emerald-300 font-mono text-xs font-bold truncate">
                               {os.numero_orden}
                             </span>
                             {os.pdf_url && (
                               <a
-                                href={absUrl(os.pdf_url)}
+                                href={os.pdf_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="text-blue-600 hover:text-blue-700 flex-shrink-0"
+                                className="text-blue-400 hover:text-blue-300 flex-shrink-0"
                                 title="Abrir PDF original"
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -234,10 +385,10 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                         <div className="flex items-center gap-2 mt-2 pl-4">
                           <span className={`text-[10px] px-2 py-0.5 rounded-full capitalize ${
                             os.estado === 'cerrada'
-                              ? 'bg-emerald-500/20 text-emerald-700'
+                              ? 'bg-emerald-500/20 text-emerald-400'
                               : os.estado === 'en_progreso'
-                              ? 'bg-blue-500/20 text-blue-600'
-                              : 'bg-amber-500/20 text-amber-600'
+                              ? 'bg-blue-500/20 text-blue-400'
+                              : 'bg-amber-500/20 text-amber-400'
                           }`}>
                             {os.estado?.replace('_', ' ')}
                           </span>
@@ -259,7 +410,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                 <div className="space-y-2">
                   {historial.traslados.slice(0, 5).map((t, i) => (
                     <div key={i} className="bg-[var(--content-bg)]/50 rounded-lg p-3 text-sm flex justify-between">
-                      <span className="text-[var(--content-text)]">
+                      <span className="text-white">
                         {t.area_origen} → {t.area_destino}
                       </span>
                       <span className="text-[var(--content-muted)]">{t.fecha_movimiento}</span>
@@ -275,7 +426,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
             <button
               type="button"
               onClick={() => setConfirmandoEliminar(true)}
-              className="px-4 py-2 text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-2 hover:bg-red-100 rounded-lg transition-colors"
+              className="px-4 py-2 text-red-400 hover:text-red-300 text-sm font-medium flex items-center gap-2 hover:bg-red-900/20 rounded-lg transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -355,6 +506,16 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
               }))
               .catch(() => {});
           }}
+        />
+      )}
+
+      {/* Lightbox de fotos (S7 + S8 sprint 2026-06-27) */}
+      {lightboxOpen && allImages.length > 0 && (
+        <Lightbox
+          images={allImages}
+          startIndex={Math.min(lightboxStart, allImages.length - 1)}
+          referencial={!!equipo.imagen_referencial}
+          onClose={() => setLightboxOpen(false)}
         />
       )}
     </>

@@ -5,9 +5,23 @@ import EquipoDetail from './EquipoDetail';
 import QRPanel from './QRPanel';
 
 const CRITICIDAD_BADGE = {
-  alta: 'bg-red-50 text-red-700 border border-red-300',
-  media: 'bg-yellow-50 text-yellow-700 border border-yellow-300',
+  alta: 'bg-red-500/20 text-red-400 border border-red-700/50',
+  media: 'bg-yellow-500/20 text-yellow-400 border border-yellow-700/50',
   baja: 'bg-[var(--content-surface)] text-[var(--content-muted)] border border-[var(--content-border)]',
+};
+
+const ADQUISICION_BADGE = {
+  recurso_propio: 'bg-blue-500/20 text-blue-400 border border-blue-700/40',
+  contrato_consolidado: 'bg-emerald-500/20 text-emerald-400 border border-emerald-700/40',
+  garantia: 'bg-amber-500/20 text-amber-400 border border-amber-700/40',
+  subrogado: 'bg-purple-500/20 text-purple-400 border border-purple-700/40',
+};
+
+const ADQUISICION_LABELS = {
+  recurso_propio: 'Recurso Propio',
+  contrato_consolidado: 'Consolidado',
+  garantia: 'Garantía',
+  subrogado: 'Subrogado',
 };
 
 export default function EquipoTable({ equipos, onChange }) {
@@ -32,7 +46,7 @@ export default function EquipoTable({ equipos, onChange }) {
         {equipos.map((eq) => (
           <div key={eq.id}
             onClick={() => setSelected(eq)}
-            className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 cursor-pointer hover:border-[var(--content-border)] active:bg-[var(--content-bg)] transition-colors">
+            className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 cursor-pointer hover:border-[var(--content-border)] active:bg-slate-700/50 transition-colors">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
                 {eq.imagen_url && (
@@ -50,15 +64,15 @@ export default function EquipoTable({ equipos, onChange }) {
               </span>
             </div>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-              {eq.serie && <span className="font-mono text-emerald-700 text-xs">Serie: {eq.serie}</span>}
-              {eq.inventario && <span className="font-mono text-blue-700 text-xs">NII: {eq.inventario}</span>}
+              {eq.serie && <span className="font-mono text-emerald-400 text-xs">Serie: {eq.serie}</span>}
+              {eq.inventario && <span className="font-mono text-blue-400 text-xs">NII: {eq.inventario}</span>}
               {eq.area && <span className="text-[var(--content-muted)] text-xs">{eq.area}{eq.piso ? ` · Piso ${eq.piso}` : ''}</span>}
             </div>
             <div className="mt-2 flex items-center justify-between">
               <div className="flex gap-2">
                 {eq.tickets_abiertos > 0 && (
                   <button onClick={(e) => handleTickets(e, eq)}
-                    className="inline-flex items-center gap-1 bg-red-50 text-red-700 text-xs px-2 py-0.5 rounded-full border border-red-300">
+                    className="inline-flex items-center gap-1 bg-red-500/20 text-red-400 text-xs px-2 py-0.5 rounded-full border border-red-700/40">
                     {eq.tickets_abiertos} orden{eq.tickets_abiertos !== 1 ? 'es' : ''}
                   </button>
                 )}
@@ -70,7 +84,7 @@ export default function EquipoTable({ equipos, onChange }) {
               </div>
               {eq.qr_token && (
                 <button onClick={(e) => handleQR(e, eq)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs rounded-lg border border-emerald-300">
+                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-600/20 text-emerald-400 text-xs rounded-lg border border-emerald-700/40">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                   </svg>
@@ -85,7 +99,7 @@ export default function EquipoTable({ equipos, onChange }) {
 
       {/* Vista escritorio: tabla completa */}
       <div className="hidden md:block bg-[var(--content-surface)] rounded-xl border border-[var(--content-border)] overflow-hidden">
-        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-[var(--content-border)] scrollbar-track-[var(--content-bg)]">
+        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800/50">
           <table className="w-full text-sm min-w-[1060px]">
             <thead>
               <tr className="bg-[var(--content-bg)]/50 text-[var(--content-muted)] text-left">
@@ -96,6 +110,7 @@ export default function EquipoTable({ equipos, onChange }) {
                 <th className="px-3 py-3 font-medium">Nombre</th>
                 <th className="px-3 py-3 font-medium">Marca / Modelo</th>
                 <th className="px-3 py-3 font-medium">Criticidad</th>
+                <th className="px-3 py-3 font-medium">Adquisición</th>
                 <th className="px-3 py-3 font-medium">Piso</th>
                 <th className="px-3 py-3 font-medium">Área</th>
                 <th className="px-3 py-3 font-medium">Tipo</th>
@@ -138,7 +153,7 @@ export default function EquipoTable({ equipos, onChange }) {
                   {/* N° Inventario IMSS */}
                   <td className="px-3 py-3">
                     {eq.inventario ? (
-                      <span className="font-mono text-blue-700 text-xs font-semibold">
+                      <span className="font-mono text-blue-400 text-xs font-semibold">
                         HGR1-{eq.inventario}
                       </span>
                     ) : (
@@ -148,7 +163,7 @@ export default function EquipoTable({ equipos, onChange }) {
 
                   {/* N° Serie */}
                   <td className="px-3 py-3">
-                    <span className="font-mono text-emerald-700 text-xs font-semibold">
+                    <span className="font-mono text-emerald-400 text-xs font-semibold">
                       {eq.serie || <span className="text-[var(--content-muted)] italic">Sin asignar</span>}
                     </span>
                   </td>
@@ -164,6 +179,14 @@ export default function EquipoTable({ equipos, onChange }) {
                     )}
                   </td>
 
+                  <td className="px-3 py-3">
+                    {eq.tipo_adquisicion && (
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize ${ADQUISICION_BADGE[eq.tipo_adquisicion] || ADQUISICION_BADGE.recurso_propio}`}>
+                        {ADQUISICION_LABELS[eq.tipo_adquisicion] || 'Recurso Propio'}
+                      </span>
+                    )}
+                  </td>
+
                   <td className="px-3 py-3 text-[var(--content-muted)] text-xs">{eq.piso || '—'}</td>
                   <td className="px-3 py-3 text-[var(--content-muted)] text-xs max-w-[150px] truncate">{eq.area || '—'}</td>
                   <td className="px-3 py-3 text-[var(--content-muted)] text-xs capitalize">{eq.tipo_equipo || '—'}</td>
@@ -172,7 +195,7 @@ export default function EquipoTable({ equipos, onChange }) {
                   <td className="px-3 py-3" onClick={(e) => eq.tickets_abiertos > 0 && handleTickets(e, eq)}>
                     {eq.tickets_abiertos > 0 ? (
                       <button
-                        className="inline-flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full font-medium transition-colors border border-red-300"
+                        className="inline-flex items-center gap-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs px-2 py-0.5 rounded-full font-medium transition-colors border border-red-700/40"
                         title="Ver órdenes de servicio abiertas"
                       >
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -190,7 +213,7 @@ export default function EquipoTable({ equipos, onChange }) {
                     <button
                       onClick={(e) => handleQR(e, eq)}
                       disabled={!eq.qr_token}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-30 disabled:cursor-not-allowed text-emerald-700 text-xs font-semibold rounded-lg transition-colors border border-emerald-300"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600/40 disabled:opacity-30 disabled:cursor-not-allowed text-emerald-400 text-xs font-semibold rounded-lg transition-colors border border-emerald-700/40"
                       title="Abrir módulo de impresión de QR"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
