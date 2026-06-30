@@ -19,7 +19,8 @@ import {
   CalendarRange,
   TrendingUp,
   Pencil,
-  Trash2
+  Trash2,
+  Eye
 } from 'lucide-react';
 import toast from '../lib/toast';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -258,7 +259,7 @@ function horaCorta(value) {
 }
 
 // ─── Heatmap de actividad (estilo GitHub · grilla CSS · 0 deps) ───────────────
-function ActividadHeatmap({ porDia, onDiaClick, semanas = 26 }) {
+function ActividadHeatmap({ porDia, onDiaClick, onDiaHover, semanas = 26 }) {
   const hoy = new Date();
   const inicio = new Date(hoy);
   inicio.setDate(inicio.getDate() - (semanas * 7 - 1));
@@ -307,6 +308,8 @@ function ActividadHeatmap({ porDia, onDiaClick, semanas = 26 }) {
                   type="button"
                   disabled={celda.futuro || celda.count === 0}
                   onClick={() => onDiaClick(celda.key)}
+                  onMouseEnter={() => onDiaHover?.(celda.key)}
+                  onFocus={() => onDiaHover?.(celda.key)}
                   title={`${celda.key}: ${celda.count} reserva${celda.count !== 1 ? 's' : ''}`}
                   className={`anim-cell-pop w-3.5 h-3.5 rounded-sm transition-transform ${celda.futuro ? 'opacity-25' : celda.count > 0 ? 'hover:scale-[1.35] cursor-pointer ring-1 ring-black/5' : 'cursor-default'}`}
                   style={{ backgroundColor: NIVEL_COLORES[nivel(celda.count)], animationDelay: `${w * 14}ms` }}
@@ -435,6 +438,114 @@ function StatCard({ icon, valor, label, delay = 0 }) {
   );
 }
 
+// ─── Vista previa de reservas del día (hover sobre heatmap) ──────────────────
+const ESTADO_BADGE = {
+  pendiente:  'bg-amber-500/15  text-amber-300  border-amber-500/30',
+  activa:     'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+  completada: 'bg-sky-500/15    text-sky-300    border-sky-500/30',
+  cancelada:  'bg-rose-500/15   text-rose-300   border-rose-500/30',
+};
+const ESTADO_ICON = {
+  pendiente:  Clock,
+  activa:     Play,
+  completada: CheckCircle2,
+  cancelada:  Ban,
+};
+function formatHora(s) {
+  if (!s) return '—';
+  // Acepta "YYYY-MM-DD HH:MM:SS" y "YYYY-MM-DDTHH:MM"
+  const str = String(s).replace(' ', 'T');
+  const m = str.match(/T(\d{2}):(\d{2})/);
+  return m ? `${m[1]}:${m[2]}` : str.slice(-5);
+}
+function PanelDiaPreview({ hoveredDay, reservas, onClose, onVerDetalle }) {
+  if (!hoveredDay) {
+    return (
+      <div className="hidden xl:flex flex-col w-72 shrink-0 rounded-xl border border-dashed border-[var(--content-border)] bg-[var(--content-bg)]/40 p-4 text-center items-center justify-center min-h-[140px]">
+        <CalendarClock className="h-6 w-6 text-[var(--content-muted)] mb-2" />
+        <p className="text-xs text-[var(--content-muted)] leading-relaxed">
+          Pasa el cursor sobre una celda del mapa<br />para previsualizar las reservas del día.
+        </p>
+      </div>
+    );
+  }
+  const lista = reservasDelDia(reservas, hoveredDay);
+  const [y, m, d] = hoveredDay.split('-');
+  const fechaLabel = `${Number(d)} ${NOMBRE_MES[Number(m) - 1]} ${y}`;
+  return (
+    <div className="w-full xl:w-80 shrink-0 rounded-xl border border-[var(--content-border)] bg-[var(--content-bg)]/40 overflow-hidden anim-fade-in">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--content-border)] bg-[var(--content-surface)]/60">
+        <div className="min-w-0">
+          <p className="text-[10px] uppercase tracking-wider text-[var(--content-muted)] font-semibold">Vista previa</p>
+          <h4 className="text-sm font-bold text-[var(--content-text)] truncate flex items-center gap-1.5">
+            <CalendarClock className="h-4 w-4 text-emerald-500 shrink-0" />
+            {fechaLabel}
+          </h4>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+            {lista.length}
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar vista previa"
+            className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors p-1 rounded-lg hover:bg-[var(--content-border)]"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+      <div className="max-h-72 overflow-y-auto p-2 space-y-1.5">
+        {lista.length === 0 && (
+          <p className="text-xs text-[var(--content-muted)] text-center py-6">Sin reservas en este día.</p>
+        )}
+        {lista.map((r) => {
+          const Icon = ESTADO_ICON[r.estado] || Clock;
+          const badgeCls = ESTADO_BADGE[r.estado] || 'bg-slate-500/15 text-slate-300 border-slate-500/30';
+          return (
+            <div
+              key={r.id}
+              className="rounded-lg border border-[var(--content-border)] bg-[var(--content-surface)] p-2.5 text-xs"
+            >
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <p className="font-semibold text-[var(--content-text)] leading-tight truncate">
+                  {r.equipo_nombre || `Equipo #${r.equipo_id}`}
+                </p>
+                <span className={`shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-semibold ${badgeCls}`}>
+                  <Icon className="h-3 w-3" />
+                  {r.estado}
+                </span>
+              </div>
+              <p className="font-mono text-[11px] text-[var(--content-muted)] mb-1.5">{r.equipo_serie || '—'}</p>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px] text-[var(--content-muted)]">
+                <span className="flex items-center gap-1"><Clock className="h-3 w-3 shrink-0" />{formatHora(r.fecha_inicio)}–{formatHora(r.fecha_fin)}</span>
+                <span className="flex items-center gap-1 truncate"><MapPin className="h-3 w-3 shrink-0" />{r.area_reserva || '—'}</span>
+                <span className="flex items-center gap-1 truncate col-span-2"><User className="h-3 w-3 shrink-0" />{r.solicitante_nombre || '—'}</span>
+              </div>
+              {r.motivo && (
+                <p className="mt-1.5 text-[11px] text-[var(--content-muted)] line-clamp-2 italic">"{r.motivo}"</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {lista.length > 0 && (
+        <div className="px-3 py-2.5 border-t border-[var(--content-border)] bg-[var(--content-surface)]/40">
+          <button
+            type="button"
+            onClick={() => onVerDetalle(hoveredDay)}
+            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-colors active:scale-[0.98]"
+          >
+            <Eye className="h-3.5 w-3.5" />
+            Ver detalle / editar día
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function Reservas() {
   const [reservas, setReservas] = useState([]);
@@ -443,6 +554,7 @@ export default function Reservas() {
   const [modalNueva, setModalNueva] = useState(false);
   const [reservaEditar, setReservaEditar] = useState(null);
   const [diaSel, setDiaSel] = useState(null);
+  const [hoveredDay, setHoveredDay] = useState(null);
 
   const cargarReservas = async () => {
     setLoading(true);
@@ -552,8 +664,25 @@ export default function Reservas() {
 
           {/* Heatmap de actividad */}
           <div className="anim-fade-up bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-5" style={{ animationDelay: '60ms' }}>
-            <h3 className="text-sm font-semibold text-[var(--content-text)] mb-4">Mapa de actividad</h3>
-            <ActividadHeatmap porDia={porDia} onDiaClick={setDiaSel} />
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <h3 className="text-sm font-semibold text-[var(--content-text)]">Mapa de actividad</h3>
+              <p className="text-[11px] text-[var(--content-muted)] hidden sm:block">Pasa el cursor sobre una celda para vista previa</p>
+            </div>
+            <div className="flex flex-col xl:flex-row gap-4">
+              <div className="flex-1 min-w-0">
+                <ActividadHeatmap
+                  porDia={porDia}
+                  onDiaClick={setDiaSel}
+                  onDiaHover={setHoveredDay}
+                />
+              </div>
+              <PanelDiaPreview
+                hoveredDay={hoveredDay}
+                reservas={reservas}
+                onClose={() => setHoveredDay(null)}
+                onVerDetalle={(key) => { setDiaSel(key); setHoveredDay(null); }}
+              />
+            </div>
           </div>
 
           {/* Stat cards */}
