@@ -314,6 +314,12 @@ async def subir_imagen_equipo(
     if len(contenido) > MAX_UPLOAD_MB * 1024 * 1024:
         raise HTTPException(status_code=413, detail=f"Archivo excede {MAX_UPLOAD_MB} MB")
 
+    try:
+        from PIL import Image as _PILImage
+        _PILImage.open(io.BytesIO(contenido)).verify()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Archivo no es una imagen valida")
+
     # Guardar bajo static/uploads/equipos/
     carpeta = os.path.join("static", "uploads", "equipos")
     os.makedirs(carpeta, exist_ok=True)
@@ -420,6 +426,7 @@ async def exportar_equipos_csv(
     piso: Optional[str] = None,
     buscar: Optional[str] = None,
     criticidad: Optional[str] = None,
+    tipo_adquisicion: Optional[str] = None,
     tipo_equipo: Optional[str] = None,
     marca: Optional[str] = None,
     zona_id: Optional[int] = None,
@@ -440,6 +447,8 @@ async def exportar_equipos_csv(
         conditions.append(Equipo.piso == piso)
     if criticidad:
         conditions.append(Equipo.criticidad == criticidad)
+    if tipo_adquisicion:
+        conditions.append(Equipo.tipo_adquisicion == tipo_adquisicion)
     if tipo_equipo:
         conditions.append(Equipo.tipo_equipo == tipo_equipo)
     if marca:
@@ -511,6 +520,7 @@ async def listar_equipos(
     piso: Optional[str] = None,
     buscar: Optional[str] = None,
     criticidad: Optional[str] = None,
+    tipo_adquisicion: Optional[str] = None,
     tipo_equipo: Optional[str] = None,
     marca: Optional[str] = None,
     zona_id: Optional[int] = None,
@@ -535,6 +545,8 @@ async def listar_equipos(
         conditions.append(Equipo.piso == piso)
     if criticidad:
         conditions.append(Equipo.criticidad == criticidad)
+    if tipo_adquisicion:
+        conditions.append(Equipo.tipo_adquisicion == tipo_adquisicion)
     if tipo_equipo:
         conditions.append(Equipo.tipo_equipo == tipo_equipo)
     if marca:
@@ -656,34 +668,34 @@ async def obtener_equipo(
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
-    stmt_ordenes = (
-        select(OrdenServicio)
-        .where(OrdenServicio.equipo_id == equipo_id, OrdenServicio.tenant_id == tenant_id)
-        .order_by(OrdenServicio.fecha.desc())
-        .limit(10)
-    )
-    res_ordenes = await session.execute(stmt_ordenes)
-    ordenes = res_ordenes.scalars().all()
-
-    # Trazabilidad filtrada por equipo_id (ownership ya verificado arriba).
-    stmt_traslados = (
-        select(Trazabilidad)
-        .where(Trazabilidad.equipo_id == equipo_id)
-        .order_by(Trazabilidad.fecha_movimiento.desc())
-        .limit(5)
-    )
-    res_traslados = await session.execute(stmt_traslados)
-    traslados = res_traslados.scalars().all()
-
     equipo_dict = equipo.model_dump()
-    if not can(user, "view_confidential"):
+    if can(user, "view_confidential"):
+        stmt_ordenes = (
+            select(OrdenServicio)
+            .where(OrdenServicio.equipo_id == equipo_id, OrdenServicio.tenant_id == tenant_id)
+            .order_by(OrdenServicio.fecha.desc())
+            .limit(10)
+        )
+        res_ordenes = await session.execute(stmt_ordenes)
+        ordenes = res_ordenes.scalars().all()
+
+        # Trazabilidad filtrada por equipo_id (ownership ya verificado arriba).
+        stmt_traslados = (
+            select(Trazabilidad)
+            .where(Trazabilidad.equipo_id == equipo_id)
+            .order_by(Trazabilidad.fecha_movimiento.desc())
+            .limit(5)
+        )
+        res_traslados = await session.execute(stmt_traslados)
+        traslados = res_traslados.scalars().all()
+    else:
         equipo_dict = filter_equipo_publico(equipo_dict)
         ordenes = []
         traslados = []
 
     return {
-        "equipo": equipo_dict, 
-        "ordenes": [o.model_dump() for o in ordenes], 
+        "equipo": equipo_dict,
+        "ordenes": [o.model_dump() for o in ordenes],
         "traslados": [t.model_dump() for t in traslados]
     }
 
