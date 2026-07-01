@@ -25,6 +25,14 @@ import { Download, Plus, LayoutGrid, List } from 'lucide-react';
 const VISTAS = { tarjeta: 'tarjeta', tabla: 'tabla' };
 const PAGE_SIZE = 50;
 
+// Tipo de adquisición (ENUM en BD). Etiquetas legibles para filtro y badge.
+export const TIPO_ADQ_OPTIONS = [
+  { value: 'recurso_propio', label: 'Recurso Propio' },
+  { value: 'contrato_consolidado', label: 'Consolidado' },
+  { value: 'garantia', label: 'Garantía' },
+  { value: 'subrogado', label: 'Subrogado' },
+];
+
 const ORDEN_OPTIONS = [
   { value: 'nombre', label: 'Nombre A-Z' },
   { value: 'nombre_desc', label: 'Nombre Z-A' },
@@ -304,6 +312,18 @@ export default function Equipos() {
             <option value="alta">🔴 Alta</option>
             <option value="media">🟡 Media</option>
             <option value="baja">🟢 Baja</option>
+          </select>
+
+          {/* Filtro tipo de adquisición */}
+          <select
+            value={filtros.tipo_adquisicion || ''}
+            onChange={(e) => updateFiltros({ ...filtros, tipo_adquisicion: e.target.value || undefined })}
+            className="px-3 py-2 bg-[var(--content-bg)]/60 border border-[var(--content-border)] rounded-lg text-sm text-[var(--content-muted)] focus:outline-none focus:border-emerald-600"
+          >
+            <option value="">Todos los tipos de adquisición</option>
+            {TIPO_ADQ_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
           </select>
 
           <select
