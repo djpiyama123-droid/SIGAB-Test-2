@@ -34,4 +34,11 @@ export default defineConfig({
       },
     },
   },
+  // Scope acotado a src/lib/ para NO pisar los tests del operador en
+  // src/utils/{fechas,url}.test.js que corren con `node --test` y usan
+  // `import { test } from 'node:test'`.
+  test: {
+    environment: 'node',
+    include: ['src/lib/**/*.{test,spec}.{js,jsx}'],
+  },
 });
