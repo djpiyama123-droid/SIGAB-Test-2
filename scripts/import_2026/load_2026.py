@@ -103,9 +103,16 @@ def build_stmt(serie_real, sets):
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--reclasificar-tipo", action="store_true",
+                    help="incluye en el plan la sobrescritura de tipo_adquisicion en conflicto (cédula 2026 gana)")
+    args = ap.parse_args()
+
     recs = json.loads(STAGING.read_text(encoding="utf-8"))
     by_serie, by_inv = load_prod(PRODTSV)
     combined = combine_staging(recs)
+    reclasif = 0
 
     updates = []
     fill = {c: 0 for c, _ in FIELDS}
@@ -136,6 +143,12 @@ def main():
                 fill[col] += 1
             elif fold(cur) == fold(new) or norm(cur) == norm(new):
                 igual[col] += 1
+            elif col == "tipo_adquisicion" and args.reclasificar_tipo:
+                # cédula 2026 gana: sobrescritura controlada y registrada
+                sets[col] = new
+                reclasif += 1
+                conflict_rows.append({"serie": prod["_serie_real"], "via": via, "campo": col,
+                                      "prod_actual": cur, "valor_2026": new + " [RECLASIFICADO]"})
             else:
                 conflict[col] += 1
                 conflict_rows.append({"serie": prod["_serie_real"], "via": via, "campo": col,
@@ -163,7 +176,7 @@ def main():
     # ── reporte ────────────────────────────────────────────────────
     print("Staging combinado: " + str(len(combined)) + " series únicas")
     print("Match contra prod: " + str(matched) + "  (sin match: " + str(len(no_match)) + ")")
-    print("Equipos con >=1 hueco a rellenar: " + str(len(updates)))
+    print("Equipos a actualizar: " + str(len(updates)) + "  (reclasificaciones de tipo: " + str(reclasif) + ")")
     print("=" * 60)
     print("%-28s %9s %7s %10s" % ("campo", "rellenar", "igual", "conflicto"))
     for c, _ in FIELDS:
