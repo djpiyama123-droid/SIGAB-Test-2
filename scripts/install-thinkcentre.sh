@@ -58,8 +58,16 @@ apt-get upgrade -y
 apt-get install -y --no-install-recommends \
   git curl wget ca-certificates gnupg lsb-release \
   build-essential python3 python3-venv python3-pip \
-  nodejs npm \
   unattended-upgrades fail2ban rsync jq vim tmux ufw
+
+# Node: NO usar los paquetes nodejs/npm de Ubuntu (el npm de Ubuntu fuerza un
+# downgrade si ya hay nodejs de nodesource — conflicto apt visto en 25.10).
+# El nodejs de nodesource ya trae npm embebido.
+if ! command -v node >/dev/null 2>&1; then
+  curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+  apt-get install -y nodejs
+fi
+node --version && npm --version
 
 # ---------- 2. anti-suspension 24/7 ----------
 echo "[2/7] Anti-suspension 24/7"
