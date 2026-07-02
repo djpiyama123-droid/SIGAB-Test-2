@@ -47,13 +47,14 @@ export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
   };
 
   const handleDescargarPdf = async () => {
+    const win = api.prepararVentanaPdf(); // síncrono: antes del await o el popup blocker de Safari lo mata
     const tid = toast.loading('Generando PDF NOM-240...');
     try {
       const blob = await api.descargarPdfNom240(eventoId);
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
+      await api.abrirPdf(blob, `nom240-${eventoId}.pdf`, win);
       toast.success('PDF generado', { id: tid });
     } catch (err) {
+      win?.close();
       toast.error('Error al generar PDF', { id: tid });
     }
   };

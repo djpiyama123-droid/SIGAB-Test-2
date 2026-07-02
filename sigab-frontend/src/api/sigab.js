@@ -16,6 +16,10 @@
  */
 import axios from 'axios';
 
+// iPadOS se anuncia como Mac; se distingue por pantalla multitouch
+const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 // Cliente axios con proxy via Vite (/api → localhost:8000/api)
 const client = axios.create({
   baseURL: '/api',
@@ -58,8 +62,38 @@ export const api = {
   getMe: () => client.get('/auth/me'),
   changePassword: (data) => client.post('/auth/change-password', data),
 
-  // Helper para descargas
-  triggerDownload: (blob, filename) => {
+  // ── Helpers de descarga/PDF (iOS-safe) ────────────────────
+  // En iOS Safari <a download> con blob no descarga y window.open tras un
+  // await lo mata el popup blocker. En iOS se usa el share sheet nativo
+  // (Guardar en Archivos / AirDrop / Imprimir); en el resto, pestaña
+  // pre-abierta síncrona + revoke diferido.
+
+  // Llamar SIN await, al inicio del handler del click (antes de cualquier
+  // fetch), para que el popup blocker lo cuente como gesto del usuario.
+  prepararVentanaPdf: () => (isIOS ? null : window.open('', '_blank')),
+
+  abrirPdf: async (blob, filename, win = null) => {
+    if (isIOS && navigator.canShare) {
+      const file = new File([blob], filename, { type: blob.type || 'application/pdf' });
+      if (navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file] }); return; }
+        catch (e) { if (e.name === 'AbortError') return; }
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    if (win && !win.closed) win.location = url;
+    else window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  },
+
+  triggerDownload: async (blob, filename) => {
+    if (isIOS && navigator.canShare) {
+      const file = new File([blob], filename, { type: blob.type || 'application/octet-stream' });
+      if (navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file] }); return; }
+        catch (e) { if (e.name === 'AbortError') return; }
+      }
+    }
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -67,7 +101,8 @@ export const api = {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // revoke inmediato cancela la descarga en Safari y Android lentos
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
   },
 
   // ── Dashboard ─────────────────────────────────────────────

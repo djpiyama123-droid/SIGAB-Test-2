@@ -134,29 +134,28 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
   };
 
   const handleImprimir = async () => {
+    const win = api.prepararVentanaPdf(); // síncrono: antes del await o el popup blocker de Safari lo mata
     const tid = toast.loading('Generando PDF…');
     try {
       const blob = await api.descargarPdfOrden(ordenId);
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
-      // Liberar memoria después de un rato (deja tiempo a que la pestaña cargue)
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-      toast.success('PDF abierto en nueva pestaña', { id: tid });
+      await api.abrirPdf(blob, `orden-${ordenId}.pdf`, win);
+      toast.success('PDF generado', { id: tid });
     } catch (err) {
+      win?.close();
       console.error(err);
       toast.error('No se pudo generar el PDF', { id: tid });
     }
   };
 
   const handleImprimirFisico = async () => {
+    const win = api.prepararVentanaPdf();
     const tid = toast.loading('Generando formato Poka-Yoke…');
     try {
       const blob = await api.descargarPdfOrdenFisica(ordenId);
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-      toast.success('Formato físico abierto', { id: tid });
+      await api.abrirPdf(blob, `orden-${ordenId}-fisica.pdf`, win);
+      toast.success('Formato físico generado', { id: tid });
     } catch (err) {
+      win?.close();
       console.error(err);
       toast.error('No se pudo abrir el formato físico', { id: tid });
     }

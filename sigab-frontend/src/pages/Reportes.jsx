@@ -2,20 +2,6 @@ import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import toast from '../lib/toast';
 
-function descargarBlob(blob, nombre) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = nombre;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function abrirBlobPdf(blob) {
-  const url = URL.createObjectURL(blob);
-  window.open(url, '_blank');
-}
-
 function BtnExport({ onClick, children, variant = 'pdf' }) {
   const cls = variant === 'pdf'
     ? 'border-[var(--content-border)] text-[var(--content-muted)] hover:bg-[var(--content-border)] hover:text-white'
@@ -66,13 +52,16 @@ export default function Reportes() {
   const anio = now.getFullYear();
 
   async function handleExport(fn, filename, tipo) {
+    // pre-abrir síncrono: tras el await el popup blocker de Safari mata window.open
+    const win = filename.endsWith('.pdf') ? api.prepararVentanaPdf() : null;
     const tid = toast.loading(`Generando ${tipo}...`);
     try {
       const blob = await fn();
-      if (filename.endsWith('.pdf')) abrirBlobPdf(blob);
-      else descargarBlob(blob, filename);
+      if (filename.endsWith('.pdf')) await api.abrirPdf(blob, filename, win);
+      else await api.triggerDownload(blob, filename);
       toast.success(`${tipo} listo`, { id: tid });
     } catch {
+      win?.close();
       toast.error(`Error al generar ${tipo}`, { id: tid });
     }
   }

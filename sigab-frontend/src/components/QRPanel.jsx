@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import toast from '../lib/toast';
+import { api } from '../api/sigah';
 
 // Usa rutas relativas para respetar el proxy de Vite (baseURL = /api)
 // evitando hardcodear http://localhost:8000 (rompe en producción/remoto).
@@ -51,6 +52,7 @@ export default function QRPanel({ equipo, onClose }) {
   };
 
   const handleDescargarEtiqueta = async () => {
+    const win = api.prepararVentanaPdf(); // síncrono: antes del await o el popup blocker de Safari lo mata
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_PREFIX}/equipos/${equipo.id}/qr/label`, {
@@ -58,10 +60,10 @@ export default function QRPanel({ equipo, onClose }) {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      window.open(objectUrl, '_blank');
+      await api.abrirPdf(blob, `etiqueta-qr-${equipo.id}.pdf`, win);
       toast.success('Etiqueta A6 generada');
     } catch (err) {
+      win?.close();
       toast.error('Error al generar etiqueta');
       console.error(err);
     }

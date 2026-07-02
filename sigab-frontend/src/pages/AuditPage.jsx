@@ -38,13 +38,14 @@ const AuditPage = () => {
   };
 
   const handleGenerarBitacora = async () => {
+    const win = api.prepararVentanaPdf(); // síncrono: antes del await o el popup blocker de Safari lo mata
     const tid = toast.loading('Generando bitácora PDF…');
     try {
       const blob = await api.descargarBitacoraPdf();
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
+      await api.abrirPdf(blob, 'bitacora-auditoria.pdf', win);
       toast.success('Bitácora generada', { id: tid });
     } catch (err) {
+      win?.close();
       console.error(err);
       toast.error('No se pudo generar la bitácora PDF', { id: tid });
     }
