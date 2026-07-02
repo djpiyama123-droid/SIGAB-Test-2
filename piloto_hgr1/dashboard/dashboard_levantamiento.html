@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Levantamiento HGR No.1</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #f0f2f5;
+    padding: 16px;
+    color: #1a1a1a;
+  }
+  .header {
+    background: linear-gradient(135deg, #006CB7 0%, #004B82 100%);
+    color: white;
+    padding: 16px 20px;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .meta { font-size: 11px; opacity: 0.9; }
+  .updated { font-size: 11px; opacity: 0.7; margin-top: 4px; }
+
+  .main {
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 20px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat {
+    background: #f6f8fa;
+    border-radius: 6px;
+    padding: 14px 10px;
+    text-align: center;
+    border: 1px solid #e1e4e8;
+  }
+  .stat .num {
+    font-size: 28px;
+    font-weight: 700;
+    color: #006CB7;
+    line-height: 1;
+  }
+  .stat .label {
+    font-size: 10px;
+    color: #6a737d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+  .stat.green .num { color: #22863a; }
+  .stat.yellow .num { color: #b08800; }
+  .stat.red .num { color: #cb2431; }
+  .stat.gray .num { color: #6a737d; }
+  .stat.blue .num { color: #006CB7; }
+
+  .progress-section {
+    background: #f6f8fa;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 20px;
+    border: 1px solid #e1e4e8;
+  }
+  .progress-section h3 {
+    font-size: 13px;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+  }
+  .progress-bar {
+    height: 24px;
+    background: #e1e4e8;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #006CB7 0%, #2ecc71 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    transition: width 0.5s;
+  }
+
+  .pisos-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .piso {
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 12px;
+    text-align: center;
+  }
+  .piso .name {
+    font-size: 12px;
+    color: #6a737d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .piso .progress {
+    height: 8px;
+    background: #e1e4e8;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+  .piso .progress .fill {
+    height: 100%;
+    background: #2ecc71;
+  }
+  .piso .pct {
+    font-size: 18px;
+    font-weight: 700;
+    color: #006CB7;
+  }
+  .piso .small {
+    font-size: 10px;
+    color: #6a737d;
+  }
+
+  .alert {
+    background: #fffbe6;
+    border-left: 4px solid #f0a020;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #594305;
+    margin-top: 16px;
+  }
+  .alert strong { color: #8b6914; }
+
+  .update-form {
+    background: #f6f8fa;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 20px;
+    border: 1px solid #e1e4e8;
+  }
+  .update-form h3 {
+    font-size: 13px;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+  }
+  .update-form .form-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .update-form label {
+    display: block;
+    font-size: 11px;
+    color: #6a737d;
+    margin-bottom: 2px;
+  }
+  .update-form input, .update-form select {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #d0d7de;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .update-form button {
+    background: #006CB7;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  .update-form button:hover { background: #00558f; }
+
+  .last-entry {
+    background: #f0fff4;
+    border: 1px solid #c6f6d5;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: #22543d;
+    margin-top: 8px;
+    display: none;
+  }
+  .last-entry.visible { display: block; }
+
+  details {
+    background: #f6f8fa;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 16px;
+  }
+  details summary {
+    font-size: 12px;
+    color: #006CB7;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  details .body {
+    font-size: 11px;
+    color: #1a1a1a;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>📊 Dashboard — Levantamiento HGR No.1 IMSS Tijuana</h1>
+    <div class="updated" id="updated">Última actualización: <span id="ts">—</span></div>
+  </div>
+  <div class="meta" style="text-align:right">
+    <div>Semana 23-27 jun 2026</div>
+    <div>Bioingeniería · Gustavo López C.</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="stats-grid">
+    <div class="stat">
+      <div class="num" id="total-refer">751</div>
+      <div class="label">Equipos referencia SIGAB</div>
+    </div>
+    <div class="stat green">
+      <div class="num" id="visitado">0</div>
+      <div class="label">Visitados hoy</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="acumulado">0</div>
+      <div class="label">Total acumulado</div>
+    </div>
+    <div class="stat red">
+      <div class="num" id="nuevos">0</div>
+      <div class="label">Equipos nuevos (no en SIGAB)</div>
+    </div>
+    <div class="stat yellow">
+      <div class="num" id="faltantes">0</div>
+      <div class="label">Faltantes en físico</div>
+    </div>
+    <div class="stat gray">
+      <div class="num" id="baja">0</div>
+      <div class="label">Marcados baja</div>
+    </div>
+  </div>
+
+  <div class="progress-section">
+    <h3>Progreso del recorrido</h3>
+    <div class="progress-bar">
+      <div class="fill" id="progress-fill" style="width:0%">0%</div>
+    </div>
+  </div>
+
+  <h3 style="font-size:13px; color:#1a1a1a; margin-bottom:10px">Progreso por piso / área crítica</h3>
+  <div class="pisos-grid" id="pisos">
+    <!-- Generado por JS -->
+  </div>
+
+  <details>
+    <summary>📝 Actualizar manualmente (al final del día)</summary>
+    <div class="body">
+      <div class="update-form">
+        <h3>¿Cuántos equipos visitaste HOY?</h3>
+        <div class="form-row">
+          <div>
+            <label>Piso / área</label>
+            <select id="f-piso">
+              <option value="P1">Piso 1</option>
+              <option value="P2">Piso 2</option>
+              <option value="P3">Piso 3</option>
+              <option value="P4">Piso 4</option>
+              <option value="P5">Piso 5</option>
+              <option value="P6">Piso 6</option>
+              <option value="Urgencias">Urgencias</option>
+              <option value="UCI">UCI</option>
+              <option value="Quirófano">Quirófano</option>
+              <option value="Imagenología">Imagenología</option>
+              <option value="Consulta Ext">Consulta Externa</option>
+            </select>
+          </div>
+          <div>
+            <label>Equipos visitados</label>
+            <input type="number" id="f-visitados" min="0" value="0">
+          </div>
+          <div>
+            <label>Encontrados en SIGAB</label>
+            <input type="number" id="f-encontrados" min="0" value="0">
+          </div>
+          <div>
+            <label>Equipos NUEVOS</label>
+            <input type="number" id="f-nuevos" min="0" value="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Marcados como BAJA</label>
+            <input type="number" id="f-baja" min="0" value="0">
+          </div>
+          <div>
+            <label>Faltantes en físico (estaban en SIGAB pero no aparecen)</label>
+            <input type="number" id="f-faltantes" min="0" value="0">
+          </div>
+          <div>
+            <label>Notas del día (opcional)</label>
+            <input type="text" id="f-notas" placeholder="Ej: UCI completo, falta 4to piso">
+          </div>
+          <div style="display:flex; align-items:flex-end">
+            <button onclick="registrar()">💾 Registrar día</button>
+          </div>
+        </div>
+        <div class="last-entry" id="last-entry"></div>
+      </div>
+    </div>
+  </details>
+
+  <div class="alert">
+    <strong>📅 Calendario:</strong>
+    Lunes 23 = P1+P2 · Martes 24 = P3+P4 · Miércoles 25 = P5+P6+Urgencias ·
+    Jueves 26 = Quirófano+Imagenología+UCI · Viernes 27 = Validación + cierre Excel.
+  </div>
+
+  <div class="alert" style="background:#f0f7ff; border-color:#4a90e2; color:#1a365d">
+    <strong>💡 Cómo se actualiza este dashboard:</strong> los datos se guardan en
+    <code>localStorage</code> de este navegador. Para sincronizar entre tu laptop
+    y tu tablet, exporta el JSON desde el botón de abajo e impórtalo en el otro
+    dispositivo.
+  </div>
+
+  <details>
+    <summary>🔄 Sincronizar entre dispositivos</summary>
+    <div class="body">
+      <p><b>Exportar (de este dispositivo):</b></p>
+      <button onclick="exportarJSON()" style="background:#22863a; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:11px">📤 Descargar JSON</button>
+      <p style="margin-top:12px"><b>Importar (en el otro dispositivo):</b></p>
+      <input type="file" id="f-import" accept=".json" style="font-size:11px">
+    </div>
+  </details>
+
+</div>
+
+<script>
+// ---- ESTADO INICIAL ----
+const STORAGE_KEY = "hgr1_levantamiento_v1";
+let estado = cargar() || {
+  dias: [],
+  porPiso: {
+    "P1": 0, "P2": 0, "P3": 0, "P4": 0, "P5": 0, "P6": 0,
+    "Urgencias": 0, "UCI": 0, "Quirófano": 0, "Imagenología": 0, "Consulta Ext": 0,
+  },
+  esperados: {
+    "P1": 60, "P2": 80, "P3": 100, "P4": 80, "P5": 60, "P6": 50,
+    "Urgencias": 90, "UCI": 70, "Quirófano": 50, "Imagenología": 60, "Consulta Ext": 51,
+  },
+  totales: { visitado: 0, acumulado: 0, nuevos: 0, faltantes: 0, baja: 0 },
+};
+
+function cargar() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { return null; }
+}
+function guardar() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(estado));
+  render();
+}
+function exportarJSON() {
+  const blob = new Blob([JSON.stringify(estado, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `hgr1_levantamiento_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+function importarJSON(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      estado = JSON.parse(ev.target.result);
+      guardar();
+      alert("✅ Datos importados");
+    } catch {
+      alert("❌ JSON inválido");
+    }
+  };
+  r.readAsText(f);
+}
+
+function registrar() {
+  const piso = document.getElementById("f-piso").value;
+  const visitados = parseInt(document.getElementById("f-visitados").value) || 0;
+  const encontrados = parseInt(document.getElementById("f-encontrados").value) || 0;
+  const nuevos = parseInt(document.getElementById("f-nuevos").value) || 0;
+  const baja = parseInt(document.getElementById("f-baja").value) || 0;
+  const faltantes = parseInt(document.getElementById("f-faltantes").value) || 0;
+  const notas = document.getElementById("f-notas").value;
+
+  estado.porPiso[piso] = (estado.porPiso[piso] || 0) + visitados;
+  estado.totales.visitado = visitados;
+  estado.totales.acumulado += visitados;
+  estado.totales.nuevos += nuevos;
+  estado.totales.faltantes += faltantes;
+  estado.totales.baja += baja;
+
+  estado.dias.push({
+    fecha: new Date().toISOString().slice(0, 10),
+    hora: new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }),
+    piso, visitados, encontrados, nuevos, baja, faltantes, notas,
+  });
+
+  guardar();
+  const last = estado.dias[estado.dias.length - 1];
+  const el = document.getElementById("last-entry");
+  el.textContent = `✅ ${last.fecha} ${last.hora} · ${piso}: ${visitados} visitados, ${nuevos} nuevos, ${faltantes} faltantes${notas ? " · " + notas : ""}`;
+  el.classList.add("visible");
+}
+
+function render() {
+  // Stats globales
+  document.getElementById("visitado").textContent = estado.totales.visitado;
+  document.getElementById("acumulado").textContent = estado.totales.acumulado;
+  document.getElementById("nuevos").textContent = estado.totales.nuevos;
+  document.getElementById("faltantes").textContent = estado.totales.faltantes;
+  document.getElementById("baja").textContent = estado.totales.baja;
+
+  const totalEsperado = 751;
+  const pct = Math.min(100, Math.round((estado.totales.acumulado / totalEsperado) * 100));
+  const fill = document.getElementById("progress-fill");
+  fill.style.width = pct + "%";
+  fill.textContent = `${estado.totales.acumulado} / ${totalEsperado} (${pct}%)`;
+
+  // Pisos
+  const container = document.getElementById("pisos");
+  container.innerHTML = "";
+  for (const [piso, esperado] of Object.entries(estado.esperados)) {
+    const vis = estado.porPiso[piso] || 0;
+    const pPct = Math.min(100, Math.round((vis / esperado) * 100));
+    const div = document.createElement("div");
+    div.className = "piso";
+    div.innerHTML = `
+      <div class="name">${piso}</div>
+      <div class="progress"><div class="fill" style="width:${pPct}%; background:${pPct >= 100 ? '#22863a' : pPct > 0 ? '#006CB7' : '#e1e4e8'}"></div></div>
+      <div class="pct">${pPct}%</div>
+      <div class="small">${vis} / ${esperado}</div>
+    `;
+    container.appendChild(div);
+  }
+
+  // Timestamp
+  const last = estado.dias[estado.dias.length - 1];
+  if (last) {
+    document.getElementById("ts").textContent = `${last.fecha} ${last.hora}`;
+  } else {
+    document.getElementById("ts").textContent = "— (sin registros)";
+  }
+}
+
+// Wire import
+document.getElementById("f-import").addEventListener("change", importarJSON);
+
+// Init
+render();
+</script>
+
+</body>
+</html>
