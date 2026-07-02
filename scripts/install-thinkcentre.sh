@@ -88,11 +88,12 @@ echo "[3/7] Tailscale"
 if ! command -v tailscale >/dev/null 2>&1; then
   curl -fsSL https://tailscale.com/install.sh | sh
 fi
-# up con SSH para llegar al ThinkCentre desde cualquier nodo del tailnet.
-# Si el nodo ya está unido, `set` habilita SSH sin re-autenticar (no gasta authkey).
+# Si el nodo ya está unido, NO activar Tailscale SSH: cortaría la sesión SSH
+# activa (lose-ssh) y la ACL default (action:check) exige re-auth por navegador,
+# lo que rompería el acceso automatizado por llave clásica que ya funciona.
 if tailscale status >/dev/null 2>&1; then
-  echo "  tailscale ya conectado — habilitando Tailscale SSH sin re-auth"
-  tailscale set --ssh --accept-routes --operator=root
+  echo "  tailscale ya conectado — se conserva SSH clásico (llaves)"
+  tailscale set --accept-routes
 else
   tailscale up --ssh --authkey="${TS_AUTHKEY}" --accept-routes --operator=root
 fi
@@ -119,7 +120,9 @@ docker compose version
 # ---------- 5. Claude Code (Anthropic CLI) ----------
 echo "[5/7] Claude Code"
 if ! command -v claude >/dev/null 2>&1; then
-  npm install -g @anthropic-ai/claude-code
+  # cd /: npm trata el .npmrc del cwd como project config y aborta si define
+  # prefix (pasa cuando se corre con sudo desde el home del operador)
+  (cd / && npm install -g @anthropic-ai/claude-code)
 fi
 claude --version
 
