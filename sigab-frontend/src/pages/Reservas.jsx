@@ -258,7 +258,7 @@ function horaCorta(value) {
 }
 
 // ─── Heatmap de actividad (estilo GitHub · grilla CSS · 0 deps) ───────────────
-function ActividadHeatmap({ porDia, onDiaClick, semanas = 26 }) {
+function ActividadHeatmap({ porDia, onDiaClick, onDiaHover, semanas = 26 }) {
   const hoy = new Date();
   const inicio = new Date(hoy);
   inicio.setDate(inicio.getDate() - (semanas * 7 - 1));
@@ -286,7 +286,7 @@ function ActividadHeatmap({ porDia, onDiaClick, semanas = 26 }) {
   const nivel = (c) => (c <= 0 ? 0 : c / max > 0.75 ? 4 : c / max > 0.5 ? 3 : c / max > 0.25 ? 2 : 1);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto" onMouseLeave={() => onDiaHover && onDiaHover(null)}>
       <div className="inline-flex flex-col gap-1 min-w-max">
         <div className="flex gap-1 pl-9">
           {etiquetasMes.map((m, w) => (
@@ -307,6 +307,7 @@ function ActividadHeatmap({ porDia, onDiaClick, semanas = 26 }) {
                   type="button"
                   disabled={celda.futuro || celda.count === 0}
                   onClick={() => onDiaClick(celda.key)}
+                  onMouseEnter={() => { if (onDiaHover && !celda.futuro && celda.count > 0) onDiaHover(celda.key); }}
                   title={`${celda.key}: ${celda.count} reserva${celda.count !== 1 ? 's' : ''}`}
                   className={`anim-cell-pop w-3.5 h-3.5 rounded-sm transition-transform ${celda.futuro ? 'opacity-25' : celda.count > 0 ? 'hover:scale-[1.35] cursor-pointer ring-1 ring-black/5' : 'cursor-default'}`}
                   style={{ backgroundColor: NIVEL_COLORES[nivel(celda.count)], animationDelay: `${w * 14}ms` }}
@@ -424,6 +425,60 @@ function DiaReservasModal({ dia, reservas, onClose, onNueva, onEditar, onElimina
   );
 }
 
+// ─── Panel de previsualización (solo lectura) al pasar el cursor por un día ────
+function PanelDiaPreview({ dia, reservas }) {
+  if (!dia) {
+    return (
+      <div className="flex-1 min-w-0 flex items-center justify-center rounded-2xl border border-dashed border-[var(--content-border)] text-[var(--content-muted)] text-sm text-center px-4 py-10">
+        Pasa el cursor sobre un día para ver sus reservas
+      </div>
+    );
+  }
+  const lista = reservasDelDia(reservas, dia);
+  const [y, m, d] = dia.split('-');
+  const fechaLabel = `${Number(d)} ${NOMBRE_MES[Number(m) - 1]} ${y}`;
+  return (
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2 mb-3">
+        <CalendarClock className="h-4 w-4 text-emerald-500" />
+        <span className="text-sm font-semibold text-[var(--content-text)]">{fechaLabel}</span>
+        <span className="text-xs text-[var(--content-muted)]">({lista.length} reserva{lista.length !== 1 ? 's' : ''})</span>
+      </div>
+      <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
+        {lista.length === 0 ? (
+          <p className="text-sm text-[var(--content-muted)] py-4">Sin reservas este día.</p>
+        ) : (
+          lista.map((r) => (
+            <div key={r.id} className="bg-[var(--content-bg)]/50 border border-[var(--content-border)] rounded-xl p-3">
+              <div className="flex justify-between items-start gap-2">
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm text-[var(--content-text)] truncate">{r.equipo_nombre}</p>
+                  <p className="text-[10px] text-[var(--content-muted)] uppercase">{r.equipo_serie}</p>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-[var(--content-border)] text-[var(--content-muted)] flex-shrink-0">
+                  {String(r.estado || '').toUpperCase()}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-[var(--content-muted)]">
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {horaCorta(r.fecha_inicio)}{r.fecha_fin ? `–${horaCorta(r.fecha_fin)}` : ''}
+                </span>
+                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{r.area_reserva}</span>
+                {r.solicitante_nombre && (
+                  <span className="flex items-center gap-1"><User className="h-3 w-3" />{r.solicitante_nombre}</span>
+                )}
+              </div>
+              {r.motivo && <p className="text-xs text-[var(--content-muted)] mt-1.5 italic truncate">{r.motivo}</p>}
+            </div>
+          ))
+        )}
+      </div>
+      <p className="text-[10px] text-[var(--content-muted)] mt-2 italic">Clic en el día para editar o eliminar</p>
+    </div>
+  );
+}
+
 function StatCard({ icon, valor, label, delay = 0 }) {
   const animado = useCountUp(valor);
   return (
@@ -443,6 +498,7 @@ export default function Reservas() {
   const [modalNueva, setModalNueva] = useState(false);
   const [reservaEditar, setReservaEditar] = useState(null);
   const [diaSel, setDiaSel] = useState(null);
+  const [diaHover, setDiaHover] = useState(null);
 
   const cargarReservas = async () => {
     setLoading(true);
@@ -550,10 +606,15 @@ export default function Reservas() {
             </ResponsiveContainer>
           </div>
 
-          {/* Heatmap de actividad */}
+          {/* Heatmap de actividad + preview del día al pasar el cursor */}
           <div className="anim-fade-up bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-5" style={{ animationDelay: '60ms' }}>
             <h3 className="text-sm font-semibold text-[var(--content-text)] mb-4">Mapa de actividad</h3>
-            <ActividadHeatmap porDia={porDia} onDiaClick={setDiaSel} />
+            <div className="flex flex-col lg:flex-row gap-6">
+              <div className="lg:shrink-0">
+                <ActividadHeatmap porDia={porDia} onDiaClick={setDiaSel} onDiaHover={setDiaHover} />
+              </div>
+              <PanelDiaPreview dia={diaHover} reservas={reservas} />
+            </div>
           </div>
 
           {/* Stat cards */}
