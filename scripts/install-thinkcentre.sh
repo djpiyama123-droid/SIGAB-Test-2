@@ -39,12 +39,16 @@ require_root() {
 }
 require_root
 
-[[ -z "${TS_AUTHKEY:-}" ]] && {
-  echo "ERROR: variable TS_AUTHKEY no definida."
+# TS_AUTHKEY solo hace falta si el nodo NO está ya unido al tailnet
+# (tailscale status sale con exit 0 solo cuando el backend está Running)
+TS_YA_CONECTADO=0
+command -v tailscale >/dev/null 2>&1 && tailscale status >/dev/null 2>&1 && TS_YA_CONECTADO=1
+if [[ $TS_YA_CONECTADO -eq 0 && -z "${TS_AUTHKEY:-}" ]]; then
+  echo "ERROR: variable TS_AUTHKEY no definida y el nodo no está en el tailnet."
   echo "  Genera una auth key reusable en https://login.tailscale.com/admin/settings/keys"
   echo "  y vuelve a correr: export TS_AUTHKEY=tskey-auth-xxxxx && sudo -E bash install-thinkcentre.sh"
   exit 2
-}
+fi
 
 # ---------- 1. paquetes base ----------
 echo "[1/7] Paquetes base"
@@ -53,7 +57,7 @@ apt-get update -y
 apt-get upgrade -y
 apt-get install -y --no-install-recommends \
   git curl wget ca-certificates gnupg lsb-release \
-  build-essential python3.12 python3.12-venv python3-pip \
+  build-essential python3 python3-venv python3-pip \
   nodejs npm \
   unattended-upgrades fail2ban rsync jq vim tmux ufw
 
@@ -76,8 +80,14 @@ echo "[3/7] Tailscale"
 if ! command -v tailscale >/dev/null 2>&1; then
   curl -fsSL https://tailscale.com/install.sh | sh
 fi
-# up con SSH para llegar al ThinkCentre desde cualquier nodo del tailnet
-tailscale up --ssh --authkey="${TS_AUTHKEY}" --accept-routes --operator=root
+# up con SSH para llegar al ThinkCentre desde cualquier nodo del tailnet.
+# Si el nodo ya está unido, `set` habilita SSH sin re-autenticar (no gasta authkey).
+if tailscale status >/dev/null 2>&1; then
+  echo "  tailscale ya conectado — habilitando Tailscale SSH sin re-auth"
+  tailscale set --ssh --accept-routes --operator=root
+else
+  tailscale up --ssh --authkey="${TS_AUTHKEY}" --accept-routes --operator=root
+fi
 echo "  IP Tailscale asignada:"
 tailscale ip -4
 tailscale status | head -5
@@ -108,13 +118,9 @@ claude --version
 # ---------- 6. Repo SIGAB ----------
 echo "[6/7] Clone del repo SIGAB"
 REPO_DIR=/opt/sigab
-REPO_URL=git@github.com:djpiyama123-droid/SIGAB-Test-2.git
-
-# GitHub.com usa 'git' como usuario
-mkdir -p /root/.ssh
-if ! grep -q "github.com" /root/.ssh/known_hosts 2>/dev/null; then
-  ssh-keyscan -t ed25519,rsa,ecdsa github.com >> /root/.ssh/known_hosts 2>/dev/null
-fi
+# HTTPS: el repo es público y el ThinkCentre es réplica de solo lectura,
+# así no depende de deploy keys. Para pushear ramas hermes/* configurar auth después.
+REPO_URL=https://github.com/djpiyama123-droid/SIGAB-Test-2.git
 
 if [[ ! -d "$REPO_DIR/.git" ]]; then
   git clone "$REPO_URL" "$REPO_DIR"
@@ -128,6 +134,7 @@ BRANCH="hermes/thinkcentre-$(hostname -s)"
 git checkout -B "$BRANCH" origin/feat/ui-cinematic
 
 # CLAUDE.md local del ThinkCentre — apunta a la VPS via Tailscale
+mkdir -p /root/.claude
 cat > /root/.claude/CLAUDE.md <<EOF
 # Hermes Agent — ThinkCentre M720q
 
