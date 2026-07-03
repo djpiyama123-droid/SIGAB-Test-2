@@ -21,9 +21,13 @@ mkdir -p .claude && cp scripts/loop/settings-loop.json .claude/settings.json
 git remote get-url v4 >/dev/null 2>&1 || \
   git remote add v4 git@github.com:djpiyama123-droid/SIGAB-v4.git || true
 
+# host keys de github (el fetch/push por SSH falla sin esto en nodo virgen)
+mkdir -p /root/.ssh && chmod 700 /root/.ssh
+grep -q "github.com" /root/.ssh/known_hosts 2>/dev/null || \
+  ssh-keyscan -t ed25519,rsa,ecdsa github.com >> /root/.ssh/known_hosts 2>/dev/null
+
 # ssh del runner al VPS (el RUNNER despliega, no Claude — Claude tiene ssh denegado)
 if ! grep -q "Host sigab-vps" /root/.ssh/config 2>/dev/null; then
-  mkdir -p /root/.ssh && chmod 700 /root/.ssh
   [[ -f /root/.ssh/id_ed25519 ]] || ssh-keygen -t ed25519 -N "" -f /root/.ssh/id_ed25519 -C "loop@thinkcentre"
   cat >> /root/.ssh/config <<'EOF'
 Host sigab-vps
