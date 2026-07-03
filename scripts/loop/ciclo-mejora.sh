@@ -55,8 +55,12 @@ echo "base: $BASE"
 #       instalada desde scripts/loop/settings-loop.json — SIN skip-permissions;
 #       todo lo fuera del carril frontend se deniega y el ciclo falla limpio) ──
 mkdir -p .claude && cp scripts/loop/settings-loop.json .claude/settings.json
+# acceptEdits: en headless las reglas Edit() del allowlist no se auto-aplican
+# (verificado ciclo 2026-07-03: todo Edit quedaba "pendiente"); este modo
+# auto-acepta ediciones de archivos y los DENY del settings siguen mandando
+# (backend/database/docker/ssh/scripts-loop bloqueados), Bash sigue en allowlist.
 timeout 100m claude -p "$(cat scripts/loop/PROMPT-CICLO.md)" \
-  --model sonnet --max-turns 120 || {
+  --model sonnet --max-turns 120 --permission-mode acceptEdits || {
     echo "claude termino con error/timeout"; }
 
 ESTADO=$(grep -oP "estado:\s*\K\S+" CICLO-RESULTADO.md 2>/dev/null || echo "desconocido")
