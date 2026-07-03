@@ -102,27 +102,46 @@ Proyecto **"SIGAB v4.0 Piloto HGR1"** — https://stitch.withgoogle.com/projects
 Design system "Verde-Blanco IMSS": Inter, roundness 8, primary `#047857`,
 secondary `#065F46`, tertiary `#E0F0E9`, neutral `#F8FAF9`, targets táctiles 48px.
 
+Inventario tras la limpieza de duplicados de Gustavo (2026-07-03; los
+módulos con varias filas conservan variantes a elegir durante el rediseño):
+
+**Desktop**
+
 | Pantalla | Screen ID |
 |---|---|
-| Dashboard desktop (KPIs, gráfica 30d, alertas) | `f0a7d832f5c54a9491da2f699e137490` |
-| Equipos (filtros criticidad/adquisición, badges, QR) | `aa22f6401767433fbaf79ca5362948cf` |
-| Orden de servicio NOM-016 (checklist, firmas, PDF) | `2f2602417a2d44a0bfe33051e267fe48` |
-| Dashboard móvil + bottom-bar con Escanear central | `8af028299b1c4cd4af17babd042028b8` |
-| Detalle de equipo (expediente, historial por serie) | `f9b01c3c7232494e9bb95899c10d40b2` |
-| Equipos móvil (chips de filtro, badges, QR por card) | `b8e80ae1aa7748c3b21a1847a1669fa0` |
-| Detalle de equipo móvil (tabs expediente, timeline, CTA fija) | `89c7d513601244398362c3c40a9ba86e` |
-| Orden de servicio móvil (checklist NOM-016 táctil, evidencias, firmas) | `d01b1a17148f4900bc983a61c29c6b9a` |
+| Dashboard (KPIs, gráfica 30d, alertas) | `f0a7d832f5c54a9491da2f699e137490` |
+| Inventario de Equipos (filtros criticidad/adquisición, badges, QR) | `aa22f6401767433fbaf79ca5362948cf` |
+| Inventario de Equipos — variante | `54a5b5e7054947d2a4b193efc78c9ee1` |
+| Detalle de Equipo (expediente, historial por serie) | `f9b01c3c7232494e9bb95899c10d40b2` |
+| Detalle de Equipo — variante (2562px) | `549d597273b44658a5fa5feba63f186b` |
+| Detalle de Equipo — variante (2386px) | `a6e9c8445ab944e08d9f04f57e65cac7` |
+| Orden de Servicio NOM-016 (checklist, firmas, PDF; 4012px) | `8ecdc72b890b4f8394a69dbfdfe61918` |
+| Reservas de Equipos — variante A | `9ad9c5aaa6ba4fedb7933bd24527f183` |
+| Reservas de Equipos — variante B | `0d916bcd721a4e2b83be901887b3efa4` |
+| Reservas de Equipos — variante C | `73bb15a3a4fb4a23bde1d2c20f4f04ab` |
+| Reservas de Equipos — variante D | `1e753e9a59cc4685b5fb6fc4c2b34750` |
 
-Reservas desktop: GENERADA (verificado en la UI el 2026-07-03) — los
-timeouts del MCP eran solo del transporte; las generaciones completaban de
-fondo, por lo que el proyecto quedó con DUPLICADOS de Reservas (~3-4),
-Detalle móvil (2) y posiblemente otros. Falta limpieza manual en la UI
-(dejar 1 de cada) y anotar aquí el screen ID de la Reservas sobreviviente.
-Hay además una pantalla "Detalle de conflicto de agenda" generada desde una
-sugerencia del chat de Stitch. Nota MCP: `list_screens` devuelve vacío para
-este proyecto (bug); usar `get_screen` por ID. Con `GEMINI_3_FLASH` las
-móviles responden dentro del timeout; las desktop completan pero responden
-tarde (tratar timeout como éxito probable, nunca reintentar a ciegas).
+**Móvil**
+
+| Pantalla | Screen ID |
+|---|---|
+| Dashboard móvil + bottom-bar con Escanear central | `8af028299b1c4cd4af17babd042028b8` |
+| Dashboard móvil — variante | `fd626a99ec874f50ad6d77216b9b1e57` |
+| Navegación móvil SIGAB | `844d27e669a04d11abeae6b570e2569a` |
+| Inventario de Equipos móvil (chips de filtro, badges, QR por card) | `b8e80ae1aa7748c3b21a1847a1669fa0` |
+| Detalle de Equipo móvil (tabs expediente, timeline, CTA fija) | `89c7d513601244398362c3c40a9ba86e` |
+| Detalle de Equipo móvil — variante (3094px) | `eb7bb559a5b84e8b95152ded325fa69f` |
+| Orden de Servicio móvil (checklist NOM-016 táctil, evidencias, firmas) | `d01b1a17148f4900bc983a61c29c6b9a` |
+
+Assets: foto Dräger Evita V300 `473636fa49c14fc89af642493eff8890`,
+logo SIGAB blanco (SVG) `be72b77e52514dc8bccc197fcf45f3f3`.
+
+La Orden de Servicio desktop original (`2f2602417a2d44a0bfe33051e267fe48`)
+fue reemplazada en la limpieza por la versión de 4012px. La pantalla
+"conflicto de agenda" no sobrevivió. Nota MCP: `list_screens` ya funciona
+para este proyecto (el bug de respuesta vacía desapareció tras la limpieza).
+Timeouts de generación desktop = éxito probable de fondo; verificar antes
+de reintentar.
 
 ## 7. Pendientes conocidos hacia el piloto
 
