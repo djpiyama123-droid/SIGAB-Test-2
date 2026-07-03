@@ -72,7 +72,7 @@ NUEVA=$(cat VERSION)
 cd sigab-frontend
 npm ci --silent
 npm run build || { echo "GATE FALLO: build"; notificar "🔴 loop v$NUEVA: build fallo, sin deploy"; exit 1; }
-npx vitest run --reporter=basic 2>/dev/null || { echo "GATE FALLO: tests"; notificar "🔴 loop v$NUEVA: tests fallaron, sin deploy"; exit 1; }
+npx vitest run 2>&1 || { echo "GATE FALLO: tests"; notificar "🔴 loop v$NUEVA: tests fallaron, sin deploy"; exit 1; }
 grep -aq "anim-cell-pop" dist/assets/Reservas-*.js || { echo "GATE FALLO: calendario ausente"; exit 1; }
 grep -alq "prepararVentanaPdf" dist/assets/*.js || { echo "GATE FALLO: fix PDF ausente"; exit 1; }
 cd ..
