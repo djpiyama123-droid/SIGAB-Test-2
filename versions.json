@@ -1,0 +1,28 @@
+{
+  "actual": "4.0.0",
+  "versiones": [
+    {
+      "version": "4.0.0",
+      "fecha": "2026-07-03",
+      "tipo": "major",
+      "autor": "consolidacion",
+      "commit": "4f803c9",
+      "resumen": "Base consolidada del piloto HGR No. 1: expediente del equipo, endpoints batch QR/Excel, fix PDFs iPhone/iPad/Android, calendario de Reservas, filtros tipo de adquisición.",
+      "cambios": [
+        "Merge de todo el trabajo disperso de 3 máquinas en una sola rama oficial",
+        "Fix: PDFs de órdenes/formatos no abrían en iPhone/iPad (popup blocker + revoke)",
+        "Expediente del Equipo: tabla equipo_documentos + endpoint /expediente + ficha",
+        "2 endpoints batch del piloto (etiquetas QR masivas, importar Excel) + 17 tests",
+        "Migración 010 aplicada en BD de producción"
+      ],
+      "verificar": [
+        "Abrir PDF de una orden desde iPhone: debe salir el menú compartir/guardar",
+        "Calendario heatmap de Reservas visible y clicable",
+        "Ficha de equipo muestra sección Expediente sin romper la página"
+      ],
+      "rollback": "frontend: rsync -a --delete dist.bak-20260701-230933/ dist/ · backend: docker tag sigab-backend:pre-v4 + up -d",
+      "deploy_frontend": "2026-07-01T23:09Z",
+      "deploy_backend": "2026-07-03T06:20Z"
+    }
+  ]
+}

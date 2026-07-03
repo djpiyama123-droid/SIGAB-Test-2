@@ -1,0 +1,50 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Grep(**)",
+      "Glob(**)",
+      "Edit(sigab-frontend/**)",
+      "Write(sigab-frontend/**)",
+      "Edit(VERSION)",
+      "Write(VERSION)",
+      "Edit(versions.json)",
+      "Write(versions.json)",
+      "Write(docs/releases/**)",
+      "Edit(docs/releases/**)",
+      "Write(CICLO-RESULTADO.md)",
+      "Bash(npm ci:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx vitest:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push origin v4.0/piloto-clinica-1:*)",
+      "Bash(git rev-parse:*)"
+    ],
+    "deny": [
+      "Edit(sigab-backend/**)",
+      "Write(sigab-backend/**)",
+      "Edit(database/**)",
+      "Write(database/**)",
+      "Edit(docker-compose*)",
+      "Edit(nginx/**)",
+      "Edit(scripts/loop/**)",
+      "Write(scripts/loop/**)",
+      "Bash(rm:*)",
+      "Bash(sudo:*)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(rsync:*)",
+      "Bash(docker:*)",
+      "Bash(curl:*)",
+      "Bash(git push v4:*)",
+      "Bash(git push --force:*)",
+      "WebFetch",
+      "WebSearch"
+    ]
+  }
+}
