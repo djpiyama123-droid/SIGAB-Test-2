@@ -38,7 +38,7 @@ notificar() { # best-effort via gateway OpenClaw/Hermes; nunca falla el ciclo
 
 # ── 0. guard de uso: si Gustavo está usando su plan, saltar el ciclo ──
 # claude -p barato: si responde con error de rate limit u overload, saltamos.
-GUARD=$(claude -p "responde solo: ok" --max-turns 1 2>&1 || true)
+GUARD=$(claude -p "responde solo: ok" --model sonnet --max-turns 1 2>&1 || true)
 if echo "$GUARD" | grep -qiE "rate.?limit|overload|usage limit|resets at"; then
   echo "plan en uso / rate limited — ciclo saltado"; exit 0
 fi
@@ -56,7 +56,7 @@ echo "base: $BASE"
 #       todo lo fuera del carril frontend se deniega y el ciclo falla limpio) ──
 mkdir -p .claude && cp scripts/loop/settings-loop.json .claude/settings.json
 timeout 100m claude -p "$(cat scripts/loop/PROMPT-CICLO.md)" \
-  --max-turns 120 || {
+  --model sonnet --max-turns 120 || {
     echo "claude termino con error/timeout"; }
 
 ESTADO=$(grep -oP "estado:\s*\K\S+" CICLO-RESULTADO.md 2>/dev/null || echo "desconocido")

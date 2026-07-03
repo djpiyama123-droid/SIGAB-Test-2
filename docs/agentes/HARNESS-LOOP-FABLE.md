@@ -1,4 +1,4 @@
-# Harness — Director: Claude Fable 5 (loop ThinkCentre)
+# Harness — Director del loop: Claude Sonnet 5 (ThinkCentre) — Fable 5 dirige las sesiones interactivas
 
 **Dónde corre:** ThinkCentre M720q (homelab 24/7), `sigab-loop.timer` cada 6h
 (00:20, 06:20, 12:20, 18:20 UTC ±10m). Auth: suscripción de Gustavo
