@@ -1,5 +1,5 @@
-// node --test src/utils/fechas.test.js
-import { test } from 'node:test';
+// npx vitest run src/utils/fechas.test.js
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { parseFecha, ymd, agruparPorDia, statsReservas, serieDiaria, reservasDelDia } from './fechas.js';
 

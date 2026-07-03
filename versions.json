@@ -1,6 +1,30 @@
 {
-  "actual": "4.0.0",
+  "actual": "4.0.1",
   "versiones": [
+    {
+      "version": "4.0.1",
+      "fecha": "2026-07-03",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Recorte del bundle de gráficas del Dashboard (1.3MB→530KB) quitando la dependencia @tremor/react no usada para layout, y fix del gate de tests roto (fechas.test.js usaba node:test en vez de vitest).",
+      "cambios": [
+        "KPICard.jsx y Dashboard.jsx: se quitó @tremor/react (Card/Title/Text/Flex/BadgeDelta) y se reemplazó por marcado Tailwind plano visualmente equivalente — ya no era necesario, solo se usaba como envoltorio de layout",
+        "El paquete @tremor/react se eliminó de package.json (dependencia muerta)",
+        "MaintenanceChart (recharts) ahora se carga con React.lazy + Suspense dentro de Dashboard.jsx: la fila de KPIs y el mapa ya no esperan a que baje el chunk de gráficas (antes bloqueaba el primer render del Dashboard, la página que ve todo usuario al iniciar sesión)",
+        "vite.config.js: se quitó la referencia a @tremor del manualChunks 'charts'",
+        "fix(test): src/utils/fechas.test.js usaba 'node:test' (node --test), invisible para 'npx vitest run' — el gate de tests del loop nunca corría estos 8 casos. Se migró a la API de vitest"
+      ],
+      "verificar": [
+        "Dashboard (ruta raíz tras login): las 4 tarjetas KPI se ven igual (borde superior de color, icono, flecha de tendencia arriba/abajo/neutral) en escritorio y móvil",
+        "Tarjeta 'Cumplimiento de Mantenimiento' al fondo del Dashboard: debe aparecer la gráfica de barras (puede tardar una fracción de segundo más, puede verse un placeholder gris pulsante brevemente antes)",
+        "Mapa de Activos por Zona sigue funcionando igual (zonas, click, indicador Wifi verde)",
+        "DevTools → Network → filtrar 'charts': el chunk ya no debería aparecer en la carga inicial del Dashboard antes de que se vea la tarjeta de mantenimiento (verificar que KPIs+mapa pintan sin esperarlo)"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend (rsync del dist anterior si ya se desplegó)",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.0",
       "fecha": "2026-07-03",

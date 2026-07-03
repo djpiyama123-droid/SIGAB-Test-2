@@ -4,7 +4,7 @@
  *
  * Muestra KPIs en tiempo real vía SSE (Server-Sent Events):
  * - Total de equipos, operativos, fallas críticas, mantenimiento pendiente
- * - Gráficas de degradación y cumplimiento (Tremor + Framer Motion)
+ * - Gráficas de degradación y cumplimiento (Recharts + Framer Motion)
  * - Mapa interactivo del hospital con zonas y equipos por zona
  * - Modal de Triple Validación Poka-Yoke (QR + Inventario + Serie)
  *
@@ -13,7 +13,6 @@
  * @requires hooks/useDashboard — Datos del dashboard
  * @requires hooks/useSSE — Suscripción a eventos en tiempo real
  * @requires components/HospitalMap — Mapa SVG interactivo
- * @requires @tremor/react — Componentes de UI para data viz
  */
 import { useDashboard } from '../hooks/useDashboard';
 import { useResponsive } from '../hooks/useResponsive';
@@ -23,7 +22,6 @@ import TripleValidationModal from '../components/TripleValidationModal';
 import DashboardGrid, { GridItem } from '../components/layout/DashboardGrid';
 import KPICard from '../components/cards/KPICard';
 import StatusIndicator from '../components/cards/StatusIndicator';
-import MaintenanceChart from '../components/charts/MaintenanceChart';
 
 import {
   ShieldCheck,
@@ -33,10 +31,11 @@ import {
   AlertTriangle,
   Zap
 } from 'lucide-react';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, Title, Text, Metric, Divider } from '@tremor/react';
+
+const MaintenanceChart = lazy(() => import('../components/charts/MaintenanceChart'));
 
 export default function Dashboard() {
   const { resumen, equipos, alertas, filtros, setFiltros, loading, error, recargar } = useDashboard();
@@ -72,18 +71,18 @@ export default function Dashboard() {
   if (error) {
     return (
       <div className="flex items-center justify-center h-screen px-4">
-        <Card className="max-w-md bg-rose-500/10 border-rose-500/20 text-center">
+        <div className="max-w-md w-full rounded-xl border border-rose-500/20 bg-rose-500/10 text-center p-6">
           <AlertTriangle className="h-12 w-12 text-rose-500 mx-auto mb-4" />
-          <Title className="text-white">Error de Enlace</Title>
-          <Text className="text-rose-200/60 mt-2">{error}</Text>
-          <Divider />
+          <h2 className="text-lg font-medium text-white">Error de Enlace</h2>
+          <p className="text-sm text-rose-200/60 mt-2">{error}</p>
+          <hr className="border-rose-500/20 my-4" />
           <button
             onClick={() => window.location.reload()}
             className="inline-flex items-center gap-2 px-6 py-2 bg-rose-600 hover:bg-rose-500 active:scale-[0.97] text-white text-sm font-medium rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f172a]"
           >
             Reintentar conexión
           </button>
-        </Card>
+        </div>
       </div>
     );
   }
@@ -204,27 +203,29 @@ export default function Dashboard() {
 
         {/* Mapa de Activos — ancho completo */}
         <GridItem span={isControlRoom ? 4 : 3}>
-          <Card className="bg-[var(--content-bg)]/40 border-[var(--content-border)] backdrop-blur-sm p-0 overflow-hidden">
+          <div className="rounded-xl border border-[var(--content-border)] bg-[var(--content-bg)]/40 backdrop-blur-sm overflow-hidden">
             <div className="p-5 border-b border-[var(--content-border)] flex items-center justify-between">
-              <Title className="text-white">Mapa de Activos por Zona</Title>
+              <h3 className="text-lg font-medium text-white">Mapa de Activos por Zona</h3>
               <StatusIndicator status="green" icon="Wifi" />
             </div>
             <div className="p-5">
               <HospitalMap />
             </div>
-          </Card>
+          </div>
         </GridItem>
 
         {/* Cumplimiento de Mantenimiento — debajo del mapa */}
         <GridItem span={isControlRoom ? 4 : 3}>
-          <Card className="bg-[var(--content-bg)]/40 border-[var(--content-border)] backdrop-blur-sm">
-            <Title className="text-white flex items-center gap-2">
+          <div className="rounded-xl border border-[var(--content-border)] bg-[var(--content-bg)]/40 backdrop-blur-sm p-5">
+            <h3 className="text-lg font-medium text-white flex items-center gap-2">
               <ClipboardCheck className="h-5 w-5 text-blue-500" />
               Cumplimiento de Mantenimiento
-            </Title>
-            <Text className="text-[var(--content-muted)] text-xs mb-6">Programado vs. Ejecutado por mes</Text>
-            <MaintenanceChart />
-          </Card>
+            </h3>
+            <p className="text-[var(--content-muted)] text-xs mb-6">Programado vs. Ejecutado por mes</p>
+            <Suspense fallback={<div className="w-full h-72 rounded-lg bg-[var(--content-bg)]/60 animate-pulse" />}>
+              <MaintenanceChart />
+            </Suspense>
+          </div>
         </GridItem>
       </DashboardGrid>
     </motion.div>

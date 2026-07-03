@@ -23,7 +23,7 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('recharts') || id.includes('@tremor') || id.includes('framer-motion') || id.includes('d3-')) {
+            if (id.includes('recharts') || id.includes('framer-motion') || id.includes('d3-')) {
               return 'charts';
             }
             if (id.includes('qrcode') || id.includes('jsqr')) {
