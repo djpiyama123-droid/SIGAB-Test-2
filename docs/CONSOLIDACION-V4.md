@@ -109,10 +109,18 @@ secondary `#065F46`, tertiary `#E0F0E9`, neutral `#F8FAF9`, targets táctiles 48
 | Orden de servicio NOM-016 (checklist, firmas, PDF) | `2f2602417a2d44a0bfe33051e267fe48` |
 | Dashboard móvil + bottom-bar con Escanear central | `8af028299b1c4cd4af17babd042028b8` |
 | Detalle de equipo (expediente, historial por serie) | `f9b01c3c7232494e9bb95899c10d40b2` |
+| Equipos móvil (chips de filtro, badges, QR por card) | `b8e80ae1aa7748c3b21a1847a1669fa0` |
+| Detalle de equipo móvil (tabs expediente, timeline, CTA fija) | `89c7d513601244398362c3c40a9ba86e` |
+| Orden de servicio móvil (checklist NOM-016 táctil, evidencias, firmas) | `d01b1a17148f4900bc983a61c29c6b9a` |
 
-Pendiente: pantalla de Reservas (timeouts del servidor Stitch, 5 intentos) y
-variantes móviles de Equipos/Detalle/Orden. Nota MCP: `list_screens` devuelve
-vacío para este proyecto (bug); usar `get_screen` por ID.
+Pendiente: pantalla de Reservas desktop — 8 intentos acumulados (2026-07-02
+y 2026-07-03), siempre timeout del transporte MCP; las generaciones desktop
+de este proyecto exceden el límite. Generarla desde la UI de Stitch
+directamente (el prompt usado queda en el historial del proyecto). Al abrir
+el proyecto, revisar si algún intento de fondo dejó pantallas duplicadas de
+Reservas o Detalle móvil y borrar sobrantes. Nota MCP: `list_screens`
+devuelve vacío para este proyecto (bug); usar `get_screen` por ID. Las
+generaciones móviles con `GEMINI_3_FLASH` sí completan dentro del timeout.
 
 ## 7. Pendientes conocidos hacia el piloto
 
