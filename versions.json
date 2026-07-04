@@ -6,7 +6,7 @@
       "fecha": "2026-07-03",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "45868a3",
       "resumen": "Pulido visual de Preventivos al design system Verde-Blanco IMSS: badges de vencimiento legibles en modo claro, iconos Lucide y botones con target táctil de 48px.",
       "cambios": [
         "Preventivos.jsx: header con icono Calendar en caja emerald (mismo patrón que Equipos/Dashboard)",
