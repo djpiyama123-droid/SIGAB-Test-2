@@ -693,6 +693,14 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .anim-fade-up, .anim-scale-in, .anim-fade-in, .anim-cell-pop { animation: none !important; }
 }
+
+/* Opciones de <select> nativos: el popup del SO no hereda el tema y puede
+   pintar texto claro sobre fondo blanco. Forzamos fondo/texto del tema para
+   garantizar contraste en blue/green/dark/glass. */
+option {
+  background-color: var(--content-bg);
+  color: var(--content-text);
+}
    Landing cinematic — Dirección A "Quirófano de datos"
    CSS-first, 0 kb de lib. Todo respeta prefers-reduced-motion.
    ════════════════════════════════════════════════════════════════════ */

@@ -75,6 +75,23 @@ Leyenda: ✅ aplicado y verificado · 🟡 en progreso/parcial · ⬜ sin empeza
    default o si Verde-Blanco IMSS (`green`) debe ser el default de
    producción — decisión de Gustavo, no del loop.
 
+## ATAJO para el próximo ciclo — auditoría de contraste ya existe en `feat/ui-cinematic`
+
+**Dato clave descubierto al cierre de esta sesión**: el 2026-06-20, el commit
+`86373f7` ("fix(ui): corrige bugs de contraste entre temas en 20 modulos") en
+`feat/ui-cinematic` ya hizo un barrido similar y tocó 20 archivos, varios de
+los cuales siguen en el backlog de abajo: `EventoAdversoModal.jsx`,
+`FilterBar.jsx`, `Almacen.jsx`, `Analitica.jsx`, `AuditPage.jsx`,
+`Copilot.jsx`, `Reportes.jsx`, además de `HospitalMap.jsx`, `Ordenes.jsx` y
+`EquipoPublico.jsx` (que esta sesión ya corrigió de forma independiente, con
+un diff distinto — el código divergió bastante desde junio, verificar
+solapamiento antes de portar). **Antes de rehacer el backlog manualmente,
+revisar `git show 86373f7` y decidir por archivo: cherry-pick, reaplicación
+manual, o descartar si ya no aplica.** Ese mismo commit también agrega una
+regla genérica a `index.css` para `<option>` de `<select>` nativos (ya
+portada hoy, ver más abajo) — sección `MaintenanceChart.jsx`/`StatsCards.jsx`
+del diff no ha sido comparada contra la v4 actual, revisar si aplica.
+
 ## Backlog de contraste — barrido completo (2026-07-04)
 
 Sesión de hoy hizo un barrido de `grep -rn "text-white|text-black|bg-white"`
