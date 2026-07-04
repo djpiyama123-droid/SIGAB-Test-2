@@ -135,7 +135,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                 </p>
               </div>
             </div>
-            <button onClick={onClose} className="text-[var(--content-muted)] hover:text-white p-1">
+            <button onClick={onClose} className="text-[var(--content-muted)] hover:text-[var(--content-text)] p-1">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -164,7 +164,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                 </div>
                 <div>
                   <span className="text-[var(--content-muted)]">Criticidad</span>
-                  <p className="text-white capitalize mt-1">{equipo.criticidad || '—'}</p>
+                  <p className="text-[var(--content-text)] capitalize mt-1">{equipo.criticidad || '—'}</p>
                 </div>
                 <div>
                   <span className="text-[var(--content-muted)]">Piso</span>
@@ -215,12 +215,12 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                 </div>
                 <div>
                   <span className="text-[var(--content-muted)] text-xs block">N° Contrato / Servicio</span>
-                  <span className="text-white font-medium block mt-1">{equipo.numero_contrato_servicio || equipo.numero_contrato || '—'}</span>
+                  <span className="text-[var(--content-text)] font-medium block mt-1">{equipo.numero_contrato_servicio || equipo.numero_contrato || '—'}</span>
                 </div>
                 {equipo.proveedor_servicio && (
                   <div className="col-span-2">
                     <span className="text-[var(--content-muted)] text-xs block">Proveedor del Servicio</span>
-                    <span className="text-white block mt-1">{equipo.proveedor_servicio}</span>
+                    <span className="text-[var(--content-text)] block mt-1">{equipo.proveedor_servicio}</span>
                   </div>
                 )}
                 {/* S9: Aviso prominente de imagen referencial dentro del bloque Contrato */}
@@ -443,7 +443,7 @@ export default function EquipoDetail({ equipo, onClose, onChange }) {
                 <div className="space-y-2">
                   {historial.traslados.slice(0, 5).map((t, i) => (
                     <div key={i} className="bg-[var(--content-bg)]/50 rounded-lg p-3 text-sm flex justify-between">
-                      <span className="text-white">
+                      <span className="text-[var(--content-text)]">
                         {t.area_origen} → {t.area_destino}
                       </span>
                       <span className="text-[var(--content-muted)]">{t.fecha_movimiento}</span>

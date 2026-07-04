@@ -1,6 +1,30 @@
 {
-  "actual": "4.0.3",
+  "actual": "4.0.4",
   "versiones": [
+    {
+      "version": "4.0.4",
+      "fecha": "2026-07-04",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Fix de contraste en el módulo Equipos (página, ficha de detalle, formulario e historial técnico): texto de cuerpo con text-white fijo, invisible en temas claros.",
+      "cambios": [
+        "Equipos.jsx: toggle Tarjetas/Tabla, botón 'Filtros' (móvil) y 'Limpiar filtros' usaban hover:text-white fijo — ahora hover:text-[var(--content-text)]",
+        "EquipoDetail.jsx: botón cerrar, campo 'Criticidad', 'N° Contrato/Servicio', 'Proveedor del Servicio' y renglones de Traslados usaban text-white como texto de cuerpo — ahora var(--content-text). Los badges de estado (fondo de color) se dejaron igual, son el uso correcto de text-white fijo",
+        "EquipoForm.jsx: botón cerrar y el botón nativo del selector de archivo (file:text-white sobre file:bg-[var(--content-surface)]) — ahora var(--content-text)",
+        "HistorialEquipoModal.jsx: botón cerrar, tab activo, y renglones de órdenes/preventivos en el historial — ahora var(--content-text)",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance actualizada (Equipos/Inventario y Detalle de Equipo pasan a 🟡 Parcial)"
+      ],
+      "verificar": [
+        "Página Equipos, cambiar a tema 'Azul IMSS (claro)' o 'Verde SIGAH (claro)': el toggle Tarjetas/Tabla y el botón de filtros deben verse legibles al pasar el mouse (hover), no desaparecer",
+        "Abrir la ficha de un equipo (click en una tarjeta/fila) en modo claro: 'Criticidad', 'N° Contrato/Servicio' y 'Proveedor del Servicio' deben verse en gris oscuro, no invisibles",
+        "Dentro de la ficha, abrir 'Ver Historial Completo': las 3 pestañas (Órdenes/Traslados/Preventivos) y sus renglones deben ser legibles en modo claro",
+        "Crear o editar un equipo: el botón de seleccionar imagen (input file) debe mostrar su texto legible en modo claro"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.3",
       "fecha": "2026-07-04",

@@ -55,7 +55,7 @@ export default function HistorialEquipoModal({ equipo, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="text-[var(--content-muted)] hover:text-white p-1 rounded-lg hover:bg-[var(--content-border)]"
+            className="text-[var(--content-muted)] hover:text-[var(--content-text)] p-1 rounded-lg hover:bg-[var(--content-border)]"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -73,7 +73,7 @@ export default function HistorialEquipoModal({ equipo, onClose }) {
                 onClick={() => setTab(t.id)}
                 className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
                   tab === t.id
-                    ? 'text-white border-emerald-500'
+                    ? 'text-[var(--content-text)] border-emerald-500'
                     : 'text-[var(--content-muted)] border-transparent hover:text-[var(--content-muted)]'
                 }`}
               >
@@ -126,7 +126,7 @@ function ListaOrdenes({ ordenes }) {
           <div className="flex justify-between items-start mb-2">
             <div>
               <p className="font-mono text-emerald-400 text-sm">{os.numero_orden}</p>
-              <p className="text-white text-sm font-medium mt-0.5">
+              <p className="text-[var(--content-text)] text-sm font-medium mt-0.5">
                 {os.tipo_mantenimiento}
               </p>
             </div>
@@ -196,7 +196,7 @@ function ListaPreventivos({ preventivos }) {
     <div className="space-y-3">
       {preventivos.map((pp) => (
         <div key={pp.id} className="bg-[var(--content-bg)]/50 border border-[var(--content-border)] rounded-lg p-4">
-          <p className="text-white text-sm font-medium">{pp.tipo_preventivo}</p>
+          <p className="text-[var(--content-text)] text-sm font-medium">{pp.tipo_preventivo}</p>
           <div className="flex justify-between text-xs text-[var(--content-muted)] mt-2">
             <span>Cada {pp.frecuencia_dias} días</span>
             <span>Próx: {pp.proxima_ejecucion}</span>
