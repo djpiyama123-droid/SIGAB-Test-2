@@ -1,6 +1,30 @@
 {
-  "actual": "4.0.1",
+  "actual": "4.0.2",
   "versiones": [
+    {
+      "version": "4.0.2",
+      "fecha": "2026-07-03",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Pulido visual de Preventivos al design system Verde-Blanco IMSS: badges de vencimiento legibles en modo claro, iconos Lucide y botones con target táctil de 48px.",
+      "cambios": [
+        "Preventivos.jsx: header con icono Calendar en caja emerald (mismo patrón que Equipos/Dashboard)",
+        "BadgeVencimiento: reemplaza chips bg-*-900/60 (solo legibles en modo oscuro) por chips translúcidos bg-*-500/10 + borde *-500/20, con iconos AlertTriangle/Clock",
+        "Fix visual: 'Próxima ejecución' usaba text-white fijo — invisible sobre el fondo claro del modo día; ahora usa var(--content-text)",
+        "Chips de filtro y botón 'Marcar ejecutado' con min-h-[44px] (target táctil) e icono CheckCircle2 en vez de '✓' suelto",
+        "Item urgente (vence en ≤3 días): acento border-l-4 en vez de borde rojo completo"
+      ],
+      "verificar": [
+        "Página Preventivos, modo claro (tema por defecto): la fecha bajo 'Próxima ejecución' debe verse en gris oscuro, no invisible/blanca",
+        "Badges de vencimiento (Vencido/Vence hoy/Xd restantes): deben verse como chips redondeados con borde e icono, legibles en claro y oscuro",
+        "Botón 'Marcar ejecutado' y los 3 chips de filtro arriba: en móvil deben tener suficiente alto para tocarlos con el dedo",
+        "Un preventivo que vence en 3 días o menos: borde izquierdo rojo grueso, resto del borde tenue"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.1",
       "fecha": "2026-07-03",
