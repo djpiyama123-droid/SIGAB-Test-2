@@ -136,7 +136,7 @@ export default function Sidebar({ onClose }) {
       <div className="p-4" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
         <div className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
           <p className="font-medium" style={{ color: 'rgba(255,255,255,0.75)' }}>IMSS 1 Clínica General Tijuana</p>
-          <p className="mt-0.5">v2.0 · On-Premise</p>
+          <p className="mt-0.5">v{__SIGAB_VERSION__} · On-Premise</p>
         </div>
       </div>
     </aside>
