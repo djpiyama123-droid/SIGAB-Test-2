@@ -6,7 +6,7 @@
       "fecha": "2026-07-04",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "b1c2465",
       "resumen": "Fix de contraste en el módulo Equipos (página, ficha de detalle, formulario e historial técnico): texto de cuerpo con text-white fijo, invisible en temas claros.",
       "cambios": [
         "Equipos.jsx: toggle Tarjetas/Tabla, botón 'Filtros' (móvil) y 'Limpiar filtros' usaban hover:text-white fijo — ahora hover:text-[var(--content-text)]",
