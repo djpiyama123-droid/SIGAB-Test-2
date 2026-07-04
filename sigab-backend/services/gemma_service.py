@@ -13,6 +13,7 @@ Referencia API Ollama:
 
 import httpx
 import json
+import re
 import base64
 from typing import AsyncGenerator
 from config import OLLAMA_HOST, GEMMA_MODEL, LLM_API_MODE, LLM_API_BASE, LLM_API_KEY, LLM_MODEL
@@ -42,6 +43,16 @@ def get_ollama_client() -> httpx.AsyncClient:
                 limits=httpx.Limits(max_keepalive_connections=5, max_connections=10),
             )
     return _ollama_client
+
+
+def _strip_think(texto: str) -> str:
+    """Quita bloques <think>...</think> de modelos razonadores (MiniMax M2.5/M3).
+    Si el bloque quedó sin cerrar (respuesta truncada), descarta desde <think>."""
+    texto = re.sub(r"<think>.*?</think>", "", texto, flags=re.S)
+    idx = texto.find("<think>")
+    if idx != -1:
+        texto = texto[:idx]
+    return texto.strip()
 
 
 def _vision_client() -> httpx.AsyncClient:
@@ -251,7 +262,7 @@ async def chat_stream(
             "messages": mensajes_full,
             "stream": True,
             "temperature": 0.7,
-            "max_tokens": 512,
+            "max_tokens": 1536,
         }
         try:
             client = get_ollama_client()
@@ -259,21 +270,51 @@ async def chat_stream(
                 if response.status_code != 200:
                     yield f"data: {json.dumps({'error': f'LLM API error {response.status_code}', 'done': True})}\n\n"
                     return
+                # Modelos razonadores: retener <think>...</think>, emitir solo lo posterior.
+                buf = ""          # acumulado mientras decidimos / dentro del think
+                decidido = False  # ya sabemos si la respuesta empieza con <think>
+                pensando = False
                 async for line in response.aiter_lines():
                     line = line.strip()
                     if not line.startswith("data:"):
                         continue
                     chunk = line[5:].strip()
                     if chunk == "[DONE]":
-                        yield f"data: {json.dumps({'token': '', 'done': True})}\n\n"
-                        return
+                        break
                     try:
                         data = json.loads(chunk)
-                        token = (data.get("choices") or [{}])[0].get("delta", {}).get("content") or ""
-                        if token:
-                            yield f"data: {json.dumps({'token': token, 'done': False})}\n\n"
                     except json.JSONDecodeError:
                         continue
+                    token = (data.get("choices") or [{}])[0].get("delta", {}).get("content") or ""
+                    if not token:
+                        continue
+                    if not decidido:
+                        buf += token
+                        stripped = buf.lstrip()
+                        if stripped.startswith("<think>"):
+                            decidido, pensando = True, True
+                            buf = stripped
+                        elif len(stripped) >= 7 or not "<think>".startswith(stripped[:7]):
+                            decidido = False if not stripped else True
+                            if decidido and not pensando:
+                                yield f"data: {json.dumps({'token': buf, 'done': False})}\n\n"
+                                buf = ""
+                        continue
+                    if pensando:
+                        buf += token
+                        fin = buf.find("</think>")
+                        if fin != -1:
+                            resto = buf[fin + len("</think>"):].lstrip("\n")
+                            pensando = False
+                            buf = ""
+                            if resto:
+                                yield f"data: {json.dumps({'token': resto, 'done': False})}\n\n"
+                        continue
+                    yield f"data: {json.dumps({'token': token, 'done': False})}\n\n"
+                if buf and not pensando:
+                    yield f"data: {json.dumps({'token': buf, 'done': False})}\n\n"
+                yield f"data: {json.dumps({'token': '', 'done': True})}\n\n"
+                return
                 yield f"data: {json.dumps({'token': '', 'done': True})}\n\n"
         except httpx.ConnectError:
             yield f"data: {json.dumps({'error': 'API LLM no accesible desde el servidor.', 'done': True})}\n\n"
@@ -345,13 +386,14 @@ async def analizar_no_stream(prompt_user: str, contexto: dict = None) -> str:
                     "messages": mensajes_full,
                     "stream": False,
                     "temperature": 0.5,
-                    "max_tokens": 768,
+                    "max_tokens": 2048,
                 },
                 timeout=90.0,
             )
             resp.raise_for_status()
             data = resp.json()
-            return (data.get("choices") or [{}])[0].get("message", {}).get("content", "")
+            contenido = (data.get("choices") or [{}])[0].get("message", {}).get("content", "")
+            return _strip_think(contenido)
         except httpx.HTTPStatusError as e:
             return f"Error LLM API HTTP {e.response.status_code}: {e.response.text[:200]}"
         except Exception as e:
