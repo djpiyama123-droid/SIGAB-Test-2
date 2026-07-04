@@ -6,7 +6,7 @@
       "fecha": "2026-07-04",
       "tipo": "patch",
       "autor": "loop-thinkcentre + sesion-sonnet-asus (reconciliado)",
-      "commit": "",
+      "commit": "6618b98",
       "resumen": "Rescate de un fix de contraste del ciclo del sigab-loop de las 12:20 PDT que quedo atascado localmente en el ThinkCentre (su git push choco con el push de la sesion v4.0.5 y su allowlist no permite git fetch/pull para reconciliar solo). Completa Ordenes de Servicio: OrdenDetalleModal.jsx y NuevaOrdenModal.jsx.",
       "cambios": [
         "OrdenDetalleModal.jsx: boton cerrar (X) y nombre de archivo PDF en hover sobre evidencias usaban hover:text-white sin cambio de fondo suficiente -- ahora hover:text-[var(--content-text)]",
