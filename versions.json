@@ -6,7 +6,7 @@
       "fecha": "2026-07-04",
       "tipo": "patch",
       "autor": "sesion-sonnet-asus",
-      "commit": "",
+      "commit": "a2c5701",
       "resumen": "Fix de contraste reportado por Gustavo con capturas (Mapa de Activos): tooltip 'Ver Ficha' y panel 'Ficha Tecnica' invisibles en temas claros. Barrido completo del resto de la app para clasificar bugs reales vs falsos positivos; se corrigieron también los de mayor impacto (Login, Ordenes, modal compartido, ficha publica del QR).",
       "cambios": [
         "HospitalMap.jsx: el panel 'Ficha Tecnica' y el tooltip 'Ver Ficha' tenian fondo FIJO oscuro (#0f172a) mezclado con texto de tokens de tema (var(--content-text), oscuro en temas claros) o con bg de tema + texto fijo blanco -- invisible en Azul IMSS y Verde SIGAH. Ahora panel/tooltip usan var(--content-surface)/var(--content-bg) consistentemente en toda la jerarquia (imagen, nombre, marca/modelo/serie, ubicacion, botones de accion, badges COFEPRIS/Criticidad migrados al patron bg-*-500/10). Tambien corregido: hover de tabs de piso y 'Limpiar filtros' con hover:text-white sobre fondo de tema",
