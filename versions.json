@@ -6,7 +6,7 @@
       "fecha": "2026-07-04",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "656199a",
       "resumen": "Fix de contraste en Dashboard (títulos con text-white invisibles en temas claros) + creación de docs/DESIGN-SYSTEM-V4.md con la paleta, tokens CSS y tabla de avance del rediseño Verde-Blanco IMSS.",
       "cambios": [
         "Dashboard.jsx: 4 títulos (\"Error de Enlace\", \"CENTRO DE CONTROL SIGAB\", \"Mapa de Activos por Zona\", \"Cumplimiento de Mantenimiento\") usaban text-white fijo — invisibles en los temas claros (Azul IMSS / Verde SIGAH), mismo bug ya corregido en Preventivos (v4.0.2). Ahora usan var(--content-text)",
