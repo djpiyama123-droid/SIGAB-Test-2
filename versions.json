@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.5",
+  "actual": "4.0.6",
   "versiones": [
+    {
+      "version": "4.0.6",
+      "fecha": "2026-07-04",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre + sesion-sonnet-asus (reconciliado)",
+      "commit": "",
+      "resumen": "Rescate de un fix de contraste del ciclo del sigab-loop de las 12:20 PDT que quedo atascado localmente en el ThinkCentre (su git push choco con el push de la sesion v4.0.5 y su allowlist no permite git fetch/pull para reconciliar solo). Completa Ordenes de Servicio: OrdenDetalleModal.jsx y NuevaOrdenModal.jsx.",
+      "cambios": [
+        "OrdenDetalleModal.jsx: boton cerrar (X) y nombre de archivo PDF en hover sobre evidencias usaban hover:text-white sin cambio de fondo suficiente -- ahora hover:text-[var(--content-text)]",
+        "NuevaOrdenModal.jsx: boton cerrar (X) y boton 'Cancelar' usaban hover:text-white -- ahora hover:text-[var(--content-text)]",
+        "Ordenes.jsx y OrdenServicioRapidaModal.jsx ya habian sido corregidos en v4.0.5 con las mismas lineas -- sin cambios adicionales, solo se descarto el duplicado del patch del loop",
+        "Nota de coordinacion: el ciclo sigab-loop de las 12:20 PDT del 04-jul detecto el mismo bug (via su propio barrido) y creo 2 commits locales (ceba7f6, 2b05ce0) en /opt/sigab del ThinkCentre, pero su git push fue rechazado porque el remoto habia avanzado (esta sesion ya habia pusheado v4.0.5) y la allowlist del loop no incluye git fetch/pull para reconciliar sola -- los commits quedaron huerfanos localmente. Se recupero el contenido real (format-patch por SSH) y se aplico manualmente aqui; se descarta duplicar el bump de version y el release note que el loop tambien habia generado con el mismo numero 4.0.5. Pendiente: el loop deberia poder hacer 'git pull --rebase' antes de reintentar push, o al menos notificar el bloqueo de forma mas visible que solo CICLO-RESULTADO.md"
+      ],
+      "verificar": [
+        "Detalle de una orden: el boton X de cerrar debe verse al pasar el mouse en temas claros; si la orden tiene evidencias en PDF, el nombre del archivo debe verse en hover",
+        "Nueva Orden de Servicio: el boton X y 'Cancelar' deben verse legibles en hover en temas claros"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.5",
       "fecha": "2026-07-04",

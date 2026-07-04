@@ -215,7 +215,7 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
             >
               📋 Físico
             </button>
-            <button onClick={onClose} className="p-2 text-[var(--content-muted)] hover:text-white bg-[var(--content-surface)] rounded-lg">✕</button>
+            <button onClick={onClose} className="p-2 text-[var(--content-muted)] hover:text-[var(--content-text)] bg-[var(--content-surface)] rounded-lg">✕</button>
           </div>
         </div>
 
@@ -273,7 +273,7 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
                           {isPDF ? (
                             <div className="flex flex-col items-center justify-center w-full h-full bg-[var(--content-surface)] text-[var(--content-muted)] group-hover:bg-[var(--content-border)] transition-colors">
                                <span className="text-3xl mb-1">📄</span>
-                               <span className="text-[9px] text-center px-1 truncate w-full text-[var(--content-muted)] group-hover:text-white" title={ev.ruta_archivo.split('/').pop()}>
+                               <span className="text-[9px] text-center px-1 truncate w-full text-[var(--content-muted)] group-hover:text-[var(--content-text)]" title={ev.ruta_archivo.split('/').pop()}>
                                  {ev.ruta_archivo.split('/').pop()}
                                </span>
                             </div>
