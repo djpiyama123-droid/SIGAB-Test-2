@@ -58,6 +58,9 @@ services:
       SIGAH_GEMMA_MODEL: ${SIGAH_GEMMA_MODEL:-qwen-claw}
       SIGAH_VISION_MODEL: ${SIGAH_VISION_MODEL:-gemma4-claw}
       SIGAH_DISABLE_COPILOT: ${SIGAH_DISABLE_COPILOT:-0}
+      SIGAH_LLM_API_MODE: ${SIGAH_LLM_API_MODE:-ollama}
+      SIGAH_LLM_API_BASE: ${SIGAH_LLM_API_BASE:-https://api.minimax.io/v1}
+      SIGAH_LLM_API_KEY: ${SIGAH_LLM_API_KEY:-}
       BOT_API_KEYS: ${BOT_API_KEYS:-}
     extra_hosts:
       - "host-gateway:host-gateway"

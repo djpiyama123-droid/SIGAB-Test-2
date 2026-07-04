@@ -58,6 +58,14 @@ GEMMA_MODEL = os.getenv("SIGAH_GEMMA_MODEL", "gemma3:4b")
 QWEN_MODEL  = os.getenv("SIGAH_QWEN_MODEL",  "qwen2.5:7b")
 DISABLE_COPILOT = os.getenv("SIGAH_DISABLE_COPILOT", "0").strip() in ("1", "true", "yes")
 
+# ── Backend LLM del copiloto de texto ─────────────────────────────
+# "ollama" (default, on-premise) u "openai" (API OpenAI-compatible, ej.
+# MiniMax). Solo afecta el chat/análisis de texto; visión y OCR siguen
+# en Ollama/Gemini. Rollback: SIGAH_LLM_API_MODE=ollama + restart.
+LLM_API_MODE = os.getenv("SIGAH_LLM_API_MODE", "ollama").strip().lower()
+LLM_API_BASE = os.getenv("SIGAH_LLM_API_BASE", "https://api.minimax.io/v1")
+LLM_API_KEY = os.getenv("SIGAH_LLM_API_KEY", "")
+
 # ── OCR Pipeline Config ──────────────────────────────────────────
 OCR_CONFIDENCE_THRESHOLD = float(os.getenv("SIGAH_OCR_CONFIDENCE", "0.85"))
 OCR_MIN_WORDS_THRESHOLD = int(os.getenv("SIGAH_OCR_MIN_WORDS", "5"))

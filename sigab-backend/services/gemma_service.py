@@ -15,21 +15,43 @@ import httpx
 import json
 import base64
 from typing import AsyncGenerator
-from config import OLLAMA_HOST, GEMMA_MODEL
+from config import OLLAMA_HOST, GEMMA_MODEL, LLM_API_MODE, LLM_API_BASE, LLM_API_KEY
 
 _ollama_client: httpx.AsyncClient | None = None
 _resolved_model: str | None = None  # modelo activo (auto-detectado si el configurado no existe)
+
+# Modo OpenAI-compatible (ej. MiniMax): el chat/análisis de texto va a
+# LLM_API_BASE con Bearer; visión y OCR siguen en Ollama local.
+_OPENAI_MODE = LLM_API_MODE == "openai" and bool(LLM_API_KEY)
 
 
 def get_ollama_client() -> httpx.AsyncClient:
     global _ollama_client
     if _ollama_client is None:
-        _ollama_client = httpx.AsyncClient(
-            base_url=OLLAMA_HOST,
-            timeout=httpx.Timeout(120.0, connect=5.0),
-            limits=httpx.Limits(max_keepalive_connections=5, max_connections=10),
-        )
+        if _OPENAI_MODE:
+            _ollama_client = httpx.AsyncClient(
+                base_url=LLM_API_BASE,
+                headers={"Authorization": f"Bearer {LLM_API_KEY}"},
+                timeout=httpx.Timeout(120.0, connect=10.0),
+                limits=httpx.Limits(max_keepalive_connections=5, max_connections=10),
+            )
+        else:
+            _ollama_client = httpx.AsyncClient(
+                base_url=OLLAMA_HOST,
+                timeout=httpx.Timeout(120.0, connect=5.0),
+                limits=httpx.Limits(max_keepalive_connections=5, max_connections=10),
+            )
     return _ollama_client
+
+
+def _vision_client() -> httpx.AsyncClient:
+    """Cliente SIEMPRE apuntado a Ollama local (visión no migra a la API)."""
+    if not _OPENAI_MODE:
+        return get_ollama_client()
+    return httpx.AsyncClient(
+        base_url=OLLAMA_HOST,
+        timeout=httpx.Timeout(120.0, connect=5.0),
+    )
 
 
 async def close_ollama_client() -> None:
@@ -132,6 +154,10 @@ async def _resolve_model() -> str:
     if _resolved_model:
         return _resolved_model
 
+    if _OPENAI_MODE:
+        _resolved_model = GEMMA_MODEL
+        return _resolved_model
+
     try:
         client = get_ollama_client()
         resp = await client.get("/api/tags", timeout=5.0)
@@ -161,6 +187,17 @@ async def verificar_ollama() -> dict:
     """Verifica si Ollama está corriendo y si el modelo está disponible."""
     global _resolved_model
     _resolved_model = None  # forzar re-detección
+    if _OPENAI_MODE:
+        return {
+            "ok": True,
+            "ollama_activo": False,
+            "api_mode": "openai",
+            "api_base": LLM_API_BASE,
+            "modelo_configurado": GEMMA_MODEL,
+            "modelo_activo": GEMMA_MODEL,
+            "modelo_disponible": True,
+            "modelos_instalados": [],
+        }
     try:
         client = get_ollama_client()
         resp = await client.get("/api/tags", timeout=5.0)
@@ -203,12 +240,50 @@ async def chat_stream(
     system_prompt = _build_system_prompt(contexto or {})
 
     model = await _resolve_model()
+    mensajes_full = [
+        {"role": "system", "content": system_prompt},
+        *messages,
+    ]
+
+    if _OPENAI_MODE:
+        payload = {
+            "model": model,
+            "messages": mensajes_full,
+            "stream": True,
+            "temperature": 0.7,
+            "max_tokens": 512,
+        }
+        try:
+            client = get_ollama_client()
+            async with client.stream("POST", "/chat/completions", json=payload) as response:
+                if response.status_code != 200:
+                    yield f"data: {json.dumps({'error': f'LLM API error {response.status_code}', 'done': True})}\n\n"
+                    return
+                async for line in response.aiter_lines():
+                    line = line.strip()
+                    if not line.startswith("data:"):
+                        continue
+                    chunk = line[5:].strip()
+                    if chunk == "[DONE]":
+                        yield f"data: {json.dumps({'token': '', 'done': True})}\n\n"
+                        return
+                    try:
+                        data = json.loads(chunk)
+                        token = (data.get("choices") or [{}])[0].get("delta", {}).get("content") or ""
+                        if token:
+                            yield f"data: {json.dumps({'token': token, 'done': False})}\n\n"
+                    except json.JSONDecodeError:
+                        continue
+                yield f"data: {json.dumps({'token': '', 'done': True})}\n\n"
+        except httpx.ConnectError:
+            yield f"data: {json.dumps({'error': 'API LLM no accesible desde el servidor.', 'done': True})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
+        return
+
     payload = {
         "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            *messages,
-        ],
+        "messages": mensajes_full,
         "stream": True,
         "keep_alive": "30m",
         "options": {
@@ -255,12 +330,36 @@ async def analizar_no_stream(prompt_user: str, contexto: dict = None) -> str:
     system_prompt = _build_system_prompt(contexto or {})
 
     model = await _resolve_model()
+    mensajes_full = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt_user},
+    ]
+
+    if _OPENAI_MODE:
+        try:
+            client = get_ollama_client()
+            resp = await client.post(
+                "/chat/completions",
+                json={
+                    "model": model,
+                    "messages": mensajes_full,
+                    "stream": False,
+                    "temperature": 0.5,
+                    "max_tokens": 768,
+                },
+                timeout=90.0,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            return (data.get("choices") or [{}])[0].get("message", {}).get("content", "")
+        except httpx.HTTPStatusError as e:
+            return f"Error LLM API HTTP {e.response.status_code}: {e.response.text[:200]}"
+        except Exception as e:
+            return f"Error al consultar el LLM: {str(e)}"
+
     payload = {
         "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": prompt_user},
-        ],
+        "messages": mensajes_full,
         "stream": False,
         "keep_alive": "30m",
         "options": {
@@ -309,14 +408,17 @@ async def analizar_imagen(image_b64: str, pregunta: str) -> str:
         "options": {"temperature": 0.3, "num_predict": 384, "num_ctx": 8192},
     }
 
+    client = _vision_client()
     try:
-        client = get_ollama_client()
         resp = await client.post("/api/chat", json=payload, timeout=60.0)
         resp.raise_for_status()
         data = resp.json()
         return data.get("message", {}).get("content", "")
     except Exception as e:
         return f"Error en análisis de imagen: {str(e)}"
+    finally:
+        if _OPENAI_MODE:
+            await client.aclose()  # cliente efímero solo-visión
 
 
 # ── Prompts especializados SIGAH ──────────────────────────────────
