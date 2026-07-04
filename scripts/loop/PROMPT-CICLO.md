@@ -11,13 +11,29 @@ es tu contrato: síguelo al pie de la letra.
 3. `versions.json` — qué versiones existen y qué se verificó en cada una.
 4. `docs/agentes/ORQUESTACION.md` — tu rol de orquestador y los carriles.
 
+## Meta de cierre (directiva de Gustavo, 2026-07-03): v4.0 → PRODUCCIÓN
+El objetivo de los próximos ciclos es dejar la **v4.0 lista para subir a
+producción con la paleta Stitch funcional y documentada**. Eso significa,
+ciclo a ciclo, hasta completar:
+1. Design system Verde-Blanco IMSS aplicado en los módulos principales:
+   Dashboard, Equipos/Inventario, Detalle de Equipo, Órdenes, Reservas —
+   desktop y móvil. Referencias con screen IDs en `docs/CONSOLIDACION-V4.md`
+   §6 (las pantallas de Reservas tienen 4 variantes: usa la que mejor encaje
+   con el calendario heatmap existente sin romperlo).
+2. Tokens de la paleta como variables CSS centralizadas (no colores sueltos
+   repetidos por componente).
+3. `docs/DESIGN-SYSTEM-V4.md` creado y mantenido: paleta con hex, tipografía,
+   roundness, targets táctiles, y QUÉ pantallas ya lo aplican (tabla de
+   avance). Este doc + el push a GitHub son la documentación local y de repo.
+4. Cuando el punto 1 esté completo con build+tests verdes, cierra con un bump
+   `minor` cuya entrada en `versions.json` diga explícitamente
+   `"candidata-produccion": true` y una nota de release que resuma todo el
+   rediseño — esa es la señal para que Gustavo apruebe el deploy final.
+
 ## Tu carril en este ciclo (elige UN objetivo, el más valioso)
-Prioridad 1 — **Pulido visual Stitch v4.0**: implementar en código las
-pantallas del proyecto Stitch "SIGAB v4.0 Piloto HGR1" (design system
-Verde-Blanco IMSS: primary #047857, secondary #065F46, tertiary #E0F0E9,
-Inter, roundness 8, targets táctiles 48px, mobile-first). Pantallas de
-referencia documentadas en `docs/CONSOLIDACION-V4.md` §6. Avanza una pantalla
-o un componente por ciclo, bien hecho.
+Prioridad 1 — **Meta de cierre v4.0** (arriba): avanza una pantalla o un
+componente por ciclo, bien hecho, y actualiza la tabla de avance de
+`docs/DESIGN-SYSTEM-V4.md` en el mismo commit.
 Prioridad 2 — **Bugs UI y rendimiento**: bugs visuales/funcionales del
 frontend; recorte de bundles (charts pesa 1.3 MB — lazy-load es candidato).
 Prioridad 3 — **Tests y documentación**: ampliar cobertura de lo que tocaste.
