@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import { useToast } from '../components/Toast';
+import { Calendar, AlertTriangle, Clock, CheckCircle2 } from 'lucide-react';
 
 function diasRestantes(fecha) {
   if (!fecha) return null;
@@ -13,24 +14,24 @@ function BadgeVencimiento({ fecha }) {
   if (dias === null) return null;
   if (dias < 0)
     return (
-      <span className="bg-red-900/60 text-red-300 text-xs px-2 py-0.5 rounded font-medium">
-        Vencido hace {Math.abs(dias)}d
+      <span className="inline-flex items-center gap-1 bg-red-500/10 text-red-500 border border-red-500/20 text-xs px-2 py-0.5 rounded-full font-medium">
+        <AlertTriangle className="h-3 w-3" /> Vencido hace {Math.abs(dias)}d
       </span>
     );
   if (dias === 0)
     return (
-      <span className="bg-red-900/60 text-red-300 text-xs px-2 py-0.5 rounded font-medium">
-        Vence hoy
+      <span className="inline-flex items-center gap-1 bg-red-500/10 text-red-500 border border-red-500/20 text-xs px-2 py-0.5 rounded-full font-medium">
+        <AlertTriangle className="h-3 w-3" /> Vence hoy
       </span>
     );
   if (dias <= 7)
     return (
-      <span className="bg-orange-900/60 text-orange-300 text-xs px-2 py-0.5 rounded font-medium">
-        {dias}d restantes
+      <span className="inline-flex items-center gap-1 bg-orange-500/10 text-orange-500 border border-orange-500/20 text-xs px-2 py-0.5 rounded-full font-medium">
+        <Clock className="h-3 w-3" /> {dias}d restantes
       </span>
     );
   return (
-    <span className="bg-emerald-900/40 text-emerald-400 text-xs px-2 py-0.5 rounded font-medium">
+    <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs px-2 py-0.5 rounded-full font-medium">
       {dias}d restantes
     </span>
   );
@@ -78,18 +79,25 @@ export default function Preventivos() {
   return (
     <div className="p-4 md:p-6 space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-[var(--content-text)]">Mantenimientos Preventivos</h1>
-        <p className="text-[var(--content-muted)] text-sm">
+        <h1 className="text-2xl font-bold text-[var(--content-text)] flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center">
+            <Calendar className="w-5 h-5 text-emerald-500" strokeWidth={1.5} />
+          </div>
+          Mantenimientos Preventivos
+        </h1>
+        <p className="text-[var(--content-muted)] text-sm mt-1 ml-[52px]">
           Programación y seguimiento de preventivos
         </p>
       </div>
 
       {/* Filtros */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {[['todos','Todos'],['vencidos','Vencidos'],['proximos','Próximos 30d']].map(([v,l]) => (
           <button key={v} onClick={() => setFiltro(v)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              filtro === v ? 'bg-emerald-800/60 text-emerald-300' : 'bg-[var(--content-surface)] text-[var(--content-muted)] hover:bg-[var(--content-border)]'
+            className={`min-h-[44px] px-4 py-2 rounded-xl text-sm font-medium transition-colors border ${
+              filtro === v
+                ? 'bg-emerald-600 text-white border-emerald-600'
+                : 'bg-[var(--content-surface)] text-[var(--content-muted)] border-[var(--content-border)] hover:bg-[var(--content-border)]'
             }`}>
             {l}
           </button>
@@ -110,11 +118,11 @@ export default function Preventivos() {
             return (
               <div key={pp.id}
                 className={`bg-[var(--content-surface)] rounded-xl border p-5 ${
-                  urgente ? 'border-red-700' : 'border-[var(--content-border)]'
+                  urgente ? 'border-red-500/40 border-l-4 border-l-red-500' : 'border-[var(--content-border)]'
                 }`}>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
+                <div className="flex justify-between items-start flex-wrap gap-4">
+                  <div className="flex-1 min-w-[200px]">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <h3 className="text-[var(--content-text)] font-medium text-sm">
                         {pp.tipo_preventivo}
                       </h3>
@@ -142,7 +150,7 @@ export default function Preventivos() {
                   <div className="text-right ml-4 space-y-2">
                     <div>
                       <p className="text-xs text-[var(--content-muted)]">Próxima ejecución</p>
-                      <p className="text-white text-sm font-mono">
+                      <p className="text-[var(--content-text)] text-sm font-mono">
                         {pp.proxima_ejecucion}
                       </p>
                     </div>
@@ -150,8 +158,8 @@ export default function Preventivos() {
                       Cada {pp.frecuencia_dias} días
                     </p>
                     <button onClick={() => handleEjecutar(pp.id)}
-                      className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-lg transition-colors">
-                      ✓ Marcar ejecutado
+                      className="inline-flex items-center gap-1.5 min-h-[44px] px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.97] text-white text-xs font-medium rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50">
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Marcar ejecutado
                     </button>
                   </div>
                 </div>
