@@ -61,6 +61,7 @@ services:
       SIGAH_LLM_API_MODE: ${SIGAH_LLM_API_MODE:-ollama}
       SIGAH_LLM_API_BASE: ${SIGAH_LLM_API_BASE:-https://api.minimax.io/v1}
       SIGAH_LLM_API_KEY: ${SIGAH_LLM_API_KEY:-}
+      SIGAH_LLM_MODEL: ${SIGAH_LLM_MODEL:-MiniMax-M3}
       BOT_API_KEYS: ${BOT_API_KEYS:-}
     extra_hosts:
       - "host-gateway:host-gateway"

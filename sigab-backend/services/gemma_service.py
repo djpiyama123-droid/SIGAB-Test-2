@@ -15,7 +15,7 @@ import httpx
 import json
 import base64
 from typing import AsyncGenerator
-from config import OLLAMA_HOST, GEMMA_MODEL, LLM_API_MODE, LLM_API_BASE, LLM_API_KEY
+from config import OLLAMA_HOST, GEMMA_MODEL, LLM_API_MODE, LLM_API_BASE, LLM_API_KEY, LLM_MODEL
 
 _ollama_client: httpx.AsyncClient | None = None
 _resolved_model: str | None = None  # modelo activo (auto-detectado si el configurado no existe)
@@ -155,7 +155,7 @@ async def _resolve_model() -> str:
         return _resolved_model
 
     if _OPENAI_MODE:
-        _resolved_model = GEMMA_MODEL
+        _resolved_model = LLM_MODEL
         return _resolved_model
 
     try:
@@ -193,8 +193,8 @@ async def verificar_ollama() -> dict:
             "ollama_activo": False,
             "api_mode": "openai",
             "api_base": LLM_API_BASE,
-            "modelo_configurado": GEMMA_MODEL,
-            "modelo_activo": GEMMA_MODEL,
+            "modelo_configurado": LLM_MODEL,
+            "modelo_activo": LLM_MODEL,
             "modelo_disponible": True,
             "modelos_instalados": [],
         }

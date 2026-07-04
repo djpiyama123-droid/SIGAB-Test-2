@@ -65,6 +65,8 @@ DISABLE_COPILOT = os.getenv("SIGAH_DISABLE_COPILOT", "0").strip() in ("1", "true
 LLM_API_MODE = os.getenv("SIGAH_LLM_API_MODE", "ollama").strip().lower()
 LLM_API_BASE = os.getenv("SIGAH_LLM_API_BASE", "https://api.minimax.io/v1")
 LLM_API_KEY = os.getenv("SIGAH_LLM_API_KEY", "")
+# Modelo del chat en modo openai (GEMMA_MODEL sigue siendo el del OCR/Ollama)
+LLM_MODEL = os.getenv("SIGAH_LLM_MODEL", GEMMA_MODEL)
 
 # ── OCR Pipeline Config ──────────────────────────────────────────
 OCR_CONFIDENCE_THRESHOLD = float(os.getenv("SIGAH_OCR_CONFIDENCE", "0.85"))
