@@ -73,7 +73,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-center h-screen px-4">
         <div className="max-w-md w-full rounded-xl border border-rose-500/20 bg-rose-500/10 text-center p-6">
           <AlertTriangle className="h-12 w-12 text-rose-500 mx-auto mb-4" />
-          <h2 className="text-lg font-medium text-white">Error de Enlace</h2>
+          <h2 className="text-lg font-medium text-[var(--content-text)]">Error de Enlace</h2>
           <p className="text-sm text-rose-200/60 mt-2">{error}</p>
           <hr className="border-rose-500/20 my-4" />
           <button
@@ -120,7 +120,7 @@ export default function Dashboard() {
           </div>
           <div className="h-12 w-px bg-[var(--content-surface)] hidden md:block flex-shrink-0" />
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tight flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-[var(--content-text)] tracking-tight flex items-center gap-2 flex-wrap">
               <span>CENTRO DE CONTROL</span>
               <span className="text-emerald-500">SIGAB</span>
             </h1>
@@ -205,7 +205,7 @@ export default function Dashboard() {
         <GridItem span={isControlRoom ? 4 : 3}>
           <div className="rounded-xl border border-[var(--content-border)] bg-[var(--content-bg)]/40 backdrop-blur-sm overflow-hidden">
             <div className="p-5 border-b border-[var(--content-border)] flex items-center justify-between">
-              <h3 className="text-lg font-medium text-white">Mapa de Activos por Zona</h3>
+              <h3 className="text-lg font-medium text-[var(--content-text)]">Mapa de Activos por Zona</h3>
               <StatusIndicator status="green" icon="Wifi" />
             </div>
             <div className="p-5">
@@ -217,7 +217,7 @@ export default function Dashboard() {
         {/* Cumplimiento de Mantenimiento — debajo del mapa */}
         <GridItem span={isControlRoom ? 4 : 3}>
           <div className="rounded-xl border border-[var(--content-border)] bg-[var(--content-bg)]/40 backdrop-blur-sm p-5">
-            <h3 className="text-lg font-medium text-white flex items-center gap-2">
+            <h3 className="text-lg font-medium text-[var(--content-text)] flex items-center gap-2">
               <ClipboardCheck className="h-5 w-5 text-blue-500" />
               Cumplimiento de Mantenimiento
             </h3>

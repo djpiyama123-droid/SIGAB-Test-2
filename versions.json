@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.2",
+  "actual": "4.0.3",
   "versiones": [
+    {
+      "version": "4.0.3",
+      "fecha": "2026-07-04",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Fix de contraste en Dashboard (títulos con text-white invisibles en temas claros) + creación de docs/DESIGN-SYSTEM-V4.md con la paleta, tokens CSS y tabla de avance del rediseño Verde-Blanco IMSS.",
+      "cambios": [
+        "Dashboard.jsx: 4 títulos (\"Error de Enlace\", \"CENTRO DE CONTROL SIGAB\", \"Mapa de Activos por Zona\", \"Cumplimiento de Mantenimiento\") usaban text-white fijo — invisibles en los temas claros (Azul IMSS / Verde SIGAH), mismo bug ya corregido en Preventivos (v4.0.2). Ahora usan var(--content-text)",
+        "docs/DESIGN-SYSTEM-V4.md (nuevo): paleta Verde-Blanco IMSS con hex, tokens CSS centralizados de index.css, regla de 'no colores fijos que dependan del fondo', y tabla de avance por pantalla (Preventivos listo, Dashboard parcial, resto pendiente)",
+        "Backlog documentado: alinear [data-theme=\"green\"] de index.css con el hex exacto de Stitch (#047857/#065F46/#E0F0E9), pendiente para un ciclo futuro por su alcance transversal"
+      ],
+      "verificar": [
+        "Dashboard, cambiar el tema a 'Azul IMSS (claro)' o 'Verde SIGAH (claro)' desde el selector del header: el título 'CENTRO DE CONTROL SIGAB', 'Mapa de Activos por Zona' y 'Cumplimiento de Mantenimiento' deben verse en gris oscuro, no desaparecer sobre el fondo claro",
+        "Provocar el estado de error del Dashboard (desconectar backend): el texto 'Error de Enlace' debe ser legible en los 3 temas",
+        "docs/DESIGN-SYSTEM-V4.md existe y su tabla de avance refleja el estado real (Preventivos ✅, Dashboard 🟡, resto ⬜)"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.2",
       "fecha": "2026-07-03",
