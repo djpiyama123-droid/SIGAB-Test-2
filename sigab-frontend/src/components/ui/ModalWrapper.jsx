@@ -74,7 +74,7 @@ ModalWrapper.Header = function ModalHeader({ title, subtitle, onClose, icon: Ico
       {onClose && (
         <button
           onClick={onClose}
-          className="flex-shrink-0 p-1.5 rounded-lg text-[var(--content-muted)] hover:text-white hover:bg-[var(--content-border)] transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500"
+          className="flex-shrink-0 p-1.5 rounded-lg text-[var(--content-muted)] hover:text-[var(--content-text)] hover:bg-[var(--content-border)] transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500"
           aria-label="Cerrar"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

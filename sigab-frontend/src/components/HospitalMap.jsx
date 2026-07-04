@@ -113,8 +113,8 @@ const STATUS_CONFIG = {
 };
 
 const CRITICIDAD_CONFIG = {
-  alta:  { badge: 'bg-red-900/50 text-red-300 border border-red-700',   label: 'Alto Riesgo' },
-  media: { badge: 'bg-yellow-900/50 text-yellow-300 border border-yellow-700', label: 'Riesgo Medio' },
+  alta:  { badge: 'bg-red-500/10 text-red-500 border border-red-500/20',   label: 'Alto Riesgo' },
+  media: { badge: 'bg-amber-500/10 text-amber-500 border border-amber-500/20', label: 'Riesgo Medio' },
   baja:  { badge: 'bg-[var(--content-surface)] text-[var(--content-muted)] border border-[var(--content-border)]', label: 'Riesgo Bajo' },
 };
 
@@ -180,7 +180,7 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       position: 'fixed',
       bottom: `${window.innerHeight - y + GAP}px`,
       zIndex: 9999,
-      backgroundColor: '#0f172a',
+      backgroundColor: 'var(--content-surface)',
       backdropFilter: 'blur(12px)',
     };
     if (align === 'right') return { ...base, right: `${window.innerWidth - x}px` };
@@ -200,7 +200,7 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
             {status.label}
           </span>
         </div>
-        <p className="text-white text-sm font-semibold leading-tight">{equipo.nombre}</p>
+        <p className="text-[var(--content-text)] text-sm font-semibold leading-tight">{equipo.nombre}</p>
         <p className="text-[var(--content-muted)] text-xs">{equipo.marca} {equipo.modelo}</p>
       </div>
 
@@ -231,8 +231,8 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       <div className="p-2 border-t border-[var(--content-border)] flex gap-1">
         <button
           onMouseDown={(e) => { e.stopPropagation(); onClick(equipo); }}
-          className="flex-1 py-1.5 px-2 rounded-lg text-xs font-medium bg-[var(--content-surface)] hover:bg-[var(--content-border)]
-                     text-white transition-colors pointer-events-auto"
+          className="flex-1 py-1.5 px-2 rounded-lg text-xs font-medium bg-[var(--content-bg)] hover:bg-[var(--content-border)]
+                     text-[var(--content-text)] transition-colors pointer-events-auto"
         >
           Ver Ficha
         </button>
@@ -418,12 +418,12 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
 
   return (
     <div className="fixed inset-y-0 right-0 z-50 w-80 shadow-2xl flex flex-col"
-         style={{ backgroundColor: '#0f172a', borderLeft: '1px solid #1e293b' }}>
+         style={{ backgroundColor: 'var(--content-surface)', borderLeft: '1px solid var(--content-border)' }}>
       <div className="flex items-center justify-between p-4 border-b border-[var(--content-border)]">
         <h3 className="text-[var(--content-text)] font-semibold text-sm">Ficha Tecnica</h3>
         <button
           onClick={onClose}
-          className="text-[var(--content-muted)] hover:text-white transition-colors w-7 h-7 flex items-center
+          className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors w-7 h-7 flex items-center
                      justify-center rounded-lg hover:bg-[var(--content-surface)]"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
@@ -458,7 +458,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
               {status.label}
             </span>
           </div>
-          <h2 className="text-white text-base font-bold leading-snug">{equipo.nombre}</h2>
+          <h2 className="text-[var(--content-text)] text-base font-bold leading-snug">{equipo.nombre}</h2>
           <p className="text-[var(--content-muted)] text-xs mt-0.5">
             {equipo.inventario ? `HGR1-${equipo.inventario}` : equipo.serie}
           </p>
@@ -483,7 +483,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
           {equipo.clase_cofepris && (
             <div className="flex justify-between items-center">
               <span className="text-[var(--content-muted)] text-[10px] uppercase tracking-widest">Clase COFEPRIS</span>
-              <span className="bg-purple-900/50 text-purple-300 border border-purple-700 text-xs px-2 py-0.5 rounded-full font-semibold">
+              <span className="bg-purple-500/10 text-purple-500 border border-purple-500/20 text-xs px-2 py-0.5 rounded-full font-semibold">
                 Clase {equipo.clase_cofepris}
               </span>
             </div>
@@ -538,7 +538,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
                 <p className="text-[10px] text-blue-400 uppercase tracking-widest font-medium mb-0.5">
                   Ubicacion
                 </p>
-                <p className="text-white text-xs font-semibold">{equipo.area}</p>
+                <p className="text-[var(--content-text)] text-xs font-semibold">{equipo.area}</p>
                 {equipo.piso && (
                   <p className="text-[var(--content-muted)] text-xs">{equipo.piso}</p>
                 )}
@@ -566,7 +566,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
           type="button"
           onClick={() => onAccionRapida?.(equipo)}
           className="w-full py-2 rounded-xl font-medium text-xs transition-all
-                     bg-amber-800/40 hover:bg-amber-700/50 text-amber-300 border border-amber-700/50
+                     bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/20
                      flex items-center justify-center gap-2"
         >
           ⚡ Acción Rápida (OS abierta del equipo)
@@ -577,7 +577,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
           type="button"
           onClick={() => onProgramarPreventivo?.(equipo)}
           className="w-full py-2 rounded-xl font-medium text-xs transition-all
-                     bg-blue-800/40 hover:bg-blue-700/50 text-blue-300 border border-blue-700/50
+                     bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 border border-blue-500/20
                      flex items-center justify-center gap-2"
         >
           📅 Programar Mantenimiento Preventivo
@@ -587,7 +587,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
           type="button"
           onClick={() => onVerHistorial?.(equipo)}
           className="w-full py-2 rounded-xl font-medium text-xs transition-all
-                     bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-muted)]"
+                     bg-[var(--content-bg)] hover:bg-[var(--content-border)] text-[var(--content-muted)]"
         >
           Ver Historial Completo
         </button>
@@ -595,7 +595,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
           type="button"
           onClick={() => onAbrirQR?.(equipo)}
           className="w-full py-2 rounded-xl font-medium text-xs transition-all
-                     bg-emerald-800/40 hover:bg-emerald-700/50 text-emerald-300 border border-emerald-700/50"
+                     bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20"
         >
           📱 Generar QR / Etiqueta
         </button>
@@ -832,7 +832,7 @@ export default function HospitalMap() {
             {hayFiltros && (
               <button
                 onClick={limpiarFiltros}
-                className="flex items-center gap-1 text-xs text-[var(--content-muted)] hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-[var(--content-border)]"
+                className="flex items-center gap-1 text-xs text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors px-2 py-1.5 rounded-lg hover:bg-[var(--content-border)]"
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -849,7 +849,7 @@ export default function HospitalMap() {
               className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                 pisoActivo === 'todos'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-[var(--content-bg)]/60 text-[var(--content-muted)] hover:text-white hover:bg-[var(--content-border)]'
+                  : 'bg-[var(--content-bg)]/60 text-[var(--content-muted)] hover:text-[var(--content-text)] hover:bg-[var(--content-border)]'
               }`}
             >
               Todos los pisos
@@ -867,7 +867,7 @@ export default function HospitalMap() {
                   className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                     pisoActivo === piso
                       ? 'bg-blue-600 text-white'
-                      : 'bg-[var(--content-bg)]/60 text-[var(--content-muted)] hover:text-white hover:bg-[var(--content-border)]'
+                      : 'bg-[var(--content-bg)]/60 text-[var(--content-muted)] hover:text-[var(--content-text)] hover:bg-[var(--content-border)]'
                   }`}
                 >
                   {piso}
@@ -882,7 +882,7 @@ export default function HospitalMap() {
                 className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                   pisoActivo === 'otras'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-[var(--content-bg)]/60 text-[var(--content-muted)] hover:text-white hover:bg-[var(--content-border)]'
+                    : 'bg-[var(--content-bg)]/60 text-[var(--content-muted)] hover:text-[var(--content-text)] hover:bg-[var(--content-border)]'
                 }`}
               >
                 Otras áreas

@@ -568,7 +568,7 @@ export default function Ordenes() {
                     {os.estado?.replace('_', ' ')}
                   </span>
                 </div>
-                <h3 className="text-white text-sm font-bold mb-1">{os.equipo_nombre || 'Sin nombre'}</h3>
+                <h3 className="text-[var(--content-text)] text-sm font-bold mb-1">{os.equipo_nombre || 'Sin nombre'}</h3>
                 <p className="text-[var(--content-muted)] text-xs mb-3 line-clamp-2">{os.falla_reportada || 'Sin reporte'}</p>
                 <div className="flex flex-wrap gap-y-2 gap-x-4 text-[11px] text-[var(--content-muted)]">
                   <div className="flex items-center gap-1">
@@ -630,7 +630,7 @@ export default function Ordenes() {
                     onClick={() => setSelectedOrden(os.id)}
                     className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/50 cursor-pointer transition-colors">
                     <td className="px-4 py-3 font-mono text-[var(--content-muted)] text-xs whitespace-nowrap">{os.numero_orden}</td>
-                    <td className="px-4 py-3 text-white text-xs max-w-[120px] truncate">{os.equipo_nombre || '—'}</td>
+                    <td className="px-4 py-3 text-[var(--content-text)] text-xs max-w-[120px] truncate">{os.equipo_nombre || '—'}</td>
                     <td className="px-4 py-3 text-[var(--content-muted)] text-xs max-w-xs truncate hidden sm:table-cell">{os.falla_reportada || '—'}</td>
                     <td className="px-4 py-3 text-[var(--content-muted)] text-xs hidden md:table-cell">{os.tecnico_nombre || '—'}</td>
                     <td className="px-4 py-3 text-[var(--content-muted)] text-xs hidden md:table-cell">{os.area || '—'}</td>

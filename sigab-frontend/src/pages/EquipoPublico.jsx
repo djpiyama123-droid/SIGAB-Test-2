@@ -73,7 +73,7 @@ export default function EquipoPublico() {
     new Date(equipo.fecha_proximo_mantenimiento) < new Date();
 
   return (
-    <div className="min-h-screen bg-[var(--content-bg)] text-white">
+    <div className="min-h-screen bg-[var(--content-bg)] text-[var(--content-text)]">
       {/* Header institucional */}
       <header className="bg-[var(--content-bg)] border-b border-[var(--content-border)]">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
@@ -103,8 +103,8 @@ export default function EquipoPublico() {
             )}
           </div>
           <div className="min-w-0">
-            <h1 className="text-lg font-bold leading-tight truncate">{equipo.nombre}</h1>
-            <p className="text-sm opacity-70">{equipo.marca} · {equipo.modelo}</p>
+            <h1 className="text-white text-lg font-bold leading-tight truncate">{equipo.nombre}</h1>
+            <p className="text-white text-sm opacity-70">{equipo.marca} · {equipo.modelo}</p>
             <div className="flex gap-2 mt-1.5">
               <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
                 style={{ backgroundColor: `${status.color}30`, color: status.color }}>

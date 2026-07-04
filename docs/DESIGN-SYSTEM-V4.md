@@ -52,8 +52,11 @@ Tailwind fija porque no dependen del tema de fondo.
 | Dashboard | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste: títulos con `text-white` fijo (header, "Mapa de Activos", "Cumplimiento de Mantenimiento", estado de error) invisibles en temas claros → ahora usan `var(--content-text)`. KPICard y StatusIndicator ya eran theme-aware. Pendiente: layout Stitch completo (screen ID `f0a7d832f5c54a9491da2f699e137490`) |
 | Equipos / Inventario | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste: toggles de vista, botón "Filtros" (móvil) y "Limpiar filtros" usaban `hover:text-white` fijo — invisibles en hover sobre temas claros → ahora `hover:text-[var(--content-text)]`. Pendiente: layout Stitch completo (screen ID `aa22f6401767433fbaf79ca5362948cf`) |
 | Detalle de Equipo | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste en `EquipoDetail.jsx`, `EquipoForm.jsx` y `HistorialEquipoModal.jsx`: campos "Criticidad", "N° Contrato/Servicio", "Proveedor", traslados, tabs e historial (órdenes/preventivos) usaban `text-white` fijo como texto de cuerpo → ahora `var(--content-text)`. Badges de estado siguen con `text-white` fijo (correcto, van sobre fondo de color). Pendiente: layout Stitch completo (screen ID `f9b01c3c7232494e9bb95899c10d40b2` / variantes 2562px, 2386px) |
-| Órdenes de Servicio | ⬜ Pendiente | — | Screen ID `8ecdc72b890b4f8394a69dbfdfe61918` (checklist NOM-016, firmas, PDF) |
-| Reservas | ⬜ Pendiente | — | 4 variantes (`9ad9c5aa…`, `0d916bcd…`, `73bb15a3…`, `1e753e9a…`) — elegir la que mejor encaje con el calendario heatmap existente SIN romperlo (`anim-cell-pop` en `index.css`) |
+| Mapa de Activos (Dashboard) | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste reportado por Gustavo con capturas: `HospitalMap.jsx` tenía el panel "Ficha Técnica" y el tooltip "Ver Ficha" con fondo FIJO oscuro (`#0f172a`) mezclado con texto de tokens de tema (`var(--content-text)`, oscuro en temas claros) → invisible en Azul/Verde. Ahora panel y tooltip usan `var(--content-surface)`/`var(--content-bg)` consistentemente. También corregidos: badges COFEPRIS/Criticidad (patrón `*-500/10`), hover de tabs de piso y "Limpiar filtros". Modales hijos `QRPanel.jsx` y `OrdenServicioRapidaModal.jsx` también corregidos (mismo patrón). Pendiente: layout Stitch completo |
+| Órdenes de Servicio | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste: nombre de equipo `text-white` fijo sobre `bg-[var(--content-surface)]` en la card móvil y en la tabla de escritorio (invisible en temas claros). Screen ID `8ecdc72b890b4f8394a69dbfdfe61918` (checklist NOM-016, firmas, PDF) — layout Stitch pendiente |
+| Login | 🟡 Parcial | (este ciclo) | Título "SIGAB" con `text-white` fijo, invisible en temas claros — era la PRIMERA pantalla que ve cualquier usuario. Corregido a `var(--content-text)` |
+| Ficha Pública de Equipo (QR) | 🟡 Parcial | (este ciclo) | Contenedor raíz fijaba `text-white` como color de texto por defecto (anti-patrón: cualquier texto nuevo sin override heredaría blanco). Cambiado a `var(--content-text)`; nombre/marca del equipo (que sí van sobre el badge de estado, fondo fijo oscuro por diseño) ahora llevan `text-white` explícito |
+| Reservas | ⬜ Pendiente | — | 4 variantes (`9ad9c5aa…`, `0d916bcd…`, `73bb15a3…`, `1e753e9a…`) — elegir la que mejor encaje con el calendario heatmap existente SIN romperlo (`anim-cell-pop` en `index.css`). Nota: ya es theme-safe (0 bugs de contraste, incluye tooltip de recharts bien resuelto) |
 | Móvil (Dashboard/Inventario/Detalle/Orden) | ⬜ Pendiente | — | Screen IDs en `CONSOLIDACION-V4.md` §6, sección Móvil |
 
 Leyenda: ✅ aplicado y verificado · 🟡 en progreso/parcial · ⬜ sin empezar.
@@ -67,7 +70,51 @@ Leyenda: ✅ aplicado y verificado · 🟡 en progreso/parcial · ⬜ sin empeza
    siguen el patrón visual; falta validar contra el screen ID de Stitch
    pantalla por pantalla).
 3. Aplicar el mismo criterio de "sin colores fijos que dependan del fondo"
-   a Equipos, Detalle de Equipo, Órdenes y Reservas, un módulo por ciclo.
+   a Detalle de Equipo y Reservas (layout Stitch), un módulo por ciclo.
 4. Evaluar si el tema por defecto (`glass`, oscuro) debe seguir siendo el
    default o si Verde-Blanco IMSS (`green`) debe ser el default de
    producción — decisión de Gustavo, no del loop.
+
+## Backlog de contraste — barrido completo (2026-07-04)
+
+Sesión de hoy hizo un barrido de `grep -rn "text-white|text-black|bg-white"`
+sobre TODO `sigab-frontend/src` (components + pages, 70 archivos) y clasificó
+cada hit manualmente contra su fondo real. Se corrigieron 8 archivos de alto
+impacto (Mapa de Activos, sus 2 modales hijos, Login, Ordenes, ModalWrapper
+compartido, Ficha Pública, ProtectedRoute). Quedan **25 archivos con bugs
+reales** confirmados, sin tocar — mismo patrón en todos los casos: texto fijo
+(`text-white`/`text-black`) o fondo fijo mezclado con un token de tema. **No
+son falsos positivos ni suposiciones — cada uno fue leído y verificado contra
+su contenedor real.** Un módulo por ciclo, igual que Preventivos/Dashboard/
+Equipos/Mapa:
+
+**Alta prioridad (flujo core, siguiente ciclo):**
+- `components/EventoAdversoModal.jsx` (4), `components/EventoDetalleModal.jsx` (2),
+  `components/OrdenDetalleModal.jsx` (2) — se abren desde Órdenes/Tecnovigilancia,
+  flujo frecuente del piloto.
+- `pages/Alertas.jsx` (2), `pages/Copilot.jsx` (3, incluye burbuja de respuesta IA
+  con contraste invertido en modo claro).
+
+**Modales/componentes transversales (uso en varios flujos):**
+- `components/ConfirmDialog.jsx` (1), `components/FilterBar.jsx` (1),
+  `components/HistorialModal.jsx` (1), `components/NuevaOrdenModal.jsx` (2),
+  `components/OCRScannerModal.jsx` (5), `components/TripleValidationModal.jsx` (3,
+  inputs de Token QR/Inventario/Serie con contraste degradado, no invisible),
+  `components/charts/DegradationChart.jsx` (1), `components/charts/MaintenanceChart.jsx` (1).
+
+**Secundaria (módulos admin, menor tráfico en el piloto):**
+- `pages/QRBatch.jsx` (8 — el más afectado del lote), `pages/Analitica.jsx` (6,
+  título + 4 KPIs principales), `pages/Reportes.jsx` (3), `pages/AuditPage.jsx` (2),
+  `pages/ChecklistPage.jsx` (2), `pages/Almacen.jsx` (1), `pages/Tecnovigilancia.jsx` (1),
+  `pages/Trazabilidad.jsx` (1).
+
+**Confirmados SIN bugs reales** (grep disparó por badges/CTAs sólidos, QR/PDF
+previews, o páginas 100% fixed-dark autoconsistentes — no mezclan variable+fijo,
+no requieren acción): `ChangePasswordModal.jsx`, `DashboardCharts.jsx`, `EquipoCard.jsx`,
+`EquipoTable.jsx`, `Header.jsx`, `Layout.jsx`, `Lightbox.jsx`, `OrdenCasillasForm.jsx`,
+`formatos/FormatoViewer.jsx`, `formatos/formatoThemes.js`, `ui/Button.jsx`,
+`AdminGlobal.jsx`, `Capacitaciones.jsx`, `Formatos.jsx`, `LandingPage.jsx` (pública,
+0 uso de tokens de tema, intencionalmente oscura fija — no aplica el sistema de
+temas interno), `Metrologia.jsx`, `QRScanner.jsx`, `Reservas.jsx`, `SuperAdmin.jsx`,
+`TVDashboard.jsx`. `components/v2/SigabUI.jsx` es código muerto (no se importa en
+ningún lugar) — candidato a borrar en vez de arreglar.

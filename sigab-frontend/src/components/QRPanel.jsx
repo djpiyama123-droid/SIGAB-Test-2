@@ -88,7 +88,7 @@ export default function QRPanel({ equipo, onClose }) {
             <h2 className="text-sm font-bold text-[var(--content-text)]">Código QR</h2>
             <p className="text-xs text-[var(--content-muted)]">{equipo.nombre}</p>
           </div>
-          <button onClick={onClose} className="text-[var(--content-muted)] hover:text-white p-1.5 rounded-lg hover:bg-[var(--content-border)]">✕</button>
+          <button onClick={onClose} className="text-[var(--content-muted)] hover:text-[var(--content-text)] p-1.5 rounded-lg hover:bg-[var(--content-border)]">✕</button>
         </div>
 
         <div className="p-6 space-y-5">
@@ -99,7 +99,7 @@ export default function QRPanel({ equipo, onClose }) {
             ) : (
               <div className="text-center space-y-3">
                 <div className="text-6xl opacity-30">📱</div>
-                <p className="text-[var(--content-muted)] text-sm">Genera el QR para este equipo</p>
+                <p className="text-slate-500 text-sm">Genera el QR para este equipo</p>
               </div>
             )}
           </div>
@@ -150,7 +150,7 @@ export default function QRPanel({ equipo, onClose }) {
             <a
               href={qrUrl}
               download={`qr_${equipo.serie || equipo.id}.png`}
-              className="block w-full py-2.5 bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-white text-sm font-medium rounded-xl transition-colors text-center"
+              className="block w-full py-2.5 bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-text)] text-sm font-medium rounded-xl transition-colors text-center"
             >
               ⬇ Descargar QR PNG
             </a>
