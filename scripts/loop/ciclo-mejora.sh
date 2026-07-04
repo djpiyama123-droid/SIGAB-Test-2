@@ -79,11 +79,18 @@ cd ..
 
 # ── 4. push del trabajo (antes del deploy: nada se despliega sin estar en GitHub) ──
 git push origin "$RAMA"
-# espejo SIGAB-v4 (snapshot encadenado)
+# espejo SIGAB-v4 (snapshot encadenado) — best-effort: nunca aborta el ciclo.
+# El parent PREV vive en el repo espejo; hay que traerlo con fetch o
+# commit-tree -p falla con "no es objeto válido" (fatal bajo set -e).
 if git remote get-url v4 >/dev/null 2>&1; then
-  PREV=$(git ls-remote v4 refs/heads/main | cut -f1)
-  SNAP=$(git commit-tree "HEAD^{tree}" ${PREV:+-p $PREV} -m "v$NUEVA — sync loop $(date -I)")
-  git push v4 "$SNAP:refs/heads/main" || echo "espejo v4 fallo (no bloquea)"
+  (
+    set +e
+    PREV=$(git ls-remote v4 refs/heads/main | cut -f1)
+    [ -n "$PREV" ] && { git fetch -q v4 main 2>/dev/null || PREV=""; }
+    SNAP=$(git commit-tree "HEAD^{tree}" ${PREV:+-p $PREV} -m "v$NUEVA — sync loop $(date -I)") \
+      && git push v4 "$SNAP:refs/heads/main"
+    [ $? -eq 0 ] || echo "espejo v4 fallo (no bloquea)"
+  )
 fi
 
 # ── 5. deploy frontend al VPS con backup ──
