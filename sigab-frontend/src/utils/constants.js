@@ -19,6 +19,14 @@ export {
   CHART_COLORS,
 } from './tokens';
 
+// Tipo de adquisición (ENUM en BD). Etiquetas legibles para filtros, badges y formularios.
+export const TIPO_ADQ_OPTIONS = [
+  { value: 'recurso_propio', label: 'Recurso Propio' },
+  { value: 'contrato_consolidado', label: 'Consolidado' },
+  { value: 'garantia', label: 'Garantía' },
+  { value: 'subrogado', label: 'Subrogado' },
+];
+
 export const NAV_ITEMS = [
   { path: '/', label: 'Dashboard', icon_name: 'LayoutDashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
   { path: '/scan', label: 'Escanear QR', icon_name: 'QrCode', icon: 'M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z' },

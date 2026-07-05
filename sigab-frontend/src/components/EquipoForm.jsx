@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { api } from '../api/sigah';
 import { useToast } from './Toast';
+import { TIPO_ADQ_OPTIONS } from '../utils/constants';
 
 const TIPOS_EQUIPO = [
   'monitor', 'ventilador', 'arco_c', 'anestesia', 'incubadora',
@@ -46,6 +47,7 @@ const VACIO = {
   fecha_proximo_mantenimiento: '',
   proveedor_servicio: '',
   numero_contrato_servicio: '',
+  tipo_adquisicion: 'recurso_propio',
 };
 
 export default function EquipoForm({ equipo, onClose, onSaved }) {
@@ -390,6 +392,13 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
           <section>
             <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-2">Mantenimiento y contrato</h3>
             <div className="grid grid-cols-2 gap-3">
+              <Campo label="Tipo de adquisición">
+                <select value={form.tipo_adquisicion} onChange={set('tipo_adquisicion')} className={inputCls()}>
+                  {TIPO_ADQ_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </Campo>
               <Campo label="Fecha de compra">
                 <input
                   type="date"

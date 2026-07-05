@@ -19,19 +19,11 @@ import EquipoTable from '../components/EquipoTable';
 import EquipoDetail from '../components/EquipoDetail';
 import EquipoForm from '../components/EquipoForm';
 import { useToast } from '../components/Toast';
-import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
+import { ESTADO_COLORS, ESTADO_LABELS, TIPO_ADQ_OPTIONS } from '../utils/constants';
 import { Download, Plus, LayoutGrid, List } from 'lucide-react';
 
 const VISTAS = { tarjeta: 'tarjeta', tabla: 'tabla' };
 const PAGE_SIZE = 50;
-
-// Tipo de adquisición (ENUM en BD). Etiquetas legibles para filtro y badge.
-export const TIPO_ADQ_OPTIONS = [
-  { value: 'recurso_propio', label: 'Recurso Propio' },
-  { value: 'contrato_consolidado', label: 'Consolidado' },
-  { value: 'garantia', label: 'Garantía' },
-  { value: 'subrogado', label: 'Subrogado' },
-];
 
 const ORDEN_OPTIONS = [
   { value: 'nombre', label: 'Nombre A-Z' },
