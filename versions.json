@@ -1,6 +1,28 @@
 {
-  "actual": "4.0.6",
+  "actual": "4.0.7",
   "versiones": [
+    {
+      "version": "4.0.7",
+      "fecha": "2026-07-04",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Fix de contraste en el flujo de Tecnovigilancia/Eventos Adversos y Centro de Alertas: texto y botones con text-white fijo, invisibles en temas claros.",
+      "cambios": [
+        "EventoAdversoModal.jsx: boton cerrar (X), resumen final ('Dispositivo:', 'Tipo:') y boton 'Cancelar/Anterior' usaban text-white/hover:text-white fijo sobre fondo de tema -- ahora var(--content-text)",
+        "EventoDetalleModal.jsx: boton cerrar (X) y el valor de 'Tipo' en la seccion Clasificacion usaban text-white/hover:text-white fijo -- ahora var(--content-text). El texto 'Cargando detalles...' se dejo igual (fondo bg-black/60 fijo, no depende del tema)",
+        "Alertas.jsx: boton 'Marcar todas leidas' y el texto del mensaje de cada alerta usaban text-white fijo sobre bg-[var(--content-surface)] -- ahora var(--content-text). Badges de prioridad y CTAs con fondo solido se dejaron igual, uso correcto",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance actualizada (nueva fila Tecnovigilancia/Alertas en Parcial) y backlog de contraste depurado (Copilot.jsx queda como unico pendiente de alta prioridad)"
+      ],
+      "verificar": [
+        "Tecnovigilancia: abrir 'Reportar Evento Adverso', llegar al paso 3 (resumen) en tema 'Azul IMSS (claro)' o 'Verde SIGAH (claro)' -- 'Dispositivo:' y 'Tipo:' deben verse legibles, boton 'Cancelar'/'Anterior' tambien",
+        "Tecnovigilancia: abrir el detalle de un evento existente en modo claro -- boton cerrar (X) y el valor de 'Tipo' en Clasificacion deben verse",
+        "Centro de Alertas en modo claro: boton 'Marcar todas leidas' y el texto del mensaje de cada alerta deben ser legibles, no invisibles"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.6",
       "fecha": "2026-07-04",

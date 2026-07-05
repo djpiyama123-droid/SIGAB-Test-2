@@ -56,6 +56,7 @@ Tailwind fija porque no dependen del tema de fondo.
 | Órdenes de Servicio | 🟡 Parcial | v4.0.5/v4.0.6 | Se corrigió bug de contraste: `Ordenes.jsx` (nombre de equipo en card móvil y tabla), `OrdenServicioRapidaModal.jsx` (botón cerrar) en v4.0.5; `OrdenDetalleModal.jsx` (botón cerrar, nombre de archivo PDF en hover) y `NuevaOrdenModal.jsx` (botón cerrar y "Cancelar") en v4.0.6 — todos `text-white`/`hover:text-white` fijo, invisibles en temas claros. Screen ID `8ecdc72b890b4f8394a69dbfdfe61918` (checklist NOM-016, firmas, PDF) — layout Stitch pendiente |
 | Login | 🟡 Parcial | (este ciclo) | Título "SIGAB" con `text-white` fijo, invisible en temas claros — era la PRIMERA pantalla que ve cualquier usuario. Corregido a `var(--content-text)` |
 | Ficha Pública de Equipo (QR) | 🟡 Parcial | (este ciclo) | Contenedor raíz fijaba `text-white` como color de texto por defecto (anti-patrón: cualquier texto nuevo sin override heredaría blanco). Cambiado a `var(--content-text)`; nombre/marca del equipo (que sí van sobre el badge de estado, fondo fijo oscuro por diseño) ahora llevan `text-white` explícito |
+| Tecnovigilancia (Eventos Adversos) / Alertas | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste en `EventoAdversoModal.jsx` (botón cerrar, resumen "Dispositivo"/"Tipo", botón "Cancelar/Anterior"), `EventoDetalleModal.jsx` (botón cerrar, valor "Tipo" en Clasificación) y `pages/Alertas.jsx` (botón "Marcar todas leídas", texto del mensaje de la alerta) — todos `text-white`/`hover:text-white` fijo sobre fondo de tema → ahora `var(--content-text)`. Badges/botones con fondo sólido (rojo/azul/emerald/amarillo/púrpura/naranja) se dejaron igual, uso correcto |
 | Reservas | ⬜ Pendiente | — | 4 variantes (`9ad9c5aa…`, `0d916bcd…`, `73bb15a3…`, `1e753e9a…`) — elegir la que mejor encaje con el calendario heatmap existente SIN romperlo (`anim-cell-pop` en `index.css`). Nota: ya es theme-safe (0 bugs de contraste, incluye tooltip de recharts bien resuelto) |
 | Móvil (Dashboard/Inventario/Detalle/Orden) | ⬜ Pendiente | — | Screen IDs en `CONSOLIDACION-V4.md` §6, sección Móvil |
 
@@ -106,11 +107,11 @@ su contenedor real.** Un módulo por ciclo, igual que Preventivos/Dashboard/
 Equipos/Mapa:
 
 **Alta prioridad (flujo core, siguiente ciclo):**
-- `components/EventoAdversoModal.jsx` (4), `components/EventoDetalleModal.jsx` (2)
-  — se abren desde Órdenes/Tecnovigilancia, flujo frecuente del piloto.
-  (`components/OrdenDetalleModal.jsx` resuelto en v4.0.6, ver abajo)
-- `pages/Alertas.jsx` (2), `pages/Copilot.jsx` (3, incluye burbuja de respuesta IA
-  con contraste invertido en modo claro).
+- `pages/Copilot.jsx` (3, incluye burbuja de respuesta IA con contraste
+  invertido en modo claro).
+  (`components/EventoAdversoModal.jsx`, `components/EventoDetalleModal.jsx` y
+  `pages/Alertas.jsx` resueltos este ciclo; `components/OrdenDetalleModal.jsx`
+  resuelto en v4.0.6, ver tabla de avance)
 
 **Modales/componentes transversales (uso en varios flujos):**
 - `components/ConfirmDialog.jsx` (1), `components/FilterBar.jsx` (1),

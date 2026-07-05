@@ -124,7 +124,7 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
             <h2 className="text-lg font-bold text-[var(--content-text)]">Reportar Evento Adverso</h2>
             <p className="text-xs text-[var(--content-muted)]">NOM-240-SSA1-2012 — Paso {paso} de 3</p>
           </div>
-          <button onClick={onClose} className="p-2 text-[var(--content-muted)] hover:text-white bg-[var(--content-surface)] rounded-lg">
+          <button onClick={onClose} className="p-2 text-[var(--content-muted)] hover:text-[var(--content-text)] bg-[var(--content-surface)] rounded-lg">
             ✕
           </button>
         </div>
@@ -326,9 +326,9 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
               <div className="bg-[var(--content-bg)]/50 border border-red-500/30 rounded-lg p-4 space-y-2">
                 <p className="text-xs text-red-400 font-semibold">Resumen del reporte</p>
                 <div className="grid grid-cols-2 gap-1 text-xs text-[var(--content-muted)]">
-                  <span>Dispositivo: <strong className="text-white">{eq?.nombre}</strong></span>
+                  <span>Dispositivo: <strong className="text-[var(--content-text)]">{eq?.nombre}</strong></span>
                   <span>Serie: <strong className="text-[var(--content-muted)]">{eq?.serie || 'N/A'}</strong></span>
-                  <span>Tipo: <strong className="text-white">
+                  <span>Tipo: <strong className="text-[var(--content-text)]">
                     {TIPOS_EVENTO.find((t) => t.value === form.tipo_evento)?.label}
                   </strong></span>
                   <span>Severidad: <strong className={
@@ -345,7 +345,7 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
         <div className="flex justify-between items-center p-4 border-t border-[var(--content-border)]">
           <button
             onClick={() => paso > 1 ? setPaso(paso - 1) : onClose()}
-            className="px-4 py-2 bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-white text-sm rounded-lg transition-colors"
+            className="px-4 py-2 bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-text)] text-sm rounded-lg transition-colors"
           >
             {paso === 1 ? 'Cancelar' : 'Anterior'}
           </button>

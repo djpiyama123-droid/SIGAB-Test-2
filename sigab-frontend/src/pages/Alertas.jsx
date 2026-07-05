@@ -69,7 +69,7 @@ export default function Alertas() {
         </div>
         {alertas.length > 0 && (
           <button onClick={marcarTodas}
-            className="px-4 py-2 bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-white text-sm rounded-lg transition-colors">
+            className="px-4 py-2 bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-text)] text-sm rounded-lg transition-colors">
             ✓ Marcar todas leídas
           </button>
         )}
@@ -117,7 +117,7 @@ export default function Alertas() {
                         {a.tipo?.replace(/_/g, ' ')}
                       </span>
                     </div>
-                    <p className="text-white text-sm">{a.mensaje}</p>
+                    <p className="text-[var(--content-text)] text-sm">{a.mensaje}</p>
                     {(a.equipo_nombre || a.equipo_serie) && (
                       <p className="text-[var(--content-muted)] text-xs mt-1">
                         Equipo: {a.equipo_nombre} {a.equipo_serie && `(${a.equipo_serie})`}
