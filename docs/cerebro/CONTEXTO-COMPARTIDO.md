@@ -104,12 +104,12 @@ Reservas). IDs en `docs/CONSOLIDACION-V4.md` §6.
    que sincronizar ese estado a `searchParams` (ya importado, patrón más
    natural dado el uso parcial que ya existe) o a `sessionStorage`.
 
-4. **Tipo de Adquisición no editable**: `EquipoDetail.jsx` (líneas
-   ~196-213) sí muestra `tipo_adquisicion` como badge de solo lectura
-   (`recurso_propio` / `contrato_consolidado` / `garantia` / `subrogado`),
-   pero `components/EquipoForm.jsx` (modal "Editar Equipo") no tiene ningún
-   campo para ese dato — no se puede cambiar desde la UI. Agregar un
-   `<select>` para `tipo_adquisicion` en `EquipoForm.jsx`.
+4. ✅ **Resuelto (v4.0.13, loop-thinkcentre)**: `EquipoForm.jsx` ya tiene un
+   `<select>` de "Tipo de adquisición" (sección "Mantenimiento y contrato",
+   junto a proveedor/N° contrato) que usa el mismo enum que el badge de
+   `EquipoDetail.jsx`. Se centralizó `TIPO_ADQ_OPTIONS` en
+   `utils/constants.js` (antes vivía duplicable solo en `Equipos.jsx`) para
+   que filtro, badge y formulario compartan una sola fuente de verdad.
 
 5. **Calendario en "Próximo mantenimiento"**: hoy es un date picker simple
    (`mm/dd/yyyy`) dentro de `EquipoForm.jsx`. Gustavo quiere que esa

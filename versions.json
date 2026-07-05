@@ -1,6 +1,28 @@
 {
-  "actual": "4.0.12",
+  "actual": "4.0.13",
   "versiones": [
+    {
+      "version": "4.0.13",
+      "fecha": "2026-07-05",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "8833f61",
+      "resumen": "Petición directa de Gustavo (punto 4/5, docs/cerebro/CONTEXTO-COMPARTIDO.md): el tipo de adquisición del equipo ahora es editable desde el formulario de Equipos, no solo visible como badge de solo lectura.",
+      "cambios": [
+        "components/EquipoForm.jsx: nuevo <select> 'Tipo de adquisición' (Recurso Propio/Consolidado/Garantía/Subrogado) en la sección 'Mantenimiento y contrato', junto a proveedor de servicio y N° de contrato -- antes este campo no existia en el formulario aunque EquipoDetail.jsx si lo mostraba como badge de solo lectura, asi que no habia forma de cambiarlo desde la UI",
+        "utils/constants.js: se centralizo TIPO_ADQ_OPTIONS (antes vivia solo en pages/Equipos.jsx, usado unicamente por su filtro) para que filtro, badge de EquipoDetail.jsx y el nuevo select de EquipoForm.jsx compartan una sola fuente de verdad del enum",
+        "pages/Equipos.jsx: import de TIPO_ADQ_OPTIONS desde utils/constants en vez de la copia local",
+        "docs/cerebro/CONTEXTO-COMPARTIDO.md: punto 4 de la peticion de Gustavo marcado como resuelto"
+      ],
+      "verificar": [
+        "Inventario de Equipos: abrir 'Editar Equipo' de cualquier equipo -- debe verse el campo 'Tipo de adquisición' preseleccionado con el valor real del equipo (mismo valor que el badge del detalle)",
+        "Cambiar el tipo de adquisición, guardar, y confirmar que el badge en EquipoDetail.jsx refleja el nuevo valor",
+        "Crear un equipo nuevo: el campo debe aparecer con 'Recurso Propio' por defecto y guardarse correctamente"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend. Cambio de solo formulario/constantes, sin migraciones ni llamadas nuevas a la API -- revert seguro",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.12",
       "fecha": "2026-07-05",
