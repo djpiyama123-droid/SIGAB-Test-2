@@ -62,3 +62,62 @@ Reservas). IDs en `docs/CONSOLIDACION-V4.md` §6.
 - Alertas → Telegram vía Hermes/OpenClaw (`/v1/notify`).
 - Mapa completo del ecosistema → `docs/CONSOLIDACION-V4.md`.
 - Carriles y protocolo de agentes → `docs/agentes/ORQUESTACION.md`.
+
+## Petición directa de Gustavo — Módulo Inventario (2026-07-05)
+
+> **Prioridad sobre el backlog genérico**: estos 5 puntos van ANTES que
+> cualquier ítem de `scripts/loop/PROMPT-CICLO.md` en los próximos ciclos.
+> No retomar el backlog genérico hasta cerrarlos — sigue la norma ya
+> vigente de un ítem por ciclo, así que puede tomar varios ciclos, pero el
+> orden de trabajo es este primero.
+
+1. **UX general de Inventario/Equipos**: pedido explícito de Gustavo de que
+   el módulo sea "más intuitivo y fácil de usar". No especificó qué
+   fricciones atacar — el director elige con criterio propio, informado por
+   los puntos 2-5 de abajo (que son ejemplos concretos de esa misma
+   fricción).
+
+2. **Acciones rápidas en el modal de detalle de equipo**: el footer de
+   `sigab-frontend/src/components/EquipoDetail.jsx` (líneas ~457-480) hoy
+   solo tiene "Eliminar" (izquierda) y, a la derecha, "📱 QR" (abre
+   `QRPanel`) y "Cerrar"/"Editar" (abre `EquipoForm.jsx`). Gustavo quiere
+   más acciones rápidas ahí — no dijo cuáles, hay que proponer candidatos
+   razonables. Ya existen en el código piezas que podrían enlazarse
+   directo desde este footer:
+   - `components/OrdenServicioRapidaModal.jsx` — crear una orden de
+     servicio rápida para ese equipo.
+   - `components/HistorialEquipoModal.jsx` — ver historial del equipo (ya
+     existe como componente; falta confirmar si está enlazado desde aquí).
+   - Cambiar estado operativo/mantenimiento/fuera de servicio directo
+     desde el modal, sin pasar por `EquipoForm.jsx` completo.
+
+3. **Bug de navegación / pérdida de contexto**: en
+   `sigab-frontend/src/pages/Equipos.jsx` el estado de la lista (`filtros`,
+   `offset`, `orden`, `vista`, `seleccionado`, líneas ~49-67) vive en
+   `useState` local. El componente importa `useSearchParams` de
+   react-router-dom (línea 15) y SÍ lo usa, pero solo para un caso puntual:
+   abrir un equipo específico vía `?equipoId=` (líneas 105-118) y borrar el
+   parámetro de inmediato — no para persistir filtros/paginación/vista.
+   Resultado verificado: si el usuario abre el detalle de un equipo,
+   navega a otra sección y regresa a Inventario, la lista vuelve a su
+   estado inicial (pierde filtro, página/offset, scroll y selección). Hay
+   que sincronizar ese estado a `searchParams` (ya importado, patrón más
+   natural dado el uso parcial que ya existe) o a `sessionStorage`.
+
+4. **Tipo de Adquisición no editable**: `EquipoDetail.jsx` (líneas
+   ~196-213) sí muestra `tipo_adquisicion` como badge de solo lectura
+   (`recurso_propio` / `contrato_consolidado` / `garantia` / `subrogado`),
+   pero `components/EquipoForm.jsx` (modal "Editar Equipo") no tiene ningún
+   campo para ese dato — no se puede cambiar desde la UI. Agregar un
+   `<select>` para `tipo_adquisicion` en `EquipoForm.jsx`.
+
+5. **Calendario en "Próximo mantenimiento"**: hoy es un date picker simple
+   (`mm/dd/yyyy`) dentro de `EquipoForm.jsx`. Gustavo quiere que esa
+   sección (en el detalle, o en un apartado nuevo) muestre una vista tipo
+   calendario, con el mismo patrón visual del heatmap de actividad que ya
+   existe en `pages/Reservas.jsx` (componente `ActividadHeatmap`, línea
+   263). Revisado el inventario Stitch en `docs/CONSOLIDACION-V4.md` §6
+   (proyecto "SIGAB v4.0 Piloto HGR1"): no hay una pantalla dedicada a
+   calendario de mantenimiento; las 4 variantes de "Reservas de Equipos"
+   (heatmap) son la referencia visual más cercana disponible para
+   reutilizar/adaptar, no una pantalla lista para copiar tal cual.
