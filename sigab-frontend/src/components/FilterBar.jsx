@@ -82,7 +82,7 @@ export default function FilterBar({ filtros = {}, onChange }) {
       {Object.keys(filtros).filter(k => filtros[k]).length > 0 && (
         <button
           onClick={() => { setBuscar(''); onChange({}); }}
-          className="px-3 py-2 text-sm text-[var(--content-muted)] hover:text-white transition-colors"
+          className="px-3 py-2 text-sm text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors"
         >
           Limpiar
         </button>

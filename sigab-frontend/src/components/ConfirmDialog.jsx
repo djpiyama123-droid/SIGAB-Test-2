@@ -40,7 +40,7 @@ export default function ConfirmDialog({
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-white text-base font-semibold">{titulo}</h3>
+            <h3 className="text-[var(--content-text)] text-base font-semibold">{titulo}</h3>
             <p className="text-[var(--content-muted)] text-sm mt-1">{mensaje}</p>
           </div>
         </div>

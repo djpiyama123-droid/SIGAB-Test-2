@@ -58,6 +58,7 @@ Tailwind fija porque no dependen del tema de fondo.
 | Ficha Pública de Equipo (QR) | 🟡 Parcial | (este ciclo) | Contenedor raíz fijaba `text-white` como color de texto por defecto (anti-patrón: cualquier texto nuevo sin override heredaría blanco). Cambiado a `var(--content-text)`; nombre/marca del equipo (que sí van sobre el badge de estado, fondo fijo oscuro por diseño) ahora llevan `text-white` explícito |
 | Tecnovigilancia (Eventos Adversos) / Alertas | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste en `EventoAdversoModal.jsx` (botón cerrar, resumen "Dispositivo"/"Tipo", botón "Cancelar/Anterior"), `EventoDetalleModal.jsx` (botón cerrar, valor "Tipo" en Clasificación) y `pages/Alertas.jsx` (botón "Marcar todas leídas", texto del mensaje de la alerta) — todos `text-white`/`hover:text-white` fijo sobre fondo de tema → ahora `var(--content-text)`. Badges/botones con fondo sólido (rojo/azul/emerald/amarillo/púrpura/naranja) se dejaron igual, uso correcto |
 | Copilot | 🟡 Parcial | (este ciclo) | Se corrigió el bug de contraste invertido de la burbuja de respuesta de la IA en `pages/Copilot.jsx`: fondo fijo oscuro `bg-slate-700/70` mezclado con texto de tema `var(--content-text)` → invisible/ilegible en temas claros. Ahora la burbuja usa `bg-[var(--content-surface)]`/`border-[var(--content-border)]` (mismo patrón que el resto de paneles) y se quitó `prose-invert` (asumía fondo oscuro fijo, ya no aplica). También corregidos los botones cerrar (✕) de `DiagnosticoPanel` y `VisionPanel` (`hover:text-white` fijo → `hover:text-[var(--content-text)]`). Los botones con fondo sólido (amarillo/azul/rojo/emerald) se dejaron igual, uso correcto |
+| Componentes transversales | 🟡 Parcial | (este ciclo) | Se corrigieron 4 bugs de contraste de la categoría "Modales/componentes transversales" del barrido 2026-07-04: `ConfirmDialog.jsx` (título `text-white` fijo como texto de cuerpo), `FilterBar.jsx` (botón "Limpiar" con `hover:text-white` fijo), `HistorialModal.jsx` (botón cerrar con `hover:text-white` fijo) y `charts/DegradationChart.jsx` (valor "%" del tooltip con `text-white` fijo) — los 4 mezclaban texto fijo con superficie de tema, invisibles en claro. Todos ahora usan `var(--content-text)`. Se verificó `charts/MaintenanceChart.jsx` (listado en el barrido) y NO tiene el bug — falso positivo, era `contentStyle` inline autoconsistente de recharts |
 | Reservas | ⬜ Pendiente | — | 4 variantes (`9ad9c5aa…`, `0d916bcd…`, `73bb15a3…`, `1e753e9a…`) — elegir la que mejor encaje con el calendario heatmap existente SIN romperlo (`anim-cell-pop` en `index.css`). Nota: ya es theme-safe (0 bugs de contraste, incluye tooltip de recharts bien resuelto) |
 | Móvil (Dashboard/Inventario/Detalle/Orden) | ⬜ Pendiente | — | Screen IDs en `CONSOLIDACION-V4.md` §6, sección Móvil |
 
@@ -115,11 +116,15 @@ esta categoría — el siguiente barrido debe tomar de "Modales/componentes
 transversales" abajo.
 
 **Modales/componentes transversales (uso en varios flujos):**
-- `components/ConfirmDialog.jsx` (1), `components/FilterBar.jsx` (1),
-  `components/HistorialModal.jsx` (1),
-  `components/OCRScannerModal.jsx` (5), `components/TripleValidationModal.jsx` (3,
-  inputs de Token QR/Inventario/Serie con contraste degradado, no invisible),
-  `components/charts/DegradationChart.jsx` (1), `components/charts/MaintenanceChart.jsx` (1).
+(`components/ConfirmDialog.jsx`, `components/FilterBar.jsx`,
+`components/HistorialModal.jsx` y `components/charts/DegradationChart.jsx`
+resueltos este ciclo, ver tabla de avance. `components/charts/MaintenanceChart.jsx`
+se revisó y NO tiene el bug — el grep original fue un falso positivo, el
+tooltip de recharts usa `contentStyle` inline con `backgroundColor: '#0f172a'`
+fijo, autoconsistente, no mezcla con var de tema.)
+Queda pendiente en esta categoría:
+- `components/OCRScannerModal.jsx` (5), `components/TripleValidationModal.jsx` (3,
+  inputs de Token QR/Inventario/Serie con contraste degradado, no invisible).
 
 **Secundaria (módulos admin, menor tráfico en el piloto):**
 - `pages/QRBatch.jsx` (8 — el más afectado del lote), `pages/Analitica.jsx` (6,

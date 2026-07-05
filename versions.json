@@ -1,6 +1,31 @@
 {
-  "actual": "4.0.9",
+  "actual": "4.0.10",
   "versiones": [
+    {
+      "version": "4.0.10",
+      "fecha": "2026-07-05",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Fix de contraste en 4 componentes transversales (usados en varias pantallas): titulo de ConfirmDialog, boton Limpiar de FilterBar, boton cerrar de HistorialModal y valor del tooltip de DegradationChart -- todos con texto text-white/hover:text-white fijo mezclado con la superficie del tema, invisibles en temas claros.",
+      "cambios": [
+        "components/ConfirmDialog.jsx: titulo del dialogo (h3) usaba text-white fijo como texto de cuerpo sobre bg-[var(--content-surface)] -- ahora var(--content-text). Se dejo intacto el text-white de los botones de accion (fondo solido rojo/emerald, uso correcto)",
+        "components/FilterBar.jsx: boton 'Limpiar' (reset de filtros) usaba hover:text-white fijo -- ahora hover:text-[var(--content-text)]",
+        "components/HistorialModal.jsx: boton cerrar (X) del modal de timeline de trazabilidad usaba hover:text-white fijo -- ahora hover:text-[var(--content-text)]",
+        "components/charts/DegradationChart.jsx: valor porcentual dentro del tooltip custom de recharts (CustomTooltip) usaba text-white fijo -- ahora text-[var(--content-text)]",
+        "Verificado components/charts/MaintenanceChart.jsx (tambien listado en el barrido 2026-07-04): NO tiene el bug, era un falso positivo -- su tooltip usa contentStyle inline de recharts con backgroundColor fijo autoconsistente, no mezcla con variable de tema. Corregido en docs/DESIGN-SYSTEM-V4.md",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance con nueva fila 'Componentes transversales' y backlog de contraste depurado (categoria 'Modales/componentes transversales' reducida a OCRScannerModal.jsx y TripleValidationModal.jsx)"
+      ],
+      "verificar": [
+        "Con tema 'Azul IMSS (claro)' o 'Verde SIGAH (claro)': abrir cualquier flujo que dispare un ConfirmDialog (ej. eliminar un equipo) -- el titulo del dialogo debe verse legible, no invisible",
+        "Detalle de Equipo: abrir 'Historial Completo' -- el boton cerrar (X) debe verse en hover",
+        "Cualquier pagina con FilterBar activo (con filtros aplicados): el boton 'Limpiar' debe verse en hover",
+        "Dashboard u otra pantalla que use DegradationChart: pasar el mouse sobre la grafica -- el tooltip debe mostrar el valor de salud legible"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.9",
       "fecha": "2026-07-05",
