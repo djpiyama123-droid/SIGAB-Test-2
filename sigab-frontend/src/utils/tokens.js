@@ -99,14 +99,14 @@ export const TV_ESTADO_COLORS = {
   documentado:       'bg-purple-500/20 text-purple-400',
   escalado_cofepris: 'bg-orange-500/20 text-orange-400',
   cerrado:           'bg-emerald-500/20 text-emerald-400',
-  cancelado:         'bg-slate-500/20 text-slate-400',
+  cancelado:         'bg-slate-500/20 text-slate-500',
 };
 
 export const TV_SEVERIDAD_COLORS = {
-  critica:  'bg-red-600/30 text-red-300 border border-red-500',
+  critica:  'bg-red-600/30 text-red-500 border border-red-500',
   grave:    'bg-orange-500/20 text-orange-400',
   moderada: 'bg-yellow-500/20 text-yellow-400',
-  leve:     'bg-slate-500/20 text-slate-400',
+  leve:     'bg-slate-500/20 text-slate-500',
 };
 
 export const TV_TIPO_LABELS = {

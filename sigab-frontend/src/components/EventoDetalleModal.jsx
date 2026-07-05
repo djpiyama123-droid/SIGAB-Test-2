@@ -164,7 +164,7 @@ export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
           <div key={st} className="flex items-center gap-1 flex-1">
             <div className={`flex-1 text-center px-1 py-1.5 text-[10px] font-semibold rounded-md whitespace-nowrap ${
               i <= idx ? 'bg-emerald-600/30 text-emerald-400 border border-emerald-500/40' :
-              'bg-slate-700/50 text-[var(--content-muted)]'
+              'bg-[var(--content-border)]/50 text-[var(--content-muted)]'
             }`}>
               {TV_ESTADO_LABELS[st]?.replace('Escalado COFEPRIS', 'COFEPRIS') || st}
             </div>

@@ -3,9 +3,9 @@ import { api } from '../api/sigah';
 import { useToast } from '../components/Toast';
 
 const PRIORIDAD_STYLE = {
-  critica: { bar: 'bg-red-500',    badge: 'bg-red-900/50 text-red-300',    icon: '🚨' },
-  alta:    { bar: 'bg-orange-500', badge: 'bg-orange-900/50 text-orange-300', icon: '⚠️' },
-  media:   { bar: 'bg-yellow-500', badge: 'bg-yellow-900/50 text-yellow-300', icon: '📋' },
+  critica: { bar: 'bg-red-500',    badge: 'bg-red-900/50 text-red-500',    icon: '🚨' },
+  alta:    { bar: 'bg-orange-500', badge: 'bg-orange-900/50 text-orange-500', icon: '⚠️' },
+  media:   { bar: 'bg-yellow-500', badge: 'bg-yellow-900/50 text-yellow-600', icon: '📋' },
   baja:    { bar: 'bg-slate-500',  badge: 'bg-[var(--content-surface)] text-[var(--content-muted)]',    icon: 'ℹ️' },
 };
 
@@ -80,7 +80,7 @@ export default function Alertas() {
         {['', 'critica', 'alta', 'media', 'baja'].map((p) => (
           <button key={p} onClick={() => setFiltro(p)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors ${
-              filtro === p ? 'bg-emerald-800/60 text-emerald-300' : 'bg-[var(--content-surface)] text-[var(--content-muted)] hover:bg-[var(--content-border)]'
+              filtro === p ? 'bg-emerald-800/60 text-emerald-500' : 'bg-[var(--content-surface)] text-[var(--content-muted)] hover:bg-[var(--content-border)]'
             }`}>
             {p || 'Todas'}
           </button>
