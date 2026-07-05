@@ -117,6 +117,20 @@ Equipos/Mapa:
 esta categoría — el siguiente barrido debe tomar de "Modales/componentes
 transversales" abajo.
 
+**Segunda pasada (v4.0.12, 2026-07-05):** el grep original de esta sección
+solo buscó `text-white|text-black|bg-white` — no cubre una segunda variante
+del mismo bug (tonos claros de acento, `text-red-300`/`text-orange-300`/
+`text-yellow-300`, pensados para fondo oscuro, invisibles sobre el tinte
+claro que su propio `bg-*-500/20` o `bg-*-900/50` produce en temas claros).
+Se encontró y corrigió en `EventoAdversoModal.jsx` (chips de severidad +
+`ring-offset-slate-800` fijo), `EventoDetalleModal.jsx` (paso inactivo de la
+Timeline, `bg-slate-700/50` fijo), `utils/tokens.js`
+(`TV_ESTADO_COLORS`/`TV_SEVERIDAD_COLORS`, compartido por varios modales de
+Tecnovigilancia) y `pages/Alertas.jsx` (`PRIORIDAD_STYLE`, mapa local del
+mismo patrón). `OrdenDetalleModal.jsx` y `Copilot.jsx` se revisaron a fondo
+(archivo completo, no solo grep) y no tenían esta segunda variante. Detalle
+completo en `docs/releases/v4.0.12.md`.
+
 **Modales/componentes transversales (uso en varios flujos):**
 (`components/ConfirmDialog.jsx`, `components/FilterBar.jsx`,
 `components/HistorialModal.jsx` y `components/charts/DegradationChart.jsx`

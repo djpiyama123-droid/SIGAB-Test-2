@@ -1,6 +1,31 @@
 {
-  "actual": "4.0.11",
+  "actual": "4.0.12",
   "versiones": [
+    {
+      "version": "4.0.12",
+      "fecha": "2026-07-05",
+      "tipo": "patch",
+      "autor": "claude-code-asus",
+      "commit": "",
+      "resumen": "Cierre del backlog de contraste 'alta prioridad' de docs/DESIGN-SYSTEM-V4.md: EventoAdversoModal.jsx, EventoDetalleModal.jsx y utils/tokens.js (TV_ESTADO_COLORS/TV_SEVERIDAD_COLORS, compartido por varios modales). Alertas.jsx tenia el mismo patron en su propio mapa local de estilos. OrdenDetalleModal.jsx y Copilot.jsx se revisaron a fondo y ya estaban sanos (Copilot.jsx cubierto por los ciclos v4.0.9/v4.0.10 del loop; OrdenDetalleModal.jsx ya usaba tokens de tema correctamente en su timeline).",
+      "cambios": [
+        "EventoAdversoModal.jsx: los 4 chips de severidad (SEVERIDADES) usaban text-red-300/orange-300/yellow-300 -- tonos claros pensados para fondo oscuro, invisibles sobre el tinte claro que su propio bg-*-500/20 produce en temas claros -- ahora text-red-500/orange-500/yellow-600 (mismo patron ya probado en el commit de referencia 86373f7 de feat/ui-cinematic). El chip 'leve' tenia bg-slate-500/20 fijo -- ahora bg-[var(--content-bg)]. El anillo de seleccion del chip activo tenia ring-offset-slate-800 fijo (se veia como un recuadro oscuro en temas claros) -- ahora ring-offset-[var(--content-surface)]",
+        "EventoDetalleModal.jsx: el paso inactivo de la linea de tiempo (Timeline) usaba bg-slate-700/50 (fijo, coincide por casualidad con el valor oscuro de --content-border) combinado con text-[var(--content-muted)] -- en temas claros el texto muted (gris medio, pensado para fondo blanco) caia sobre ese mismo gris oscuro fijo, casi ilegible -- ahora bg-[var(--content-border)]/50 (mismo aspecto en oscuro, correcto en claro)",
+        "utils/tokens.js (TV_ESTADO_COLORS/TV_SEVERIDAD_COLORS, usado por EventoDetalleModal.jsx y otros modales de Tecnovigilancia): 'critica' tenia text-red-300 (mismo bug de EventoAdversoModal) -- ahora text-red-500. 'cancelado'/'leve' tenian text-slate-400 (tono pensado para superficie oscura) sobre bg-slate-500/20 -- ahora text-slate-500, mas legible en claro sin cambiar el aspecto en oscuro",
+        "pages/Alertas.jsx: PRIORIDAD_STYLE (mapa local, mismo patron que tokens.js pero no compartido) tenia badge: text-red-300/orange-300/yellow-300 sobre bg-*-900/50 -- mismo bug, mismo fix (text-*-500/600). El boton de filtro activo tenia text-emerald-300 sobre bg-emerald-800/60 -- ahora text-emerald-500",
+        "OrdenDetalleModal.jsx: revisado a fondo (grep + lectura completa), ya usa bg-[var(--content-surface)]/text-[var(--content-muted)] correctamente en su propia Timeline -- sin cambios",
+        "Copilot.jsx: revisado a fondo (grep + lectura completa de las ~700 lineas), ya cubierto por los ciclos v4.0.9/v4.0.10 del loop-thinkcentre -- sin cambios"
+      ],
+      "verificar": [
+        "Reportar un Evento Adverso (boton en Tecnovigilancia) en tema claro ('blue' o 'green'): los 4 chips de severidad deben leerse claramente, y el chip seleccionado no debe mostrar un recuadro oscuro alrededor",
+        "Abrir el detalle de un Evento Adverso ya existente en tema claro: los pasos ya completados de la linea de tiempo (fondo verde) y los pendientes (fondo gris claro) deben ser legibles, igual que los badges de severidad/estado en el encabezado",
+        "Centro de Alertas (pagina Alertas) en tema claro: los badges de prioridad (CRITICA/ALTA/MEDIA) y el boton de filtro activo deben ser legibles",
+        "Repetir los 3 puntos anteriores en tema 'glass' (oscuro, default) y confirmar que no cambio nada visualmente"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend. Cambio solo de clases JSX/valores de mapas de color, sin logica ni llamadas a la API -- revert seguro sin rollback de base de datos",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.11",
       "fecha": "2026-07-05",

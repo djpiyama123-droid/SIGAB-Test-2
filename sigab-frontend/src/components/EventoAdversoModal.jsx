@@ -12,10 +12,10 @@ const TIPOS_EVENTO = [
 ];
 
 const SEVERIDADES = [
-  { value: 'critica', label: 'Critica', color: 'border-red-500 bg-red-600/20 text-red-300' },
-  { value: 'grave', label: 'Grave', color: 'border-orange-500 bg-orange-500/20 text-orange-300' },
-  { value: 'moderada', label: 'Moderada', color: 'border-yellow-500 bg-yellow-500/20 text-yellow-300' },
-  { value: 'leve', label: 'Leve', color: 'border-[var(--content-border)] bg-slate-500/20 text-[var(--content-muted)]' },
+  { value: 'critica', label: 'Critica', color: 'border-red-500 bg-red-600/20 text-red-500' },
+  { value: 'grave', label: 'Grave', color: 'border-orange-500 bg-orange-500/20 text-orange-500' },
+  { value: 'moderada', label: 'Moderada', color: 'border-yellow-500 bg-yellow-500/20 text-yellow-600' },
+  { value: 'leve', label: 'Leve', color: 'border-[var(--content-border)] bg-[var(--content-bg)] text-[var(--content-muted)]' },
 ];
 
 const ESTADO_POST = [
@@ -249,7 +249,7 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
                       onClick={() => setForm((f) => ({ ...f, severidad: s.value }))}
                       className={`border rounded-lg py-2 text-xs font-bold text-center transition-all ${
                         form.severidad === s.value
-                          ? s.color + ' ring-2 ring-offset-1 ring-offset-slate-800'
+                          ? s.color + ' ring-2 ring-offset-1 ring-offset-[var(--content-surface)]'
                           : 'border-[var(--content-border)] bg-[var(--content-surface)] text-[var(--content-muted)] hover:bg-[var(--content-border)]'
                       }`}>
                       {s.label}
