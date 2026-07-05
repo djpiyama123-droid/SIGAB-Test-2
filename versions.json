@@ -1,6 +1,32 @@
 {
-  "actual": "4.0.7",
+  "actual": "4.0.8",
   "versiones": [
+    {
+      "version": "4.0.8",
+      "fecha": "2026-07-04",
+      "tipo": "patch",
+      "autor": "sesion-sonnet-asus",
+      "commit": "",
+      "resumen": "Busqueda tolerante a acentos en las barras de filtro/busqueda client-side (bug reportado por Gustavo con captura: buscar 'patologia' sin acento no encontraba la zona 'PATOLOGIA'). Nueva utilidad normalizar() en utils/texto.js, aplicada en Mapa de Activos y otros 4 modulos con busqueda en memoria.",
+      "cambios": [
+        "utils/texto.js (nuevo): normalizar(texto) -- minusculas + mapa de acentos espanol (a,e,i,o,u,u con dieresis,n con tilde), sin libreria nueva (nativo). utils/texto.test.js con 5 casos",
+        "HospitalMap.jsx: busqueda del Mapa de Activos (nombre/serie/marca de equipo, nombre de zona) -- exactamente el bug de la captura de Gustavo",
+        "EventoAdversoModal.jsx: autocompletado de equipo al reportar un evento adverso",
+        "Reservas.jsx: busqueda de equipo al agendar",
+        "QRBatch.jsx: busqueda para lote de QR",
+        "SuperAdmin.jsx: busqueda de tenants (panel admin, menor prioridad)",
+        "Investigado y confirmado que NO hace falta tocar el backend: Equipos.jsx y Almacen.jsx ya buscan server-side via SQL LIKE, y la collation utf8mb4_unicode_ci de MySQL en produccion YA es insensible a acentos (verificado con datos reales: LIKE '%patologia%' SI encuentra 'PATOLOGIA')",
+        "Alcance NO cubierto (documentado, no silencioso): esto es acentos/mayusculas, NO tolerancia a errores de escritura reales (letras de mas/menos, transposiciones) -- eso requeriria una libreria de fuzzy-match (ej. Fuse.js) o distancia de Levenshtein, mayor alcance, pendiente de que Gustavo confirme si se necesita"
+      ],
+      "verificar": [
+        "Dashboard, Mapa de Activos: escribir 'patologia' (sin acento) en el buscador debe mostrar la zona 'PATOLOGIA'",
+        "Reportar un Evento Adverso: buscar un equipo sin poner los acentos de su nombre real debe encontrarlo igual",
+        "Lote QR y Reservas: mismo comportamiento al buscar equipo"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.7-db1",
       "fecha": "2026-07-04",

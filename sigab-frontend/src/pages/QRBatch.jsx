@@ -3,6 +3,7 @@ import { api } from '../api/sigah';
 import { QrCode, Printer, CheckCircle, Search, LayoutGrid, Sticker, Eye, ChevronDown, X, CheckSquare, Square } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from '../lib/toast';
+import { normalizar } from '../utils/texto';
 
 /* ─── IMSS Logo SVG Component (official eagle/serpent/hands emblem, monochrome) ─── */
 function IMSSLogo({ size = 28, className = '' }) {
@@ -134,11 +135,11 @@ export default function QRBatch() {
     let filtered = equipos;
     if (area) filtered = filtered.filter(e => e.area === area);
     if (busqueda) {
-      const q = busqueda.toLowerCase();
+      const q = normalizar(busqueda);
       filtered = filtered.filter(e =>
-        (e.nombre || '').toLowerCase().includes(q) ||
-        (e.serie || '').toLowerCase().includes(q) ||
-        (e.marca || '').toLowerCase().includes(q)
+        normalizar(e.nombre).includes(q) ||
+        normalizar(e.serie).includes(q) ||
+        normalizar(e.marca).includes(q)
       );
     }
     return filtered;

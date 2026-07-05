@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import toast from '../lib/toast';
+import { normalizar } from '../utils/texto';
 
 const TIPOS_EVENTO = [
   { value: 'muerte', label: 'Muerte' },
@@ -71,11 +72,12 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
     setBuscaEquipo('');
   };
 
+  const buscaEquipoNorm = normalizar(buscaEquipo);
   const equiposFiltrados = buscaEquipo.length >= 2
     ? equipos.filter((e) =>
-        e.nombre?.toLowerCase().includes(buscaEquipo.toLowerCase()) ||
-        e.serie?.toLowerCase().includes(buscaEquipo.toLowerCase()) ||
-        e.inventario?.toLowerCase().includes(buscaEquipo.toLowerCase())
+        normalizar(e.nombre).includes(buscaEquipoNorm) ||
+        normalizar(e.serie).includes(buscaEquipoNorm) ||
+        normalizar(e.inventario).includes(buscaEquipoNorm)
       ).slice(0, 8)
     : [];
 

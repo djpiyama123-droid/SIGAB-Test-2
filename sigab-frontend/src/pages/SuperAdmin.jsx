@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { normalizar } from '../utils/texto';
 import { 
   Server, 
   Users, 
@@ -74,9 +75,10 @@ export default function SuperAdmin() {
     setIsAddingTenant(false);
   };
 
-  const filteredTenants = tenants.filter(t => 
-    t.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.slug.toLowerCase().includes(searchTerm.toLowerCase())
+  const searchTermNorm = normalizar(searchTerm);
+  const filteredTenants = tenants.filter(t =>
+    normalizar(t.nombre).includes(searchTermNorm) ||
+    normalizar(t.slug).includes(searchTermNorm)
   );
 
   return (

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import { useAuth } from '../context/AuthContext';
+import { normalizar } from '../utils/texto';
 import {
   CalendarClock,
   Plus,
@@ -121,10 +122,11 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
   };
 
   // Filtrar equipos por búsqueda de nombre o número de serie
+  const searchQueryNorm = normalizar(searchQuery);
   const filteredEquipos = equipos.filter(eq =>
-    eq.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    eq.serie.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    eq.modelo?.toLowerCase().includes(searchQuery.toLowerCase())
+    normalizar(eq.nombre).includes(searchQueryNorm) ||
+    normalizar(eq.serie).includes(searchQueryNorm) ||
+    normalizar(eq.modelo).includes(searchQueryNorm)
   );
 
   return (

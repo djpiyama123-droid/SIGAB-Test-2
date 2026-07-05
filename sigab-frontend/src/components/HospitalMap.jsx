@@ -9,6 +9,7 @@ import { useToast } from './Toast';
 import HistorialEquipoModal from './HistorialEquipoModal';
 import OrdenServicioRapidaModal from './OrdenServicioRapidaModal';
 import QRPanel from './QRPanel';
+import { normalizar } from '../utils/texto';
 
 // ── Iconos SVG por tipo de equipo (inline, sin dependencia externa)
 const EQUIPMENT_ICONS = {
@@ -684,7 +685,7 @@ export default function HospitalMap() {
   ];
 
   // ── Lógica de filtrado
-  const busqLower = busqueda.toLowerCase().trim();
+  const busqLower = normalizar(busqueda);
   const zonasFiltradas = zonas
     .filter(zona => pisoActivo === 'todos' || zona.piso === pisoActivo || (!zona.piso && pisoActivo === 'otras'))
     .map(zona => {
@@ -693,10 +694,10 @@ export default function HospitalMap() {
       if (filtroEstado) equiposFiltrados = equiposFiltrados.filter(e => e.estado === filtroEstado);
       if (busqLower) {
         equiposFiltrados = equiposFiltrados.filter(e =>
-          e.nombre?.toLowerCase().includes(busqLower) ||
-          e.serie?.toLowerCase().includes(busqLower) ||
-          e.marca?.toLowerCase().includes(busqLower) ||
-          zona.nombre?.toLowerCase().includes(busqLower)
+          normalizar(e.nombre).includes(busqLower) ||
+          normalizar(e.serie).includes(busqLower) ||
+          normalizar(e.marca).includes(busqLower) ||
+          normalizar(zona.nombre).includes(busqLower)
         );
       }
       return { ...zona, equipos: equiposFiltrados };
