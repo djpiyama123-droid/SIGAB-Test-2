@@ -15,7 +15,7 @@ set -Eeuo pipefail
 REPO=/opt/sigab
 LOG_DIR=/var/log/sigab-loop
 LOCK=/var/run/sigab-loop.lock
-VPS=sigab-vps
+VPS=sigab-vps-direct
 VPS_DIST=/opt/sigab/sigab-frontend/dist
 RAMA=v4.0/piloto-clinica-1
 export HOME=${HOME:-/root}
