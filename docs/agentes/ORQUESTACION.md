@@ -61,6 +61,10 @@ reglas duras, memoria que persiste y cómo se mide su trabajo.
 - [DIRECTRICES-OPENCODE.md](DIRECTRICES-OPENCODE.md) — herramienta humana
 - [DIRECTRICES-ANTIGRAVITY.md](DIRECTRICES-ANTIGRAVITY.md) — herramienta humana
 
+**¿Cómo llega un cambio de cualquiera de estos a producción, y por qué a
+veces no es inmediato?** Ver
+[FLUJO-DEPLOY-Y-PROPUESTAS.md](FLUJO-DEPLOY-Y-PROPUESTAS.md).
+
 ## Trazabilidad de versiones
 `VERSION` (actual) + `versions.json` (historial estructurado: qué cambió,
 qué verificar si algo se ve mal, cómo revertir) + `docs/releases/v*.md`
