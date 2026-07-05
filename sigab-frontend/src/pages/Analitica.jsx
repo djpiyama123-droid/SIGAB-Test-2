@@ -50,7 +50,7 @@ export default function Analitica() {
               <Brain className="h-2 w-2" /> Powered by Gemma
             </span>
           </div>
-          <h1 className="text-4xl font-black text-white tracking-tight">Ingeniería Clínica 4.0</h1>
+          <h1 className="text-4xl font-black text-[var(--content-text)] tracking-tight">Ingeniería Clínica 4.0</h1>
           <p className="text-[var(--content-muted)] mt-1 max-w-2xl">
             Análisis de fiabilidad en tiempo real utilizando algoritmos de <span className="text-[var(--content-text)] font-medium">MTBF (Mean Time Between Failures)</span> y <span className="text-[var(--content-text)] font-medium">MTTR (Mean Time To Repair)</span>.
           </p>
@@ -71,7 +71,7 @@ export default function Analitica() {
           <div className="relative z-10">
             <p className="text-[var(--content-muted)] text-xs font-bold uppercase tracking-wider mb-4">Disponibilidad Global</p>
             <div className="flex items-baseline gap-1">
-              <p className="text-4xl font-black text-white">{avgUptime}%</p>
+              <p className="text-4xl font-black text-[var(--content-text)]">{avgUptime}%</p>
               <TrendingUp className="h-4 w-4 text-emerald-500" />
             </div>
             <p className="text-[10px] text-emerald-500 font-bold mt-2">+0.4% vs mes anterior</p>
@@ -95,7 +95,7 @@ export default function Analitica() {
           <div className="relative z-10">
             <p className="text-[var(--content-muted)] text-xs font-bold uppercase tracking-wider mb-4">MTBF Promedio</p>
             <div className="flex items-baseline gap-1">
-              <p className="text-4xl font-black text-white">
+              <p className="text-4xl font-black text-[var(--content-text)]">
                 {metricas.length > 0 ? Math.round(metricas.reduce((a, b) => a + b.mtbf_dias, 0) / metricas.length) : 0}
               </p>
               <span className="text-sm font-bold text-[var(--content-muted)]">días</span>
@@ -109,7 +109,7 @@ export default function Analitica() {
           <div className="relative z-10">
             <p className="text-[var(--content-muted)] text-xs font-bold uppercase tracking-wider mb-4">MTTR Promedio</p>
             <div className="flex items-baseline gap-1">
-              <p className="text-4xl font-black text-white">
+              <p className="text-4xl font-black text-[var(--content-text)]">
                 {metricas.length > 0 ? (metricas.reduce((a, b) => a + b.mttr_horas, 0) / metricas.length).toFixed(1) : 0}
               </p>
               <span className="text-sm font-bold text-[var(--content-muted)]">hrs</span>
@@ -148,7 +148,7 @@ export default function Analitica() {
                 const barColor = m.color === 'red' ? 'bg-red-500' : m.color === 'orange' ? 'bg-orange-500' : 'bg-emerald-500';
 
                 return (
-                  <tr key={m.equipo_id} className="hover:bg-slate-800/40 transition-all group">
+                  <tr key={m.equipo_id} className="hover:bg-[var(--content-border)]/30 transition-all group">
                     <td className="px-6 py-5">
                       <p className="font-bold text-[var(--content-text)] group-hover:text-emerald-400 transition-colors">{m.modelo}</p>
                       <p className="text-[10px] font-mono text-[var(--content-muted)] uppercase">{m.marca} · {m.serie}</p>
@@ -164,8 +164,8 @@ export default function Analitica() {
                         <span className={`text-[10px] font-black ${color}`}>{m.probabilidad_falla_pct}%</span>
                       </div>
                     </td>
-                    <td className="px-6 py-5 text-center font-mono text-white text-sm">{m.mtbf_dias}</td>
-                    <td className="px-6 py-5 text-center font-mono text-white text-sm">{m.mttr_horas}</td>
+                    <td className="px-6 py-5 text-center font-mono text-[var(--content-text)] text-sm">{m.mtbf_dias}</td>
+                    <td className="px-6 py-5 text-center font-mono text-[var(--content-text)] text-sm">{m.mttr_horas}</td>
                     <td className="px-6 py-5 text-right">
                       <span className={`inline-flex items-center gap-2 rounded-xl px-4 py-1.5 text-[10px] font-black border uppercase tracking-tighter transition-all
                         ${m.riesgo === 'Crítico' ? 'bg-red-500/10 border-red-500/30 text-red-500' : 
