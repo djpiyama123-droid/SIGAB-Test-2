@@ -6,7 +6,7 @@
       "fecha": "2026-07-04",
       "tipo": "patch",
       "autor": "sesion-sonnet-asus",
-      "commit": "",
+      "commit": "e9eeee3",
       "resumen": "Busqueda tolerante a acentos en las barras de filtro/busqueda client-side (bug reportado por Gustavo con captura: buscar 'patologia' sin acento no encontraba la zona 'PATOLOGIA'). Nueva utilidad normalizar() en utils/texto.js, aplicada en Mapa de Activos y otros 4 modulos con busqueda en memoria.",
       "cambios": [
         "utils/texto.js (nuevo): normalizar(texto) -- minusculas + mapa de acentos espanol (a,e,i,o,u,u con dieresis,n con tilde), sin libreria nueva (nativo). utils/texto.test.js con 5 casos",
