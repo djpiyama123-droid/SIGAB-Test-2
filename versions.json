@@ -6,7 +6,7 @@
       "fecha": "2026-07-04",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "c179fb3",
       "resumen": "Fix de contraste en el flujo de Tecnovigilancia/Eventos Adversos y Centro de Alertas: texto y botones con text-white fijo, invisibles en temas claros.",
       "cambios": [
         "EventoAdversoModal.jsx: boton cerrar (X), resumen final ('Dispositivo:', 'Tipo:') y boton 'Cancelar/Anterior' usaban text-white/hover:text-white fijo sobre fondo de tema -- ahora var(--content-text)",
