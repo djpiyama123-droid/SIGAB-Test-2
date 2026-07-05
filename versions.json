@@ -2,6 +2,28 @@
   "actual": "4.0.7",
   "versiones": [
     {
+      "version": "4.0.7-db1",
+      "fecha": "2026-07-04",
+      "tipo": "hotfix-backend",
+      "autor": "sesion-sonnet-asus",
+      "commit": "",
+      "resumen": "Migracion 011: crea tecnovigilancia_eventos y tecnovigilancia_evidencias en produccion. Las tablas nunca existieron -- el codigo (routes/tecnovigilancia.py) ya las consultaba, causando 500 en /api/tecnovigilancia/ y en el chat del Copilot (arma un resumen de contexto leyendo esa tabla antes de invocar al modelo). NO es cambio de frontend, no bump de VERSION.",
+      "cambios": [
+        "database/migrations/011_tecnovigilancia.sql: CREATE TABLE IF NOT EXISTS para tecnovigilancia_eventos (columnas extraidas 1:1 de los INSERT/UPDATE reales en routes/tecnovigilancia.py, enums tipo_evento/severidad/estado extraidos de utils/tokens.js del frontend) y tecnovigilancia_evidencias, con FKs a equipos/usuarios (ambas int unsigned, confirmado antes de crear) y patron tenant_id INT UNSIGNED NOT NULL DEFAULT 1 (igual que 010_equipo_documentos.sql, sin tocar la migracion completa de multi-tenancy de 19 tablas que existe en alembic/ pero nunca se aplico en prod)",
+        "Backup completo de la BD antes de aplicar: /opt/sigab/backups/pre_tecnovigilancia_20260704-222859.sql (en el VPS)",
+        "Verificado con trafico real: GET /api/tecnovigilancia/ paso de 500 (tabla no existe) a 401 (solo sesion/token, no relacionado) -- 0 errores de SQL en logs tras la migracion",
+        "El Copilot (chat) NO tenia un problema de Ollama vs MiniMax como parecia por el mensaje de error del frontend ('Ollama no detectado') -- .env de produccion ya tiene SIGAH_LLM_API_MODE=openai con MiniMax configurado correctamente. El mensaje de error del frontend es generico/enganoso y no refleja la causa real (queda pendiente corregir ese texto en un ciclo futuro)"
+      ],
+      "verificar": [
+        "GET /api/tecnovigilancia/ con sesion valida debe responder 200 con lista (vacia) de eventos, no 500",
+        "Chat del Copilot: una pregunta de texto simple debe responder usando MiniMax, no mostrar 'Ollama no detectado'",
+        "Crear un evento de tecnovigilancia de prueba y verificar que aparece en el listado y que el equipo relacionado pasa a fuera_servicio si la severidad es critica/grave"
+      ],
+      "rollback": "restaurar /opt/sigab/backups/pre_tecnovigilancia_20260704-222859.sql (o simplemente DROP TABLE tecnovigilancia_evidencias, tecnovigilancia_eventos; -- estan vacias, no hay datos que perder)",
+      "deploy_frontend": "",
+      "deploy_backend": "aplicado directamente en produccion via docker exec, ver cambios[]"
+    },
+    {
       "version": "4.0.7",
       "fecha": "2026-07-04",
       "tipo": "patch",
