@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
+import ScrollToTop from './components/ScrollToTop';
 
 // ponytail: paginas lazy -> code-splitting (portado de 568ca98 del repo main).
 // ProtectedRoute/Layout/Providers quedan eager (shell de auth que protege cada ruta).
@@ -54,6 +55,7 @@ export default function App() {
       <AuthProvider>
       <Toaster position="top-right" theme="light" />
       <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
+        <ScrollToTop />
         <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/login" element={<Login />} />
