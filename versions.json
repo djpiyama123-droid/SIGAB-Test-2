@@ -1,6 +1,29 @@
 {
-  "actual": "4.0.10",
+  "actual": "4.0.11",
   "versiones": [
+    {
+      "version": "4.0.11",
+      "fecha": "2026-07-05",
+      "tipo": "patch",
+      "autor": "cloud-routine-nocturna",
+      "commit": "",
+      "resumen": "Continuacion del barrido de contraste del design system Verde-Blanco IMSS (docs/DESIGN-SYSTEM-V4.md): pages/QRBatch.jsx y pages/Analitica.jsx (seccion 'Secundaria'). El fix de pages/Copilot.jsx que esta sesion habia preparado en paralelo se descarto al reconciliar con el loop-thinkcentre: sus ciclos v4.0.9 (commit 590ebef) y v4.0.10 (commit 7405a4c), pusheados directo a v4.0/piloto-clinica-1 mientras esta sesion trabajaba en su propia rama, ya cubrieron Copilot.jsx (con una version equivalente, ligeramente mejor) y los 4 componentes transversales.",
+      "cambios": [
+        "QRBatch.jsx (el mas afectado del backlog, 8 bugs): 3 pildoras de la barra de estadisticas, el panel de Vista Previa y la barra de herramientas usaban bg-slate-800/* fijo mezclado con texto de tokens de tema -- ahora bg-[var(--content-surface)]. El input de busqueda y el select de area tenian text-white fijo sobre un fondo de tema claro (bg-[var(--content-bg)], blanco en temas claros) -- invisible al escribir -- ahora text-[var(--content-text)]. Los botones 'Vista Previa', 'Seleccionar visibles' y el boton limpiar busqueda (X) usaban (hover:)text-white sobre fondo de tema -- corregido igual. Las tarjetas de seleccion de equipo tenian bg-slate-800/40 fijo + texto blanco -- migradas al mismo patron que EquipoCard.jsx (bg-[var(--content-surface)] + text-[var(--content-text)]), con el estado 'seleccionado' usando el patron de acento translucido bg-purple-500/10",
+        "Analitica.jsx: el titulo 'Ingenieria Clinica 4.0' y los valores numericos de 3 de los 4 KPIs principales (Disponibilidad Global, MTBF Promedio, MTTR Promedio) usaban text-white fijo sobre tarjetas con fondo de tema (bg-[var(--content-bg)]/50) -- invisibles en claro. Las columnas MTBF/MTTR de la tabla de Heatmap de Fiabilidad tenian el mismo problema (font-mono text-white). El hover de fila de la tabla (hover:bg-slate-800/40) tambien mezclaba fondo fijo oscuro con texto de tema (var(--content-text), oscuro en claro) -- ahora hover:bg-[var(--content-border)]/30. Los badges de riesgo/estado (rojo/naranja/verde translucidos) no se tocaron, uso correcto",
+        "No se toco pages/Reportes.jsx (siguiente en la lista de Secundaria) ni OCRScannerModal.jsx/TripleValidationModal.jsx (unicos que quedan pendientes de 'Modales/componentes transversales' tras el v4.0.10 del loop) -- fuera del alcance de este ciclo",
+        "Reconciliacion con loop-thinkcentre: al hacer 'git fetch' + rebase de esta rama sobre v4.0/piloto-clinica-1 actualizado se detecto que el commit propio de pages/Copilot.jsx (mismo diagnostico: bg-slate-700/70 fijo mezclado con var(--content-text)) quedo duplicado por el commit 590ebef del loop, ya mergeado en la base -- se descarto sin pushear nunca a v4.0/piloto-clinica-1 directamente. QRBatch.jsx y Analitica.jsx no fueron tocados por ningun ciclo del loop, se mantienen intactos",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance actualizada y backlog de contraste depurado (QRBatch.jsx y Analitica.jsx salen de 'pendiente')"
+      ],
+      "verificar": [
+        "QRBatch (Etiquetado Masivo QR) en modo claro: las 3 pildoras de estadisticas (Seleccionados/Paginas/Formato), el input de busqueda (escribir texto y verlo), el select de area, y las tarjetas de equipo deben ser legibles. Abrir 'Vista Previa' con equipos seleccionados y verificar que el panel y su boton se ven",
+        "Analitica (Ingenieria Clinica 4.0) en modo claro: el titulo y los 4 numeros de KPI (Disponibilidad, Equipos en Riesgo, MTBF, MTTR) deben verse. En la tabla de abajo, pasar el mouse sobre una fila y verificar que el nombre del equipo y las columnas MTBF/MTTR siguen siendo legibles durante el hover",
+        "Repetir los 2 puntos anteriores en tema 'glass' (oscuro, default) y confirmar que no se rompio nada (mismo aspecto que antes de este cambio)"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend. Cambio solo de clases JSX (colores), sin logica ni llamadas a la API -- revert seguro sin rollback de base de datos",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.10",
       "fecha": "2026-07-05",
