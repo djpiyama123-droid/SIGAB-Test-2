@@ -57,6 +57,7 @@ Tailwind fija porque no dependen del tema de fondo.
 | Login | 🟡 Parcial | (este ciclo) | Título "SIGAB" con `text-white` fijo, invisible en temas claros — era la PRIMERA pantalla que ve cualquier usuario. Corregido a `var(--content-text)` |
 | Ficha Pública de Equipo (QR) | 🟡 Parcial | (este ciclo) | Contenedor raíz fijaba `text-white` como color de texto por defecto (anti-patrón: cualquier texto nuevo sin override heredaría blanco). Cambiado a `var(--content-text)`; nombre/marca del equipo (que sí van sobre el badge de estado, fondo fijo oscuro por diseño) ahora llevan `text-white` explícito |
 | Tecnovigilancia (Eventos Adversos) / Alertas | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste en `EventoAdversoModal.jsx` (botón cerrar, resumen "Dispositivo"/"Tipo", botón "Cancelar/Anterior"), `EventoDetalleModal.jsx` (botón cerrar, valor "Tipo" en Clasificación) y `pages/Alertas.jsx` (botón "Marcar todas leídas", texto del mensaje de la alerta) — todos `text-white`/`hover:text-white` fijo sobre fondo de tema → ahora `var(--content-text)`. Badges/botones con fondo sólido (rojo/azul/emerald/amarillo/púrpura/naranja) se dejaron igual, uso correcto |
+| Copilot | 🟡 Parcial | (este ciclo) | Se corrigió el bug de contraste invertido de la burbuja de respuesta de la IA en `pages/Copilot.jsx`: fondo fijo oscuro `bg-slate-700/70` mezclado con texto de tema `var(--content-text)` → invisible/ilegible en temas claros. Ahora la burbuja usa `bg-[var(--content-surface)]`/`border-[var(--content-border)]` (mismo patrón que el resto de paneles) y se quitó `prose-invert` (asumía fondo oscuro fijo, ya no aplica). También corregidos los botones cerrar (✕) de `DiagnosticoPanel` y `VisionPanel` (`hover:text-white` fijo → `hover:text-[var(--content-text)]`). Los botones con fondo sólido (amarillo/azul/rojo/emerald) se dejaron igual, uso correcto |
 | Reservas | ⬜ Pendiente | — | 4 variantes (`9ad9c5aa…`, `0d916bcd…`, `73bb15a3…`, `1e753e9a…`) — elegir la que mejor encaje con el calendario heatmap existente SIN romperlo (`anim-cell-pop` en `index.css`). Nota: ya es theme-safe (0 bugs de contraste, incluye tooltip de recharts bien resuelto) |
 | Móvil (Dashboard/Inventario/Detalle/Orden) | ⬜ Pendiente | — | Screen IDs en `CONSOLIDACION-V4.md` §6, sección Móvil |
 
@@ -106,12 +107,12 @@ son falsos positivos ni suposiciones — cada uno fue leído y verificado contra
 su contenedor real.** Un módulo por ciclo, igual que Preventivos/Dashboard/
 Equipos/Mapa:
 
-**Alta prioridad (flujo core, siguiente ciclo):**
-- `pages/Copilot.jsx` (3, incluye burbuja de respuesta IA con contraste
-  invertido en modo claro).
-  (`components/EventoAdversoModal.jsx`, `components/EventoDetalleModal.jsx` y
-  `pages/Alertas.jsx` resueltos este ciclo; `components/OrdenDetalleModal.jsx`
-  resuelto en v4.0.6, ver tabla de avance)
+**Alta prioridad (flujo core):**
+(`components/EventoAdversoModal.jsx`, `components/EventoDetalleModal.jsx`,
+`pages/Alertas.jsx` y `pages/Copilot.jsx` resueltos, ver tabla de avance;
+`components/OrdenDetalleModal.jsx` resuelto en v4.0.6). No queda pendiente en
+esta categoría — el siguiente barrido debe tomar de "Modales/componentes
+transversales" abajo.
 
 **Modales/componentes transversales (uso en varios flujos):**
 - `components/ConfirmDialog.jsx` (1), `components/FilterBar.jsx` (1),

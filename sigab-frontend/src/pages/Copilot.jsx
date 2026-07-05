@@ -54,12 +54,12 @@ function ChatMessage({ msg }) {
       <div className={`max-w-[80%] rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm ${
         isError
           ? 'bg-red-900/30 border border-red-500/40 text-red-300'
-          : 'bg-slate-700/70 border border-[var(--content-border)]/40 text-[var(--content-text)]'
+          : 'bg-[var(--content-surface)] border border-[var(--content-border)] text-[var(--content-text)]'
       }`}>
         {isError ? (
           <p className="text-xs">{msg.content}</p>
         ) : (
-          <div className="prose prose-sm prose-invert max-w-none">
+          <div className="prose prose-sm max-w-none">
             {msg.content.split('\n').map((line, i) => {
               if (line.startsWith('**') && line.endsWith('**')) {
                 return <p key={i} className="font-bold text-emerald-400 mt-2 mb-1">{line.replace(/\*\*/g, '')}</p>;
@@ -130,7 +130,7 @@ function DiagnosticoPanel({ onClose }) {
     <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 space-y-3">
       <div className="flex justify-between items-center">
         <h3 className="text-sm font-semibold text-yellow-400">Diagnóstico de Falla con IA</h3>
-        <button onClick={onClose} className="text-[var(--content-muted)] hover:text-white text-xs">✕ Cerrar</button>
+        <button onClick={onClose} className="text-[var(--content-muted)] hover:text-[var(--content-text)] text-xs">✕ Cerrar</button>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div className="col-span-2">
@@ -215,7 +215,7 @@ function VisionPanel({ onClose }) {
     <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 space-y-3">
       <div className="flex justify-between items-center">
         <h3 className="text-sm font-semibold text-blue-400">Análisis de Imagen (Gemma Vision)</h3>
-        <button onClick={onClose} className="text-[var(--content-muted)] hover:text-white text-xs">✕ Cerrar</button>
+        <button onClick={onClose} className="text-[var(--content-muted)] hover:text-[var(--content-text)] text-xs">✕ Cerrar</button>
       </div>
 
       <div>

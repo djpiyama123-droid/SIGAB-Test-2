@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.8",
+  "actual": "4.0.9",
   "versiones": [
+    {
+      "version": "4.0.9",
+      "fecha": "2026-07-05",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Fix de contraste en SIGAH Copilot: burbuja de respuesta de la IA con fondo fijo oscuro invisible en temas claros, y dos botones de cerrar con hover fijo.",
+      "cambios": [
+        "pages/Copilot.jsx: la burbuja de respuesta de la IA (ChatMessage, caso no-error) usaba fondo fijo oscuro bg-slate-700/70 mezclado con texto de tema var(--content-text) -- en temas claros el texto quedaba oscuro sobre un fondo tambien oscuro, ilegible. Ahora usa bg-[var(--content-surface)]/border-[var(--content-border)] (mismo patron que el resto de paneles de la app). Se quito la clase prose-invert (asumia el fondo oscuro fijo anterior, ya no aplica)",
+        "pages/Copilot.jsx: boton cerrar (X) de DiagnosticoPanel y VisionPanel usaban hover:text-white fijo -- invisible en hover sobre temas claros. Ahora hover:text-[var(--content-text)]",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance actualizada (nueva fila Copilot en Parcial) y backlog de contraste depurado (categoria 'Alta prioridad' queda vacia; siguiente barrido debe tomar de 'Modales/componentes transversales')"
+      ],
+      "verificar": [
+        "Copilot: enviar una pregunta con tema 'Azul IMSS (claro)' o 'Verde SIGAH (claro)' activo -- la respuesta de la IA debe verse legible (texto oscuro sobre fondo claro), no invisible",
+        "Copilot: abrir 'Diagnostico de Falla' y 'Vision (Gemma Vision)' en modo claro -- el boton cerrar (X) debe verse en hover",
+        "Confirmar que el mensaje de error (Ollama caido) sigue viendose igual que antes (fondo rojo fijo, no tocado)"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.8",
       "fecha": "2026-07-04",
