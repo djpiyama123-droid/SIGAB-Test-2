@@ -6,7 +6,7 @@
       "fecha": "2026-07-05",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "590ebef",
       "resumen": "Fix de contraste en SIGAH Copilot: burbuja de respuesta de la IA con fondo fijo oscuro invisible en temas claros, y dos botones de cerrar con hover fijo.",
       "cambios": [
         "pages/Copilot.jsx: la burbuja de respuesta de la IA (ChatMessage, caso no-error) usaba fondo fijo oscuro bg-slate-700/70 mezclado con texto de tema var(--content-text) -- en temas claros el texto quedaba oscuro sobre un fondo tambien oscuro, ilegible. Ahora usa bg-[var(--content-surface)]/border-[var(--content-border)] (mismo patron que el resto de paneles de la app). Se quito la clase prose-invert (asumia el fondo oscuro fijo anterior, ya no aplica)",
