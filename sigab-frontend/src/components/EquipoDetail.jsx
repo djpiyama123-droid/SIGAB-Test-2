@@ -12,6 +12,7 @@ import QRPanel from './QRPanel';
 import OrdenDetalleModal from './OrdenDetalleModal';
 import OrdenServicioRapidaModal from './OrdenServicioRapidaModal';
 import HistorialEquipoModal from './HistorialEquipoModal';
+import CalendarioMantenimiento from './CalendarioMantenimiento';
 import Lightbox from './Lightbox';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -324,6 +325,14 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
                   return null;
                 })()}
               </div>
+            </div>
+
+            {/* Próximo Mantenimiento — vista de calendario (petición Gustavo, punto 5) */}
+            <div className="bg-[var(--content-bg)]/30 border border-[var(--content-border)]/50 rounded-xl p-4">
+              <h3 className="text-sm font-semibold text-[var(--content-muted)] flex items-center gap-2 mb-3">
+                🗓️ Próximo Mantenimiento
+              </h3>
+              <CalendarioMantenimiento fecha={equipo.fecha_proximo_mantenimiento} />
             </div>
 
             {/* Galería de imágenes (S8: siempre visible si hay ≥1 imagen) */}
