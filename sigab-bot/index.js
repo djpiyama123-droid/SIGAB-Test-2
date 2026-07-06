@@ -23,6 +23,17 @@ import { handleCommand, handleImageCommand } from './commands.js';
 import { initScheduler } from './scheduler.js';
 import { initBotAuth, botLogin, authPost, authGet, getAuthHeaders } from './auth.js';
 
+// ponytail: evita que un error async no manejado (bug conocido de Baileys
+// al reintentar mensajes tras un cierre de conexion) tumbe el proceso a
+// medio emparejamiento de QR. Solo loguea y deja que el propio bot
+// reconecte via su logica existente.
+process.on('unhandledRejection', (err) => {
+  console.error('[unhandledRejection]', err);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err);
+});
+
 // ── Configuración ──────────────────────────────────────────
 const GRUPO_BIOMEDICOS    = process.env.GRUPO_BIOMEDICOS || 'Residentes de biomedica 2025';
 const AUTH_DIR            = './auth_sigah';
