@@ -384,6 +384,27 @@ async def get_equipo_pdf(serie: str, conn=Depends(get_db)):
         )
 
 
+@router.get("/orden-pdf/{orden_id}")
+async def get_orden_pdf(orden_id: int, conn=Depends(get_db)):
+    """PDF de una orden por id — usado para reenviarlo por WhatsApp justo
+    despues de crearla via /intake-group, donde no siempre hay equipo_serie
+    (a diferencia de /equipo-pdf/{serie})."""
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        await cur.execute("SELECT * FROM ordenes_servicio WHERE id = %s", (orden_id,))
+        orden = await cur.fetchone()
+        if not orden:
+            return {"ok": False, "mensaje": "Orden no encontrada"}
+        await cur.execute("SELECT * FROM os_materiales WHERE orden_id = %s", (orden_id,))
+        materiales = await cur.fetchall()
+
+    pdf_bytes = generar_pdf_orden(orden, materiales, [])
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"inline; filename={orden['numero_orden']}.pdf"}
+    )
+
+
 @router.post("/enviar-reporte")
 async def api_enviar_reporte(
     serie: str = Form(...),

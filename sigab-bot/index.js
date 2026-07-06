@@ -67,6 +67,26 @@ async function notificarSupervisores(mensaje) {
   }
 }
 
+// ── Reenvio del PDF de la orden recien creada ─────────────
+async function reenviarPdfOrden(senderJid, ordenId, numeroOrden) {
+  if (!senderJid || !ordenId) return;
+  try {
+    const res = await axios.get(`${OPENCLAW_API}/orden-pdf/${ordenId}`, {
+      headers: getAuthHeaders(),
+      responseType: 'arraybuffer',
+      timeout: 30000,
+    });
+    await sock.sendMessage(senderJid, {
+      document: Buffer.from(res.data),
+      fileName: `${numeroOrden || 'Orden'}.pdf`,
+      mimetype: 'application/pdf',
+      caption: `📄 PDF de la Orden de Servicio ${numeroOrden || ''}`,
+    });
+  } catch (err) {
+    console.error('❌ Error reenviando PDF de la orden:', err.message);
+  }
+}
+
 // ── Intake pasivo: texto libre del grupo ──────────────────
 async function procesarMensajeGrupo(texto, senderJid, senderName) {
   if (!texto || texto.length < 8) return;
@@ -99,6 +119,7 @@ async function procesarMensajeGrupo(texto, senderJid, senderName) {
       const msg = `📋 *SIGAH — Registro automático*\n\n${data.mensaje}\n\n_Registrado automáticamente por SIGAH Bot._`;
       if (senderJid) {
         try { await sock.sendMessage(senderJid, { text: msg }); } catch (_) {}
+        await reenviarPdfOrden(senderJid, data.orden_id, data.numero_orden);
       }
       await notificarSupervisores(`🔔 *Nuevo reporte en grupo*\nTécnico: ${senderName}\n\n${data.mensaje}`);
     }
@@ -130,6 +151,7 @@ async function procesarImagenGrupo(buffer, mimeType, caption, senderJid, senderN
       const msg = `📋 *SIGAH — OS registrada desde foto*\n\n${data.mensaje}`;
       if (senderJid) {
         try { await sock.sendMessage(senderJid, { text: msg }); } catch (_) {}
+        await reenviarPdfOrden(senderJid, data.orden_id, data.numero_orden);
       }
       await notificarSupervisores(`📸 *Foto del grupo → OS creada*\nTécnico: ${senderName}\n\n${data.mensaje}`);
       return true;
