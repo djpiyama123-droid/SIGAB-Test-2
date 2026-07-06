@@ -91,18 +91,20 @@ Reservas). IDs en `docs/CONSOLIDACION-V4.md` §6.
    - Cambiar estado operativo/mantenimiento/fuera de servicio directo
      desde el modal, sin pasar por `EquipoForm.jsx` completo.
 
-3. **Bug de navegación / pérdida de contexto**: en
-   `sigab-frontend/src/pages/Equipos.jsx` el estado de la lista (`filtros`,
-   `offset`, `orden`, `vista`, `seleccionado`, líneas ~49-67) vive en
-   `useState` local. El componente importa `useSearchParams` de
-   react-router-dom (línea 15) y SÍ lo usa, pero solo para un caso puntual:
-   abrir un equipo específico vía `?equipoId=` (líneas 105-118) y borrar el
-   parámetro de inmediato — no para persistir filtros/paginación/vista.
-   Resultado verificado: si el usuario abre el detalle de un equipo,
-   navega a otra sección y regresa a Inventario, la lista vuelve a su
-   estado inicial (pierde filtro, página/offset, scroll y selección). Hay
-   que sincronizar ese estado a `searchParams` (ya importado, patrón más
-   natural dado el uso parcial que ya existe) o a `sessionStorage`.
+3. ✅ **Resuelto (v4.0.14, loop-thinkcentre)**: `sigab-frontend/src/pages/Equipos.jsx`
+   ahora refleja `filtros`, `orden`, `vista` y la página actual en
+   `searchParams` (efecto de sincronización + inicialización perezosa de
+   cada `useState` leyendo la URL). El equipo abierto en `EquipoDetail`
+   también vive en `?equipoId=` (antes se borraba de inmediato tras abrir;
+   ahora persiste mientras el modal está abierto y se limpia al cerrarlo).
+   Se unificó la selección de "vista tabla": `EquipoTable.jsx` tenía su
+   propio `useState` interno + su propio `EquipoDetail` desconectado del de
+   la vista tarjeta — se eliminó y ahora usa el `onSelect` del padre, así
+   que ambas vistas comparten el mismo estado y el mismo modal. Resultado:
+   abrir el detalle de un equipo, navegar a otra sección y volver a
+   Inventario ahora restaura filtro, página/offset, vista y la selección
+   abierta. Pendiente NO cubierto por este fix: scroll vertical de la
+   lista (no persistido; alcance menor, no reportado como bloqueante).
 
 4. ✅ **Resuelto (v4.0.13, loop-thinkcentre)**: `EquipoForm.jsx` ya tiene un
    `<select>` de "Tipo de adquisición" (sección "Mantenimiento y contrato",

@@ -1,6 +1,28 @@
 {
-  "actual": "4.0.13",
+  "actual": "4.0.14",
   "versiones": [
+    {
+      "version": "4.0.14",
+      "fecha": "2026-07-05",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "dba0a1d",
+      "resumen": "Petición directa de Gustavo (punto 3/5, docs/cerebro/CONTEXTO-COMPARTIDO.md): la lista de Inventario ya no pierde filtros/página/vista/selección al navegar fuera de Equipos y volver.",
+      "cambios": [
+        "pages/Equipos.jsx: filtros, vista, orden y offset (como número de página) ahora se inicializan leyendo searchParams y un efecto los sincroniza de vuelta a la URL en cada cambio (replace:true). El equipo abierto en EquipoDetail ahora persiste en ?equipoId= mientras el modal esta abierto (antes ese parametro se borraba de inmediato tras abrir, solo servia como deep-link puntual desde el mapa del Dashboard) y se limpia solo al cerrar el modal (abrirDetalle/cerrarDetalle)",
+        "components/EquipoTable.jsx: tenia su propio useState de seleccion y su propio EquipoDetail interno, desconectado del de la vista de tarjetas -- dos modales distintos segun la vista activa, ninguno sobrevivia a un remount de la pagina. Se elimino ese estado duplicado; ahora recibe onSelect del padre y comparte el mismo modal/estado que la vista de tarjetas. Se retiro tambien el prop onChange, que ya no se usaba dentro del componente tras este cambio"
+      ],
+      "verificar": [
+        "Inventario: aplicar un filtro, avanzar de pagina y cambiar a vista Tarjetas -- navegar a Dashboard y volver a Inventario debe mantener filtro, pagina y vista",
+        "Abrir el detalle de un equipo (tarjeta o tabla), navegar a otra seccion y volver -- el modal debe reabrirse con el mismo equipo",
+        "Cerrar el modal y confirmar que ?equipoId= desaparece de la URL",
+        "Flujo 'Ver Historial' desde el Mapa de Activos del Dashboard (HospitalMap.jsx) debe seguir abriendo el equipo correcto",
+        "Vista de tabla: 'Ver ordenes abiertas' y el boton QR deben seguir funcionando igual"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend. Cambio de estado de UI y query params, sin migraciones ni contratos de API nuevos -- revert seguro",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.13",
       "fecha": "2026-07-05",
