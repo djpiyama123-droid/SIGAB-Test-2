@@ -373,7 +373,10 @@ async function resolverGrupo(retryCount = 0) {
 }
 
 async function sendToGroup(text) {
-  if (sock && grupoJid) await sock.sendMessage(grupoJid, { text });
+  // ponytail: modo observacion para la demo del 2026-07-06 - el bot no debe
+  // escribir al grupo real de residentes (reportes/alertas del scheduler),
+  // solo escuchar. Revertir este no-op despues de la demo con Carlos Grave.
+  console.log('[GRUPO-OBSERVACION] Mensaje al grupo omitido:', text);
 }
 
 startBot().catch(err => { console.error('❌ Error fatal:', err); process.exit(1); });
