@@ -109,3 +109,5 @@ graphify-out/
 # runtime del loop
 CICLO-RESULTADO.md
 .claude/settings.json
+
+sigab-bot/auth_sigah/
