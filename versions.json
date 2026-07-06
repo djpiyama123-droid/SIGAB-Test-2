@@ -6,7 +6,7 @@
       "fecha": "2026-07-06",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "528b7a3",
       "resumen": "Petición directa de Gustavo (punto 2/5, docs/cerebro/CONTEXTO-COMPARTIDO.md): más acciones rápidas en el footer del modal de detalle de equipo, sin tener que abrir el formulario completo.",
       "cambios": [
         "components/EquipoDetail.jsx: footer con 2 botones nuevos -- '🎫 Nueva OS' abre OrdenServicioRapidaModal pre-llenado con datos del equipo (ya existía el componente, usado antes solo desde el mapa del Dashboard; ahora también enlazado desde aquí) y '🕒 Historial' abre HistorialEquipoModal (suma la pestaña 'Preventivos' que el resumen inline de este mismo modal no muestra). Ambos refrescan el historial de OS al cerrar sin cerrar el detalle del equipo.",
