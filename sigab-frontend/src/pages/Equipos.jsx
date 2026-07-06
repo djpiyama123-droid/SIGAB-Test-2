@@ -11,7 +11,7 @@
  * - Alta de nuevos equipos (EquipoForm modal)
  * - Vista detallada con historial de OS y traslados (EquipoDetail)
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/sigah';
 import EquipoCard from '../components/EquipoCard';
@@ -36,27 +36,42 @@ const ORDEN_OPTIONS = [
   { value: 'reciente', label: 'Más reciente' },
 ];
 
+// Claves de `filtros` que se reflejan en la URL para que la lista sobreviva
+// a navegar fuera de Inventario y volver (ver petición Gustavo 2026-07-05, punto 3).
+const FILTRO_PARAM_KEYS = ['estado', 'criticidad', 'tipo_adquisicion', 'area', 'piso', 'marca', 'tipo_equipo', 'buscar'];
+
 export default function Equipos() {
   const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [equipos, setEquipos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filtros, setFiltros] = useState({});
-  const [vista, setVista] = useState(VISTAS.tabla);
+  const [filtros, setFiltros] = useState(() => {
+    const f = {};
+    FILTRO_PARAM_KEYS.forEach((k) => {
+      const v = searchParams.get(k);
+      if (v) f[k] = v;
+    });
+    return f;
+  });
+  const [vista, setVista] = useState(() => (searchParams.get('vista') === VISTAS.tarjeta ? VISTAS.tarjeta : VISTAS.tabla));
   const [total, setTotal] = useState(0);
-  const [offset, setOffset] = useState(0);
-  const [orden, setOrden] = useState('nombre');
+  const [offset, setOffset] = useState(() => {
+    const pagina = parseInt(searchParams.get('pagina'), 10);
+    return Number.isFinite(pagina) && pagina > 1 ? (pagina - 1) * PAGE_SIZE : 0;
+  });
+  const [orden, setOrden] = useState(() => searchParams.get('orden') || 'nombre');
   const [creando, setCreando] = useState(false);
   const [exportandoCsv, setExportandoCsv] = useState(false);
   const [filtrosExpandidos, setFiltrosExpandidos] = useState(false);
   const [seleccionado, setSeleccionado] = useState(null);
+  const equipoIdIntentado = useRef(null);
 
   // Catálogos para filtros
   const [areas, setAreas] = useState([]);
   const [pisos, setPisos] = useState([]);
   const [marcas, setMarcas] = useState([]);
   const [tipos, setTipos] = useState([]);
-  const [buscarText, setBuscarText] = useState('');
+  const [buscarText, setBuscarText] = useState(() => searchParams.get('buscar') || '');
 
   // Cargar catálogos al montar
   useEffect(() => {
@@ -93,21 +108,58 @@ export default function Equipos() {
   }, [filtros, offset, orden]); // eslint-disable-line
 
   useEffect(() => { cargar(); }, [cargar]);
-  
-  // Efecto para abrir equipo específico desde URL (ej. desde el mapa del dashboard)
+
+  // Refleja filtros/orden/vista/página en la URL para que sobrevivan a salir
+  // de Inventario y volver (antes vivían solo en useState y se perdían).
+  useEffect(() => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      FILTRO_PARAM_KEYS.forEach((k) => {
+        if (filtros[k]) next.set(k, filtros[k]);
+        else next.delete(k);
+      });
+      if (vista !== VISTAS.tabla) next.set('vista', vista);
+      else next.delete('vista');
+      if (orden !== 'nombre') next.set('orden', orden);
+      else next.delete('orden');
+      const pagina = Math.floor(offset / PAGE_SIZE) + 1;
+      if (pagina > 1) next.set('pagina', String(pagina));
+      else next.delete('pagina');
+      return next;
+    }, { replace: true });
+  }, [filtros, vista, orden, offset, setSearchParams]);
+
+  // Abre el equipo indicado en ?equipoId= (deep-link desde el mapa del
+  // dashboard, o al restaurar la selección tras volver a esta página).
   useEffect(() => {
     const id = searchParams.get('equipoId');
-    if (id) {
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete('equipoId');
-      setSearchParams(newParams, { replace: true });
-      api.getEquipo(id)
-        .then(res => {
-          if (res?.equipo) setSeleccionado(res.equipo);
-        })
-        .catch(() => {});
-    }
-  }, [searchParams, setSearchParams]);
+    if (!id) { equipoIdIntentado.current = null; return; }
+    if (String(seleccionado?.id) === id || equipoIdIntentado.current === id) return;
+    equipoIdIntentado.current = id;
+    api.getEquipo(id)
+      .then(res => {
+        if (res?.equipo) setSeleccionado(res.equipo);
+      })
+      .catch(() => {});
+  }, [searchParams, seleccionado]);
+
+  const abrirDetalle = useCallback((equipo) => {
+    setSeleccionado(equipo);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('equipoId', String(equipo.id));
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const cerrarDetalle = useCallback(() => {
+    setSeleccionado(null);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('equipoId');
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
 
   // Reset offset when filters change
   const updateFiltros = (newFiltros) => {
@@ -391,11 +443,11 @@ export default function Equipos() {
       ) : vista === VISTAS.tarjeta ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {equipos.map((eq) => (
-            <EquipoCard key={eq.id} equipo={eq} onClick={setSeleccionado} />
+            <EquipoCard key={eq.id} equipo={eq} onClick={abrirDetalle} />
           ))}
         </div>
       ) : (
-        <EquipoTable equipos={equipos} onChange={cargar} />
+        <EquipoTable equipos={equipos} onSelect={abrirDetalle} />
       )}
 
       {/* Paginación */}
@@ -434,13 +486,13 @@ export default function Equipos() {
         />
       )}
 
-      {/* Detalle (vista tarjeta) */}
+      {/* Detalle (vistas tarjeta y tabla comparten este modal) */}
       {seleccionado && (
         <EquipoDetail
           equipo={seleccionado}
-          onClose={() => setSeleccionado(null)}
+          onClose={cerrarDetalle}
           onChange={() => {
-            setSeleccionado(null);
+            cerrarDetalle();
             cargar();
           }}
         />

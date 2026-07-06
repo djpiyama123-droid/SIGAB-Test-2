@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
-import EquipoDetail from './EquipoDetail';
 import QRPanel from './QRPanel';
 
 const CRITICIDAD_BADGE = {
@@ -24,10 +22,8 @@ const ADQUISICION_LABELS = {
   subrogado: 'Subrogado',
 };
 
-export default function EquipoTable({ equipos, onChange }) {
-  const [selected, setSelected] = useState(null);
+export default function EquipoTable({ equipos, onSelect }) {
   const [qrEquipo, setQrEquipo] = useState(null);
-  const navigate = useNavigate();
 
   const handleQR = (e, eq) => {
     e.stopPropagation();
@@ -36,7 +32,7 @@ export default function EquipoTable({ equipos, onChange }) {
 
   const handleTickets = (e, eq) => {
     e.stopPropagation();
-    setSelected(eq);
+    onSelect(eq);
   };
 
   return (
@@ -45,7 +41,7 @@ export default function EquipoTable({ equipos, onChange }) {
       <div className="block md:hidden space-y-2">
         {equipos.map((eq) => (
           <div key={eq.id}
-            onClick={() => setSelected(eq)}
+            onClick={() => onSelect(eq)}
             className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 cursor-pointer hover:border-[var(--content-border)] active:bg-slate-700/50 transition-colors">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
@@ -123,7 +119,7 @@ export default function EquipoTable({ equipos, onChange }) {
                 <tr
                   key={eq.id}
                   className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/30 cursor-pointer transition-colors"
-                  onClick={() => setSelected(eq)}
+                  onClick={() => onSelect(eq)}
                 >
                   {/* Thumbnail */}
                   <td className="px-3 py-2">
@@ -231,18 +227,6 @@ export default function EquipoTable({ equipos, onChange }) {
           Mostrando {equipos.length} equipos en esta página
         </div>
       </div>
-
-      {/* Modal detalle */}
-      {selected && (
-        <EquipoDetail
-          equipo={selected}
-          onClose={() => setSelected(null)}
-          onChange={() => {
-            setSelected(null);
-            onChange?.();
-          }}
-        />
-      )}
 
       {/* QR Panel — módulo de impresión */}
       {qrEquipo && (
