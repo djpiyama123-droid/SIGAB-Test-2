@@ -116,13 +116,24 @@ Reservas). IDs en `docs/CONSOLIDACION-V4.md` §6.
    `utils/constants.js` (antes vivía duplicable solo en `Equipos.jsx`) para
    que filtro, badge y formulario compartan una sola fuente de verdad.
 
-5. **Calendario en "Próximo mantenimiento"**: hoy es un date picker simple
-   (`mm/dd/yyyy`) dentro de `EquipoForm.jsx`. Gustavo quiere que esa
-   sección (en el detalle, o en un apartado nuevo) muestre una vista tipo
-   calendario, con el mismo patrón visual del heatmap de actividad que ya
-   existe en `pages/Reservas.jsx` (componente `ActividadHeatmap`, línea
-   263). Revisado el inventario Stitch en `docs/CONSOLIDACION-V4.md` §6
-   (proyecto "SIGAB v4.0 Piloto HGR1"): no hay una pantalla dedicada a
-   calendario de mantenimiento; las 4 variantes de "Reservas de Equipos"
-   (heatmap) son la referencia visual más cercana disponible para
-   reutilizar/adaptar, no una pantalla lista para copiar tal cual.
+5. ✅ **Resuelto (v4.0.16, loop-thinkcentre)**: `EquipoForm.jsx` conserva el
+   date picker simple para capturar/editar la fecha (no tenía sentido
+   reemplazarlo, es la forma más rápida de escribir una fecha), pero
+   `EquipoDetail.jsx` (que antes NO mostraba este campo en absoluto) ahora
+   tiene una sección "🗓️ Próximo Mantenimiento" con el componente nuevo
+   `CalendarioMantenimiento.jsx`: un mes con el día objetivo resaltado y
+   coloreado por urgencia (rojo=vencido, ámbar=≤7 días, verde=programado),
+   adaptando el patrón visual de `ActividadHeatmap` de `pages/Reservas.jsx`
+   (celdas redondeadas, escala de color, animación `anim-cell-pop`) a un
+   solo mes con un día objetivo — no una grilla de 26 semanas, porque no hay
+   suficiente densidad de datos por equipo (una sola fecha, no un historial
+   diario de eventos) para que ese patrón exacto tenga sentido. De paso se
+   encontró y corrigió un bug de zona horaria: `new Date("YYYY-MM-DD")` se
+   interpreta como medianoche UTC, que en Tijuana (UTC-7) cae un día antes
+   en hora local — el componente usa un parser de día local propio en vez
+   de `parseFecha` de `utils/fechas.js` (ese helper es para timestamps con
+   hora, no para días de calendario puros). Con esto se cierran los 5
+   puntos de la petición de Inventario del 2026-07-05; el punto 1 (UX
+   general) sigue como paraguas abierto sin ítems concretos pendientes de
+   esa lista — el próximo ciclo puede volver al backlog genérico o a
+   `docs/DESIGN-SYSTEM-V4.md`.

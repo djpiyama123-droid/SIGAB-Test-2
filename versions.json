@@ -1,6 +1,32 @@
 {
-  "actual": "4.0.15",
+  "actual": "4.0.16",
   "versiones": [
+    {
+      "version": "4.0.16",
+      "fecha": "2026-07-06",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "3e4ddcf",
+      "resumen": "Petición directa de Gustavo (punto 5/5, docs/cerebro/CONTEXTO-COMPARTIDO.md, último punto abierto de la petición de Inventario): el detalle de equipo ahora muestra una vista de calendario para 'Próximo mantenimiento', antes solo editable en el formulario y nunca visible en el detalle.",
+      "cambios": [
+        "components/CalendarioMantenimiento.jsx (nuevo): vista de un mes con el día de fecha_proximo_mantenimiento resaltado, coloreado por urgencia (rojo=vencido, ámbar=urgente ≤7 días, verde=programado), adaptando el mismo lenguaje visual del heatmap ActividadHeatmap de pages/Reservas.jsx (celdas redondeadas, escala de color, animación anim-cell-pop) a un solo mes con un día objetivo en vez de 26 semanas de actividad -- no había suficiente densidad de datos por equipo para el patrón de 26 semanas tal cual",
+        "components/EquipoDetail.jsx: nueva sección '🗓️ Próximo Mantenimiento' (mismo patrón visual que la sección de Contrato) entre 'Cobertura y Contrato de Servicio' y la galería de imágenes",
+        "Fix de zona horaria encontrado al construir el componente: new Date('YYYY-MM-DD') (formato que entrega la columna DATE fecha_proximo_mantenimiento) se interpreta como medianoche UTC -- en Tijuana (UTC-7) eso cae al día local ANTERIOR, corriendo el calendario un día. Se agregó un parser de día local propio (parseDiaLocal) en vez de reusar parseFecha de utils/fechas.js (ese helper está pensado para timestamps con hora, no para días de calendario puros)",
+        "components/CalendarioMantenimiento.jsx exporta estadoMantenimiento() como función pura (fecha, hoy) -> {estado, diffDias, etiqueta, color, chipClase} para poder testearla sin renderizar DOM (no hay testing-library en el proyecto, se siguió el patrón de utils/fechas.js)",
+        "components/CalendarioMantenimiento.test.js (nuevo, 6 casos): sin fecha/fecha basura, vencido, hoy, urgente dentro de 7 días, programado, y formato con espacio estilo MySQL",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance actualizada (Detalle de Equipo)",
+        "docs/cerebro/CONTEXTO-COMPARTIDO.md: punto 5 de la petición de Gustavo marcado como resuelto -- cierra los 5 puntos de la petición de Inventario del 2026-07-05"
+      ],
+      "verificar": [
+        "Inventario: abrir el detalle de un equipo que SÍ tenga 'Próximo mantenimiento' capturado -- debe verse un mini-calendario del mes correspondiente con el día resaltado en un color (rojo si ya pasó, ámbar si es en 7 días o menos, verde si falta más tiempo) y un chip arriba a la derecha con el texto ('Vencido hace Xd' / 'Hoy' / 'En Xd')",
+        "Abrir un equipo SIN fecha de próximo mantenimiento capturada -- debe verse el mensaje 'Sin fecha de próximo mantenimiento programada', no un error ni un calendario vacío roto",
+        "Editar el 'Próximo mantenimiento' de un equipo a una fecha de mañana, guardar, y reabrir el detalle -- el día resaltado en el calendario debe ser exactamente el capturado, sin correrse un día (verificar especialmente cerca de medianoche o en dispositivos con zona horaria distinta a Tijuana)",
+        "Repetir en tema claro y oscuro -- el chip de urgencia y los números del calendario deben ser legibles en ambos"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend. Sección nueva de solo lectura + 1 componente nuevo, sin cambios de API ni de datos -- revert seguro",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.15",
       "fecha": "2026-07-06",
