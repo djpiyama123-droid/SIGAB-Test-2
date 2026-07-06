@@ -801,3 +801,217 @@ async def intake_group_message(
         "mensaje": f"✅ OS *{numero}* registrada en SIGAH\n🔧 {equipo_nombre}: {falla[:80]}\n📍 {area or 'Sin área'} · Prioridad: {prioridad}",
     }
 
+
+# ── /accion-qr — DEMO 2026-07-06 ────────────────────────────────────
+# Recibe una foto con QR + texto desde WhatsApp, decodifica el QR,
+# resuelve el equipo por qr_token, clasifica la acción por keywords,
+# ejecuta el cambio de estado, crea una OS, y devuelve el PDF.
+
+import re
+import cv2
+import numpy as np
+
+QR_TOKEN_RE = re.compile(r"/equipo/([A-Za-z0-9_\-]+)")
+
+
+def _decodificar_qr(img_bytes: bytes) -> str:
+    """Decodifica el primer QR encontrado en la imagen."""
+    try:
+        arr = np.frombuffer(img_bytes, dtype=np.uint8)
+        img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        if img is None:
+            return ""
+        detector = cv2.QRCodeDetector()
+        data, _, _ = detector.detectAndDecode(img)
+        if data:
+            return data.strip()
+    except Exception as e:
+        print(f"[accion-qr] cv2 decode error: {e}")
+    return ""
+
+
+def _clasificar_accion(texto: str):
+    """Devuelve (accion, estado_nuevo). Acciones: mantenimiento, baja, traslado,
+    fuera_servicio, operativo, consulta."""
+    t = (texto or "").lower()
+    if any(k in t for k in ["dar de baja", "baja definitiva", "dar baja", "baja del equipo", "baja"]):
+        return ("baja", "baja")
+    if any(k in t for k in ["traslad", "mover a", "cambiar de area", "cambiar de área"]):
+        return ("traslado", "en_traslado")
+    if any(k in t for k in ["fuera de servicio", "fuera servicio", "descompost", "no sirve", "roto"]):
+        return ("fuera_servicio", "fuera_servicio")
+    if any(k in t for k in ["mantenimiento", "revisar", "preventivo", "correctivo", "calibrar", "mantener"]):
+        return ("mantenimiento", "en_mantenimiento")
+    if any(k in t for k in ["operativo", "funciona", "reactivar", "activar", "dar de alta"]):
+        return ("operativo", "operativo")
+    return ("consulta", "")
+
+
+@router.post("/accion-qr")
+async def accion_qr(
+    foto: UploadFile = File(...),
+    texto: str = Form(""),
+    sender_name: str = Form("WhatsApp Demo"),
+    conn=Depends(get_db),
+):
+    """Endpoint DEMO 2026-07-06: foto con QR + texto de acción.
+    Decodifica QR -> resuelve equipo -> clasifica -> ejecuta -> crea OS -> devuelve PDF.
+    """
+    img_bytes = await foto.read()
+    qr_data = _decodificar_qr(img_bytes)
+    if not qr_data:
+        return {"ok": False, "mensaje": "❌ No pude leer un QR en la foto. Asegúrate que se vea claro y bien iluminado."}
+
+    m = QR_TOKEN_RE.search(qr_data)
+    if m:
+        qr_token = m.group(1)
+    else:
+        qr_token = qr_data.strip().split("?")[0].split("#")[0]
+
+    accion, estado_nuevo = _clasificar_accion(texto)
+
+    async with conn.cursor(aiomysql.DictCursor) as cur:
+        await cur.execute(
+            """SELECT id, nombre, serie, estado, area, marca, modelo, piso,
+                      inventario, criticidad
+               FROM equipos WHERE qr_token = %s""",
+            (qr_token,),
+        )
+        equipo = await cur.fetchone()
+        if not equipo:
+            return {"ok": False, "mensaje": f"❌ QR con token {qr_token[:8]}... no encontrado en el inventario."}
+
+        equipo_id = equipo["id"]
+        estado_anterior = equipo["estado"] or "sin_estado"
+
+        if accion == "consulta":
+            return {
+                "ok": True,
+                "accion": "consulta",
+                "equipo": equipo["nombre"],
+                "serie": equipo["serie"],
+                "estado_actual": estado_anterior,
+                "area": equipo.get("area") or "",
+                "marca": equipo.get("marca") or "",
+                "modelo": equipo.get("modelo") or "",
+                "qr_token": qr_token,
+                "mensaje": (
+                    f"📋 *FICHA TÉCNICA — HGR1 IMSS TIJUANA*\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n"
+                    f"🔧 *{equipo['nombre']}*\n"
+                    f"🏷️  Marca/Modelo: {equipo.get('marca') or 'N/D'} {equipo.get('modelo') or ''}\n"
+                    f"🔢 N° Serie: *{equipo['serie']}*\n"
+                    f"📦 N° Inventario IMSS: *{equipo.get('inventario') or 'N/D'}*\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n"
+                    f"📍 Piso: {equipo.get('piso') or 'N/D'} · Área: {equipo.get('area') or 'N/D'}\n"
+                    f"🏥 Área: {equipo.get('area') or 'N/D'}\n"
+                    f"⚠️  Criticidad: {equipo.get('criticidad') or 'N/D'}\n"
+                    f"🔘 Estado actual: *{estado_anterior}*\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n"
+                    f"_QR único: {qr_token}_"
+                ),
+            }
+
+        # DEMO 2026-07-06: hardcoded tenant_id=1 (HGR1 IMSS TIJ) porque este endpoint
+        # aun no migra a JWT (Fase 3 pendiente). Solo hay 1 hospital en prod.
+        TENANT_ID = 1
+
+        # Ejecutar cambio de estado
+        await cur.execute(
+            "UPDATE equipos SET estado = %s WHERE id = %s",
+            (estado_nuevo, equipo_id),
+        )
+
+        # Generar numero de OS
+        await cur.execute("SELECT COUNT(*)+1 as next_num FROM ordenes_servicio WHERE YEAR(fecha) = YEAR(CURDATE())")
+        n = (await cur.fetchone())["next_num"]
+        numero = f"OS-{datetime.now().strftime('%Y%m%d')}-{n:04d}"
+
+        falla_texto = texto or f"Accion solicitada via WhatsApp QR: {accion}"
+        # DEMO 2026-07-06: created_at/updated_at son NOT NULL sin default
+        # (schema issue global, no solo de este endpoint). Se setean con NOW().
+        await cur.execute(
+            """INSERT INTO ordenes_servicio
+            (tenant_id, numero_orden, tipo_formato, equipo_id, equipo_nombre, equipo_serie,
+             area, tipo_mantenimiento, tipo_atencion, falla_reportada, tecnico_nombre,
+             fecha, estado, prioridad, origen, created_at, updated_at)
+            VALUES (%s, %s, 'correctivo_corto', %s, %s, %s, %s, %s, %s, %s, %s, CURDATE(),
+                    'cerrada', %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)""",
+            (
+                TENANT_ID, numero, equipo_id, equipo["nombre"], equipo["serie"],
+                equipo.get("area") or "", "correctivo" if accion == "fuera_servicio" else "preventivo",
+                "correctivo" if accion in ("fuera_servicio", "baja") else "preventivo",
+                falla_texto, sender_name,
+                "alta" if estado_nuevo in ("fuera_servicio", "baja") else "media",
+                f"whatsapp_qr_{accion}",
+            ),
+        )
+        orden_id = cur.lastrowid
+
+        # Guardar la foto como evidencia
+        ext = "jpg"
+        if foto.filename and "." in foto.filename:
+            cand = foto.filename.rsplit(".", 1)[-1].lower()
+            if cand in {"png", "jpg", "jpeg", "webp"}:
+                ext = cand
+        secure_name = f"qr_wa_{orden_id}_{datetime.now().strftime('%Y%m%d')}_{secrets.token_hex(3)}.{ext}"
+        ruta = os.path.join(UPLOAD_DIR, secure_name)
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        with open(ruta, "wb") as f:
+            f.write(img_bytes)
+        await cur.execute(
+            "INSERT INTO os_evidencias (tenant_id, orden_id, ruta_archivo, tipo, descripcion, created_at) VALUES (%s, %s, %s, 'imagen', %s, CURRENT_TIMESTAMP)",
+            (TENANT_ID, orden_id, f"/static/uploads/{secure_name}", f"QR foto WhatsApp - {sender_name}"),
+        )
+
+        # Alerta
+        await cur.execute(
+            """INSERT INTO alertas (tenant_id, tipo, equipo_id, orden_id, mensaje, prioridad,
+                                   leida, enviada_whatsapp, created_at)
+               VALUES (%s, 'cambio_estado_qr_bot', %s, %s, %s, %s, 0, 0, CURRENT_TIMESTAMP)""",
+            (
+                TENANT_ID, equipo_id, orden_id,
+                f"WhatsApp QR: {equipo['nombre']} {estado_anterior} -> {estado_nuevo} (accion: {accion})",
+                "alta" if estado_nuevo in ("fuera_servicio", "baja") else "media",
+            ),
+        )
+
+    # Generar PDF fuera del cursor
+    pdf_path = None
+    try:
+        from services.pdf_service import generar_pdf_orden
+        try:
+            pdf_path = generar_pdf_orden(orden_id)
+        except TypeError:
+            pdf_path = generar_pdf_orden(numero)
+    except Exception as e:
+        print(f"[accion-qr] PDF generation error: {e}")
+
+    return {
+        "ok": True,
+        "accion": accion,
+        "estado_anterior": estado_anterior,
+        "estado_nuevo": estado_nuevo,
+        "equipo": equipo["nombre"],
+        "serie": equipo["serie"],
+        "qr_token": qr_token,
+        "numero_orden": numero,
+        "orden_id": orden_id,
+        "pdf_path": pdf_path,
+        "mensaje": (
+            f"✅ *ACCIÓN EJECUTADA — HGR1 IMSS TIJUANA*\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"🔧 *{equipo['nombre']}*\n"
+            f"🏷️  {equipo.get('marca') or 'N/D'} {equipo.get('modelo') or ''}\n"
+            f"🔢 Serie: *{equipo['serie']}* · Inv: *{equipo.get('inventario') or 'N/D'}*\n"
+            f"📍 Piso: {equipo.get('piso') or 'N/D'} · Área: {equipo.get('area') or 'N/D'}\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"⚙️  Acción: *{accion.upper()}*\n"
+            f"🔘 Estado: {estado_anterior} → *{estado_nuevo}*\n"
+            f"📋 Orden de Servicio: *{numero}*\n"
+            f"👤 Técnico: {sender_name}\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"📄 PDF de la OS adjunto ↓"
+        ),
+    }
+

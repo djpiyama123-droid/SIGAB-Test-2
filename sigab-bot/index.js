@@ -133,17 +133,31 @@ async function procesarImagenGrupo(buffer, mimeType, caption, senderJid, senderN
   if (caption?.startsWith('/')) return false;
   console.log(`🖼️ Imagen de grupo de ${senderName} → procesando...`);
   try {
-    const { FormData } = await import('formdata-node');
-    const { Blob } = await import('buffer');
-    const fd = new FormData();
-    fd.set('foto', new Blob([buffer], { type: mimeType || 'image/jpeg' }), 'foto.jpg');
-    fd.set('sender_name', senderName || 'Técnico WA');
-    fd.set('sender_jid', senderJid || '');
-    fd.set('tipo', 'imagen');
-    if (caption) fd.set('mensaje', caption);
+    // Multipart manual con axios (FIX 2026-07-06: formdata-node no estaba en package.json)
+    const boundary = '----SIGAH' + Date.now().toString(36);
+    const parts = [];
+    const enc = (s) => Buffer.from(s, 'utf-8');
+    const fileName = 'foto.' + ((mimeType || 'image/jpeg').split('/')[1] || 'jpg');
+    parts.push(enc('--' + boundary + '\r\n'));
+    parts.push(enc(`Content-Disposition: form-data; name="foto"; filename="${fileName}"\r\n`));
+    parts.push(enc(`Content-Type: ${mimeType || 'image/jpeg'}\r\n\r\n`));
+    parts.push(buffer);
+    parts.push(enc('\r\n'));
+    for (const [field, value] of [
+      ['sender_name', senderName || 'Técnico WA'],
+      ['sender_jid', senderJid || ''],
+      ['tipo', 'imagen'],
+      ['mensaje', caption || ''],
+    ]) {
+      parts.push(enc('--' + boundary + '\r\n'));
+      parts.push(enc(`Content-Disposition: form-data; name="${field}"\r\n\r\n`));
+      parts.push(enc((value || '') + '\r\n'));
+    }
+    parts.push(enc('--' + boundary + '--\r\n'));
+    const body = Buffer.concat(parts);
 
-    const res = await authPost(`${OPENCLAW_API}/intake-group`, fd, {
-      headers: fd.headers || {},
+    const res = await authPost(`${OPENCLAW_API}/intake-group`, body, {
+      headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
       timeout: 45000,
     });
     const data = res.data;
@@ -158,6 +172,66 @@ async function procesarImagenGrupo(buffer, mimeType, caption, senderJid, senderN
     }
   } catch (err) {
     console.error('❌ Error intake grupo imagen:', err.message);
+  }
+  return false;
+}
+
+// ── DEMO 2026-07-06: accion-qr desde DM con foto+texto ────────────
+async function procesarAccionQr(buffer, mimeType, caption, senderJid, senderName) {
+  console.log(`📷 Foto en DM de ${senderName} → accion-qr...`);
+  try {
+    const boundary = '----SIGAH' + Date.now().toString(36);
+    const parts = [];
+    const enc = (s) => Buffer.from(s, 'utf-8');
+    const fileName = 'qr.' + ((mimeType || 'image/jpeg').split('/')[1] || 'jpg');
+    parts.push(enc('--' + boundary + '\r\n'));
+    parts.push(enc(`Content-Disposition: form-data; name="foto"; filename="${fileName}"\r\n`));
+    parts.push(enc(`Content-Type: ${mimeType || 'image/jpeg'}\r\n\r\n`));
+    parts.push(buffer);
+    parts.push(enc('\r\n'));
+    for (const [field, value] of [
+      ['texto', caption || ''],
+      ['sender_name', senderName || 'Gustavo (Demo)'],
+    ]) {
+      parts.push(enc('--' + boundary + '\r\n'));
+      parts.push(enc(`Content-Disposition: form-data; name="${field}"\r\n\r\n`));
+      parts.push(enc((value || '') + '\r\n'));
+    }
+    parts.push(enc('--' + boundary + '--\r\n'));
+    const body = Buffer.concat(parts);
+
+    const res = await authPost(`${OPENCLAW_API}/accion-qr`, body, {
+      headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+      timeout: 60000,
+    });
+    const data = res.data;
+    if (!data.ok) {
+      const msg = `❌ *No se pudo procesar*\n${data.mensaje || JSON.stringify(data)}`;
+      if (senderJid) try { await sock.sendMessage(senderJid, { text: msg }); } catch (_) {}
+      return false;
+    }
+
+    // Responder al remitente con el resumen
+    if (senderJid) {
+      try { await sock.sendMessage(senderJid, { text: data.mensaje }); } catch (_) {}
+    }
+
+    // Si el endpoint genero PDF y hay OS, mandarlo como documento
+    if (data.orden_id && data.numero_orden) {
+      try {
+        await reenviarPdfOrden(senderJid, data.orden_id, data.numero_orden);
+      } catch (e) {
+        console.error('⚠️  No se pudo reenviar PDF:', e.message);
+      }
+    }
+    return true;
+  } catch (err) {
+    console.error('❌ Error accion-qr:', err.message);
+    if (senderJid) {
+      try {
+        await sock.sendMessage(senderJid, { text: `❌ Error procesando foto: ${err.message}` });
+      } catch (_) {}
+    }
   }
   return false;
 }
@@ -270,7 +344,13 @@ async function startBot() {
             }
             continue;
           }
-          if (esBioGrupo) await procesarImagenGrupo(buffer, mimeType, caption, senderJid, senderName);
+          // DEMO 2026-07-06: si es foto en el grupo biomedicos -> intake-group;
+          // si es DM al bot con foto -> /accion-qr (lee QR + accion + crea OS + PDF)
+          if (esBioGrupo) {
+            await procesarImagenGrupo(buffer, mimeType, caption, senderJid, senderName);
+          } else if (!isGroup) {
+            await procesarAccionQr(buffer, mimeType, caption, senderJid, senderName);
+          }
         } catch (err) { console.error('❌ Error imagen:', err.message); }
         continue;
       }

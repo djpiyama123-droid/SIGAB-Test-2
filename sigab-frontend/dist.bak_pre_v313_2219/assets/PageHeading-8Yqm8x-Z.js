@@ -1,0 +1,6 @@
+import{j as e}from"./charts-CAwQb2b9.js";function i({children:s,className:d="",padding:r=!0,hover:t=!1}){return e.jsx("div",{style:{background:"var(--content-surface)",borderColor:"var(--content-border)"},className:`
+        border rounded-2xl shadow-sm backdrop-blur-xl
+        ${t?"transition-all duration-200 hover:shadow-md cursor-pointer":""}
+        ${r?"p-4 md:p-5":""}
+        ${d}
+      `,children:s})}function l({icon:s,title:d,subtitle:r,actions:t,badge:a}){return e.jsxs("div",{className:"flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between",children:[e.jsxs("div",{className:"flex items-start gap-3",children:[s&&e.jsx("div",{className:"flex-shrink-0 p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20",children:e.jsx(s,{className:"h-5 w-5 md:h-6 md:w-6 text-indigo-400"})}),e.jsxs("div",{children:[e.jsxs("div",{className:"flex items-center gap-2",children:[e.jsx("h1",{className:"text-xl md:text-2xl font-bold text-[var(--content-text)] leading-tight",children:d}),a&&e.jsx("span",{className:"text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium border border-indigo-500/20",children:a})]}),r&&e.jsx("p",{className:"text-sm text-[var(--content-muted)] mt-0.5",children:r})]})]}),t&&e.jsx("div",{className:"flex gap-2 flex-wrap items-center sm:flex-shrink-0",children:t})]})}export{i as G,l as P};

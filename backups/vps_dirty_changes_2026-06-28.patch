@@ -1,0 +1,292 @@
+diff --git a/sigab-backend/main.py b/sigab-backend/main.py
+index 1cd8f57..673b461 100644
+--- a/sigab-backend/main.py
++++ b/sigab-backend/main.py
+@@ -31,7 +31,7 @@ from routes import (
+     almacen, metrologia, capacitaciones,
+     auth as auth_routes,
+     ocr, events, casillas, formatos,
+-    admin as admin_routes,
++    admin as admin_routes, admin_contratos,
+     twilio_whatsapp,
+     monitor, tokens, cerebro,
+ )
+@@ -114,6 +114,7 @@ app.include_router(casillas.router, tags=["Casillas CENEVAL (Conservación)"])
+ app.include_router(admin_routes.router, prefix="/api", tags=["SuperAdmin"])
+ app.include_router(formatos.router, prefix="/api/formatos", tags=["Formatos Oficiales IMSS"])
+ app.include_router(twilio_whatsapp.router, prefix="/api/twilio", tags=["WhatsApp OCR (Twilio)"])
++app.include_router(admin_contratos.router, tags=["Admin: Importar Contratos USB"])
+ app.include_router(monitor.router,   prefix="/api/monitor",  tags=["Monitor SIGAB WebPanel"])
+ app.include_router(tokens.router,    prefix="/api/tokens",   tags=["Tokens API (WebPanel)"])
+ app.include_router(cerebro.router,   prefix="/api/cerebro",  tags=["Cerebro / Sesiones Claude Code"])
+diff --git a/sigab-backend/models/equipo.py b/sigab-backend/models/equipo.py
+index 4b6e083..c6cc500 100644
+--- a/sigab-backend/models/equipo.py
++++ b/sigab-backend/models/equipo.py
+@@ -59,4 +59,5 @@ class Equipo(SQLModel, table=True):
+     clase_cofepris: str = Field(default="II")
+     fecha_compra: Optional[date] = None
+     numero_contrato_servicio: Optional[str] = None
++    tipo_adquisicion: Optional[str] = Field(default=None, sa_column=Column(mysql.ENUM("recurso_propio", "contrato_consolidado", "garantia", "subrogado"), nullable=True))
+     qr_token: Optional[str] = Field(default=None, index=True)
+diff --git a/sigab-backend/routes/equipos.py b/sigab-backend/routes/equipos.py
+index 00e4c17..21d2a61 100644
+--- a/sigab-backend/routes/equipos.py
++++ b/sigab-backend/routes/equipos.py
+@@ -424,6 +424,7 @@ async def exportar_equipos_csv(
+     marca: Optional[str] = None,
+     zona_id: Optional[int] = None,
+     clase_cofepris: Optional[str] = None,
++    tipo_adquisicion: Optional[str] = None,
+     tenant_id: int = Depends(get_current_tenant),
+     session: AsyncSession = Depends(get_async_session),
+ ):
+@@ -448,6 +449,8 @@ async def exportar_equipos_csv(
+         conditions.append(Equipo.zona_id == zona_id)
+     if clase_cofepris:
+         conditions.append(Equipo.clase_cofepris == clase_cofepris)
++    if tipo_adquisicion:
++        conditions.append(Equipo.tipo_adquisicion == tipo_adquisicion)
+ 
+     if buscar:
+         buscar = buscar.strip()
+@@ -515,6 +518,7 @@ async def listar_equipos(
+     marca: Optional[str] = None,
+     zona_id: Optional[int] = None,
+     clase_cofepris: Optional[str] = None,
++    tipo_adquisicion: Optional[str] = None,
+     orden: Optional[str] = "nombre",
+     limit: int = 50,
+     offset: int = 0,
+@@ -543,6 +547,8 @@ async def listar_equipos(
+         conditions.append(Equipo.zona_id == zona_id)
+     if clase_cofepris:
+         conditions.append(Equipo.clase_cofepris == clase_cofepris)
++    if tipo_adquisicion:
++        conditions.append(Equipo.tipo_adquisicion == tipo_adquisicion)
+     if buscar:
+         conditions.append(
+             sa.or_(
+diff --git a/sigab-frontend/src/components/EquipoCard.jsx b/sigab-frontend/src/components/EquipoCard.jsx
+index 9c8a0c3..ab26499 100644
+--- a/sigab-frontend/src/components/EquipoCard.jsx
++++ b/sigab-frontend/src/components/EquipoCard.jsx
+@@ -1,5 +1,18 @@
+ import { ESTADO_COLORS, ESTADO_LABELS, ESTADO_DOT_COLORS } from '../utils/constants';
+ 
++const TIPO_ADQ_LABEL = {
++  recurso_propio: 'Recurso Propio',
++  contrato_consolidado: 'Consolidado',
++  garantia: 'Garantía',
++  subrogado: 'Subrogado',
++};
++const TIPO_ADQ_BADGE = {
++  recurso_propio: 'bg-sky-500/20 text-sky-300 border border-sky-700/50',
++  contrato_consolidado: 'bg-violet-500/20 text-violet-300 border border-violet-700/50',
++  garantia: 'bg-amber-500/20 text-amber-300 border border-amber-700/50',
++  subrogado: 'bg-teal-500/20 text-teal-300 border border-teal-700/50',
++};
++
+ export default function EquipoCard({ equipo, onClick }) {
+   return (
+     <div
+@@ -39,6 +52,11 @@ export default function EquipoCard({ equipo, onClick }) {
+       <div className="p-4">
+         <h3 className="text-[var(--content-text)] font-semibold text-sm mb-1 truncate">{equipo.nombre}</h3>
+         <p className="text-[var(--content-muted)] text-xs truncate">{equipo.marca} — {equipo.modelo}</p>
++        {equipo.tipo_adquisicion && (
++          <span className={`inline-block mt-2 text-[10px] px-2 py-0.5 rounded-full font-semibold ${TIPO_ADQ_BADGE[equipo.tipo_adquisicion] || ''}`}>
++            {TIPO_ADQ_LABEL[equipo.tipo_adquisicion] || equipo.tipo_adquisicion}
++          </span>
++        )}
+ 
+         <div className="mt-3 pt-3 border-t border-[var(--content-border)]/50 grid grid-cols-2 gap-2 text-xs">
+           <div>
+diff --git a/sigab-frontend/src/components/EquipoTable.jsx b/sigab-frontend/src/components/EquipoTable.jsx
+index 5baef60..2d677ff 100644
+--- a/sigab-frontend/src/components/EquipoTable.jsx
++++ b/sigab-frontend/src/components/EquipoTable.jsx
+@@ -1,4 +1,4 @@
+-import { useState } from 'react';
++import { useState, useRef, useEffect } from 'react';
+ import { useNavigate } from 'react-router-dom';
+ import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
+ import EquipoDetail from './EquipoDetail';
+@@ -10,11 +10,64 @@ const CRITICIDAD_BADGE = {
+   baja: 'bg-[var(--content-surface)] text-[var(--content-muted)] border border-[var(--content-border)]',
+ };
+ 
++// Tipo de adquisición — etiqueta legible + color por tipo.
++const TIPO_ADQ_LABEL = {
++  recurso_propio: 'Recurso Propio',
++  contrato_consolidado: 'Consolidado',
++  garantia: 'Garantía',
++  subrogado: 'Subrogado',
++};
++const TIPO_ADQ_BADGE = {
++  recurso_propio: 'bg-sky-500/20 text-sky-300 border border-sky-700/50',
++  contrato_consolidado: 'bg-violet-500/20 text-violet-300 border border-violet-700/50',
++  garantia: 'bg-amber-500/20 text-amber-300 border border-amber-700/50',
++  subrogado: 'bg-teal-500/20 text-teal-300 border border-teal-700/50',
++};
++
+ export default function EquipoTable({ equipos, onChange }) {
+   const [selected, setSelected] = useState(null);
+   const [qrEquipo, setQrEquipo] = useState(null);
+   const navigate = useNavigate();
+ 
++  // Scroll horizontal: barra superior sincronizada + arrastre con el mouse.
++  const scrollRef = useRef(null);
++  const topbarRef = useRef(null);
++  const [scrollW, setScrollW] = useState(0);
++  const drag = useRef({ down: false, startX: 0, scrollLeft: 0, moved: false });
++
++  useEffect(() => {
++    const measure = () => setScrollW(scrollRef.current?.scrollWidth || 0);
++    measure();
++    window.addEventListener('resize', measure);
++    return () => window.removeEventListener('resize', measure);
++  }, [equipos]);
++
++  const syncFromBody = () => {
++    if (topbarRef.current && scrollRef.current) topbarRef.current.scrollLeft = scrollRef.current.scrollLeft;
++  };
++  const syncFromTop = () => {
++    if (topbarRef.current && scrollRef.current) scrollRef.current.scrollLeft = topbarRef.current.scrollLeft;
++  };
++
++  const onDragStart = (e) => {
++    const el = scrollRef.current;
++    if (!el) return;
++    drag.current = { down: true, startX: e.pageX, scrollLeft: el.scrollLeft, moved: false };
++  };
++  const onDragMove = (e) => {
++    const el = scrollRef.current;
++    if (!el || !drag.current.down) return;
++    const dx = e.pageX - drag.current.startX;
++    if (Math.abs(dx) > 4) drag.current.moved = true;
++    el.scrollLeft = drag.current.scrollLeft - dx;
++  };
++  const onDragEnd = () => { drag.current.down = false; };
++  // Evita abrir el detalle si el click fue en realidad un arrastre.
++  const openIfNotDragged = (eq) => {
++    if (drag.current.moved) { drag.current.moved = false; return; }
++    setSelected(eq);
++  };
++
+   const handleQR = (e, eq) => {
+     e.stopPropagation();
+     setQrEquipo(eq);
+@@ -67,6 +120,11 @@ export default function EquipoTable({ equipos, onChange }) {
+                     {eq.criticidad}
+                   </span>
+                 )}
++                {eq.tipo_adquisicion && (
++                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${TIPO_ADQ_BADGE[eq.tipo_adquisicion] || ''}`}>
++                    {TIPO_ADQ_LABEL[eq.tipo_adquisicion] || eq.tipo_adquisicion}
++                  </span>
++                )}
+               </div>
+               {eq.qr_token && (
+                 <button onClick={(e) => handleQR(e, eq)}
+@@ -85,8 +143,25 @@ export default function EquipoTable({ equipos, onChange }) {
+ 
+       {/* Vista escritorio: tabla completa */}
+       <div className="hidden md:block bg-[var(--content-surface)] rounded-xl border border-[var(--content-border)] overflow-hidden">
+-        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800/50">
+-          <table className="w-full text-sm min-w-[1060px]">
++        {/* Barra de desplazamiento horizontal SUPERIOR — sincronizada con la tabla */}
++        <div
++          ref={topbarRef}
++          onScroll={syncFromTop}
++          className="overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-slate-800/50 border-b border-[var(--content-border)]/50"
++          title="Desliza para ver más columnas"
++        >
++          <div style={{ width: scrollW, height: 10 }} />
++        </div>
++        <div
++          ref={scrollRef}
++          onScroll={syncFromBody}
++          onMouseDown={onDragStart}
++          onMouseMove={onDragMove}
++          onMouseUp={onDragEnd}
++          onMouseLeave={onDragEnd}
++          className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800/50 cursor-grab active:cursor-grabbing select-none"
++        >
++          <table className="w-full text-sm min-w-[1180px]">
+             <thead>
+               <tr className="bg-[var(--content-bg)]/50 text-[var(--content-muted)] text-left">
+                 <th className="px-3 py-3 font-medium w-10"></th>
+@@ -99,6 +174,7 @@ export default function EquipoTable({ equipos, onChange }) {
+                 <th className="px-3 py-3 font-medium">Piso</th>
+                 <th className="px-3 py-3 font-medium">Área</th>
+                 <th className="px-3 py-3 font-medium">Tipo</th>
++                <th className="px-3 py-3 font-medium">Adquisición</th>
+                 <th className="px-3 py-3 font-medium">Órdenes</th>
+                 <th className="px-3 py-3 font-medium text-center">Imprimir QR</th>
+               </tr>
+@@ -108,7 +184,7 @@ export default function EquipoTable({ equipos, onChange }) {
+                 <tr
+                   key={eq.id}
+                   className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/30 cursor-pointer transition-colors"
+-                  onClick={() => setSelected(eq)}
++                  onClick={() => openIfNotDragged(eq)}
+                 >
+                   {/* Thumbnail */}
+                   <td className="px-3 py-2">
+@@ -168,6 +244,17 @@ export default function EquipoTable({ equipos, onChange }) {
+                   <td className="px-3 py-3 text-[var(--content-muted)] text-xs max-w-[150px] truncate">{eq.area || '—'}</td>
+                   <td className="px-3 py-3 text-[var(--content-muted)] text-xs capitalize">{eq.tipo_equipo || '—'}</td>
+ 
++                  {/* Tipo de adquisición */}
++                  <td className="px-3 py-3">
++                    {eq.tipo_adquisicion ? (
++                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold whitespace-nowrap ${TIPO_ADQ_BADGE[eq.tipo_adquisicion] || 'bg-[var(--content-surface)] text-[var(--content-muted)] border border-[var(--content-border)]'}`}>
++                        {TIPO_ADQ_LABEL[eq.tipo_adquisicion] || eq.tipo_adquisicion}
++                      </span>
++                    ) : (
++                      <span className="text-[var(--content-muted)] text-xs">—</span>
++                    )}
++                  </td>
++
+                   {/* Órdenes de Servicio (tickets) */}
+                   <td className="px-3 py-3" onClick={(e) => eq.tickets_abiertos > 0 && handleTickets(e, eq)}>
+                     {eq.tickets_abiertos > 0 ? (
+diff --git a/sigab-frontend/src/pages/Equipos.jsx b/sigab-frontend/src/pages/Equipos.jsx
+index 14fffb0..1748e10 100644
+--- a/sigab-frontend/src/pages/Equipos.jsx
++++ b/sigab-frontend/src/pages/Equipos.jsx
+@@ -25,6 +25,14 @@ import { Download, Plus, LayoutGrid, List } from 'lucide-react';
+ const VISTAS = { tarjeta: 'tarjeta', tabla: 'tabla' };
+ const PAGE_SIZE = 50;
+ 
++// Tipo de adquisición (ENUM en BD). Etiquetas legibles para filtro y badge.
++export const TIPO_ADQ_OPTIONS = [
++  { value: 'recurso_propio', label: 'Recurso Propio' },
++  { value: 'contrato_consolidado', label: 'Consolidado' },
++  { value: 'garantia', label: 'Garantía' },
++  { value: 'subrogado', label: 'Subrogado' },
++];
++
+ const ORDEN_OPTIONS = [
+   { value: 'nombre', label: 'Nombre A-Z' },
+   { value: 'nombre_desc', label: 'Nombre Z-A' },
+@@ -306,6 +314,18 @@ export default function Equipos() {
+             <option value="baja">🟢 Baja</option>
+           </select>
+ 
++          {/* Filtro tipo de adquisición */}
++          <select
++            value={filtros.tipo_adquisicion || ''}
++            onChange={(e) => updateFiltros({ ...filtros, tipo_adquisicion: e.target.value || undefined })}
++            className="px-3 py-2 bg-[var(--content-bg)]/60 border border-[var(--content-border)] rounded-lg text-sm text-[var(--content-muted)] focus:outline-none focus:border-emerald-600"
++          >
++            <option value="">Todos los tipos de adquisición</option>
++            {TIPO_ADQ_OPTIONS.map((o) => (
++              <option key={o.value} value={o.value}>{o.label}</option>
++            ))}
++          </select>
++
+           <select
+             value={filtros.area || ''}
+             onChange={(e) => updateFiltros({ ...filtros, area: e.target.value || undefined })}
