@@ -77,19 +77,22 @@ Reservas). IDs en `docs/CONSOLIDACION-V4.md` §6.
    los puntos 2-5 de abajo (que son ejemplos concretos de esa misma
    fricción).
 
-2. **Acciones rápidas en el modal de detalle de equipo**: el footer de
-   `sigab-frontend/src/components/EquipoDetail.jsx` (líneas ~457-480) hoy
-   solo tiene "Eliminar" (izquierda) y, a la derecha, "📱 QR" (abre
-   `QRPanel`) y "Cerrar"/"Editar" (abre `EquipoForm.jsx`). Gustavo quiere
-   más acciones rápidas ahí — no dijo cuáles, hay que proponer candidatos
-   razonables. Ya existen en el código piezas que podrían enlazarse
-   directo desde este footer:
-   - `components/OrdenServicioRapidaModal.jsx` — crear una orden de
-     servicio rápida para ese equipo.
-   - `components/HistorialEquipoModal.jsx` — ver historial del equipo (ya
-     existe como componente; falta confirmar si está enlazado desde aquí).
-   - Cambiar estado operativo/mantenimiento/fuera de servicio directo
-     desde el modal, sin pasar por `EquipoForm.jsx` completo.
+2. ✅ **Resuelto (v4.0.15, loop-thinkcentre)**: el footer de
+   `sigab-frontend/src/components/EquipoDetail.jsx` ahora tiene "🎫 Nueva OS"
+   (abre `OrdenServicioRapidaModal.jsx` pre-llenado con el equipo, sin salir
+   del detalle) y "🕒 Historial" (abre `HistorialEquipoModal.jsx`, que suma
+   la pestaña "Preventivos" que el resumen inline del detalle no mostraba).
+   Además, el campo "Estado" de la grilla de info pasó de badge de solo
+   lectura a un `<select>` que llama `api.updateEquipo(id, { estado })`
+   directo (optimista + rollback si falla el POST) para los 3 estados que
+   Gustavo pidió explícitamente (operativo/en_mantenimiento/fuera_servicio);
+   "en_traslado" y "baja" quedan fuera del quick-change a propósito porque
+   dependen de otros flujos (traslados, baja definitiva), no de un simple
+   cambio de campo — si el equipo ya está en uno de esos dos, el select lo
+   muestra como opción deshabilitada para no perder el estado real. Pendiente
+   NO cubierto: el punto 1 (UX general de Inventario) sigue abierto como
+   paraguas; con los puntos 2/3/4 resueltos, el candidato que queda de la
+   petición de Gustavo es el punto 5 (calendario de mantenimiento).
 
 3. ✅ **Resuelto (v4.0.14, loop-thinkcentre)**: `sigab-frontend/src/pages/Equipos.jsx`
    ahora refleja `filtros`, `orden`, `vista` y la página actual en

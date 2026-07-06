@@ -1,6 +1,31 @@
 {
-  "actual": "4.0.14",
+  "actual": "4.0.15",
   "versiones": [
+    {
+      "version": "4.0.15",
+      "fecha": "2026-07-06",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Petición directa de Gustavo (punto 2/5, docs/cerebro/CONTEXTO-COMPARTIDO.md): más acciones rápidas en el footer del modal de detalle de equipo, sin tener que abrir el formulario completo.",
+      "cambios": [
+        "components/EquipoDetail.jsx: footer con 2 botones nuevos -- '🎫 Nueva OS' abre OrdenServicioRapidaModal pre-llenado con datos del equipo (ya existía el componente, usado antes solo desde el mapa del Dashboard; ahora también enlazado desde aquí) y '🕒 Historial' abre HistorialEquipoModal (suma la pestaña 'Preventivos' que el resumen inline de este mismo modal no muestra). Ambos refrescan el historial de OS al cerrar sin cerrar el detalle del equipo.",
+        "components/EquipoDetail.jsx: el campo 'Estado' de la grilla de info paso de badge de solo lectura a un <select> que llama api.updateEquipo(id, { estado }) directo (optimista, con rollback visual si falla la peticion) para operativo/en_mantenimiento/fuera_servicio -- los 3 estados que Gustavo pidio explicitamente. 'en_traslado' y 'baja' se dejaron fuera del cambio rapido a proposito (dependen de otros flujos, no de un simple cambio de campo); si el equipo ya esta en uno de esos dos, el select lo muestra como opcion deshabilitada para no ocultar el estado real.",
+        "pages/Equipos.jsx: nuevo prop onQuickUpdate={cargar} en EquipoDetail -- recarga la lista de fondo tras un cambio rapido de estado sin cerrar el modal de detalle (a diferencia de onChange, que cierra el modal; se uso para eliminar/editar, que si requieren cerrarlo).",
+        "docs/cerebro/CONTEXTO-COMPARTIDO.md: punto 2 de la peticion de Gustavo marcado como resuelto."
+      ],
+      "verificar": [
+        "Inventario: abrir el detalle de cualquier equipo -- el footer debe mostrar 'Eliminar' a la izquierda y 'Nueva OS' / 'Historial' / 'QR' / 'Cerrar' / 'Editar' a la derecha (puede envolver a 2 lineas en pantallas angostas)",
+        "Click en 'Nueva OS': debe abrir el formulario de orden de servicio con el equipo pre-llenado (marca/modelo/ubicacion), crear la orden y confirmar que aparece en la lista de 'Tickets / Ordenes de Servicio' del mismo detalle sin tener que cerrar y reabrir el modal",
+        "Click en 'Historial': debe abrir el modal con las 3 pestanas (Ordenes, Traslados, Preventivos) para ese equipo",
+        "Cambiar el <select> de Estado a 'En Mtto.' o 'Fuera Svc.' -- el badge de color debe reflejar el nuevo estado de inmediato y el toast debe confirmar el cambio; cerrar el modal y volver a abrir el mismo equipo para confirmar que el cambio se guardo",
+        "Con un equipo cuyo estado sea 'en_traslado' o 'baja' (si existe alguno en el inventario real): el select debe mostrar ese estado como opcion actual pero deshabilitada, sin permitir cambiarlo por accidente desde aqui",
+        "Probar todo el flujo tambien en movil (iPhone/iPad) -- toques en los botones del footer y en el select de estado deben registrar bien en pantallas tactiles"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend. Cambio de UI mas una llamada PUT ya existente en el backend (api.updateEquipo, usada por EquipoForm) -- revert seguro, sin migraciones",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.14",
       "fecha": "2026-07-05",

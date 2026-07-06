@@ -495,6 +495,7 @@ export default function Equipos() {
             cerrarDetalle();
             cargar();
           }}
+          onQuickUpdate={cargar}
         />
       )}
     </div>
