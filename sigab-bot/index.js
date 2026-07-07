@@ -9,7 +9,7 @@ import makeWASocket, {
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
-  makeCacheableSignalKeyStore,
+
   downloadMediaMessage,
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
@@ -243,10 +243,7 @@ async function startBot() {
 
   sock = makeWASocket({
     version,
-    auth: {
-      creds: state.creds,
-      keys: makeCacheableSignalKeyStore(state.keys, logger),
-    },
+    auth: state,
     logger,
     printQRInTerminal: false,
     browser: ['SIGAH-Bot', 'Chrome', '125.0.0'],
