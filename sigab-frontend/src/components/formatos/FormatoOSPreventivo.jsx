@@ -38,6 +38,10 @@ export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss', isEdi
   const folio = o.numero_orden || `OS-P-${String(o.id || '0000').padStart(4, '0')}`;
   const rutina = Array.isArray(o.rutina_realizada) ? o.rutina_realizada : [];
   const resultado = o.resultado_preventivo || o.condicion_cierre || '';
+  const tipoLabel = 'Mantenimiento Preventivo';
+
+  // Verde IMSS institucional
+  const imssGreen = '#2D6A27';
 
   const EI = ({ value, field, placeholder = '' }) => (
     <input
@@ -139,14 +143,29 @@ export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss', isEdi
       <style>{`@media print { body { margin: 0; } #formato-print-root { width: 210mm; font-size: 11pt; } }`}</style>
       <div id="formato-print-root" style={{ ...t.wrapper, padding: 24, maxWidth: 900, margin: '0 auto' }}>
 
-        {/* ── CABECERA ─────────────────────────────────────────────────────── */}
+        {/* ── CABECERA INSTITUCIONAL IMSS ───────────────────────────────── */}
         <FormatoHeader
           t={t}
-          tipoLabel="ORDEN DE SERVICIO — PREVENTIVO"
+          tipoLabel="ORDEN DE SERVICIO BIOMÉDICA"
           folio={folio}
           fecha={o.fecha_creacion || o.fecha}
+          refReporte={o.reporte_falla_ref}
         />
 
+        {/* Subtítulo del tipo — estilo .xls */}
+        <div style={{
+          textAlign: 'center',
+          fontWeight: 'bold',
+          fontSize: 13,
+          color: imssGreen,
+          letterSpacing: '0.06em',
+          padding: '4px 0 8px 0',
+          textTransform: 'uppercase',
+          borderBottom: `1px solid ${imssGreen}`,
+          marginBottom: 8,
+        }}>
+          Mantenimiento Preventivo · NOM-016-SSA3-2012 · NOM-240-SSA1-2012 · ISO-13485
+        </div>
         <div style={{ height: 10 }} />
 
         {/* ── 1. DATOS DEL EQUIPO ──────────────────────────────────────────── */}
@@ -319,14 +338,50 @@ export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss', isEdi
           </tbody>
         </table>
 
-        {/* ── FIRMAS ───────────────────────────────────────────────────────── */}
+        {/* ── 7. RECIBE DE CONFORMIDAD (estilo .xls) ────────────────────────── */}
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 16, marginBottom: 8, border: `2px solid ${imssGreen}` }}>
+          <tbody>
+            <SH title="7. Recibe de Conformidad del Servicio" cols={2} />
+            <tr>
+              <TD style={{ width: '60%', verticalAlign: 'top' }}>
+                <div style={{ ...t.label, marginBottom: 4 }}>Nombre (quien recibe)</div>
+                <div style={{ minHeight: 30, borderBottom: `1px solid ${imssGreen}`, padding: '2px 4px' }}>
+                  {isEditing
+                    ? <EI value={o.recibe_conformidad_nombre || o.recibe_nombre} field="recibe_conformidad_nombre" placeholder="Nombre completo + matrícula" />
+                    : (o.recibe_conformidad_nombre || o.recibe_nombre || '—')
+                  }
+                </div>
+                <div style={{ ...t.label, marginTop: 8, marginBottom: 4 }}>Firma</div>
+                <div style={{ minHeight: 50 }}></div>
+              </TD>
+              <TD style={{ width: '40%', verticalAlign: 'top' }}>
+                <div style={{ ...t.label, marginBottom: 4 }}>Fecha de cierre</div>
+                <div style={{ minHeight: 22, borderBottom: `1px solid ${imssGreen}`, padding: '2px 4px' }}>
+                  {isEditing
+                    ? <EI value={o.fecha_cierre} field="fecha_cierre" placeholder="DD/MM/AAAA" />
+                    : (o.fecha_cierre ? fmtFecha(o.fecha_cierre) : '__/__/____')
+                  }
+                </div>
+                <div style={{ ...t.label, marginTop: 14, marginBottom: 4 }}>Matrícula</div>
+                <div style={{ minHeight: 22, borderBottom: `1px solid ${imssGreen}`, padding: '2px 4px' }}>
+                  {isEditing
+                    ? <EI value={o.recibe_matricula || o.recibe_conformidad_matricula} field="recibe_matricula" placeholder="Matrícula" />
+                    : (o.recibe_matricula || o.recibe_conformidad_matricula || '—')
+                  }
+                </div>
+              </TD>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* ── FIRMAS (3 columnas) ────────────────────────────────────────────── */}
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 20 }}>
           <tbody>
             <tr>
               {[
-                { rol: 'Técnico Asignado', nombre: o.tecnico_nombre },
-                { rol: 'Jefe de Servicio', nombre: null },
-                { rol: 'Jefe de Conservación', nombre: null },
+                { rol: 'Realizó (Ing. Biomédico)', nombre: o.tecnico_nombre },
+                { rol: 'Visto Bueno (Jefe Conservación)', nombre: null },
+                { rol: 'Sello del Departamento', nombre: null },
               ].map(({ rol, nombre }) => (
                 <td key={rol} style={{ ...t.firmaCell, width: '33.33%', textAlign: 'center' }}>
                   <div style={{ minHeight: 36 }} />
@@ -341,7 +396,7 @@ export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss', isEdi
         </table>
 
         <div style={{ marginTop: 8, fontSize: 9, color: t.label.color, textAlign: 'right' }}>
-          Rutina específica por tipo de equipo configurable en SIGAH · Formato F-CON-03 · NOM-016-SSA3-2012
+          Rutina específica por tipo de equipo configurable en SIGAH · Formato F-CON-03 · NOM-016-SSA3-2012 · v.3.2.0
         </div>
       </div>
     </>

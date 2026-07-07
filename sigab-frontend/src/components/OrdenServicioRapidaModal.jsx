@@ -1,5 +1,12 @@
 // ============================================================
 // OrdenServicioRapidaModal.jsx — Crear OS pre-llenada desde el mapa
+// v.3.2.0 — 2026-07-07: Refactor a formato IMSS oficial HGR1
+//
+// Nuevos campos (alineados con FORMATO ORDEN DE SERVICIO.xls):
+//   - hora_inicio, hora_termino, tiempo_estimado, tiempo_real
+//   - recibe_conformidad_nombre (quien recibe de conformidad)
+//   - localizacion_completa (descripción completa del lugar)
+//
 // Se invoca desde el botón "Abrir Orden de Servicio" en FichaTecnica
 // ============================================================
 import { useState } from 'react';
@@ -14,6 +21,13 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
     prioridad: equipo?.criticidad === 'alta' ? 'alta' : 'media',
     tecnico_nombre: '',
     descripcion_servicio: '',
+    // ── v.3.2.0 — campos IMSS oficiales ──
+    hora_inicio: '',
+    hora_termino: '',
+    tiempo_estimado: '',
+    tiempo_real: '',
+    recibe_conformidad_nombre: '',
+    localizacion_completa: '',
   });
   const [guardando, setGuardando] = useState(false);
 
@@ -35,13 +49,21 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
         equipo_marca: equipo.marca,
         equipo_modelo: equipo.modelo,
         equipo_serie: equipo.serie,
-        ubicacion_fisica: equipo.ubicacion,
+        equipo_inventario: equipo.no_inventario || equipo.inventario,
+        ubicacion_fisica: form.localizacion_completa || equipo.ubicacion,
+        localizacion: form.localizacion_completa,
         piso: equipo.piso,
         area: equipo.area,
         tipo_mantenimiento: form.tipo_mantenimiento,
         falla_reportada: form.falla_reportada,
         descripcion_servicio: form.descripcion_servicio,
+        descripcion_trabajo: form.descripcion_servicio,
         tecnico_nombre: form.tecnico_nombre,
+        recibe_conformidad_nombre: form.recibe_conformidad_nombre,
+        hora_inicio: form.hora_inicio,
+        hora_termino: form.hora_termino,
+        tiempo_estimado: form.tiempo_estimado,
+        tiempo_real: form.tiempo_real,
         prioridad: form.prioridad,
         origen: 'dashboard',
       };
@@ -66,26 +88,32 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
       onClick={onClose}
     >
       <div
-        className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="p-5 border-b border-[var(--content-border)] flex justify-between items-start">
+        {/* Header — verde IMSS institucional */}
+        <div
+          className="p-5 border-b border-[var(--content-border)] flex justify-between items-start"
+          style={{ background: 'linear-gradient(135deg, #2D6A27 0%, #1e4b1a 100%)', color: '#fff' }}
+        >
           <div>
-            <h2 className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
-              <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
               </svg>
-              Nueva Orden de Servicio
+              Nueva Orden de Servicio Biomédica
             </h2>
-            <p className="text-[var(--content-muted)] text-sm mt-0.5">
+            <p className="text-emerald-100 text-sm mt-0.5">
               {equipo.nombre} · <span className="font-mono">{equipo.serie}</span>
+            </p>
+            <p className="text-emerald-200 text-xs mt-1 italic">
+              Instituto Mexicano del Seguro Social · HGR No. 1 — IMSS Tijuana
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-[var(--content-muted)] hover:text-[var(--content-text)] p-1 rounded-lg hover:bg-[var(--content-border)]"
+            className="text-emerald-100 hover:text-white p-1 rounded-lg hover:bg-emerald-700"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -95,7 +123,14 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
 
         {/* Datos del equipo (solo lectura) */}
         <div className="p-5 bg-[var(--content-bg)]/40 border-b border-[var(--content-border)]/50">
-          <div className="grid grid-cols-3 gap-3 text-xs">
+          <p className="text-xs font-semibold text-[var(--content-muted)] uppercase tracking-wider mb-2">
+            1. Identificación del Equipo
+          </p>
+          <div className="grid grid-cols-4 gap-3 text-xs">
+            <div>
+              <span className="text-[var(--content-muted)]">Equipo</span>
+              <p className="text-[var(--content-text)] font-medium">{equipo.nombre || '—'}</p>
+            </div>
             <div>
               <span className="text-[var(--content-muted)]">Marca</span>
               <p className="text-[var(--content-text)] font-medium">{equipo.marca || '—'}</p>
@@ -105,16 +140,77 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
               <p className="text-[var(--content-text)] font-medium">{equipo.modelo || '—'}</p>
             </div>
             <div>
+              <span className="text-[var(--content-muted)]">No. Inventario</span>
+              <p className="text-[var(--content-text)] font-medium font-mono">{equipo.no_inventario || equipo.inventario || '—'}</p>
+            </div>
+            <div>
+              <span className="text-[var(--content-muted)]">No. Serie</span>
+              <p className="text-[var(--content-text)] font-medium font-mono">{equipo.serie || '—'}</p>
+            </div>
+            <div className="col-span-3">
               <span className="text-[var(--content-muted)]">Ubicación</span>
-              <p className="text-[var(--content-text)] font-medium">{equipo.area || '—'}</p>
+              <p className="text-[var(--content-text)] font-medium">{equipo.area || '—'}{equipo.piso ? ` · Piso ${equipo.piso}` : ''}</p>
             </div>
           </div>
         </div>
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {/* ── 2. TIPO Y PRIORIDAD ── */}
+          <p className="text-xs font-semibold text-[var(--content-muted)] uppercase tracking-wider">
+            2. Tipo de Servicio y Prioridad
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Tipo de mantenimiento *</label>
+              <select
+                value={form.tipo_mantenimiento}
+                onChange={set('tipo_mantenimiento')}
+                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)]"
+              >
+                <option value="preventivo">Preventivo</option>
+                <option value="correctivo">Correctivo</option>
+                <option value="instalacion">Instalación</option>
+                <option value="calibracion">Calibración</option>
+                <option value="verificacion">Verificación / Inspección</option>
+                <option value="baja">Baja / Decomisión</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Prioridad *</label>
+              <div className="flex gap-3 text-xs">
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="prio" value="alta" checked={form.prioridad === 'alta'} onChange={set('prioridad')} className="accent-red-600" />
+                  <span className="text-red-600 font-semibold">ALTA</span>
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="prio" value="media" checked={form.prioridad === 'media'} onChange={set('prioridad')} className="accent-amber-600" />
+                  <span className="text-amber-600 font-semibold">MEDIA</span>
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="prio" value="baja" checked={form.prioridad === 'baja'} onChange={set('prioridad')} className="accent-emerald-600" />
+                  <span className="text-emerald-600 font-semibold">BAJA</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* ── 3. LOCALIZACIÓN COMPLETA ── */}
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">Falla reportada *</label>
+            <label className="text-xs text-[var(--content-muted)] block mb-1">
+              Localización completa del equipo o instalación
+            </label>
+            <input
+              value={form.localizacion_completa}
+              onChange={set('localizacion_completa')}
+              placeholder={`${equipo.area || 'Área'}${equipo.piso ? `, Piso ${equipo.piso}` : ''} — detalle adicional...`}
+              className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] placeholder-[var(--content-muted)] focus:outline-none focus:border-emerald-600"
+            />
+          </div>
+
+          {/* ── 4. FALLA REPORTADA ── */}
+          <div>
+            <label className="text-xs text-[var(--content-muted)] block mb-1">Falla reportada / Motivo del servicio *</label>
             <textarea
               required
               rows={3}
@@ -125,51 +221,88 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
             />
           </div>
 
+          {/* ── 5. HORAS Y TIEMPOS (nuevo, del .xls) ── */}
+          <p className="text-xs font-semibold text-[var(--content-muted)] uppercase tracking-wider">
+            3. Horarios y Tiempos
+          </p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Tipo de mantenimiento</label>
-              <select
-                value={form.tipo_mantenimiento}
-                onChange={set('tipo_mantenimiento')}
-                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)]"
-              >
-                <option value="correctivo">Correctivo</option>
-                <option value="preventivo">Preventivo</option>
-                <option value="instalacion">Instalación</option>
-                <option value="calibracion">Calibración</option>
-              </select>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Hora de inicio</label>
+              <input
+                type="time"
+                value={form.hora_inicio}
+                onChange={set('hora_inicio')}
+                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600"
+              />
             </div>
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Prioridad</label>
-              <select
-                value={form.prioridad}
-                onChange={set('prioridad')}
-                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)]"
-              >
-                <option value="baja">Baja</option>
-                <option value="media">Media</option>
-                <option value="alta">Alta</option>
-                <option value="critica">Crítica</option>
-              </select>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Hora de término</label>
+              <input
+                type="time"
+                value={form.hora_termino}
+                onChange={set('hora_termino')}
+                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">T. estimado (min)</label>
+              <input
+                type="number"
+                min="0"
+                value={form.tiempo_estimado}
+                onChange={set('tiempo_estimado')}
+                placeholder="60"
+                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">T. real (min)</label>
+              <input
+                type="number"
+                min="0"
+                value={form.tiempo_real}
+                onChange={set('tiempo_real')}
+                placeholder="(al cerrar la OS)"
+                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600"
+              />
             </div>
           </div>
 
-          <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">Técnico asignado</label>
-            <input
-              value={form.tecnico_nombre}
-              onChange={set('tecnico_nombre')}
-              placeholder="Nombre del biomédico"
-              className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] placeholder-[var(--content-muted)] focus:outline-none focus:border-emerald-600"
-            />
+          {/* ── 6. TÉCNICO Y RECIBE ── */}
+          <p className="text-xs font-semibold text-[var(--content-muted)] uppercase tracking-wider">
+            4. Técnico y Recibe de Conformidad
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Técnico asignado</label>
+              <input
+                value={form.tecnico_nombre}
+                onChange={set('tecnico_nombre')}
+                placeholder="Nombre del Ing. Biomédico"
+                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] placeholder-[var(--content-muted)] focus:outline-none focus:border-emerald-600"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Recibe de conformidad (Nombre)</label>
+              <input
+                value={form.recibe_conformidad_nombre}
+                onChange={set('recibe_conformidad_nombre')}
+                placeholder="Nombre de quien recibe"
+                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] placeholder-[var(--content-muted)] focus:outline-none focus:border-emerald-600"
+              />
+            </div>
           </div>
 
+          {/* ── 7. NOTAS / DESCRIPCIÓN DEL TRABAJO ── */}
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">Notas adicionales</label>
+            <label className="text-xs text-[var(--content-muted)] block mb-1">
+              Descripción del trabajo / Notas adicionales
+            </label>
             <textarea
               rows={2}
               value={form.descripcion_servicio}
               onChange={set('descripcion_servicio')}
+              placeholder="Acciones realizadas o por realizar..."
               className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] placeholder-[var(--content-muted)] focus:outline-none focus:border-emerald-600"
             />
           </div>
@@ -185,7 +318,8 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
             <button
               type="submit"
               disabled={guardando}
-              className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
+              className="px-5 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
+              style={{ background: '#2D6A27' }}
             >
               {guardando && (
                 <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
