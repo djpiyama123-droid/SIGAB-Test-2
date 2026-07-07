@@ -9,7 +9,6 @@ import makeWASocket, {
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
-
   downloadMediaMessage,
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
