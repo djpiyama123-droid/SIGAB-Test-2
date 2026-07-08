@@ -6,6 +6,7 @@
 import { TEMAS_CONFIG, fmtFecha } from './formatoThemes';
 import { CB, SecHeader } from './formatoHelpers';
 import FormatoHeader from './FormatoHeader';
+import { getMediaUrl } from '../../api/sigah';
 
 const QR_SVG = () => (
   <div style={{ display: 'inline-block', padding: 4, background: '#fff', border: '1px solid #ccc', borderRadius: 2 }}>
@@ -272,7 +273,7 @@ export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss', isEdi
               {[0, 1, 2, 3].map((i) => (
                 <td key={i} style={{ ...t.cell, width: '25%', height: 90, textAlign: 'center', verticalAlign: 'middle', padding: 4 }}>
                   {o.fotos?.[i]
-                    ? <img src={o.fotos[i]} alt={`Foto ${i + 1}`} style={{ maxWidth: '100%', maxHeight: 82, objectFit: 'contain' }} />
+                    ? <img src={getMediaUrl(o.fotos[i])} alt={`Foto ${i + 1}`} style={{ maxWidth: '100%', maxHeight: 82, objectFit: 'contain' }} />
                     : (
                       <div style={{ border: `1px dashed ${t.table.borderColor}`, height: 72, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 2 }}>
                         <span style={{ fontSize: 22, opacity: 0.3 }}>📷</span>

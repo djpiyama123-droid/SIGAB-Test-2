@@ -3,7 +3,7 @@
 // Soporta: ver detalle, editar, eliminar
 // ============================================================
 import { useState, useEffect, useMemo } from 'react';
-import { api } from '../api/sigah';
+import { api, getMediaUrl } from '../api/sigah';
 import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
 import { useToast } from './Toast';
 import EquipoForm from './EquipoForm';
@@ -146,7 +146,7 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
                 </svg>
                 {equipo.imagen_url && (
                   <img
-                    src={equipo.imagen_url}
+                    src={getMediaUrl(equipo.imagen_url)}
                     alt={equipo.nombre}
                     className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
                     onClick={() => { setLightboxStart(0); setLightboxOpen(true); }}
@@ -285,7 +285,7 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
                 {equipo.contrato_pdf_url && (
                   <div className="col-span-2">
                     <a
-                      href={equipo.contrato_pdf_url}
+                      href={getMediaUrl(equipo.contrato_pdf_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 font-medium text-xs bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-lg transition-colors"
@@ -306,7 +306,7 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
                               {urls.map((url, index) => (
                                 <a
                                   key={index}
-                                  href={url}
+                                  href={getMediaUrl(url)}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="inline-flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 text-xs bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg transition-colors"
@@ -357,7 +357,7 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
                       className="relative flex-shrink-0 w-24 h-24 bg-black rounded-lg overflow-hidden border border-[var(--content-border)] hover:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-lg transition-colors group"
                     >
                       <img
-                        src={foto}
+                        src={getMediaUrl(foto)}
                         alt=""
                         loading="lazy"
                         className="object-cover w-full h-full group-hover:opacity-75 transition-opacity"
@@ -403,7 +403,7 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
               ) : (
                 <div className="space-y-2 mb-4">
                   {documentos.map((doc) => (
-                    <a key={doc.id} href={doc.url} target="_blank" rel="noopener noreferrer"
+                    <a key={doc.id} href={getMediaUrl(doc.url)} target="_blank" rel="noopener noreferrer"
                        className="flex items-center gap-2 p-2 rounded-lg border border-[var(--content-muted)]/20 hover:bg-black/5 text-sm">
                       <span className="uppercase text-[10px] font-bold px-1.5 py-0.5 rounded border border-[var(--content-muted)]/30">{doc.formato}</span>
                       <span className="flex-1 truncate">{doc.clase} · {doc.nombre}</span>
@@ -453,7 +453,7 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
                             </span>
                             {os.pdf_url && (
                               <a
-                                href={os.pdf_url}
+                                href={getMediaUrl(os.pdf_url)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
