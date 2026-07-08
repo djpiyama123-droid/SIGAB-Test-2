@@ -6,7 +6,7 @@
       "fecha": "2026-07-08",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "95a6637",
       "resumen": "Continuación del barrido de contraste 'Secundaria' de docs/DESIGN-SYSTEM-V4.md: pages/ChecklistPage.jsx, los 2 bugs registrados desde el barrido 2026-07-04 más 2 adicionales de la misma familia encontrados al leer el archivo completo.",
       "cambios": [
         "pages/ChecklistPage.jsx: el botón 'Cambiar' (al ver una plantilla activa) usaba hover:text-white fijo -- ahora hover:text-[var(--content-text)]",
