@@ -1,6 +1,29 @@
 {
-  "actual": "4.0.19",
+  "actual": "4.0.20",
   "versiones": [
+    {
+      "version": "4.0.20",
+      "fecha": "2026-07-08",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Continuación del barrido de contraste 'Secundaria' de docs/DESIGN-SYSTEM-V4.md: pages/ChecklistPage.jsx, los 2 bugs registrados desde el barrido 2026-07-04 más 2 adicionales de la misma familia encontrados al leer el archivo completo.",
+      "cambios": [
+        "pages/ChecklistPage.jsx: el botón 'Cambiar' (al ver una plantilla activa) usaba hover:text-white fijo -- ahora hover:text-[var(--content-text)]",
+        "pages/ChecklistPage.jsx: el textarea de 'Observaciones Adicionales' usaba text-white fijo como texto de cuerpo sobre var(--content-surface) -- ahora var(--content-text)",
+        "pages/ChecklistPage.jsx: el botón de selección de plantilla normativa y las tarjetas del 'Historial Compliance' usaban bg-slate-800/50 fijo mezclado con texto de tema (var(--content-text)/var(--content-muted), oscuro en temas claros) -- bug no capturado por el grep original text-white|text-black|bg-white, mismo patrón ya corregido en QRBatch.jsx/HospitalMap.jsx -- ahora bg-[var(--content-surface)]",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance con nueva fila 'Checklists NOM-016' y backlog de contraste depurado (categoría 'Secundaria' pierde a ChecklistPage.jsx, quedan Almacen.jsx, Tecnovigilancia.jsx, Trazabilidad.jsx)"
+      ],
+      "verificar": [
+        "Página Checklists (Cumplimiento NOM-016) en tema 'Azul IMSS (claro)' o 'Verde SIGAH (claro)': abrir una plantilla, pasar el mouse sobre 'Cambiar' -- debe verse legible en hover, no desaparecer",
+        "Con la plantilla abierta, escribir en 'Observaciones Adicionales' -- el texto tecleado debe verse en gris oscuro sobre el textarea, no invisible",
+        "En la lista de selección de plantillas y en 'Historial Compliance' (si hay checklists ejecutados), las tarjetas deben verse con el mismo fondo claro que el resto de tarjetas de la página, no un recuadro oscuro con texto ilegible",
+        "Repetir en tema oscuro ('glass', default) y confirmar que no cambió nada visualmente"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend. Cambio solo de clases JSX (colores), sin lógica ni llamadas a la API -- revert seguro sin rollback de base de datos",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.19",
       "fecha": "2026-07-08",

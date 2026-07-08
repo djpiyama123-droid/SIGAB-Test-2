@@ -93,7 +93,7 @@ const ChecklistPage = () => {
                   <button
                     key={tmp.id}
                     onClick={() => setSelectedTemplate(tmp)}
-                    className="p-4 rounded-xl border border-[var(--content-border)] bg-slate-800/50 hover:bg-blue-600/10 hover:border-blue-500 transition-all text-left"
+                    className="p-4 rounded-xl border border-[var(--content-border)] bg-[var(--content-surface)] hover:bg-blue-600/10 hover:border-blue-500 transition-all text-left"
                   >
                     <h3 className="font-bold text-[var(--content-text)]">{tmp.nombre}</h3>
                     <p className="text-sm text-[var(--content-muted)] uppercase tracking-tighter">{tmp.categoria}</p>
@@ -105,7 +105,7 @@ const ChecklistPage = () => {
             <div className="bg-[var(--content-bg)] rounded-2xl border border-blue-500/30 p-6 space-y-6 animate-in slide-in-from-right-4 duration-300">
               <div className="flex justify-between items-start">
                 <h2 className="text-xl font-bold text-[var(--content-text)]">{selectedTemplate.nombre}</h2>
-                <button onClick={() => setSelectedTemplate(null)} className="text-[var(--content-muted)] hover:text-white">Cambiar</button>
+                <button onClick={() => setSelectedTemplate(null)} className="text-[var(--content-muted)] hover:text-[var(--content-text)]">Cambiar</button>
               </div>
 
               <div className="space-y-4">
@@ -133,7 +133,7 @@ const ChecklistPage = () => {
               <div className="space-y-2">
                 <label className="text-sm font-bold text-[var(--content-muted)] uppercase">Observaciones Adicionales</label>
                 <textarea
-                  className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-3 text-[var(--content-text)] focus:ring-2 focus:ring-blue-500 outline-none"
                   rows="3"
                   value={observaciones}
                   onChange={(e) => setObservaciones(e.target.value)}
@@ -162,7 +162,7 @@ const ChecklistPage = () => {
             </h3>
             <div className="space-y-4">
               {history.map(h => (
-                <div key={h.id} className="p-3 rounded-xl bg-slate-800/50 border border-[var(--content-border)]">
+                <div key={h.id} className="p-3 rounded-xl bg-[var(--content-surface)] border border-[var(--content-border)]">
                   <div className="flex justify-between items-start mb-1">
                     <span className="text-[10px] uppercase font-bold text-blue-400">{h.checklist_nombre}</span>
                     <CheckSquare className="h-4 w-4 text-emerald-500" />
