@@ -1,6 +1,19 @@
 {
-  "actual": "4.0.16",
+  "actual": "4.0.17",
   "versiones": [
+    {
+      "version": "4.0.17",
+      "fecha": "2026-07-07",
+      "tipo": "patch",
+      "autor": "claude-asus",
+      "commit": "e4c068d",
+      "resumen": "Cierre de la categoría 'Modales/componentes transversales' del backlog de contraste (barrido 2026-07-04): OCRScannerModal.jsx y TripleValidationModal.jsx, los 2 últimos pendientes de esa categoría.",
+      "cambios": [
+        "components/OCRScannerModal.jsx: zona visual (cámara/archivo), banner de motor/confianza e inputs del formulario extraído usaban bg-slate-950 fijo mezclado con tokens de tema (text-muted/emerald-300 invisibles en temas claros); botones 'Capturar otra' y 'Cancelar' con text-white sobre var(--content-surface); hover:text-white en tabs y cerrar. Migrado a var(--content-surface)/bg/text; acentos -300/-400 sobre superficie de tema → -500 (patrón v4.0.12)",
+        "components/TripleValidationModal.jsx: los 3 inputs del Poka-Yoke (Token QR/Inventario/Serie) con bg-slate-800/50 + text-white sobre modal de tema (contraste degradado en claros) → var(--content-surface) + var(--content-text); iconos/título del resultado -400 → -500",
+        "Verificado con Playwright (harness aislado + mock de red, 4 temas, 16 capturas); build + vitest 19/19 verdes"
+      ]
+    },
     {
       "version": "4.0.16",
       "fecha": "2026-07-06",
