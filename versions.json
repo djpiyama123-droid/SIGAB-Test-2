@@ -6,7 +6,7 @@
       "fecha": "2026-07-08",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "188136b",
       "resumen": "Continuación del barrido de contraste 'Secundaria' de docs/DESIGN-SYSTEM-V4.md: pages/Reportes.jsx, los 3 bugs registrados desde el barrido 2026-07-04.",
       "cambios": [
         "pages/Reportes.jsx: el botón 'PDF' (BtnExport, variante pdf) usaba hover:text-white fijo sobre fondo de tema -- invisible en hover en temas claros -- ahora hover:text-[var(--content-text)]",
