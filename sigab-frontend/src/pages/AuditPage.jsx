@@ -60,7 +60,7 @@ const AuditPage = () => {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--content-text)] flex items-center gap-2">
             <ShieldCheck className="h-8 w-8 text-emerald-500" />
             Auditoría NOM-016 Compliance
           </h1>
@@ -115,7 +115,7 @@ const AuditPage = () => {
                 <td className="whitespace-nowrap px-6 py-4 text-sm font-mono text-[var(--content-muted)]">
                   {new Date(log.timestamp).toLocaleString()}
                 </td>
-                <td className="px-6 py-4 text-sm font-medium text-white">{log.usuario_nombre || 'SISTEMA'}</td>
+                <td className="px-6 py-4 text-sm font-medium text-[var(--content-text)]">{log.usuario_nombre || 'SISTEMA'}</td>
                 <td className="px-6 py-4">
                   <span className={`rounded-full px-3 py-1 text-xs font-bold tracking-tight ${
                     log.accion === 'INSERT' ? 'bg-emerald-500/10 text-emerald-400' :

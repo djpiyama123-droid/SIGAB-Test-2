@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.18",
+  "actual": "4.0.19",
   "versiones": [
+    {
+      "version": "4.0.19",
+      "fecha": "2026-07-08",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Continuación del barrido de contraste 'Secundaria' de docs/DESIGN-SYSTEM-V4.md: pages/AuditPage.jsx, los 2 bugs registrados desde el barrido 2026-07-04.",
+      "cambios": [
+        "pages/AuditPage.jsx: el título 'Auditoría NOM-016 Compliance' usaba text-white fijo -- ahora var(--content-text)",
+        "pages/AuditPage.jsx: el nombre de usuario en la columna 'Usuario' de la tabla de bitácora usaba text-white fijo como texto de cuerpo sobre var(--content-bg) -- ahora var(--content-text). Los badges de acción (INSERT/UPDATE/DELETE, fondo translúcido -500/10) y divide-slate-800/hover:bg-slate-800/30 de la tabla no se tocaron, quedan fuera del alcance documentado del backlog original (no eran invisibles, solo bordes/hover con tono fijo)",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance con nueva fila 'Auditoría NOM-016' y backlog de contraste depurado (categoría 'Secundaria' pierde a AuditPage.jsx, quedan ChecklistPage.jsx, Almacen.jsx, Tecnovigilancia.jsx, Trazabilidad.jsx)"
+      ],
+      "verificar": [
+        "Página Auditoría (NOM-016) en tema 'Azul IMSS (claro)' o 'Verde SIGAH (claro)': el título 'Auditoría NOM-016 Compliance' debe verse legible, no invisible sobre el fondo claro",
+        "Con registros en la bitácora: el nombre de usuario (columna 'Usuario') debe verse en gris oscuro sobre la tabla, no invisible",
+        "Repetir en tema oscuro ('glass', default) y confirmar que no cambió nada visualmente"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend. Cambio solo de clases JSX (colores), sin lógica ni llamadas a la API -- revert seguro sin rollback de base de datos",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.18",
       "fecha": "2026-07-08",
