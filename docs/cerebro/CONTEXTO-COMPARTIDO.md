@@ -63,6 +63,34 @@ Reservas). IDs en `docs/CONSOLIDACION-V4.md` §6.
 - Mapa completo del ecosistema → `docs/CONSOLIDACION-V4.md`.
 - Carriles y protocolo de agentes → `docs/agentes/ORQUESTACION.md`.
 
+## Petición directa de Gustavo — Portar formato IMSS de Órdenes a v4 (2026-07-08)
+
+> **Prioridad sobre el backlog genérico** (la petición de Inventario de abajo ya
+> está prácticamente cerrada). Un ítem por ciclo; esto puede tomar 2-3 ciclos.
+
+**Qué**: existe un refactor completo de Órdenes de Servicio al **formato IMSS
+oficial** hecho sobre la base v3: rama `feat/orden-servicio-imss-oficial-2026-07-07`,
+tag `v.3.2.0`, commit `63c849e` (este mismo repo, ya pusheado 2026-07-08). NO se
+puede desplegar tal cual porque su base es `feat/ui-cinematic` (v3) y machacaría
+este frontend v4. **La tarea es PORTAR ese trabajo a esta rama v4**: leer el diff
+(`git fetch origin feat/orden-servicio-imss-oficial-2026-07-07 && git show 63c849e`),
+identificar qué aporta (layout del formato oficial IMSS de OS, 7 campos nuevos del
+modal: hora_inicio, hora_termino, tiempo_estimado, tiempo_real,
+recibe_conformidad_nombre, recibe_matricula, localizacion_completa) y
+reimplementarlo en los componentes de Órdenes de v4 adaptado al design system
+Verde-Blanco IMSS y a los tokens de tema (`var(--content-*)`, 4 temas).
+
+**Backend/BD ya listos (2026-07-08)**: las 7 columnas EXISTEN en
+`ordenes_servicio` de producción (las 3 últimas se agregaron hoy con backup
+`ordenes_pre_alter_2026-07-08.sql`). Verificar si los schemas Pydantic/SQLAlchemy
+del backend exponen los 3 campos nuevos; si no, agregarlos (nullable) — sin
+redeploy del backend hasta que el frontend los use de verdad.
+
+**Reglas**: NO merge directo de la rama v3 (divergió — es porteo, no merge). NO
+tocar los helpers PDF iOS sin probar el flujo. Gates de siempre (build + vitest
+verdes, capturas en los temas del modal de OS). Bump patch + versions.json +
+release note por ciclo, como siempre.
+
 ## Petición directa de Gustavo — Módulo Inventario (2026-07-05)
 
 > **Prioridad sobre el backlog genérico**: estos 5 puntos van ANTES que
