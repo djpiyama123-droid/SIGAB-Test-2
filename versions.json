@@ -6,7 +6,7 @@
       "fecha": "2026-07-08",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "d2f46fd",
       "resumen": "Continuación del barrido de contraste 'Secundaria' de docs/DESIGN-SYSTEM-V4.md: pages/AuditPage.jsx, los 2 bugs registrados desde el barrido 2026-07-04.",
       "cambios": [
         "pages/AuditPage.jsx: el título 'Auditoría NOM-016 Compliance' usaba text-white fijo -- ahora var(--content-text)",
