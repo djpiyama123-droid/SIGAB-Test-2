@@ -69,7 +69,7 @@ const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
               <input
                 type="text"
                 placeholder="Escanee o ingrese token..."
-                className="w-full rounded-xl border-2 border-[var(--content-border)] bg-slate-800/50 p-4 text-white transition-all focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border-2 border-[var(--content-border)] bg-[var(--content-surface)] p-4 text-[var(--content-text)] transition-all focus:border-emerald-500 focus:outline-none"
                 value={data.qr_token}
                 onChange={(e) => setData({ ...data, qr_token: e.target.value })}
               />
@@ -83,7 +83,7 @@ const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
               <input
                 type="text"
                 placeholder="Número de inventario..."
-                className="w-full rounded-xl border-2 border-[var(--content-border)] bg-slate-800/50 p-4 text-white transition-all focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border-2 border-[var(--content-border)] bg-[var(--content-surface)] p-4 text-[var(--content-text)] transition-all focus:border-emerald-500 focus:outline-none"
                 value={data.inventario}
                 onChange={(e) => setData({ ...data, inventario: e.target.value })}
               />
@@ -97,7 +97,7 @@ const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
               <input
                 type="text"
                 placeholder="S/N del fabricante..."
-                className="w-full rounded-xl border-2 border-[var(--content-border)] bg-slate-800/50 p-4 text-white transition-all focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border-2 border-[var(--content-border)] bg-[var(--content-surface)] p-4 text-[var(--content-text)] transition-all focus:border-emerald-500 focus:outline-none"
                 value={data.serie}
                 onChange={(e) => setData({ ...data, serie: e.target.value })}
               />
@@ -111,12 +111,12 @@ const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
             }`}>
               <div className="flex items-start gap-3">
                 {result.ok ? (
-                  <CheckCircle className="mt-1 h-5 w-5 text-emerald-400" />
+                  <CheckCircle className="mt-1 h-5 w-5 text-emerald-500" />
                 ) : (
-                  <XCircle className="mt-1 h-5 w-5 text-red-400" />
+                  <XCircle className="mt-1 h-5 w-5 text-red-500" />
                 )}
                 <div>
-                  <h4 className={`font-bold ${result.ok ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <h4 className={`font-bold ${result.ok ? 'text-emerald-500' : 'text-red-500'}`}>
                     {result.ok ? 'Validación Exitosa' : 'Inconsistencia Detectada'}
                   </h4>
                   <p className="mt-1 text-sm text-[var(--content-muted)]">
