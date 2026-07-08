@@ -4,7 +4,7 @@ import toast from '../lib/toast';
 
 function BtnExport({ onClick, children, variant = 'pdf' }) {
   const cls = variant === 'pdf'
-    ? 'border-[var(--content-border)] text-[var(--content-muted)] hover:bg-[var(--content-border)] hover:text-white'
+    ? 'border-[var(--content-border)] text-[var(--content-muted)] hover:bg-[var(--content-border)] hover:text-[var(--content-text)]'
     : 'border-emerald-700 text-emerald-400 hover:bg-emerald-900/40 hover:text-emerald-300';
   return (
     <button
@@ -166,7 +166,7 @@ export default function Reportes() {
                 {reporte.preventivos_proxima_semana.map((pp, i) => (
                   <tr key={i}
                     className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/20">
-                    <td className="px-4 py-3 text-white">
+                    <td className="px-4 py-3 text-[var(--content-text)]">
                       {pp.nombre}
                       <span className="text-[var(--content-muted)] ml-1 text-xs font-mono">
                         ({pp.serie})
@@ -195,7 +195,7 @@ export default function Reportes() {
               <div key={eq.id}
                 className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg p-4 flex justify-between items-center">
                 <div>
-                  <p className="text-white text-sm font-medium">{eq.nombre}</p>
+                  <p className="text-[var(--content-text)] text-sm font-medium">{eq.nombre}</p>
                   <p className="text-[var(--content-muted)] text-xs mt-0.5">
                     {eq.marca} — Serie: <span className="font-mono">{eq.serie}</span>
                   </p>

@@ -61,6 +61,7 @@ Tailwind fija porque no dependen del tema de fondo.
 | Componentes transversales | ✅ Aplicado | v4.0.10 / v4.0.17 | v4.0.10: se corrigieron 4 bugs de contraste de la categoría "Modales/componentes transversales" del barrido 2026-07-04: `ConfirmDialog.jsx` (título `text-white` fijo como texto de cuerpo), `FilterBar.jsx` (botón "Limpiar" con `hover:text-white` fijo), `HistorialModal.jsx` (botón cerrar con `hover:text-white` fijo) y `charts/DegradationChart.jsx` (valor "%" del tooltip con `text-white` fijo) — los 4 mezclaban texto fijo con superficie de tema, invisibles en claro. Todos ahora usan `var(--content-text)`. Se verificó `charts/MaintenanceChart.jsx` (listado en el barrido) y NO tiene el bug — falso positivo, era `contentStyle` inline autoconsistente de recharts. v4.0.17 (`e4c068d`): cierran la categoría `OCRScannerModal.jsx` (zona cámara/archivo, banner motor/confianza e inputs del form extraído con `bg-slate-950` fijo mezclado con tokens; `text-white` sobre `var(--content-surface)` en "Capturar otra"/"Cancelar") y `TripleValidationModal.jsx` (3 inputs Poka-Yoke con `bg-slate-800/50` + `text-white`). Verificado con Playwright en los 4 temas |
 | Etiquetado Masivo QR | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste en `pages/QRBatch.jsx` (el más afectado del backlog, 8 bugs): píldoras de estadísticas, panel de Vista Previa y barra de herramientas con `bg-slate-800/*` fijo → `bg-[var(--content-surface)]`; input de búsqueda, select de área y botones "Vista Previa"/"Seleccionar visibles" con `text-white` fijo sobre fondo de tema → `var(--content-text)`; tarjetas de selección de equipo migradas al patrón de `EquipoCard.jsx`. Las etiquetas QR imprimibles (`bg-white`, emulan papel físico) se dejaron igual, uso correcto |
 | Analítica (Ingeniería Clínica 4.0) | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste en `pages/Analitica.jsx`: título y 3 de los 4 KPIs principales (Disponibilidad, MTBF, MTTR) con `text-white` fijo sobre tarjetas de tema, columnas MTBF/MTTR de la tabla del Heatmap con el mismo problema, y hover de fila (`hover:bg-slate-800/40`) mezclando fondo fijo con texto de tema → ahora `var(--content-text)`/`hover:bg-[var(--content-border)]/30`. Badges de riesgo (translúcidos) sin cambios |
+| Reportes | ✅ Aplicado | (este ciclo) | Se corrigieron los 3 bugs de contraste del backlog `Secundaria`: botón "PDF" (`hover:text-white` fijo), nombre de equipo en la tabla de "Preventivos próximos 7 días" y nombre de equipo en la lista de "Equipos críticos" (ambos `text-white` fijo como texto de cuerpo) → ahora `var(--content-text)` / `hover:text-[var(--content-text)]`. Badges de estado (fondo sólido `bg-red-900/50`/`bg-yellow-900/50`) sin cambios, uso correcto |
 | Reservas | ⬜ Pendiente | — | 4 variantes (`9ad9c5aa…`, `0d916bcd…`, `73bb15a3…`, `1e753e9a…`) — elegir la que mejor encaje con el calendario heatmap existente SIN romperlo (`anim-cell-pop` en `index.css`). Nota: ya es theme-safe (0 bugs de contraste, incluye tooltip de recharts bien resuelto) |
 | Móvil (Dashboard/Inventario/Detalle/Orden) | ⬜ Pendiente | — | Screen IDs en `CONSOLIDACION-V4.md` §6, sección Móvil |
 
@@ -144,8 +145,8 @@ siguiente barrido debe tomar de "Secundaria" abajo.
 
 **Secundaria (módulos admin, menor tráfico en el piloto):**
 - `pages/QRBatch.jsx` (8 — el más afectado del lote) y `pages/Analitica.jsx` (6,
-  título + 4 KPIs principales) resueltos en v4.0.11. Pendientes:
-  `pages/Reportes.jsx` (3), `pages/AuditPage.jsx` (2),
+  título + 4 KPIs principales) resueltos en v4.0.11. `pages/Reportes.jsx` (3)
+  resuelto este ciclo. Pendientes: `pages/AuditPage.jsx` (2),
   `pages/ChecklistPage.jsx` (2), `pages/Almacen.jsx` (1), `pages/Tecnovigilancia.jsx` (1),
   `pages/Trazabilidad.jsx` (1).
 

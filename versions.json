@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.17",
+  "actual": "4.0.18",
   "versiones": [
+    {
+      "version": "4.0.18",
+      "fecha": "2026-07-08",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Continuación del barrido de contraste 'Secundaria' de docs/DESIGN-SYSTEM-V4.md: pages/Reportes.jsx, los 3 bugs registrados desde el barrido 2026-07-04.",
+      "cambios": [
+        "pages/Reportes.jsx: el botón 'PDF' (BtnExport, variante pdf) usaba hover:text-white fijo sobre fondo de tema -- invisible en hover en temas claros -- ahora hover:text-[var(--content-text)]",
+        "pages/Reportes.jsx: el nombre del equipo en la tabla 'Preventivos próximos 7 días' y en la lista 'Equipos críticos / fuera de servicio' usaban text-white fijo como texto de cuerpo sobre var(--content-surface) -- ahora var(--content-text). Los badges de estado con fondo sólido (bg-red-900/50/bg-yellow-900/50 + texto -300) no se tocaron, ya son autoconsistentes (fondo fijo oscuro, no mezclan con var de tema)",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance con nueva fila 'Reportes' y backlog de contraste depurado (categoria 'Secundaria' pierde a Reportes.jsx, quedan AuditPage.jsx, ChecklistPage.jsx, Almacen.jsx, Tecnovigilancia.jsx, Trazabilidad.jsx)"
+      ],
+      "verificar": [
+        "Página Reportes en tema 'Azul IMSS (claro)' o 'Verde SIGAH (claro)': el botón 'PDF Diario'/'PDF Historial' debe verse legible al pasar el mouse (hover), no desaparecer",
+        "Con preventivos próximos 7 días o equipos críticos en el sistema: el nombre del equipo en ambas tablas/listas debe verse en gris oscuro sobre la tarjeta, no invisible",
+        "Repetir en tema oscuro ('glass', default) y confirmar que no cambió nada visualmente"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend. Cambio solo de clases JSX (colores), sin lógica ni llamadas a la API -- revert seguro sin rollback de base de datos",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.17",
       "fecha": "2026-07-07",
