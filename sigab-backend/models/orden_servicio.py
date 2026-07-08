@@ -67,7 +67,12 @@ class OrdenServicio(SQLModel, table=True):
     ubicacion_fisica: Optional[str] = None
     piso: Optional[str] = None
     area: Optional[str] = None
-    
+    # localizacion_completa — v.3.2.0 (porteo formato IMSS oficial, 2026-07-08):
+    # descripción libre y completa del lugar/instalación, complementa
+    # ubicacion_fisica/area/piso para el formato .xls del HGR No.1. Columna
+    # agregada a producción el 2026-07-08 (ALTER con backup ordenes_pre_alter).
+    localizacion_completa: Optional[str] = Field(default=None, sa_column=Column(mysql.TEXT))
+
     # Datos del servicio
     tipo_mantenimiento: str = Field(default="correctivo")
     tipo_atencion: str = Field(default="interno")
@@ -77,17 +82,17 @@ class OrdenServicio(SQLModel, table=True):
     condicion_final: Optional[str] = Field(default=None, sa_column=Column(mysql.TEXT))
     observaciones: Optional[str] = Field(default=None, sa_column=Column(mysql.TEXT))
     recomendaciones: Optional[str] = Field(default=None, sa_column=Column(mysql.TEXT))
-    
+
     # Tiempos
     fecha: date = Field(default_factory=date.today)
     hora_inicio: Optional[time] = None
     hora_termino: Optional[time] = None
     tiempo_estimado_hrs: Optional[Decimal] = None
     tiempo_real_hrs: Optional[Decimal] = None
-    
+
     # Personal
     tecnico_id: Optional[int] = Field(
-        default=None, 
+        default=None,
         sa_column=Column(mysql.INTEGER(unsigned=True), sa.ForeignKey("usuarios.id"))
     )
     tecnico_nombre: Optional[str] = None
@@ -95,6 +100,12 @@ class OrdenServicio(SQLModel, table=True):
     folio_externo: Optional[str] = None
     no_contrato: Optional[str] = None
     reporta_nombre: Optional[str] = None
+    # recibe_conformidad_nombre / recibe_matricula — v.3.2.0 (porteo formato
+    # IMSS oficial, 2026-07-08): quien recibe de conformidad el servicio al
+    # cierre (sección 7 del formato .xls oficial HGR No.1). Columnas
+    # agregadas a producción el 2026-07-08 (ALTER con backup ordenes_pre_alter).
+    recibe_conformidad_nombre: Optional[str] = None
+    recibe_matricula: Optional[str] = None
     
     # Estado del ticket
     estado: str = Field(default="abierta", index=True)
