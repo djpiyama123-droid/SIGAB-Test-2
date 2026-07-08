@@ -51,6 +51,10 @@ export default function Ordenes() {
     equipo_nombre: '', equipo_serie: '', tipo_mantenimiento: 'correctivo',
     tipo_formato: 'correctivo_corto',
     falla_reportada: '', tecnico_nombre: '', area: '', piso: '', prioridad: 'media',
+    // ── v.3.2.0 — campos IMSS oficiales (porteo 2026-07-08) ──
+    localizacion_completa: '', hora_inicio: '', hora_termino: '',
+    tiempo_estimado_hrs: '', tiempo_real_hrs: '',
+    recibe_conformidad_nombre: '', recibe_matricula: '',
   });
   const [guardando, setGuardando]     = useState(false);
   const [selectedOrden, setSelectedOrden] = useState(null);
@@ -138,13 +142,22 @@ export default function Ordenes() {
     }
     setGuardando(true);
     try {
-      const res = await api.crearOrden({ ...form, origen: 'dashboard' });
+      // Los campos opcionales vacíos se omiten (hora_inicio/tiempo_*_hrs no
+      // aceptan cadena vacía en el backend — son time/Decimal nullable).
+      const payload = { ...form, origen: 'dashboard' };
+      ['hora_inicio', 'hora_termino', 'tiempo_estimado_hrs', 'tiempo_real_hrs'].forEach((k) => {
+        if (!payload[k]) delete payload[k];
+      });
+      const res = await api.crearOrden(payload);
       toast.success(`Orden ${res.numero_orden || ''} creada`);
       setShowForm(false);
       const formSnapshot = { ...form };
       setForm({ equipo_nombre:'', equipo_serie:'', tipo_mantenimiento:'correctivo',
                 tipo_formato:'correctivo_corto',
-                falla_reportada:'', tecnico_nombre:'', area:'', piso:'', prioridad:'media' });
+                falla_reportada:'', tecnico_nombre:'', area:'', piso:'', prioridad:'media',
+                localizacion_completa:'', hora_inicio:'', hora_termino:'',
+                tiempo_estimado_hrs:'', tiempo_real_hrs:'',
+                recibe_conformidad_nombre:'', recibe_matricula:'' });
       cargar();
       // Abrir el formato IMSS automáticamente con autoprint
       setFormatoAutoprint(true);
@@ -159,6 +172,13 @@ export default function Ordenes() {
         area: formSnapshot.area,
         piso: formSnapshot.piso,
         prioridad: formSnapshot.prioridad,
+        localizacion_completa: formSnapshot.localizacion_completa,
+        hora_inicio: formSnapshot.hora_inicio,
+        hora_termino: formSnapshot.hora_termino,
+        tiempo_estimado_hrs: formSnapshot.tiempo_estimado_hrs,
+        tiempo_real_hrs: formSnapshot.tiempo_real_hrs,
+        recibe_conformidad_nombre: formSnapshot.recibe_conformidad_nombre,
+        recibe_matricula: formSnapshot.recibe_matricula,
         fecha: new Date().toISOString().split('T')[0],
       });
     } catch (err) {
@@ -513,11 +533,59 @@ export default function Ordenes() {
               </select>
             </div>
           </div>
+
+          {/* Localización completa — v.3.2.0 (formato IMSS oficial) */}
+          <div>
+            <label className="text-xs text-[var(--content-muted)] block mb-1">Localización completa del equipo o instalación</label>
+            <input value={form.localizacion_completa} onChange={set('localizacion_completa')}
+              placeholder="Detalle adicional de ubicación..."
+              className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
+          </div>
+
           <div>
             <label className="text-xs text-[var(--content-muted)] block mb-1">Falla reportada *</label>
             <textarea required rows={3} value={form.falla_reportada} onChange={set('falla_reportada')}
               className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
           </div>
+
+          {/* Horarios y tiempos — v.3.2.0 */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Hora de inicio</label>
+              <input type="time" value={form.hora_inicio} onChange={set('hora_inicio')}
+                className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
+            </div>
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Hora de término</label>
+              <input type="time" value={form.hora_termino} onChange={set('hora_termino')}
+                className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
+            </div>
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">T. estimado (hrs)</label>
+              <input type="number" min="0" step="0.5" value={form.tiempo_estimado_hrs} onChange={set('tiempo_estimado_hrs')} placeholder="1.0"
+                className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
+            </div>
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">T. real (hrs)</label>
+              <input type="number" min="0" step="0.5" value={form.tiempo_real_hrs} onChange={set('tiempo_real_hrs')} placeholder="(al cerrar)"
+                className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
+            </div>
+          </div>
+
+          {/* Recibe de conformidad — v.3.2.0 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Recibe de conformidad (Nombre)</label>
+              <input value={form.recibe_conformidad_nombre} onChange={set('recibe_conformidad_nombre')} placeholder="Nombre de quien recibe"
+                className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
+            </div>
+            <div>
+              <label className="text-xs text-[var(--content-muted)] block mb-1">Matrícula</label>
+              <input value={form.recibe_matricula} onChange={set('recibe_matricula')} placeholder="Matrícula"
+                className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
+            </div>
+          </div>
+
           <button type="submit" disabled={guardando}
             className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg disabled:opacity-50">
             {guardando ? 'Guardando...' : 'Crear Orden'}

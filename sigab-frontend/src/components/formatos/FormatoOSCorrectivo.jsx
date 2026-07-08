@@ -23,6 +23,7 @@ export default function FormatoOSCorrectivo({ orden, tema = 'blanco-imss', isEdi
 
   const folio = o.numero_orden || `OS-C-${String(o.id || '0000').padStart(4, '0')}`;
   const estadoFinal = o.estado_final || '';
+  const tipoLabel = 'Mantenimiento Correctivo';
 
   const EI = ({ value, field, placeholder = '' }) => (
     <input
@@ -108,14 +109,23 @@ export default function FormatoOSCorrectivo({ orden, tema = 'blanco-imss', isEdi
       <style>{`@media print { body { margin: 0; } #formato-print-root { width: 210mm; font-size: 11pt; } }`}</style>
       <div id="formato-print-root" style={{ ...t.wrapper, padding: 24, maxWidth: 900, margin: '0 auto' }}>
 
-        {/* ── CABECERA ─────────────────────────────────────────────────────── */}
+        {/* ── CABECERA INSTITUCIONAL IMSS ───────────────────────────────── */}
         <FormatoHeader
           t={t}
-          tipoLabel="ORDEN DE SERVICIO — CORRECTIVO"
+          tipoLabel="ORDEN DE SERVICIO BIOMÉDICA"
           folio={folio}
           fecha={o.fecha_creacion || o.fecha}
           refReporte={o.reporte_falla_ref}
         />
+
+        {/* Subtítulo de tipo — estilo .xls */}
+        <div style={{
+          textAlign: 'center', fontWeight: 'bold', fontSize: 13, color: t.check,
+          letterSpacing: '0.06em', padding: '4px 0 8px 0', textTransform: 'uppercase',
+          borderBottom: `1px solid ${t.check}`, marginBottom: 8,
+        }}>
+          {tipoLabel} · NOM-016-SSA3-2012 · NOM-240-SSA1-2012 · ISO-13485
+        </div>
 
         <div style={{ height: 10 }} />
 
@@ -155,14 +165,14 @@ export default function FormatoOSCorrectivo({ orden, tema = 'blanco-imss', isEdi
                 </div>
               </TD>
             </tr>
-            {/* Datos fila 3 — Localización completa */}
+            {/* Datos fila 3 — Localización completa (v.3.2.0, columna propia) */}
             <tr>
               <TH colSpan={2}>Localización completa del equipo o instalación</TH>
               <TD colSpan={2}>
                 <div style={{ minHeight: 20 }}>
                   {isEditing
-                    ? <EI value={o.ubicacion_fisica || o.localizacion} field="ubicacion_fisica" placeholder="Descripción completa de ubicación" />
-                    : (o.ubicacion_fisica || o.localizacion || (o.area ? `${o.area}${o.piso ? `, Piso ${o.piso}` : ''}` : '—'))
+                    ? <EI value={o.localizacion_completa || o.ubicacion_fisica || o.localizacion} field="localizacion_completa" placeholder="Descripción completa de ubicación" />
+                    : (o.localizacion_completa || o.ubicacion_fisica || o.localizacion || (o.area ? `${o.area}${o.piso ? `, Piso ${o.piso}` : ''}` : '—'))
                   }
                 </div>
               </TD>
@@ -214,8 +224,8 @@ export default function FormatoOSCorrectivo({ orden, tema = 'blanco-imss', isEdi
             <tr>
               <TD><div style={{ minHeight: 22 }}>{isEditing ? <EI value={o.hora_inicio} field="hora_inicio" placeholder="HH:MM" /> : (o.hora_inicio || '__:__')}</div></TD>
               <TD><div style={{ minHeight: 22 }}>{isEditing ? <EI value={o.hora_termino || o.hora_fin} field="hora_termino" placeholder="HH:MM" /> : (o.hora_termino || o.hora_fin || '__:__')}</div></TD>
-              <TD><div style={{ minHeight: 22 }}>{isEditing ? <EI value={o.tiempo_estimado} field="tiempo_estimado" placeholder="Hrs" /> : (o.tiempo_estimado ? `${o.tiempo_estimado} h` : '___')}</div></TD>
-              <TD><div style={{ minHeight: 22 }}>{isEditing ? <EI value={o.tiempo_real} field="tiempo_real" placeholder="Hrs" /> : (o.tiempo_real ? `${o.tiempo_real} h` : '___')}</div></TD>
+              <TD><div style={{ minHeight: 22 }}>{isEditing ? <EI value={o.tiempo_estimado_hrs ?? o.tiempo_estimado} field="tiempo_estimado_hrs" placeholder="Hrs" /> : ((o.tiempo_estimado_hrs ?? o.tiempo_estimado) ? `${o.tiempo_estimado_hrs ?? o.tiempo_estimado} h` : '___')}</div></TD>
+              <TD><div style={{ minHeight: 22 }}>{isEditing ? <EI value={o.tiempo_real_hrs ?? o.tiempo_real} field="tiempo_real_hrs" placeholder="Hrs" /> : ((o.tiempo_real_hrs ?? o.tiempo_real) ? `${o.tiempo_real_hrs ?? o.tiempo_real} h` : '___')}</div></TD>
               <TD><div style={{ minHeight: 22 }}>{isEditing ? <EI value={o.tecnico_nombre} field="tecnico_nombre" placeholder="Nombre técnico" /> : (o.tecnico_nombre || '—')}</div></TD>
             </tr>
           </tbody>
@@ -307,14 +317,50 @@ export default function FormatoOSCorrectivo({ orden, tema = 'blanco-imss', isEdi
           </tbody>
         </table>
 
-        {/* ── FIRMAS ───────────────────────────────────────────────────────── */}
+        {/* ── 7. RECIBE DE CONFORMIDAD (estilo .xls) ────────────────────────── */}
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 16, marginBottom: 8, border: `2px solid ${t.check}` }}>
+          <tbody>
+            <SH title="7. Recibe de Conformidad del Servicio" cols={2} />
+            <tr>
+              <TD style={{ width: '60%', verticalAlign: 'top' }}>
+                <div style={{ ...t.label, marginBottom: 4 }}>Nombre (quien recibe)</div>
+                <div style={{ minHeight: 30, borderBottom: `1px solid ${t.check}`, padding: '2px 4px' }}>
+                  {isEditing
+                    ? <EI value={o.recibe_conformidad_nombre} field="recibe_conformidad_nombre" placeholder="Nombre completo + matrícula" />
+                    : (o.recibe_conformidad_nombre || '—')
+                  }
+                </div>
+                <div style={{ ...t.label, marginTop: 8, marginBottom: 4 }}>Firma</div>
+                <div style={{ minHeight: 50 }}></div>
+              </TD>
+              <TD style={{ width: '40%', verticalAlign: 'top' }}>
+                <div style={{ ...t.label, marginBottom: 4 }}>Fecha de cierre</div>
+                <div style={{ minHeight: 22, borderBottom: `1px solid ${t.check}`, padding: '2px 4px' }}>
+                  {isEditing
+                    ? <EI value={o.fecha_cierre} field="fecha_cierre" placeholder="DD/MM/AAAA" />
+                    : (o.fecha_cierre ? fmtFecha(o.fecha_cierre) : '__/__/____')
+                  }
+                </div>
+                <div style={{ ...t.label, marginTop: 14, marginBottom: 4 }}>Matrícula</div>
+                <div style={{ minHeight: 22, borderBottom: `1px solid ${t.check}`, padding: '2px 4px' }}>
+                  {isEditing
+                    ? <EI value={o.recibe_matricula} field="recibe_matricula" placeholder="Matrícula" />
+                    : (o.recibe_matricula || '—')
+                  }
+                </div>
+              </TD>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* ── FIRMAS (3 columnas) ────────────────────────────────────────────── */}
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 20 }}>
           <tbody>
             <tr>
               {[
-                { rol: 'Técnico Asignado', nombre: o.tecnico_nombre },
-                { rol: 'Usuario — Conformidad del servicio', nombre: null },
-                { rol: 'Jefe de Conservación', nombre: null },
+                { rol: 'Realizó (Ing. Biomédico)', nombre: o.tecnico_nombre },
+                { rol: 'Visto Bueno (Jefe Conservación)', nombre: null },
+                { rol: 'Sello del Departamento', nombre: null },
               ].map(({ rol, nombre }) => (
                 <td key={rol} style={{ ...t.firmaCell, width: '33.33%', textAlign: 'center' }}>
                   <div style={{ minHeight: 36 }} />
@@ -325,20 +371,11 @@ export default function FormatoOSCorrectivo({ orden, tema = 'blanco-imss', isEdi
                 </td>
               ))}
             </tr>
-            <tr>
-              <td colSpan={3} style={{ ...t.cell, textAlign: 'right', fontSize: 10, color: t.label.color, padding: '4px 8px' }}>
-                Fecha de cierre: {isEditing
-                  ? <input type="text" value={o.fecha_cierre || ''} onChange={(e) => onChange && onChange('fecha_cierre', e.target.value)} placeholder="DD/MM/AAAA"
-                      style={{ border: 'none', borderBottom: `1px dashed ${t.check}`, background: 'transparent', color: 'inherit', fontSize: 'inherit', width: 100, outline: 'none' }} />
-                  : (o.fecha_cierre ? fmtFecha(o.fecha_cierre) : '__/__/____')
-                }
-              </td>
-            </tr>
           </tbody>
         </table>
 
         <div style={{ marginTop: 8, fontSize: 9, color: t.label.color, textAlign: 'right' }}>
-          Recibe de conformidad: nombre, firma y fecha del usuario del servicio · Formato F-CON-02 · NOM-016-SSA3-2012
+          Formato F-CON-02 · NOM-016-SSA3-2012 · NOM-240-SSA1-2012 · ISO-13485 · v.3.2.0
         </div>
       </div>
     </>

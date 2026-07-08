@@ -21,6 +21,14 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
     area: prefill.area || '',
     piso: prefill.piso || '',
     prioridad: 'media',
+    // ── v.3.2.0 — campos IMSS oficiales (porteo 2026-07-08) ──
+    localizacion_completa: '',
+    hora_inicio: '',
+    hora_termino: '',
+    tiempo_estimado_hrs: '',
+    tiempo_real_hrs: '',
+    recibe_conformidad_nombre: '',
+    recibe_matricula: '',
   });
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState(null);
@@ -34,7 +42,13 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
     setGuardando(true);
     setError(null);
     try {
-      await api.crearOrden({ ...form, origen: 'dashboard' });
+      // Los campos opcionales vacíos se omiten (hora_inicio/tiempo_*_hrs no
+      // aceptan cadena vacía en el backend — son time/Decimal nullable).
+      const payload = { ...form, origen: 'dashboard' };
+      ['hora_inicio', 'hora_termino', 'tiempo_estimado_hrs', 'tiempo_real_hrs'].forEach((k) => {
+        if (!payload[k]) delete payload[k];
+      });
+      await api.crearOrden(payload);
       onCreated?.();
       onClose();
     } catch (err) {
@@ -75,7 +89,7 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
             ['equipo_nombre', 'Equipo (nombre)', 'text'],
             ['equipo_serie', 'No. Serie', 'text'],
@@ -88,7 +102,7 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
               <input
                 value={form[k]}
                 onChange={set(k)}
-                className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600"
+                className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]"
               />
             </div>
           ))}
@@ -97,7 +111,7 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
             <select
               value={form.tipo_mantenimiento}
               onChange={set('tipo_mantenimiento')}
-              className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]"
+              className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]"
             >
               {['correctivo', 'preventivo', 'instalacion', 'calibracion'].map((t) => (
                 <option key={t} value={t}>{t}</option>
@@ -109,13 +123,24 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
             <select
               value={form.prioridad}
               onChange={set('prioridad')}
-              className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]"
+              className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]"
             >
               {['baja', 'media', 'alta', 'critica'].map((p) => (
                 <option key={p} value={p}>{p}</option>
               ))}
             </select>
           </div>
+        </div>
+
+        {/* Localización completa — v.3.2.0 */}
+        <div>
+          <label className="text-xs text-[var(--content-muted)] block mb-1">Localización completa del equipo o instalación</label>
+          <input
+            value={form.localizacion_completa}
+            onChange={set('localizacion_completa')}
+            placeholder="Detalle adicional de ubicación..."
+            className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]"
+          />
         </div>
 
         <div>
@@ -125,8 +150,46 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
             rows={3}
             value={form.falla_reportada}
             onChange={set('falla_reportada')}
-            className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600"
+            className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]"
           />
+        </div>
+
+        {/* Horarios y tiempos — v.3.2.0 */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs text-[var(--content-muted)] block mb-1">Hora de inicio</label>
+            <input type="time" value={form.hora_inicio} onChange={set('hora_inicio')}
+              className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]" />
+          </div>
+          <div>
+            <label className="text-xs text-[var(--content-muted)] block mb-1">Hora de término</label>
+            <input type="time" value={form.hora_termino} onChange={set('hora_termino')}
+              className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]" />
+          </div>
+          <div>
+            <label className="text-xs text-[var(--content-muted)] block mb-1">T. estimado (hrs)</label>
+            <input type="number" min="0" step="0.5" value={form.tiempo_estimado_hrs} onChange={set('tiempo_estimado_hrs')} placeholder="1.0"
+              className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]" />
+          </div>
+          <div>
+            <label className="text-xs text-[var(--content-muted)] block mb-1">T. real (hrs)</label>
+            <input type="number" min="0" step="0.5" value={form.tiempo_real_hrs} onChange={set('tiempo_real_hrs')} placeholder="(al cerrar)"
+              className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]" />
+          </div>
+        </div>
+
+        {/* Recibe de conformidad — v.3.2.0 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs text-[var(--content-muted)] block mb-1">Recibe de conformidad (Nombre)</label>
+            <input value={form.recibe_conformidad_nombre} onChange={set('recibe_conformidad_nombre')} placeholder="Nombre de quien recibe"
+              className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]" />
+          </div>
+          <div>
+            <label className="text-xs text-[var(--content-muted)] block mb-1">Matrícula</label>
+            <input value={form.recibe_matricula} onChange={set('recibe_matricula')} placeholder="Matrícula"
+              className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]" />
+          </div>
         </div>
 
         <div className="flex gap-3 justify-end">
