@@ -1,6 +1,30 @@
 {
-  "actual": "4.0.25",
+  "actual": "4.0.29",
   "versiones": [
+    {
+      "version": "4.0.29",
+      "fecha": "2026-07-09",
+      "tipo": "patch",
+      "autor": "sesion-sonnet-asus",
+      "commit": "",
+      "resumen": "Fix del flujo de Órdenes de Servicio (OS) reportado por Gustavo en video de producción v4.0.23 (2026-07-09): modal de creación abierto 2 veces sin evidencia de éxito, botón 'Acción Rápida (OS abierta del equipo)' sin efecto visible, y expediente del equipo mostrando 'Sin órdenes registradas'. Diagnóstico por código + reproducción con Playwright y mocks de red (harness desechable, sin backend). Base: feat/formatos-corta-larga-2026-07-08 (7419a0c, v4.0.25) — los componentes de Órdenes ya fueron reescritos ahí.",
+      "cambios": [
+        "sigab-frontend/src/lib/toast.js: causa raíz más probable de 'sin evidencia de éxito/error' — el patrón toast.loading()->toast.success/error(msg,{id:tid}) (usado en OrdenServicioRapidaModal.jsx, Ordenes.jsx, HospitalMap.jsx y otros) hacía que el toast de reemplazo se autodestruyera en ~600ms en vez de sus 6000ms. Causa: normalize() nunca pasaba un id explícito a Sileo, así que todo toast sin id caía al id interno por defecto de la librería ('sileo-default'); sileo.dismiss(tid) programa un borrado diferido ~600ms después de CUALQUIER toast con ese id, y el toast de reemplazo terminaba con el mismo id por el mismo bug, así que el borrado diferido del viejo eliminaba al nuevo. Fix: cada llamada genera un id propio único (genId()) y nunca reutiliza el id que se está reemplazando. Confirmado con Playwright midiendo el tiempo de vida real del toast antes/después del fix.",
+        "sigab-frontend/src/api/sigab.js: crearOrden y getOrdenes llamaban a '/ordenes' sin slash final; el backend registra la colección como '/' bajo el prefijo '/api/ordenes' (routes/ordenes.py), ruta real '/api/ordenes/'. Confirmado con TestClient que esto dispara un 307 redirect en cada creación/listado — round-trip innecesario y frágil detrás de proxies que no reescriben Location al hostname público. Fix: ambas llamadas usan '/ordenes/' directo.",
+        "sigab-frontend/src/pages/Ordenes.jsx: el botón 'Acción Rápida' de HospitalMap.jsx navega a /ordenes?ordenId=X o /ordenes?equipoId=X&estado=abierta, pero Ordenes.jsx no leía ningún query param (mismo patrón de bug que ?accion=nuevo, no procesado, en /preventivos). Fix: efecto de un solo uso que abre la OS directa si hay ordenId, aplica estado a los filtros existentes y aplica equipoId como filtro equipo_id (ya soportado por listar_ordenes en el backend, solo faltaba conectarlo), con chip 'Equipo #N ✕' para quitarlo. Limpia la URL tras consumirla.",
+        "sigab-frontend/src/components/EquipoDetail.jsx: recargarHistorial() y el efecto de getExpedienteEquipo tenían .catch(() => {}) — cualquier fallo (401/500/red) se tragaba en silencio y la sección 'Tickets / Órdenes de Servicio' mostraba 'Sin órdenes registradas' indistinguible de un equipo genuinamente vacío. Fix: ambos catches hacen console.error + toast.error sin bloquear el render."
+      ],
+      "verificar": [
+        "Crear una OS desde la ficha técnica del mapa: el toast de éxito debe permanecer legible varios segundos (no un parpadeo). Forzar un error de red/backend: el toast de error debe permanecer igual de legible y el modal debe quedarse abierto para reintentar.",
+        "Network tab: el POST de creación de OS debe ir directo a /api/ordenes/ (con slash), sin 307 previo.",
+        "Ficha técnica de un equipo con una sola OS abierta -> '⚡ Acción Rápida': debe abrir directo el detalle de esa OS en /ordenes. Con varias OS abiertas: debe aterrizar en /ordenes con el filtro 'abierta' activo y un chip 'Equipo #N' visible.",
+        "Forzar un error 500 en /equipos/{id}/historial o /expediente (equipo real con órdenes): debe aparecer un toast de error explícito en vez de 'Sin órdenes registradas' silencioso.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (22 tests, sin regresiones)."
+      ],
+      "rollback": "git revert de los commits de esta versión sobre fix/os-flujo-2026-07-09 antes de mergear, o revert + redeploy de frontend si ya se mergeó. Todos los cambios son de frontend (adapter de toasts, cliente HTTP, un page component y un modal); no tocan esquema de base de datos ni requieren rollback de backend.",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.25",
       "fecha": "2026-07-08",
