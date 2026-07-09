@@ -91,6 +91,74 @@ tocar los helpers PDF iOS sin probar el flujo. Gates de siempre (build + vitest
 verdes, capturas en los temas del modal de OS). Bump patch + versions.json +
 release note por ciclo, como siempre.
 
+**Actualización 2026-07-08 (loop-thinkcentre, v4.0.21) — hallazgo + 2 bloqueos reales:**
+
+1. **El porteo está MÁS avanzado de lo que dice el resumen de arriba.** Ya
+   existe en v4 `sigab-frontend/src/components/formatos/` (`FormatoOSCorrectivo.jsx`,
+   `FormatoOSPreventivo.jsx`, `FormatoOSPredictivo.jsx`, `FormatoReporteFalla.jsx`,
+   `FormatoViewer.jsx`) construido en 6 commits previos (`31b42fc`…`a24584f`,
+   el último literalmente "reimplementar 4 formatos IMSS fieles al .docx
+   oficial") y ya está integrado (`FormatoViewer` se usa en `pages/Ordenes.jsx`
+   y `pages/Formatos.jsx`, no es código muerto). Ya cubre visualmente
+   `hora_inicio`, `hora_termino`, `tiempo_estimado`, `tiempo_real` y una fila
+   de "Localización completa del equipo o instalación" (mapeada hoy a
+   `ubicacion_fisica`, no a la columna nueva `localizacion_completa`).
+   Antes de portar nada del diff de la rama v3, comparar campo a campo con
+   este directorio — puede que el trabajo real que falta sea mucho menor de
+   lo que parece.
+
+2. **Bloqueo de acceso**: `git fetch` no está en el allowlist de
+   `.claude/settings.json` de este nodo (ThinkCentre, ciclo headless sin
+   humano para aprobar el prompt de permiso) → no se pudo leer
+   `git show 63c849e` de `feat/orden-servicio-imss-oficial-2026-07-07` este
+   ciclo. Si se quiere que el loop compare contra ese diff, alguien con
+   permisos debe agregar `Bash(git fetch origin feat/orden-servicio-imss-oficial-2026-07-07:*)`
+   (o similar, acotado a esa rama) al allowlist.
+
+3. **Bloqueo real de negocio, no de permisos**: los 3 campos que SÍ faltan
+   (`recibe_conformidad_nombre`, `recibe_matricula`, `localizacion_completa`)
+   no se pueden completar solo desde el frontend. Verificado leyendo
+   `sigab-backend/models/orden_servicio.py` y `routes/ordenes.py` (solo
+   lectura, sin tocar nada — fuera de mi carril "SOLO sigab-frontend/"):
+   - El modelo SQLAlchemy **no tiene** `recibe_conformidad_nombre` ni
+     `recibe_matricula` como atributos — ni con esos nombres ni con alias.
+   - `finalizar_orden` (`routes/ordenes.py:327`) redirige silenciosamente
+     `recibe_conformidad_nombre` a la columna vieja `reporta_nombre` (hay un
+     comentario en el propio código: "Nota: Los campos de recibo/matricula
+     deben estar en el modelo").
+   - El PUT `/ordenes/{id}` tiene una whitelist `campos_permitidos`
+     (`routes/ordenes.py:680-690`) que **no incluye** `tiempo_estimado` ni
+     `tiempo_real` (bare) — el modelo solo conoce `tiempo_estimado_hrs`/
+     `tiempo_real_hrs` (Decimal). Las columnas bare que Gustavo agregó hoy a
+     producción son huérfanas: nada las lee ni las escribe.
+   - `recibe_matricula` (columna nueva en producción) no coincide ni con
+     `schema.sql` del repo (que tiene `recibe_conformidad_matricula`, otro
+     nombre) ni con lo que el frontend ya envía (`OrdenDetalleModal.jsx`
+     usa `recibe_conformidad_matricula`, no `recibe_matricula`).
+   - Conclusión: agregar estos 3 campos a la UI sin arreglar antes el modelo
+     SQLAlchemy + la whitelist del PUT + el mapeo de `finalizar_orden`
+     produciría un formulario que "parece guardar" pero descarta los datos
+     en silencio — inaceptable en un documento NOM-016 de auditoría. No se
+     tocó nada del lado backend (fuera de mi carril); esto requiere que
+     Gustavo o un agente con permiso de `sigab-backend/` resuelva el
+     mismatch de nombres antes de que el frontend pueda cerrar el punto.
+
+**Qué se hizo en su lugar este ciclo (v4.0.21, Prioridad 2 del carril)**: el
+chunk principal de JS (`index-*.js`, se descarga en TODA visita a la app,
+antes de login) pesaba 1,003 kB / 202.76 kB gzip porque `Layout.jsx`,
+`Sidebar.jsx` y `StatusIndicator.jsx` hacían `import * as Lucide from
+'lucide-react'` + acceso dinámico `Lucide[nombre]`, lo que impide el
+tree-shaking de Rollup y mete las ~1600 piezas de la librería completa de
+iconos en el bundle que las usa. Se reemplazó por mapas estáticos con
+imports nombrados (`utils/navIcons.js` para Sidebar/Layout, mapa local en
+`StatusIndicator.jsx`) — mismos iconos, mismo comportamiento visual, ahora
+tree-shakeable. Resultado: `index-*.js` bajó a 111 kB / 37.67 kB gzip (-89%),
+sin inflar ningún otro chunk (verificado: Dashboard pasó de 44 a 47 kB nada
+más). Build + vitest verdes. Pendiente: `charts` (recharts+framer-motion+d3,
+529 kB) sigue siendo un chunk grande pero ya se descarga solo en las páginas
+que lo usan (Dashboard/Reservas/Analitica vía rutas lazy) — candidato para
+un ciclo futuro si se quiere seguir recortando, no es un bug del mismo tipo.
+
 ## Petición directa de Gustavo — Módulo Inventario (2026-07-05)
 
 > **Prioridad sobre el backlog genérico**: estos 5 puntos van ANTES que

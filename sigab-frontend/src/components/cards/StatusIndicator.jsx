@@ -1,9 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import * as Icons from 'lucide-react';
+import { Circle, Wifi } from 'lucide-react';
+
+// Mapa estático de los iconos que este componente realmente usa hoy.
+// `import * as Icons from 'lucide-react'` + acceso dinámico `Icons[iconName]`
+// impide el tree-shaking y mete toda la librería de iconos en el bundle del
+// chunk que lo consume -- ver también utils/navIcons.js (mismo patrón).
+const ICONS = { Circle, Wifi };
 
 export default function StatusIndicator({ status = 'green', icon: iconName = 'Circle' }) {
-  const Icon = Icons[iconName] || Icons.Circle;
+  const Icon = ICONS[iconName] || ICONS.Circle;
 
   const colors = {
     green: {

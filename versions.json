@@ -1,6 +1,31 @@
 {
-  "actual": "4.0.20",
+  "actual": "4.0.21",
   "versiones": [
+    {
+      "version": "4.0.21",
+      "fecha": "2026-07-08",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Recorte del bundle principal (Prioridad 2, rendimiento): elimina 3 imports dinámicos de lucide-react que forzaban toda la librería de iconos al chunk cargado en cada visita a la app.",
+      "cambios": [
+        "sigab-frontend/src/components/Layout.jsx: reemplaza 'import * as Lucide from lucide-react' + Lucide[item.icon] (bottom-nav móvil) por el mapa estático NAV_ICONS",
+        "sigab-frontend/src/components/Sidebar.jsx: mismo reemplazo para el menú lateral (NAV_ITEMS) y el enlace 'Panel Admin' (antes Lucide.Building2)",
+        "sigab-frontend/src/components/cards/StatusIndicator.jsx: reemplaza 'import * as Icons from lucide-react' + Icons[iconName] por un mapa local { Circle, Wifi } -- único caller es el indicador de conexión SSE del Dashboard",
+        "sigab-frontend/src/utils/navIcons.js: NUEVO -- mapa NAV_ICONS con imports nombrados de los 12 iconos que Layout.jsx/Sidebar.jsx realmente usan (LayoutDashboard, Cpu, ClipboardList, BrainCircuit, QrCode, CalendarClock, Calendar, Bell, FileBarChart, ShieldAlert, FileText, Building2)",
+        "docs/cerebro/CONTEXTO-COMPARTIDO.md: documenta que el porteo de formato IMSS de Órdenes (petición de Gustavo 2026-07-08) está más avanzado de lo reportado (ya existe components/formatos/ integrado), y registra 2 bloqueos reales para cerrarlo: git fetch no permitido en este nodo headless, y 3 de los 7 campos (recibe_conformidad_nombre, recibe_matricula, localizacion_completa) no los persiste el backend (modelo SQLAlchemy y whitelist del PUT desactualizados) -- fuera del carril sigab-frontend/ de este loop"
+      ],
+      "verificar": [
+        "Cualquier página: el ícono del sidebar de escritorio (menú lateral) y de la barra inferior en móvil deben verse igual que antes -- Dashboard, Inventario, Ordenes, Reservas, Preventivos, Alertas, Reportes, Tecnovigilancia, Copilot, Formatos, Lote QR",
+        "Como superadmin: el enlace 'Panel Admin' al final del sidebar debe seguir mostrando el ícono de edificio (Building2)",
+        "Dashboard: el indicador de estado de conexión (SSE, junto al título) debe seguir mostrando el ícono de wifi cuando está conectado",
+        "DevTools > Network al cargar la app por primera vez (login): el chunk index-*.js debe pesar ~111 kB (antes ~1003 kB) -- confirma el recorte",
+        "npm run build y npx vitest run ambos verdes (verificado en este ciclo)"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend. Cambio mecánico de imports (mismos componentes, mismos props, mismo comportamiento visual), sin lógica de negocio ni llamadas a la API -- revert seguro sin rollback de base de datos",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.20",
       "fecha": "2026-07-08",
