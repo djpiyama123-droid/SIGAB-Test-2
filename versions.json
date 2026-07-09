@@ -6,7 +6,7 @@
       "fecha": "2026-07-08",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "87b348e",
       "resumen": "Recorte del bundle principal (Prioridad 2, rendimiento): elimina 3 imports dinámicos de lucide-react que forzaban toda la librería de iconos al chunk cargado en cada visita a la app.",
       "cambios": [
         "sigab-frontend/src/components/Layout.jsx: reemplaza 'import * as Lucide from lucide-react' + Lucide[item.icon] (bottom-nav móvil) por el mapa estático NAV_ICONS",
