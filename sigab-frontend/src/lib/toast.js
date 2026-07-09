@@ -34,6 +34,21 @@ const SIGAH_FILL = {
   loading: '#64748b', // slate-500
 };
 
+// Generador de ids únicos para cada toast. CRÍTICO: Sileo, cuando no recibe
+// un `id` explícito, asigna internamente el id literal "sileo-default" a
+// TODOS los toasts sin id (ver createToast() en sileo/dist/index.mjs). Su
+// dismiss(id) programa un borrado diferido de "cualquier toast con ese id"
+// ~600ms después (EXIT_DURATION). Si el toast de reemplazo (loading→success/
+// error por el mismo id) no recibe también un id ÚNICO, hereda ese mismo
+// "sileo-default" y el borrado diferido del toast viejo termina eliminando
+// al toast NUEVO a los ~600ms — sin importar su `duration` real (p. ej. los
+// 6000ms de un error). Esto hacía que success/error tras un loading()
+// desaparecieran casi al instante (bug reproducido y confirmado en
+// fix/os-flujo-2026-07-09: la OS sí se creaba/fallaba, pero el toast
+// desaparecía antes de que el usuario pudiera leerlo).
+let _uid = 0;
+const genId = () => `sigah-toast-${Date.now()}-${_uid++}`;
+
 function normalize(msg, opts = {}) {
   // Si el primer arg es objeto Sileo (caso avanzado), pasarlo tal cual
   if (typeof msg === 'object' && msg !== null && !('toString' in opts)) {
@@ -48,7 +63,9 @@ function normalize(msg, opts = {}) {
   };
 }
 
-// Sileo no permite reusar un id; emulamos "reemplazo por id" con dismiss + nuevo
+// Sileo no permite reusar un id de forma segura (ver nota de genId arriba):
+// emulamos "reemplazo por id" con dismiss del viejo + id NUEVO para el toast
+// de reemplazo. Nunca reutilizar `opts.id` como id del toast nuevo.
 function replaceIfNeeded(opts) {
   if (opts && opts.id) {
     try { sileo.dismiss(opts.id); } catch { /* no-op */ }
@@ -58,19 +75,19 @@ function replaceIfNeeded(opts) {
 const toast = {
   success: (msg, opts) => {
     replaceIfNeeded(opts);
-    return sileo.success({ fill: SIGAH_FILL.success, ...normalize(msg, opts) });
+    return sileo.success({ fill: SIGAH_FILL.success, ...normalize(msg, opts), id: genId() });
   },
   error: (msg, opts) => {
     replaceIfNeeded(opts);
-    return sileo.error({ fill: SIGAH_FILL.error, duration: opts?.duration ?? 6000, ...normalize(msg, opts) });
+    return sileo.error({ fill: SIGAH_FILL.error, duration: opts?.duration ?? 6000, ...normalize(msg, opts), id: genId() });
   },
   info: (msg, opts) => {
     replaceIfNeeded(opts);
-    return sileo.info({ fill: SIGAH_FILL.info, ...normalize(msg, opts) });
+    return sileo.info({ fill: SIGAH_FILL.info, ...normalize(msg, opts), id: genId() });
   },
   warning: (msg, opts) => {
     replaceIfNeeded(opts);
-    return sileo.warning({ fill: SIGAH_FILL.warning, ...normalize(msg, opts) });
+    return sileo.warning({ fill: SIGAH_FILL.warning, ...normalize(msg, opts), id: genId() });
   },
   // Alias para compatibilidad con codigo existente que usa toast.warn
   warn: (msg, opts) => toast.warning(msg, opts),
@@ -82,6 +99,7 @@ const toast = {
       fill: SIGAH_FILL.loading,
       duration: null,
       ...normalize(msg, opts),
+      id: genId(),
     });
   },
   dismiss: (id) => {

@@ -21,7 +21,9 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
     condicion_final: '',
     observaciones: '',
     recibe_conformidad_nombre: '',
-    recibe_conformidad_matricula: ''
+    // v.3.2.0 (porteo formato IMSS oficial, 2026-07-08): renombrado a
+    // recibe_matricula para alinear con la columna real agregada al backend.
+    recibe_matricula: ''
   });
 
   const handleOCRExtracted = (datos) => {
@@ -66,7 +68,7 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
         condicion_final: res.orden.condicion_final || '',
         observaciones: res.orden.observaciones || '',
         recibe_conformidad_nombre: res.orden.recibe_conformidad_nombre || '',
-        recibe_conformidad_matricula: res.orden.recibe_conformidad_matricula || ''
+        recibe_matricula: res.orden.recibe_matricula || res.orden.recibe_conformidad_matricula || ''
       });
     } catch (err) {
       console.error(err);
@@ -294,7 +296,11 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
                       <option value="durante">Durante</option>
                       <option value="despues">Después</option>
                     </select>
-                    <input type="file" accept="image/*" onChange={e => setEvidenciaFile(e.target.files[0])} className="text-xs text-[var(--content-muted)] w-full" />
+                    {/* SIG-12: acepta PDF además de imágenes — la vista de evidencias
+                        (líneas ~268-288) ya detecta .pdf y muestra un ícono/nombre de
+                        archivo en vez de <img>, así que el flujo de subida/listado no
+                        requiere más cambios. Visor inline de PDF queda como pendiente. */}
+                    <input type="file" accept="image/*,application/pdf" onChange={e => setEvidenciaFile(e.target.files[0])} className="text-xs text-[var(--content-muted)] w-full" />
                     <button disabled={!evidenciaFile || subiendo} className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-500 disabled:opacity-50">
                       {subiendo ? 'Subiendo' : 'Subir'}
                     </button>
@@ -310,7 +316,7 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
                   <textarea placeholder="Condiciones Finales Operativas..." required value={formFinal.condicion_final} onChange={e=>setFormFinal(f=>({...f, condicion_final: e.target.value}))} className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] text-xs text-[var(--content-text)] p-2 rounded" />
                   <div className="flex gap-2">
                     <input type="text" placeholder="Recibido Por (Nombre)" required value={formFinal.recibe_conformidad_nombre} onChange={e=>setFormFinal(f=>({...f, recibe_conformidad_nombre: e.target.value}))} className="w-1/2 bg-[var(--content-surface)] border border-[var(--content-border)] text-xs text-[var(--content-text)] p-2 rounded" />
-                    <input type="text" placeholder="Matrícula" value={formFinal.recibe_conformidad_matricula} onChange={e=>setFormFinal(f=>({...f, recibe_conformidad_matricula: e.target.value}))} className="w-1/2 bg-[var(--content-surface)] border border-[var(--content-border)] text-xs text-[var(--content-text)] p-2 rounded" />
+                    <input type="text" placeholder="Matrícula" value={formFinal.recibe_matricula} onChange={e=>setFormFinal(f=>({...f, recibe_matricula: e.target.value}))} className="w-1/2 bg-[var(--content-surface)] border border-[var(--content-border)] text-xs text-[var(--content-text)] p-2 rounded" />
                   </div>
                   <div className="flex gap-2 mt-2">
                     <button type="button" onClick={() => setShowFinalizar(false)} className="flex-1 py-1.5 bg-[var(--content-surface)] border border-[var(--content-border)] text-[var(--content-text)] rounded text-sm hover:bg-[var(--content-border)]">Cancelar</button>

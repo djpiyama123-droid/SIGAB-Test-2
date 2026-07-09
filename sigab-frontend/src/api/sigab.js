@@ -153,10 +153,17 @@ export const api = {
   },
 
   // ── Órdenes ───────────────────────────────────────────────
-  getOrdenes: (params = {}) => client.get('/ordenes', { params }),
+  // NOTA: '/ordenes/' lleva slash final porque el backend registra la
+  // colección como '@router.get("/")' / '@router.post("/")' bajo el
+  // prefijo '/api/ordenes' (routes/ordenes.py) — la ruta real es
+  // '/api/ordenes/'. Sin el slash, FastAPI responde 307 redirect a la URL
+  // con slash (confirmado con TestClient), lo cual añade un round-trip
+  // innecesario y es frágil detrás de proxies que no reescriben el
+  // header Location al hostname público (fix/os-flujo-2026-07-09).
+  getOrdenes: (params = {}) => client.get('/ordenes/', { params }),
   getArchivosHistoricos: (params = {}) => client.get('/ordenes/archivos-historicos', { params }),
   getOrden: (id) => client.get(`/ordenes/${id}`),
-  crearOrden: (data) => client.post('/ordenes', data),
+  crearOrden: (data) => client.post('/ordenes/', data),
   updateOrden: (id, data) => client.put(`/ordenes/${id}`, data),
   cerrarOrden: (id) => client.put(`/ordenes/${id}/cerrar`),
   cambiarEstadoOrden: (id, estado) =>
