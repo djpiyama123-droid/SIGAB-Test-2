@@ -1,3 +1,4 @@
+import { getMediaUrl } from '../../api/sigah';
 export function CB({ checked, label, t }) {
   return (
     <span style={{ color: checked ? t.check : t.cell.color, marginRight: 14, fontSize: 13, whiteSpace: 'nowrap' }}>
@@ -61,7 +62,7 @@ export function FormatoEvidenciaFotografica({ fotos, t, titulo = 'Evidencia Foto
                   }}
                 >
                   <div style={{ height: 140, background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img src={it.url} alt={`Evidencia ${i + 1}`} style={{ maxWidth: '100%', maxHeight: 140, objectFit: 'contain' }} />
+                    <img src={getMediaUrl(it.url)} alt={`Evidencia ${i + 1}`} style={{ maxWidth: '100%', maxHeight: 140, objectFit: 'contain' }} />
                   </div>
                   <div style={{
                     fontSize: 10, color: t.label.color, padding: '4px 6px',

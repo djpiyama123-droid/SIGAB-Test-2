@@ -10,6 +10,7 @@ import HistorialEquipoModal from './HistorialEquipoModal';
 import OrdenServicioRapidaModal from './OrdenServicioRapidaModal';
 import QRPanel from './QRPanel';
 import { normalizar } from '../utils/texto';
+import { getMediaUrl } from '../api/sigah';
 
 // ── Iconos SVG por tipo de equipo (inline, sin dependencia externa)
 const EQUIPMENT_ICONS = {
@@ -280,7 +281,7 @@ const EquipmentDot = React.memo(function EquipmentDot({ equipo, onClick, mode = 
       >
         {equipo.imagen_url ? (
           <img
-            src={equipo.imagen_url}
+            src={getMediaUrl(equipo.imagen_url)}
             alt={equipo.nombre}
             className="w-full h-full object-cover rounded-full"
             onError={(e) => { e.target.style.display = 'none'; if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex'; }}
@@ -436,7 +437,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
       <div className="flex-1 overflow-y-auto">
         <div className="relative mx-4 mt-4 rounded-xl overflow-hidden h-36 flex items-center justify-center border border-[var(--content-border)]" style={{ background: "var(--content-surface)" }}>
           {equipo.imagen_url ? (
-            <img src={equipo.imagen_url} alt={equipo.nombre}
+            <img src={getMediaUrl(equipo.imagen_url)} alt={equipo.nombre}
                  className="w-full h-full object-contain p-4" />
           ) : (
             <div className="w-16 h-16 opacity-30 text-[var(--content-muted)]">
