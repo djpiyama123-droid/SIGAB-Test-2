@@ -2,7 +2,7 @@
 SIGAH Copilot Router — IA Local Biomédica con Gemma/Ollama
 
 Endpoints:
-  GET  /estado          → verifica Ollama + modelo disponible
+  GET  /estado          → salud del proveedor LLM activo (api u ollama) + modelo disponible
   POST /chat            → chat streaming SSE
   POST /diagnostico     → análisis de falla estructurado (no streaming)
   POST /causa-raiz      → sugerencia causa raíz para Tecnovigilancia
@@ -146,7 +146,11 @@ async def _get_equipo_contexto(conn, equipo_id: int, tenant_id: int) -> dict | N
 
 @router.get("/estado")
 async def estado_ollama(user: dict = Depends(get_current_user)):
-    """Verifica si Ollama está corriendo y si Gemma está disponible."""
+    """Verifica la salud del proveedor LLM activo (api en la nube u ollama local).
+
+    Ver services.gemma_service.verificar_ollama() para el shape completo
+    ({ok, mode, detail, ...}).
+    """
     resultado = await gemma_service.verificar_ollama()
     resultado["copilot_habilitado"] = not DISABLE_COPILOT
     return resultado

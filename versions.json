@@ -26,6 +26,31 @@
       "deploy_backend": ""
     },
     {
+      "version": "4.0.28",
+      "fecha": "2026-07-09",
+      "tipo": "patch",
+      "autor": "sesion-sonnet-asus",
+      "commit": "a0c6a6a",
+      "resumen": "Fix bug de produccion: /copilot mostraba 'Ollama offline' de forma permanente aunque el chat corre en modo API (MiniMax) desde 2026-07-04. La salud del backend y el badge/banner del frontend ahora respetan el modo activo (api/ollama).",
+      "cambios": [
+        "sigab-backend/services/gemma_service.py: verificar_ollama() retorna {ok, mode: \"api\"|\"ollama\", detail, ...} en vez de asumir ok=True fijo en modo api. En modo api hace GET {LLM_API_BASE}/models real (5s timeout) para detectar si el proveedor en la nube esta accesible. Se agrego el return faltante para status != 200 en modo ollama (antes devolvia None implicito)",
+        "sigab-backend/routes/copilot.py: docstrings de GET /estado actualizados al nuevo shape",
+        "sigab-frontend/src/pages/copilotEstado.js (nuevo): funcion pura estadoCopilot() que decide badge/banner a partir de {mode, ok, modelo_disponible} -- separada de Copilot.jsx para poder testearla con vitest sin jsdom",
+        "sigab-frontend/src/pages/Copilot.jsx: badge/banner ya no dependen de ollama_activo (que el backend fija en false siempre en modo api). Banner 'instala Ollama' solo en mode=ollama caido; mode=api caido muestra 'Proveedor de IA en la nube no disponible' con el detail del backend; mode=api sano sin banner. Subtitulo dinamico (IA en la nube / IA local on-premise). Se quito la mencion a 'Lenovo ThinkCentre' (ahora 'servidor edge del hospital'). Se corrigio ollamaStatus.modelo (campo inexistente) por modelo_activo",
+        "sigab-frontend/src/pages/copilotEstado.test.js (nuevo): 7 casos cubriendo los 3 estados de salud (api sano/caido, ollama caido) + modelo no descargado + estado desconocido"
+      ],
+      "verificar": [
+        "Con SIGAH_LLM_API_MODE=api y proveedor sano: sin banners, badge verde '<modelo> - activo', subtitulo 'IA en la nube'",
+        "Con SIGAH_LLM_API_MODE=api y proveedor caido (o SIGAH_LLM_API_KEY vacio): badge rojo 'IA en la nube no disponible' + banner rojo con el detalle, nunca el texto de instalar Ollama",
+        "Con SIGAH_LLM_API_MODE=ollama y Ollama caido: badge rojo 'IA local offline' + banner naranja de instalacion sin mencionar hardware especifico",
+        "npm run build y npx vitest run verdes (26 tests); py_compile + import de gemma_service.py y routes/copilot.py sin errores",
+        "3 capturas Playwright (mock de /api/copilot/estado) en /home/gustavo/.claude/jobs/c6247d26/tmp/copilot-capturas/"
+      ],
+      "rollback": "git revert a0c6a6a sobre v4.0/piloto-clinica-1 + redeploy backend y frontend. Cambio de un endpoint de solo lectura + UI, sin migraciones -- revert seguro. Rollback funcional alternativo si el problema es de configuracion del VPS: SIGAH_LLM_API_MODE=ollama + restart del backend (no requiere revertir este codigo)",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
+    {
       "version": "4.0.27",
       "fecha": "2026-07-09",
       "tipo": "patch",
