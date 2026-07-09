@@ -48,28 +48,28 @@ body {
   --z-toast:        80;
 }
 
-/* Tema Verde SIGAH */
+/* Tema Verde-Blanco IMSS (paleta Stitch oficial v4.0) */
 [data-theme="green"] {
-  --sidebar-bg:        #059669;
+  --sidebar-bg:        #047857;
   --sidebar-text:      #fff;
   --sidebar-border:    rgba(255,255,255,0.2);
   --sidebar-active:    rgba(255,255,255,0.2);
   --sidebar-hover:     rgba(255,255,255,0.12);
-  --content-bg:        #F8FAFC;
+  --content-bg:        #F8FAF9;
   --content-surface:   #fff;
   --content-border:    #E2E8F0;
   --content-text:      #1E293B;
   --content-muted:     #64748B;
-  --accent:            #059669;
-  --accent-dark:       #047857;
-  --accent-light:      #DCFCE7;
+  --accent:            #047857;
+  --accent-dark:       #065F46;
+  --accent-light:      #E0F0E9;
   --header-bg:         #fff;
   --header-border:     #E2E8F0;
   --header-text:       #1E293B;
   --header-muted:      #64748B;
   --bottom-nav-bg:     rgba(255,255,255,0.9);
   --bottom-nav-border: #E2E8F0;
-  --bottom-nav-active: #059669;
+  --bottom-nav-active: #047857;
   --bottom-nav-muted:  #94A3B8;
 
   --z-dropdown:     20;

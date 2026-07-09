@@ -7,7 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 const THEMES = [
   { id: 'glass', color: '#22D3EE', label: 'Glass (Clinical Precision)' },
   { id: 'blue',  color: '#006CB7', label: 'Azul IMSS (claro)' },
-  { id: 'green', color: '#059669', label: 'Verde SIGAH (claro)' },
+  { id: 'green', color: '#047857', label: 'Verde-Blanco IMSS (claro)' },
 ];
 
 export default function Header({ onMenuClick }) {
