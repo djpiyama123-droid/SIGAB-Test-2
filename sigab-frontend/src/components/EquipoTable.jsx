@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
+import { getMediaUrl } from '../api/sigah';
 import QRPanel from './QRPanel';
 
 const CRITICIDAD_BADGE = {
@@ -46,7 +47,7 @@ export default function EquipoTable({ equipos, onSelect }) {
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
                 {eq.imagen_url && (
-                  <img src={eq.imagen_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                  <img src={getMediaUrl(eq.imagen_url)} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                     onError={(e) => { e.target.style.display = 'none'; }} />
                 )}
                 <div className="min-w-0">
@@ -126,7 +127,7 @@ export default function EquipoTable({ equipos, onSelect }) {
                     <div className="w-8 h-8 rounded-lg bg-[var(--content-bg)] overflow-hidden flex items-center justify-center flex-shrink-0">
                       {eq.imagen_url ? (
                         <img
-                          src={eq.imagen_url}
+                          src={getMediaUrl(eq.imagen_url)}
                           alt=""
                           className="w-full h-full object-cover"
                           onError={(e) => { e.target.style.display = 'none'; }}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import { getMediaUrl } from '../api/sigah';
 
 const STATUS_CONFIG = {
   operativo:        { color: '#10b981', bg: '#064e3b', label: 'Operativo', icon: '✓' },
@@ -97,7 +98,7 @@ export default function EquipoPublico() {
             style={{ backgroundColor: `${status.color}20`, color: status.color }}
           >
             {equipo.imagen_url ? (
-              <img src={equipo.imagen_url} className="w-full h-full object-cover rounded-xl" alt="" />
+              <img src={getMediaUrl(equipo.imagen_url)} className="w-full h-full object-cover rounded-xl" alt="" />
             ) : (
               status.icon
             )}

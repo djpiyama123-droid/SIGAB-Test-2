@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../api/sigah';
+import { api, getMediaUrl } from '../api/sigah';
 import { TV_ESTADO_COLORS, TV_SEVERIDAD_COLORS, TV_TIPO_LABELS, TV_ESTADO_LABELS } from '../utils/constants';
 import toast from '../lib/toast';
 
@@ -358,7 +358,7 @@ export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
                     {evidencias.map((ev) => (
                       <div key={ev.id} className="flex items-center gap-2 text-xs bg-[var(--content-surface)] rounded p-2">
                         {ev.ruta_archivo?.match(/\.(png|jpg|jpeg|webp)$/i) ? (
-                          <img src={ev.ruta_archivo} className="w-10 h-10 object-cover rounded" alt={ev.tipo} />
+                          <img src={getMediaUrl(ev.ruta_archivo)} className="w-10 h-10 object-cover rounded" alt={ev.tipo} />
                         ) : (
                           <div className="w-10 h-10 bg-[var(--content-surface)] rounded flex items-center justify-center text-[var(--content-muted)] text-[10px]">
                             DOC
