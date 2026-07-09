@@ -1,6 +1,34 @@
 {
-  "actual": "4.0.23",
+  "actual": "4.0.24",
   "versiones": [
+    {
+      "version": "4.0.24",
+      "fecha": "2026-07-09",
+      "tipo": "minor",
+      "autor": "sesion-sonnet-asus",
+      "commit": "cb20aa4",
+      "resumen": "Petición directa de Gustavo (docs/cerebro/CONTEXTO-COMPARTIDO.md, 2026-07-08): porteo (no merge) del refactor 'Órdenes de Servicio formato IMSS oficial' desde la rama feat/orden-servicio-imss-oficial-2026-07-07 (commit 63c849e, tag v.3.2.0, base v3, incompatible para merge directo con v4) a los componentes de Órdenes de v4, adaptado al design system Verde-Blanco IMSS.",
+      "cambios": [
+        "sigab-backend/models/orden_servicio.py: 3 columnas nuevas nullable -- localizacion_completa, recibe_conformidad_nombre, recibe_matricula. Las columnas ya estaban aplicadas a mano en producción desde el ALTER del 2026-07-08 (backup ordenes_pre_alter_2026-07-08.sql); hora_inicio/hora_termino/tiempo_estimado_hrs/tiempo_real_hrs ya existían desde antes. Commit cd05789",
+        "sigab-backend/routes/ordenes.py: finalizar_orden ahora persiste recibe_conformidad_nombre/recibe_matricula en sus columnas reales (antes se improvisaba un mapeo a reporta_nombre); actualizar_orden (PUT genérico) agrega los 3 campos nuevos + tiempo_estimado_hrs/tiempo_real_hrs a campos_permitidos. Commit cd05789",
+        "sigab-backend/alembic/versions/d3e4f5a6b7c8: migración idempotente (mismo patrón que fb21941638ba) para que un entorno limpio quede en el mismo esquema que producción. Commit cd05789",
+        "components/OrdenServicioRapidaModal.jsx: refactor completo a 7 secciones numeradas (Identificación / Tipo+Prioridad / Localización / Falla / Horarios y Tiempos / Técnico y Recibe / Notas) con los 7 campos del formato IMSS oficial, adaptado a tokens var(--content-*)/var(--accent-*) en vez de los colores fijos de v3 (para no romper los 4 temas). Commit cb20aa4",
+        "components/NuevaOrdenModal.jsx y pages/Ordenes.jsx (formulario inline 'Nueva OS'): mismos campos nuevos agregados para consistencia. Commit cb20aa4",
+        "components/formatos/FormatoHeader.jsx: membrete institucional completo (INSTITUTO MEXICANO DEL SEGURO SOCIAL / DELEGACIÓN REGIONAL EN BAJA CALIFORNIA / HOSPITAL GENERAL REGIONAL No. 1 J.C.U. 15 / Dpto. de Conservación e Ingeniería Biomédica), theme-aware via el prop t (respeta blanco-imss/verde-imss/neon-sigah en vez de fijar el verde IMSS como hizo v3). Commit cb20aa4",
+        "components/formatos/FormatoOSCorrectivo.jsx y FormatoOSPreventivo.jsx: subtítulo NOM-016-SSA3-2012/NOM-240-SSA1-2012/ISO-13485, columna propia localizacion_completa, nueva sección '7. Recibe de Conformidad del Servicio' (nombre/firma/matrícula/fecha) y bloque de firmas actualizado (Realizó Ing. Biomédico / Visto Bueno Jefe Conservación / Sello del Departamento); se alinearon los campos de tiempo a tiempo_estimado_hrs/tiempo_real_hrs para que el botón Guardar de FormatoViewer sí los persista (antes había desajuste de nombre con el backend). Commit cb20aa4",
+        "components/OrdenDetalleModal.jsx (SIG-12): el input de evidencia fotográfica pasa de accept=\"image/*\" a \"image/*,application/pdf\" -- la vista de evidencias ya detectaba .pdf y el backend ya lo aceptaba, solo faltaba habilitar la selección. Pendiente documentado: no hay visor inline de PDF en la galería (solo abre en pestaña nueva). Se renombra recibe_conformidad_matricula -> recibe_matricula en el form de cierre para alinear con la columna real del backend (con fallback de lectura al nombre viejo). Commit db91b84"
+      ],
+      "verificar": [
+        "Abrir 'Nueva Orden de Servicio' desde el mapa (FichaTecnica) o desde el detalle de un equipo: debe verse el modal con 7 secciones numeradas y los campos hora de inicio/término, tiempo estimado/real, localización completa, y recibe de conformidad (nombre + matrícula)",
+        "Repetir en los 4 temas (Azul/Verde/Oscuro/Glass, selector en Header): el acento institucional (borde, iconos, botón primario) debe adaptarse al color de acento de cada tema, sin texto invisible",
+        "Órdenes de Servicio -> 'Ver / Imprimir Formato IMSS' de una orden correctivo o preventivo: debe verse el membrete institucional completo de 4 líneas, el subtítulo con las normas NOM/ISO, y la nueva sección 7 'Recibe de Conformidad del Servicio' con nombre/firma/matrícula/fecha separados, más el bloque de 3 firmas (Realizó/Visto Bueno/Sello)",
+        "Con una orden real: usar 'Editar Formato' en FormatoViewer, capturar tiempo estimado/real y Guardar -- debe persistir (antes del fix de nombres no se guardaba)",
+        "OrdenDetalleModal: en el formulario de subir evidencia, seleccionar un archivo .pdf -- debe aceptarse el selector de archivo (el bug SIG-12 era que el picker del navegador ni mostraba PDFs como opción)"
+      ],
+      "rollback": "git revert de los 3 commits (cd05789, cb20aa4, db91b84) sobre esta rama antes de mergear a v4.0/piloto-clinica-1 + redeploy frontend si ya se mergeó. Las 3 columnas nuevas del backend son nullable y aditivas -- no requieren rollback de base de datos, solo dejar de escribir en ellas si se revierte el código Renumerado de 4.0.20 a 4.0.24 durante rebase 2026-07-09 sobre v4.0/piloto-clinica-1 (colisión con loop-thinkcentre, que usó 4.0.20-4.0.23 mientras esta rama estaba pendiente).",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.23",
       "fecha": "2026-07-09",
