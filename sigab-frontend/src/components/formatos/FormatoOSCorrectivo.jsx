@@ -4,7 +4,7 @@
  * Layout fiel al documento .docx oficial IMSS
  */
 import { TEMAS_CONFIG, fmtFecha } from './formatoThemes';
-import { CB, SecHeader } from './formatoHelpers';
+import { CB, SecHeader, FormatoEvidenciaFotografica } from './formatoHelpers';
 import FormatoHeader from './FormatoHeader';
 
 const QR_SVG = () => (
@@ -317,10 +317,13 @@ export default function FormatoOSCorrectivo({ orden, tema = 'blanco-imss', isEdi
           </tbody>
         </table>
 
-        {/* ── 7. RECIBE DE CONFORMIDAD (estilo .xls) ────────────────────────── */}
+        {/* ── 7. EVIDENCIA FOTOGRÁFICA DEL PROCESO (solo si la orden trae fotos) ── */}
+        <FormatoEvidenciaFotografica fotos={o.fotos} t={t} titulo="7. Evidencia Fotográfica del Proceso" />
+
+        {/* ── 8. RECIBE DE CONFORMIDAD (estilo .xls) ────────────────────────── */}
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 16, marginBottom: 8, border: `2px solid ${t.check}` }}>
           <tbody>
-            <SH title="7. Recibe de Conformidad del Servicio" cols={2} />
+            <SH title="8. Recibe de Conformidad del Servicio" cols={2} />
             <tr>
               <TD style={{ width: '60%', verticalAlign: 'top' }}>
                 <div style={{ ...t.label, marginBottom: 4 }}>Nombre (quien recibe)</div>
@@ -375,7 +378,7 @@ export default function FormatoOSCorrectivo({ orden, tema = 'blanco-imss', isEdi
         </table>
 
         <div style={{ marginTop: 8, fontSize: 9, color: t.label.color, textAlign: 'right' }}>
-          Formato F-CON-02 · NOM-016-SSA3-2012 · NOM-240-SSA1-2012 · ISO-13485 · v.3.2.0
+          Formato F-CON-02 · NOM-016-SSA3-2012 · NOM-240-SSA1-2012 · ISO-13485 · v.3.3.0
         </div>
       </div>
     </>
