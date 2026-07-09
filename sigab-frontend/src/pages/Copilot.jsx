@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../api/sigah';
 import toast from '../lib/toast';
+import { estadoCopilot } from './copilotEstado';
 
 // ── Iconos inline ─────────────────────────────────────────────────
 const IconIA = () => (
@@ -299,7 +300,7 @@ export default function Copilot() {
         const status = await api.getCopilotEstado();
         setOllamaStatus(status);
       } catch {
-        setOllamaStatus({ ok: false, ollama_activo: false });
+        setOllamaStatus({ ok: false, mode: null, detail: 'No se pudo verificar el estado del asistente.' });
       }
     };
     checkStatus();
@@ -428,11 +429,14 @@ Puedo ayudarte con:
           return updated;
         });
       } else {
+        const proveedorTxt = ollamaStatus?.mode === 'api'
+          ? 'el proveedor de IA en la nube'
+          : 'Ollama en el servidor edge del hospital';
         setMessages(prev => {
           const updated = [...prev];
           updated[updated.length - 1] = {
             role: 'assistant',
-            content: `Error de conexión: ${err.message}. ¿Está Ollama corriendo en el servidor?`,
+            content: `Error de conexión: ${err.message}. ¿Está disponible ${proveedorTxt}?`,
             streaming: false,
             error: true,
           };
@@ -471,7 +475,8 @@ Puedo ayudarte con:
       const res = await api.copilotResumenIa();
       setResumenIA(res);
     } catch (err) {
-      toast.error('Error al generar resumen: ¿Ollama está activo?');
+      const proveedorTxt = ollamaStatus?.mode === 'api' ? 'el proveedor de IA en la nube' : 'Ollama';
+      toast.error(`Error al generar resumen: ¿${proveedorTxt} está activo?`);
     } finally {
       setCargandoResumen(false);
     }
@@ -479,15 +484,32 @@ Puedo ayudarte con:
 
   const StatusBadge = () => {
     if (!ollamaStatus) return <span className="text-xs text-[var(--content-muted)]">Verificando...</span>;
-    if (!ollamaStatus.ollama_activo) {
+    const { badge } = estadoCopilot(ollamaStatus);
+    if (badge === 'desconocido') {
       return (
         <span className="flex items-center gap-1.5 text-xs text-red-400">
           <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
-          Ollama offline
+          Asistente no disponible
         </span>
       );
     }
-    if (!ollamaStatus.modelo_disponible) {
+    if (badge === 'ollama_offline') {
+      return (
+        <span className="flex items-center gap-1.5 text-xs text-red-400">
+          <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+          IA local offline
+        </span>
+      );
+    }
+    if (badge === 'api_offline') {
+      return (
+        <span className="flex items-center gap-1.5 text-xs text-red-400">
+          <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+          IA en la nube no disponible
+        </span>
+      );
+    }
+    if (badge === 'modelo_no_descargado') {
       return (
         <span className="flex items-center gap-1.5 text-xs text-orange-400">
           <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
@@ -498,7 +520,7 @@ Puedo ayudarte con:
     return (
       <span className="flex items-center gap-1.5 text-xs text-emerald-400">
         <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-        {ollamaStatus.modelo} · activo
+        {ollamaStatus.modelo_activo} · activo
       </span>
     );
   };
@@ -513,7 +535,7 @@ Puedo ayudarte con:
             SIGAH Copilot
           </h1>
           <p className="text-sm text-[var(--content-muted)] mt-0.5 flex items-center gap-2">
-            Asistente biomédico · IA local on-premise
+            Asistente biomédico · {ollamaStatus?.mode === 'api' ? 'IA en la nube' : 'IA local on-premise'}
             <StatusBadge />
           </p>
         </div>
@@ -532,12 +554,12 @@ Puedo ayudarte con:
         </div>
       </div>
 
-      {/* Warning si Ollama no está activo */}
-      {ollamaStatus && !ollamaStatus.ollama_activo && (
+      {/* Warning: IA local (Ollama) no detectada — solo aplica en modo ollama */}
+      {ollamaStatus && estadoCopilot(ollamaStatus).banner === 'instalar_ollama' && (
         <div className="mb-4 bg-orange-900/20 border border-orange-500/40 rounded-xl p-4 text-sm flex-shrink-0">
-          <p className="text-orange-300 font-semibold">Ollama no detectado</p>
+          <p className="text-orange-300 font-semibold">IA local no detectada</p>
           <p className="text-orange-400/80 text-xs mt-1">
-            Para usar SIGAH Copilot, instala Ollama en el servidor (Lenovo ThinkCentre) y ejecuta:
+            Para usar SIGAH Copilot, instala Ollama en el servidor edge del hospital y ejecuta:
           </p>
           <code className="block mt-2 bg-black/30 rounded p-2 text-xs text-orange-200 font-mono">
             ollama serve &amp;&amp; ollama pull gemma3:4b
@@ -545,12 +567,22 @@ Puedo ayudarte con:
         </div>
       )}
 
-      {/* Warning modelo no descargado */}
-      {ollamaStatus?.ollama_activo && !ollamaStatus?.modelo_disponible && (
+      {/* Warning: proveedor de IA en la nube no disponible — solo aplica en modo api */}
+      {ollamaStatus && estadoCopilot(ollamaStatus).banner === 'api_no_disponible' && (
+        <div className="mb-4 bg-red-900/20 border border-red-500/40 rounded-xl p-4 text-sm flex-shrink-0">
+          <p className="text-red-300 font-semibold">Proveedor de IA en la nube no disponible</p>
+          <p className="text-red-400/80 text-xs mt-1">
+            {ollamaStatus.detail || 'No se pudo contactar el servicio de IA en la nube. Intenta de nuevo en unos minutos.'}
+          </p>
+        </div>
+      )}
+
+      {/* Warning modelo no descargado (modo ollama) */}
+      {ollamaStatus && estadoCopilot(ollamaStatus).banner === 'descargar_modelo' && (
         <div className="mb-4 bg-yellow-900/20 border border-yellow-500/40 rounded-xl p-4 text-sm flex-shrink-0">
-          <p className="text-yellow-300 font-semibold">Modelo {ollamaStatus.modelo} no descargado</p>
+          <p className="text-yellow-300 font-semibold">Modelo {ollamaStatus.modelo_activo} no descargado</p>
           <code className="block mt-1 bg-black/30 rounded p-2 text-xs text-yellow-200 font-mono">
-            ollama pull {ollamaStatus.modelo}
+            ollama pull {ollamaStatus.modelo_activo}
           </code>
           {ollamaStatus.modelos_instalados?.length > 0 && (
             <p className="text-xs text-yellow-400/60 mt-1">
@@ -683,16 +715,24 @@ Puedo ayudarte con:
           </div>
 
           {/* Info del modelo */}
-          {ollamaStatus?.ollama_activo && (
+          {ollamaStatus?.ok && (
             <div className="p-4 border border-[var(--content-border)] rounded-xl" style={{ background: 'var(--content-surface)' }}>
               <p className="text-xs font-semibold text-[var(--content-muted)] mb-2">Configuración del modelo</p>
               <div className="space-y-1 text-[10px] text-[var(--content-muted)]">
-                <p>Modelo: <span className="text-[var(--content-muted)] font-mono">{ollamaStatus.modelo}</span></p>
-                <p>Host: <span className="text-[var(--content-muted)] font-mono">localhost:11434</span></p>
-                <p>Modo: <span className="text-emerald-400">100% on-premise</span></p>
-                <p>Datos: <span className="text-emerald-400">No salen del servidor</span></p>
+                <p>Modelo: <span className="text-[var(--content-muted)] font-mono">{ollamaStatus.modelo_activo}</span></p>
+                {ollamaStatus.mode === 'ollama' ? (
+                  <p>Host: <span className="text-[var(--content-muted)] font-mono">localhost:11434</span></p>
+                ) : (
+                  <p>Proveedor: <span className="text-[var(--content-muted)]">API en la nube</span></p>
+                )}
+                <p>Modo: <span className="text-emerald-400">
+                  {ollamaStatus.mode === 'ollama' ? '100% on-premise' : 'IA en la nube'}
+                </span></p>
+                <p>Datos: <span className="text-emerald-400">
+                  {ollamaStatus.mode === 'ollama' ? 'No salen del servidor' : 'Procesados por el proveedor de IA'}
+                </span></p>
               </div>
-              {ollamaStatus.modelos_instalados?.length > 0 && (
+              {ollamaStatus.mode === 'ollama' && ollamaStatus.modelos_instalados?.length > 0 && (
                 <div className="mt-2">
                   <p className="text-[10px] text-[var(--content-muted)] mb-1">Modelos instalados:</p>
                   {ollamaStatus.modelos_instalados.map(m => (

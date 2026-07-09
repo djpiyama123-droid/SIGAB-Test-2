@@ -195,20 +195,50 @@ async def _resolve_model() -> str:
 
 
 async def verificar_ollama() -> dict:
-    """Verifica si Ollama está corriendo y si el modelo está disponible."""
+    """Verifica la salud del proveedor LLM ACTIVO (modo 'api' u 'ollama').
+
+    Shape de retorno (consumido por GET /copilot/estado y por el frontend):
+      {
+        ok: bool,             # el proveedor activo responde correctamente
+        mode: "api"|"ollama", # backend configurado vía SIGAH_LLM_API_MODE
+        detail: str|None,     # mensaje humano solo cuando ok=False
+        ollama_activo: bool,  # compat: True solo si mode="ollama" y ok=True
+        modelo_configurado, modelo_activo, modelo_disponible, modelos_instalados
+      }
+
+    En modo 'api' se hace un GET liviano a {LLM_API_BASE}/models (endpoint
+    estándar OpenAI-compatible) para detectar de verdad si el proveedor en
+    la nube (ej. MiniMax) está accesible — antes se devolvía ok=True fijo
+    sin verificar nada.
+    """
     global _resolved_model
     _resolved_model = None  # forzar re-detección
+
     if _OPENAI_MODE:
+        ok = True
+        detail = None
+        try:
+            client = get_ollama_client()
+            resp = await client.get("/models", timeout=5.0)
+            if resp.status_code != 200:
+                ok = False
+                detail = f"El proveedor de IA en la nube respondió con estado {resp.status_code}."
+        except Exception as e:
+            ok = False
+            detail = f"No se pudo contactar el proveedor de IA en la nube: {e}"
         return {
-            "ok": True,
+            "ok": ok,
+            "mode": "api",
+            "detail": detail,
             "ollama_activo": False,
             "api_mode": "openai",
             "api_base": LLM_API_BASE,
             "modelo_configurado": LLM_MODEL,
             "modelo_activo": LLM_MODEL,
-            "modelo_disponible": True,
+            "modelo_disponible": ok,
             "modelos_instalados": [],
         }
+
     try:
         client = get_ollama_client()
         resp = await client.get("/api/tags", timeout=5.0)
@@ -222,17 +252,31 @@ async def verificar_ollama() -> dict:
             )
             return {
                 "ok": True,
+                "mode": "ollama",
+                "detail": None,
                 "ollama_activo": True,
                 "modelo_configurado": GEMMA_MODEL,
                 "modelo_activo": modelo_activo,
                 "modelo_disponible": modelo_disponible,
                 "modelos_instalados": modelos,
             }
+        return {
+            "ok": False,
+            "mode": "ollama",
+            "detail": f"Ollama respondió con estado {resp.status_code}.",
+            "ollama_activo": False,
+            "modelo_configurado": GEMMA_MODEL,
+            "modelo_activo": GEMMA_MODEL,
+            "modelo_disponible": False,
+            "modelos_instalados": [],
+        }
     except Exception as e:
         return {
             "ok": False,
-            "ollama_activo": False,
+            "mode": "ollama",
+            "detail": "Ollama no está disponible en el servidor edge del hospital.",
             "error": str(e),
+            "ollama_activo": False,
             "modelo_configurado": GEMMA_MODEL,
             "modelo_activo": GEMMA_MODEL,
             "modelo_disponible": False,
