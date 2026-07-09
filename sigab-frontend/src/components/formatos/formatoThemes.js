@@ -42,5 +42,13 @@ export const TEMAS_CONFIG = {
 
 export const fmtFecha = (f) => {
   if (!f) return '__/__/____';
-  try { return new Date(f).toLocaleDateString('es-MX'); } catch { return f; }
+  try {
+    // 'YYYY-MM-DD' sin hora: new Date(string) lo interpreta como medianoche
+    // UTC y al formatear en hora local (Tijuana, UTC-7/-8) retrocede un día
+    // (2026-07-08 imprimía 7/7/2026). Se parsea como fecha LOCAL solo en ese
+    // caso; los timestamps con hora se dejan igual que antes.
+    const m = String(f).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const d = m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(f);
+    return d.toLocaleDateString('es-MX');
+  } catch { return f; }
 };

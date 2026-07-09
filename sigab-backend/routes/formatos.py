@@ -18,7 +18,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from database import get_async_session
 from auth.dependencies import get_current_user
 from auth.tenancy import get_current_tenant
-from models.orden_servicio import OrdenServicio
+from models.orden_servicio import OrdenServicio, EVIDENCIA_OS
 from models.equipo import Equipo
 from models.orden_casillas import OrdenCasillas
 from services.cache_service import cache_service, STATIC
@@ -85,6 +85,22 @@ async def formato_con_datos(
             orden_dict["equipo_modelo"]     = equipo.modelo
             orden_dict["equipo_inventario"] = equipo.no_inventario
             orden_dict["ubicacion_fisica"]  = equipo.ubicacion_fisica
+
+    # Evidencias fotográficas → o.fotos para la sección "Evidencia
+    # Fotográfica del Proceso" de los formatos largos (v4.0.22). Solo
+    # imágenes: los PDF se quedan fuera de la galería (mismo criterio de
+    # extensión que usa OrdenDetalleModal.jsx para decidir ícono vs <img>).
+    stmt_ev = (
+        select(EVIDENCIA_OS)
+        .where(EVIDENCIA_OS.orden_id == orden_id)
+        .order_by(EVIDENCIA_OS.id)
+    )
+    evidencias = (await session.execute(stmt_ev)).scalars().all()
+    orden_dict["fotos"] = [
+        {"url": e.ruta_archivo, "descripcion": e.descripcion or ""}
+        for e in evidencias
+        if e.ruta_archivo and not e.ruta_archivo.lower().endswith(".pdf")
+    ]
 
     # Normalizar estado → estado_final para el template
     estado = orden_dict.get("estado", "")
