@@ -14,6 +14,7 @@
  * @requires components/OrdenCasillasForm — Formulario CENEVAL
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/sigah';
 import OrdenDetalleModal from '../components/OrdenDetalleModal';
 import OrdenCasillasForm from '../components/OrdenCasillasForm';
@@ -41,11 +42,15 @@ const FILTROS_TIPO   = ['', 'correctivo', 'preventivo', 'instalacion', 'calibrac
 
 export default function Ordenes() {
   const toast = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab]                 = useState('activas'); // 'activas' | 'historico'
   const [ordenes, setOrdenes]         = useState([]);
   const [loading, setLoading]         = useState(true);
   const [estadoFiltro, setEstado]     = useState('');
   const [tipoFiltro, setTipo]         = useState('');
+  // Filtro por equipo — llega por deep-link desde "Acción Rápida" del mapa
+  // (HospitalMap.jsx: navigate('/ordenes?equipoId=...&estado=...')).
+  const [equipoIdFiltro, setEquipoIdFiltro] = useState('');
   const [showForm, setShowForm]       = useState(false);
   const [form, setForm]               = useState({
     equipo_nombre: '', equipo_serie: '', tipo_mantenimiento: 'correctivo',
@@ -87,6 +92,7 @@ export default function Ordenes() {
       const res = await api.getOrdenes({
         estado: estadoFiltro || undefined,
         tipo: tipoFiltro || undefined,
+        equipo_id: equipoIdFiltro || undefined,
       });
       setOrdenes(res.ordenes || []);
     } catch (err) {
@@ -95,7 +101,7 @@ export default function Ordenes() {
     } finally {
       setLoading(false);
     }
-  }, [estadoFiltro, tipoFiltro]); // eslint-disable-line
+  }, [estadoFiltro, tipoFiltro, equipoIdFiltro]); // eslint-disable-line
 
   const cargarArchivos = useCallback(async (pagina = 1, buscar = '') => {
     setArchivosLoading(true);
@@ -113,6 +119,25 @@ export default function Ordenes() {
   }, []); // eslint-disable-line
 
   useEffect(() => { cargar(); }, [cargar]);
+
+  // Deep-link desde "Acción Rápida" del mapa (HospitalMap.jsx): abre
+  // directamente una OS (?ordenId=) o pre-filtra por equipo/estado
+  // (?equipoId=&estado=). Antes de este fix, Ordenes.jsx no leía ningún
+  // query param — la navegación no hacía nada visible (mismo patrón de bug
+  // que ?accion=nuevo en /preventivos). Se consume una sola vez al montar
+  // y se limpia la URL para no re-aplicar el filtro en cada refresco.
+  useEffect(() => {
+    const ordenId = searchParams.get('ordenId');
+    const equipoId = searchParams.get('equipoId');
+    const estado = searchParams.get('estado');
+    if (!ordenId && !equipoId && !estado) return;
+    if (ordenId) setSelectedOrden(Number(ordenId));
+    if (equipoId) setEquipoIdFiltro(equipoId);
+    if (estado) setEstado(estado);
+    setSearchParams({}, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     api.getAreasCatalogo()
        .then((res) => { setAreasOpts(res.areas || []); setPisosOpts(res.pisos || []); })
@@ -613,6 +638,19 @@ export default function Ordenes() {
             {t || 'Todos'}
           </button>
         ))}
+        {equipoIdFiltro && (
+          <span className="ml-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-900/40 text-purple-300">
+            Equipo #{equipoIdFiltro}
+            <button
+              type="button"
+              onClick={() => setEquipoIdFiltro('')}
+              title="Quitar filtro de equipo"
+              className="hover:text-white"
+            >
+              ✕
+            </button>
+          </span>
+        )}
       </div>
 
       {/* Tabla */}

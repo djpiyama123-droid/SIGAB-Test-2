@@ -66,7 +66,15 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
         ordenes: res.ordenes || [],
         traslados: res.traslados || [],
       }))
-      .catch(() => {});
+      .catch((err) => {
+        // Antes este catch era vacío: si /historial fallaba (401/500/red),
+        // la sección "Tickets / Órdenes de Servicio" mostraba "Sin órdenes
+        // registradas" de forma indistinguible de un equipo genuinamente sin
+        // órdenes. Ahora se ve en consola y con un toast — no bloquea el
+        // render (fix/os-flujo-2026-07-09).
+        console.error('No se pudo cargar el historial del equipo:', err);
+        toast.error('No se pudo cargar el historial de órdenes de este equipo');
+      });
   };
 
   useEffect(() => {
@@ -80,7 +88,13 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
             setHistorial((h) => ({ ...h, ordenes: res.ordenes }));
           }
         })
-        .catch(() => {});
+        .catch((err) => {
+          // Mismo caso: antes silencioso. El expediente completa el
+          // historial (equipo_id O serie) — si falla, avisar en vez de
+          // aparentar que no hay documentos/órdenes.
+          console.error('No se pudo cargar el expediente del equipo:', err);
+          toast.error('No se pudo cargar el expediente completo de este equipo');
+        });
     }
   }, [equipo?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
