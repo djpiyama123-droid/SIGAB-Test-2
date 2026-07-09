@@ -260,7 +260,7 @@ export default function Almacen() {
           <input
             type="text"
             placeholder="Buscar por nombre, código o compatibilidad..."
-            className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-xl pl-10 pr-4 py-2.5 text-white placeholder:text-[var(--content-muted)] focus:outline-none focus:border-emerald-500 transition-colors"
+            className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-xl pl-10 pr-4 py-2.5 text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-emerald-500 transition-colors"
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
             onKeyDown={handleSearch}
@@ -360,7 +360,7 @@ export default function Almacen() {
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => setAjustando(item)}
-                          className="text-[var(--content-muted)] hover:text-white transition-colors text-xs font-bold uppercase">
+                          className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors text-xs font-bold uppercase">
                           Ajustar
                         </button>
                       </td>

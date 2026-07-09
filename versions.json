@@ -1,6 +1,30 @@
 {
-  "actual": "4.0.21",
+  "actual": "4.0.22",
   "versiones": [
+    {
+      "version": "4.0.22",
+      "fecha": "2026-07-09",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Cierra la categoría 'Secundaria' del backlog de contraste de docs/DESIGN-SYSTEM-V4.md: Almacen.jsx, Tecnovigilancia.jsx y Trazabilidad.jsx, los 3 últimos pendientes.",
+      "cambios": [
+        "sigab-frontend/src/pages/Almacen.jsx: el input de búsqueda de refacciones usaba text-white fijo sobre bg-[var(--content-bg)] de tema (invisible en temas claros) y el botón 'Ajustar' de la tabla usaba hover:text-white fijo -- ambos ahora var(--content-text). Los modales NuevaRefaccionModal y AjustarStockModal se revisaron completos: son 100% fixed-dark autoconsistentes (bg-slate-950/bg-slate-900 + text-white, sin mezcla con tokens de tema) -- confirmados sin bug, no se tocaron",
+        "sigab-frontend/src/pages/Tecnovigilancia.jsx: la columna 'Dispositivo' de la tabla de eventos adversos usaba text-white fijo sobre bg-[var(--content-surface)] de tema -- ahora var(--content-text). Botones 'Reportar evento' (desktop y FAB móvil, fondo rojo sólido) sin cambios, uso correcto",
+        "sigab-frontend/src/pages/Trazabilidad.jsx: el nombre de equipo en la línea de tiempo de movimientos usaba text-white fijo sobre bg-[var(--content-surface)] de tema -- ahora var(--content-text). El modal RegistrarTrasladoModal es fixed-dark autoconsistente (mismo patrón que Almacén), no se tocó",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance con 3 filas nuevas (Almacén, Tecnovigilancia, Trazabilidad, las 3 en Aplicado) y la categoría 'Secundaria' del backlog de contraste marcada como COMPLETA -- sin pendientes"
+      ],
+      "verificar": [
+        "Almacén (en tema 'Azul IMSS (claro)' o 'Verde SIGAH (claro)'): el input de búsqueda debe mostrar el texto que se escribe en gris oscuro, no invisible; en la tabla, el botón 'Ajustar' de cada fila debe verse legible al pasar el mouse",
+        "Tecnovigilancia (mismos temas claros): con eventos registrados, el nombre del dispositivo en la columna 'Dispositivo' de la tabla debe verse legible, no invisible",
+        "Trazabilidad (mismos temas claros): con movimientos registrados, el nombre del equipo en cada tarjeta de la línea de tiempo debe verse legible",
+        "Repetir en tema oscuro ('glass', default) y confirmar que no cambió nada visualmente",
+        "npm run build y npx vitest run ambos verdes (verificado en este ciclo)"
+      ],
+      "rollback": "git revert de este commit sobre v4.0/piloto-clinica-1 + redeploy frontend. Cambio solo de clases JSX (colores), sin lógica ni llamadas a la API -- revert seguro sin rollback de base de datos",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.21",
       "fecha": "2026-07-08",

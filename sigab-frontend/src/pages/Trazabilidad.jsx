@@ -166,7 +166,7 @@ export default function Trazabilidad() {
               <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg p-4 flex-1 mb-1">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-white text-sm font-medium">{m.equipo_nombre}</span>
+                    <span className="text-[var(--content-text)] text-sm font-medium">{m.equipo_nombre}</span>
                     <span className="text-[var(--content-muted)] text-xs ml-2 font-mono">{m.equipo_serie}</span>
                   </div>
                   <span className="text-[var(--content-muted)] text-xs">

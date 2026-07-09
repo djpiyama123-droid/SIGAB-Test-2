@@ -148,7 +148,7 @@ export default function Tecnovigilancia() {
                     onClick={() => setSelectedId(ev.id)}
                     className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/50 cursor-pointer transition-colors">
                     <td className="px-4 py-3 font-mono text-[var(--content-muted)] text-xs">{ev.numero_reporte}</td>
-                    <td className="px-4 py-3 text-white">{ev.dispositivo_nombre || '—'}</td>
+                    <td className="px-4 py-3 text-[var(--content-text)]">{ev.dispositivo_nombre || '—'}</td>
                     <td className="px-4 py-3 text-[var(--content-muted)] text-xs">
                       {TV_TIPO_LABELS[ev.tipo_evento] || ev.tipo_evento}
                     </td>

@@ -64,6 +64,9 @@ Tailwind fija porque no dependen del tema de fondo.
 | Reportes | ✅ Aplicado | v4.0.18 | Se corrigieron los 3 bugs de contraste del backlog `Secundaria`: botón "PDF" (`hover:text-white` fijo), nombre de equipo en la tabla de "Preventivos próximos 7 días" y nombre de equipo en la lista de "Equipos críticos" (ambos `text-white` fijo como texto de cuerpo) → ahora `var(--content-text)` / `hover:text-[var(--content-text)]`. Badges de estado (fondo sólido `bg-red-900/50`/`bg-yellow-900/50`) sin cambios, uso correcto |
 | Auditoría NOM-016 | ✅ Aplicado | (este ciclo) | Se corrigieron los 2 bugs de contraste del backlog `Secundaria`: título "Auditoría NOM-016 Compliance" y nombre de usuario en la columna "Usuario" de la tabla de bitácora (ambos `text-white` fijo sobre `var(--content-bg)`) → ahora `var(--content-text)`. Badges de acción (INSERT/UPDATE/DELETE, fondo translúcido) y `divide-slate-800`/`hover:bg-slate-800/30` de la tabla sin cambios (fuera del alcance del backlog original, no invisibles) |
 | Checklists NOM-016 | ✅ Aplicado | (este ciclo) | Se corrigieron los 2 bugs de contraste del backlog `Secundaria` (botón "Cambiar" con `hover:text-white` fijo, textarea de "Observaciones Adicionales" con `text-white` fijo sobre `var(--content-surface)`) y 2 bugs adicionales de la misma familia encontrados al leer el archivo completo (no capturados por el grep original `text-white\|text-black\|bg-white`): el botón de selección de plantilla y las tarjetas del "Historial Compliance" usaban `bg-slate-800/50` fijo mezclado con texto de tema (`var(--content-text)`/`var(--content-muted)`, oscuro en temas claros) → ahora `bg-[var(--content-surface)]`, mismo patrón ya aplicado en `QRBatch.jsx`/`HospitalMap.jsx` |
+| Almacén | ✅ Aplicado | (este ciclo) | Se corrigieron los 2 bugs de contraste del backlog `Secundaria`: input de búsqueda (`text-white` fijo sobre `bg-[var(--content-bg)]` de tema) y botón "Ajustar" de la tabla (`hover:text-white` fijo) → ahora `var(--content-text)`. Los 2 modales (`NuevaRefaccionModal`, `AjustarStockModal`) son 100% fixed-dark autoconsistentes (`bg-slate-950`/`bg-slate-900` + `text-white`, no mezclan con tokens de tema) — revisados y confirmados sin bug, no se tocaron |
+| Tecnovigilancia | ✅ Aplicado | (este ciclo) | Se corrigió el bug de contraste del backlog `Secundaria`: columna "Dispositivo" de la tabla de eventos con `text-white` fijo sobre `bg-[var(--content-surface)]` de tema → ahora `var(--content-text)`. Botones "Reportar evento" (desktop y FAB móvil, fondo rojo sólido) sin cambios, uso correcto |
+| Trazabilidad | ✅ Aplicado | (este ciclo) | Se corrigió el bug de contraste del backlog `Secundaria`: nombre de equipo en la línea de tiempo de movimientos con `text-white` fijo sobre `bg-[var(--content-surface)]` de tema → ahora `var(--content-text)`. El modal `RegistrarTrasladoModal` es fixed-dark autoconsistente (mismo patrón que Almacén), no se tocó |
 | Reservas | ⬜ Pendiente | — | 4 variantes (`9ad9c5aa…`, `0d916bcd…`, `73bb15a3…`, `1e753e9a…`) — elegir la que mejor encaje con el calendario heatmap existente SIN romperlo (`anim-cell-pop` en `index.css`). Nota: ya es theme-safe (0 bugs de contraste, incluye tooltip de recharts bien resuelto) |
 | Móvil (Dashboard/Inventario/Detalle/Orden) | ⬜ Pendiente | — | Screen IDs en `CONSOLIDACION-V4.md` §6, sección Móvil |
 
@@ -145,13 +148,19 @@ fijo, autoconsistente, no mezcla con var de tema.)
 resueltos en v4.0.17 (`e4c068d`) — **categoría completa, sin pendientes**. El
 siguiente barrido debe tomar de "Secundaria" abajo.
 
-**Secundaria (módulos admin, menor tráfico en el piloto):**
+**Secundaria (módulos admin, menor tráfico en el piloto) — categoría COMPLETA:**
 - `pages/QRBatch.jsx` (8 — el más afectado del lote) y `pages/Analitica.jsx` (6,
   título + 4 KPIs principales) resueltos en v4.0.11. `pages/Reportes.jsx` (3)
   resuelto en v4.0.18. `pages/AuditPage.jsx` (2) resuelto en v4.0.19.
   `pages/ChecklistPage.jsx` (2 + 2 de la familia `bg-slate-800` fijo) resuelto
-  este ciclo. Pendientes: `pages/Almacen.jsx` (1), `pages/Tecnovigilancia.jsx`
-  (1), `pages/Trazabilidad.jsx` (1).
+  en v4.0.20. `pages/Almacen.jsx` (input de búsqueda + botón "Ajustar"),
+  `pages/Tecnovigilancia.jsx` (columna "Dispositivo" de la tabla) y
+  `pages/Trazabilidad.jsx` (nombre de equipo en la línea de tiempo) resueltos
+  este ciclo — sin pendientes en esta categoría. El siguiente barrido de
+  contraste debe volver al punto 3 del "Backlog de este design system" arriba
+  (layout Stitch de Detalle de Equipo/Reservas) o revisar de nuevo el commit
+  `86373f7` de `feat/ui-cinematic` (sección "ATAJO" arriba) por si queda algo
+  sin comparar.
 
 **Confirmados SIN bugs reales** (grep disparó por badges/CTAs sólidos, QR/PDF
 previews, o páginas 100% fixed-dark autoconsistentes — no mezclan variable+fijo,
