@@ -1,6 +1,31 @@
 {
-  "actual": "4.0.23",
+  "actual": "4.0.27",
   "versiones": [
+    {
+      "version": "4.0.27",
+      "fecha": "2026-07-09",
+      "tipo": "patch",
+      "autor": "sesion-sonnet-asus",
+      "commit": "69e7d84",
+      "resumen": "Corrige el bug reportado en el video de producción v4.0.23: el botón 'Programar Mantenimiento Preventivo' navegaba a /preventivos?equipoId=X&accion=nuevo pero la página ignoraba esos parámetros por completo (no había filtro, ni formulario de alta, ni método crearPreventivo() en el cliente API) y el error de carga caía en un estado vacío engañoso en vez de un error explícito con Reintentar.",
+      "cambios": [
+        "sigab-frontend/src/api/sigab.js: agrega crearPreventivo() (POST /preventivos, endpoint que ya existía en el backend sin usar desde el frontend)",
+        "sigab-frontend/src/components/PreventivoForm.jsx (nuevo): modal de alta de preventivo, precarga el equipo con getEquipo(equipoId) -- no existía ningún formulario previo que reutilizar",
+        "sigab-frontend/src/pages/Preventivos.jsx: lee accion=nuevo y equipoId de la URL con useSearchParams y abre PreventivoForm pre-seleccionando el equipo; limpia los params al cerrar/crear y recarga la lista tras un alta exitosa; agrega estado de error explícito (bloque 'No se pudo cargar' + boton Reintentar, mismo patrón que Dashboard.jsx) en vez de caer silenciosamente en 'Sin preventivos en esta categoría' cuando el fetch falla",
+        "sigab-frontend/src/utils/preventivos.js (nuevo) + preventivos.test.js: diasRestantes() se extrae de la página a un módulo puro testeable sin arrastrar axios/react-router/sileo al entorno node de vitest (mismo patrón que utils/fechas.js)",
+        "sigab-backend/routes/preventivos.py (crear_preventivo): agrega try/except con rollback + HTTPException(500, detail=...) alrededor del commit(), mismo patrón defensivo que ya usa marcar_ejecutado() en el mismo archivo -- este endpoint pasa a ser alcanzable desde el frontend por primera vez"
+      ],
+      "verificar": [
+        "Desde la ficha de un equipo, 'Programar Mantenimiento Preventivo' debe abrir el modal 'Nuevo Preventivo' con el equipo correcto pre-seleccionado, no quedarse en 'Cargando preventivos...'",
+        "Llenar tipo de preventivo + fecha y 'Programar' debe mostrar toast de éxito, cerrar el modal, limpiar accion/equipoId de la URL y recargar la lista",
+        "Con el backend devolviendo 500 en GET /preventivos, la página debe mostrar 'No se pudo cargar' + detalle + botón Reintentar, no 'Cargando...' infinito ni 'Sin preventivos en esta categoría'",
+        "npm run build y npx vitest run ambos verdes (4 archivos de test, 22 tests)",
+        "Capturas Playwright con mock de red en /home/gustavo/.claude/jobs/c6247d26/tmp/preventivos-capturas/: 01-nuevo-preventivo-prellenado.png y 02-error-500-reintentar.png"
+      ],
+      "rollback": "git revert 69e7d84 34ff7b5 sobre v4.0/piloto-clinica-1. Cambios de frontend (nuevo componente + página + cliente API) y un try/except defensivo en backend -- sin migraciones ni cambios de esquema, revert seguro sin rollback de base de datos. NOTA: hallazgo sin resolver durante el diagnóstico -- alembic/versions/a1b2c3d4e5f6 incluye preventivos_programados en TENANT_TABLES (le agregaría tenant_id NOT NULL) pero routes/preventivos.py:31 dice explícitamente que esa tabla 'aún no tiene tenant_id'; esa misma migración referencia una columna inexistente ('fecha_programada' en COMPOSITE_INDEXES linea 81, el campo real es proxima_ejecucion) -- sugiere que el upgrade() se truncó a mitad de camino en MySQL (DDL no transaccional). No se pudo confirmar el estado real de la tabla en producción desde este entorno; ver docs/releases/v4.0.27.md",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.23",
       "fecha": "2026-07-09",
