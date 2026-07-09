@@ -96,7 +96,13 @@ async def crear_preventivo(
         nuevo_pp.frecuencia_dias = 90
 
     session.add(nuevo_pp)
-    await session.commit()
+    try:
+        await session.commit()
+    except Exception as e:
+        # Defensivo (mismo patrón que marcar_ejecutado): un 500 crudo aquí deja
+        # la sesión a medio confirmar y no dice nada útil al frontend.
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al crear preventivo: {str(e)}")
     await session.refresh(nuevo_pp)
 
     return {"ok": True, "id": nuevo_pp.id}
