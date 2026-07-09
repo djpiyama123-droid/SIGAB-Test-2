@@ -29,10 +29,13 @@ que TODO componente debe consumir en vez de colores sueltos:
 `--content-muted`, `--accent`, `--accent-dark`, `--accent-light`,
 `--sidebar-*`, `--header-*`, `--bottom-nav-*`.
 
-El tema `[data-theme="green"]` ("Verde SIGAH (claro)" en el selector de
-`Header.jsx`) es el candidato más cercano a Verde-Blanco IMSS pero sus
-valores de acento (`#059669`/`#047857`/`#DCFCE7`) aún no calzan exactamente
-con la paleta Stitch de arriba — pendiente de alinear (ver Backlog).
+El tema `[data-theme="green"]` ("Verde-Blanco IMSS (claro)" en el selector de
+`Header.jsx`) ya usa los valores exactos de la paleta Stitch de arriba
+(`--sidebar-bg`/`--accent` `#047857`, `--accent-dark` `#065F46`,
+`--accent-light` `#E0F0E9`, `--content-bg` `#F8FAF9`) — alineado en este
+ciclo (antes usaba `#059669`/`#047857`/`#DCFCE7`, verde SIGAH histórico, y
+`#F8FAFC` de fondo). El tema `dark` conserva `#059669` a propósito (paleta
+distinta, no es candidato Verde-Blanco IMSS).
 
 **Regla para todo commit de este design system:** un componente nuevo o
 tocado NO debe fijar colores de texto/fondo con clases Tailwind literales
@@ -74,9 +77,9 @@ Leyenda: ✅ aplicado y verificado · 🟡 en progreso/parcial · ⬜ sin empeza
 
 ## Backlog de este design system
 
-1. Alinear los valores de `[data-theme="green"]` en `index.css` con la
-   paleta Stitch exacta (`#047857`/`#065F46`/`#E0F0E9`) — hoy usa
-   `#059669`/`#047857`/`#DCFCE7` (verde SIGAH histórico, no idéntico).
+1. ✅ Resuelto (este ciclo): valores de `[data-theme="green"]` en `index.css`
+   alineados con la paleta Stitch exacta (`#047857`/`#065F46`/`#E0F0E9`,
+   fondo `#F8FAF9`). Swatch de `Header.jsx` actualizado a juego.
 2. Terminar el layout Stitch de Dashboard (KPI row + mapa + gráfica ya
    siguen el patrón visual; falta validar contra el screen ID de Stitch
    pantalla por pantalla).

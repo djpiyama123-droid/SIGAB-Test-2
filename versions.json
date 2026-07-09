@@ -1,6 +1,28 @@
 {
-  "actual": "4.0.22",
+  "actual": "4.0.23",
   "versiones": [
+    {
+      "version": "4.0.23",
+      "fecha": "2026-07-09",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "e3bfae1",
+      "resumen": "Cierra el punto 1 del backlog de docs/DESIGN-SYSTEM-V4.md: alinea los tokens CSS de [data-theme=\"green\"] con la paleta Stitch oficial Verde-Blanco IMSS.",
+      "cambios": [
+        "sigab-frontend/src/index.css: [data-theme=\"green\"] pasa de #059669/#047857/#DCFCE7 (verde SIGAH historico) a #047857/#065F46/#E0F0E9 (primary/secondary/tertiary Stitch), y --content-bg de #F8FAFC a #F8FAF9 (neutral Stitch). Afecta --sidebar-bg, --accent, --accent-dark, --accent-light y --bottom-nav-active del tema; el resto de temas (blue/dark/glass) no se tocaron",
+        "sigab-frontend/src/components/Header.jsx: swatch y etiqueta del selector de tema 'green' actualizados a #047857 / 'Verde-Blanco IMSS (claro)' para que coincidan con el nuevo acento",
+        "docs/DESIGN-SYSTEM-V4.md: backlog punto 1 marcado como resuelto y la seccion 'Tokens CSS centralizados' actualizada para reflejar que el tema green ya usa los valores exactos de la paleta"
+      ],
+      "verificar": [
+        "Cambiar el selector de tema (Header) a 'Verde-Blanco IMSS (claro)' y confirmar que sidebar, boton activo de bottom-nav (movil) y acentos se ven en el verde mas oscuro #047857 (antes #059669) -- diferencia sutil, no un cambio de color radical",
+        "Fondo de contenido en tema verde debe verse blanco/casi blanco (#F8FAF9), igual que antes a simple vista",
+        "Confirmar que los temas Azul IMSS, Oscuro y Glass no cambiaron visualmente (solo se toco el bloque [data-theme=\"green\"])",
+        "npm run build y npx vitest run ambos verdes (verificado en este ciclo: 19 tests, build en 6.37s)"
+      ],
+      "rollback": "git revert de e3bfae1 sobre v4.0/piloto-clinica-1 + redeploy frontend. Cambio solo de valores hex en variables CSS y un swatch/label en Header.jsx, sin logica ni llamadas a la API -- revert seguro sin rollback de base de datos",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.22",
       "fecha": "2026-07-09",
