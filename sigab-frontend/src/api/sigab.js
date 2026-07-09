@@ -204,6 +204,7 @@ export const api = {
 
   // ── Preventivos ───────────────────────────────────────────
   getPreventivos: (params = {}) => client.get('/preventivos', { params }),
+  crearPreventivo: (data) => client.post('/preventivos', data),
   ejecutarPreventivo: (id) => client.put(`/preventivos/${id}/ejecutar`),
 
   // ── Reservas ──────────────────────────────────────────────

@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/sigah';
 import { useToast } from '../components/Toast';
+import PreventivoForm from '../components/PreventivoForm';
+import { diasRestantes } from '../utils/preventivos';
 import { Calendar, AlertTriangle, Clock, CheckCircle2 } from 'lucide-react';
-
-function diasRestantes(fecha) {
-  if (!fecha) return null;
-  const diff = Math.ceil((new Date(fecha) - new Date()) / 86400000);
-  return diff;
-}
 
 function BadgeVencimiento({ fecha }) {
   const dias = diasRestantes(fecha);
@@ -39,22 +36,45 @@ function BadgeVencimiento({ fecha }) {
 
 export default function Preventivos() {
   const toast = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [preventivos, setPreventivos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filtro, setFiltro] = useState('todos'); // todos | vencidos | proximos
 
   const cargar = () => {
     setLoading(true);
+    setError(null);
     api.getPreventivos()
       .then((res) => setPreventivos(res.preventivos || []))
       .catch((err) => {
         console.error(err);
+        const detalle = err?.response?.data?.detail || err?.message || 'Error desconocido';
+        setError(`No se pudieron cargar los preventivos: ${detalle}`);
         toast.error('No se pudieron cargar los preventivos');
       })
       .finally(() => setLoading(false));
   };
 
   useEffect(() => { cargar(); }, []);
+
+  // Deep-link desde la ficha de equipo / mapa del hospital:
+  // /preventivos?equipoId=X&accion=nuevo → abre el modal de alta pre-seleccionando el equipo.
+  const equipoIdNuevo = searchParams.get('accion') === 'nuevo' ? searchParams.get('equipoId') : null;
+
+  const cerrarModalNuevo = () => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('accion');
+      next.delete('equipoId');
+      return next;
+    }, { replace: true });
+  };
+
+  const handlePreventivoCreado = () => {
+    cerrarModalNuevo();
+    cargar();
+  };
 
   const handleEjecutar = async (id) => {
     if (!window.confirm('¿Registrar este preventivo como ejecutado hoy?')) return;
@@ -106,6 +126,16 @@ export default function Preventivos() {
 
       {loading ? (
         <div className="text-[var(--content-muted)] py-12 text-center">Cargando preventivos...</div>
+      ) : error ? (
+        <div className="max-w-md mx-auto rounded-xl border border-red-500/20 bg-red-500/10 text-center p-6">
+          <AlertTriangle className="h-10 w-10 text-red-500 mx-auto mb-3" />
+          <h2 className="text-[var(--content-text)] font-medium">No se pudo cargar</h2>
+          <p className="text-[var(--content-muted)] text-sm mt-2">{error}</p>
+          <button onClick={cargar}
+            className="mt-4 inline-flex items-center gap-2 min-h-[44px] px-6 py-2 bg-red-600 hover:bg-red-500 active:scale-[0.97] text-white text-sm font-medium rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50">
+            Reintentar
+          </button>
+        </div>
       ) : visibles.length === 0 ? (
         <div className="text-[var(--content-muted)] py-12 text-center">
           Sin preventivos en esta categoría.
@@ -168,6 +198,13 @@ export default function Preventivos() {
           })}
         </div>
       )}
+
+      <PreventivoForm
+        equipoId={equipoIdNuevo}
+        open={Boolean(equipoIdNuevo)}
+        onClose={cerrarModalNuevo}
+        onCreated={handlePreventivoCreado}
+      />
     </div>
   );
 }
