@@ -6,7 +6,7 @@
       "fecha": "2026-07-09",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "1259b00",
       "resumen": "Cierra la categoría 'Secundaria' del backlog de contraste de docs/DESIGN-SYSTEM-V4.md: Almacen.jsx, Tecnovigilancia.jsx y Trazabilidad.jsx, los 3 últimos pendientes.",
       "cambios": [
         "sigab-frontend/src/pages/Almacen.jsx: el input de búsqueda de refacciones usaba text-white fijo sobre bg-[var(--content-bg)] de tema (invisible en temas claros) y el botón 'Ajustar' de la tabla usaba hover:text-white fijo -- ambos ahora var(--content-text). Los modales NuevaRefaccionModal y AjustarStockModal se revisaron completos: son 100% fixed-dark autoconsistentes (bg-slate-950/bg-slate-900 + text-white, sin mezcla con tokens de tema) -- confirmados sin bug, no se tocaron",
