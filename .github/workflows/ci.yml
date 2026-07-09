@@ -1,0 +1,91 @@
+name: CI
+
+# Primer workflow de CI del repo (2026-07-08). Corre build+tests del frontend
+# y una verificación estática del backend en cada PR hacia la rama piloto y
+# en cada push a ramas de trabajo (feat/fix/rutinas cloud/autocycle).
+
+on:
+  pull_request:
+    branches:
+      - v4.0/piloto-clinica-1
+  push:
+    branches:
+      - 'feat/**'
+      - 'fix/**'
+      - 'cloud-routine/**'
+      - 'autocycle/**'
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend (build + vitest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: sigab-frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          # No hay .nvmrc ni "engines" en package.json; se usa Node 20 LTS,
+          # la misma versión que ya fija sigab-frontend/Dockerfile (node:20-alpine).
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: sigab-frontend/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Build de producción (Vite)
+        run: npm run build
+
+      - name: Tests unitarios (vitest)
+        run: npx vitest run
+
+  backend:
+    name: Backend (compileall + import de rutas)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: sigab-backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          # Misma versión que sigab-backend/Dockerfile (python:3.11-slim).
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: sigab-backend/requirements.txt
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Compilar todo el árbol (detecta errores de sintaxis)
+        run: python -m compileall .
+
+      # NOTA sobre pytest: tests/conftest.py (líneas 16-18 y 74-92) documenta
+      # explícitamente que esta suite REQUIERE una base de datos MySQL real
+      # ("sigah_test") — NO usa mocks de aiomysql/asyncmy. Se verificó local-
+      # mente: sin MySQL disponible, "python -m pytest" da 21 failed + 15
+      # errors, todos por OperationalError de conexión/columna contra MySQL.
+      # Levantar un servicio MySQL en CI queda fuera de alcance de esta
+      # primera versión (ver instrucción explícita de la tarea). Como
+      # verificación mínima sin BD, se importa main.py: esto ejercita la
+      # carga de FastAPI y de TODOS los módulos bajo routes/ (130 endpoints
+      # registrados), atrapando errores de import/sintaxis a nivel de app
+      # sin necesitar una conexión real.
+      - name: Importar la app (sin BD) — smoke test de routes/
+        run: python -c "import main; print('rutas registradas:', len(main.app.routes))"
+        env:
+          SIGAH_SSL_DISABLED: 'true'

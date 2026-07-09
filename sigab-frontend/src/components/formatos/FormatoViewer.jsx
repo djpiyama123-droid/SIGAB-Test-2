@@ -9,6 +9,7 @@ import { api } from '../../api/sigah';
 import toast from '../../lib/toast';
 import FormatoReporteFalla from './FormatoReporteFalla';
 import FormatoOSCorrectivo from './FormatoOSCorrectivo';
+import FormatoOSCorrectivoCorto from './FormatoOSCorrectivoCorto';
 import FormatoOSPreventivo from './FormatoOSPreventivo';
 import FormatoOSPredictivo from './FormatoOSPredictivo';
 
@@ -25,17 +26,21 @@ const TIPO_LABEL = {
   predictivo:    'OS Predictivo',
 };
 
-function renderFormato(tipo, orden, tema, isEditing, onChange) {
+function renderFormato(tipo, orden, tema, isEditing, onChange, variante) {
   switch (tipo) {
     case 'reporte_falla': return <FormatoReporteFalla orden={orden} tema={tema} isEditing={isEditing} onChange={onChange} />;
     case 'preventivo':    return <FormatoOSPreventivo orden={orden} tema={tema} isEditing={isEditing} onChange={onChange} />;
     case 'predictivo':    return <FormatoOSPredictivo orden={orden} tema={tema} isEditing={isEditing} onChange={onChange} />;
-    default:              return <FormatoOSCorrectivo orden={orden} tema={tema} isEditing={isEditing} onChange={onChange} />;
+    default:
+      return variante === 'corto'
+        ? <FormatoOSCorrectivoCorto orden={orden} tema={tema} isEditing={isEditing} onChange={onChange} />
+        : <FormatoOSCorrectivo orden={orden} tema={tema} isEditing={isEditing} onChange={onChange} />;
   }
 }
 
 export default function FormatoViewer({ orden: initialOrden, onClose, autoprint = false }) {
   const [tema, setTema] = useState('blanco-imss');
+  const [varianteCorrectivo, setVarianteCorrectivo] = useState('completo');
   const [isEditing, setIsEditing] = useState(false);
   const [currentOrden, setCurrentOrden] = useState(initialOrden || {});
   const [editedOrden, setEditedOrden] = useState({});
@@ -69,7 +74,8 @@ export default function FormatoViewer({ orden: initialOrden, onClose, autoprint 
   }, [autoprint, print]);
 
   const tipo = currentOrden?.tipo_mantenimiento || 'correctivo';
-  const titulo = `${TIPO_LABEL[tipo] || 'Formato'} — ${currentOrden?.numero_orden || ''}`;
+  const esCorrectivo = tipo === 'correctivo';
+  const titulo = `${TIPO_LABEL[tipo] || 'Formato'}${esCorrectivo && varianteCorrectivo === 'corto' ? ' · Formato corto' : ''} — ${currentOrden?.numero_orden || ''}`;
 
   const handleStartEdit = () => {
     setEditedOrden({ ...currentOrden, materiales: currentOrden.materiales || [] });
@@ -124,6 +130,30 @@ export default function FormatoViewer({ orden: initialOrden, onClose, autoprint 
             ))}
           </div>
 
+          {/* Selector de variante corta/completa — solo aplica a correctivos */}
+          {esCorrectivo && (
+            <div className="flex gap-1.5 ml-2 flex-wrap">
+              {[
+                { id: 'corto', label: 'Formato corto' },
+                { id: 'completo', label: 'Formato completo' },
+              ].map((v) => (
+                <button
+                  key={v.id}
+                  onClick={() => setVarianteCorrectivo(v.id)}
+                  disabled={isEditing}
+                  title={v.id === 'corto' ? 'Correctivo exprés, una página' : 'Correctivo completo, todas las secciones'}
+                  className={`px-3 py-1.5 rounded text-xs font-medium border transition-colors ${
+                    varianteCorrectivo === v.id
+                      ? 'bg-amber-600 border-amber-500 text-white'
+                      : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700'
+                  } ${isEditing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {v.label}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="flex gap-2 ml-auto">
             {currentOrden.id && !String(currentOrden.id).includes('mock') && (
               isEditing ? (
@@ -175,7 +205,7 @@ export default function FormatoViewer({ orden: initialOrden, onClose, autoprint 
           id="formato-print-root"
           className="w-full max-w-4xl shadow-2xl rounded-sm overflow-hidden"
         >
-          {renderFormato(tipo, isEditing ? editedOrden : currentOrden, tema, isEditing, handleFieldChange)}
+          {renderFormato(tipo, isEditing ? editedOrden : currentOrden, tema, isEditing, handleFieldChange, varianteCorrectivo)}
         </div>
       </div>
 
