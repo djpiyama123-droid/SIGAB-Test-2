@@ -11,12 +11,9 @@
  * v.3.2.0 — porteado 2026-07-08 desde feat/orden-servicio-imss-oficial-2026-07-07
  * (commit 63c849e, base v3) a v4, adaptado al sistema `t` de formatoThemes.js.
  */
-export default function FormatoHeader({ t, tipoLabel, folio, fecha, refReporte }) {
-  const fmtFecha = (f) => {
-    if (!f) return '__/__/____';
-    try { return new Date(f).toLocaleDateString('es-MX'); } catch { return f; }
-  };
+import { fmtFecha } from './formatoThemes';
 
+export default function FormatoHeader({ t, tipoLabel, folio, fecha, refReporte }) {
   return (
     <table style={{ width: '100%', borderCollapse: 'collapse', border: `2px solid ${t.check}`, marginBottom: 4 }}>
       <tbody>

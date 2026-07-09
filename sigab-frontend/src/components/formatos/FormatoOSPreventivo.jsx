@@ -4,7 +4,7 @@
  * Layout fiel al documento .docx oficial IMSS
  */
 import { TEMAS_CONFIG, fmtFecha } from './formatoThemes';
-import { CB, SecHeader } from './formatoHelpers';
+import { CB, SecHeader, FormatoEvidenciaFotografica } from './formatoHelpers';
 import FormatoHeader from './FormatoHeader';
 
 const QR_SVG = () => (
@@ -287,27 +287,8 @@ export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss', isEdi
           </tbody>
         </table>
 
-        {/* ── 5. EVIDENCIA FOTOGRÁFICA ─────────────────────────────────────── */}
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 8 }}>
-          <tbody>
-            <SH title="5. Evidencia Fotográfica" />
-            <tr>
-              {[0, 1, 2, 3].map((i) => (
-                <td key={i} style={{ ...t.cell, width: '25%', height: 90, textAlign: 'center', verticalAlign: 'middle', padding: 4 }}>
-                  {o.fotos?.[i]
-                    ? <img src={o.fotos[i]} alt={`Foto ${i + 1}`} style={{ maxWidth: '100%', maxHeight: 82, objectFit: 'contain' }} />
-                    : (
-                      <div style={{ border: `1px dashed ${t.table.borderColor}`, height: 72, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 2 }}>
-                        <span style={{ fontSize: 22, opacity: 0.3 }}>📷</span>
-                        <span style={{ color: t.label.color, fontSize: 9, marginTop: 2 }}>FOTOGRAFÍA {i + 1}</span>
-                      </div>
-                    )
-                  }
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
+        {/* ── 5. EVIDENCIA FOTOGRÁFICA DEL PROCESO (solo si la orden trae fotos) ── */}
+        <FormatoEvidenciaFotografica fotos={o.fotos} t={t} titulo="5. Evidencia Fotográfica del Proceso" />
 
         {/* ── 6. RESULTADO ─────────────────────────────────────────────────── */}
         <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 8 }}>
@@ -400,7 +381,7 @@ export default function FormatoOSPreventivo({ orden, tema = 'blanco-imss', isEdi
         </table>
 
         <div style={{ marginTop: 8, fontSize: 9, color: t.label.color, textAlign: 'right' }}>
-          Rutina específica por tipo de equipo configurable en SIGAH · Formato F-CON-03 · NOM-016-SSA3-2012 · v.3.2.0
+          Rutina específica por tipo de equipo configurable en SIGAH · Formato F-CON-03 · NOM-016-SSA3-2012 · v.3.3.0
         </div>
       </div>
     </>

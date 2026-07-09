@@ -1,6 +1,35 @@
 {
-  "actual": "4.0.24",
+  "actual": "4.0.25",
   "versiones": [
+    {
+      "version": "4.0.25",
+      "fecha": "2026-07-08",
+      "tipo": "minor",
+      "autor": "sesion-sonnet-asus",
+      "commit": "",
+      "resumen": "Petición directa de Gustavo, construida sobre el porteo del formato IMSS oficial (rama feat/porteo-imss-v4-2026-07-08, renumerada a 4.0.24, base de esta rama): 2 entregables sobre los formatos imprimibles de Órdenes de Servicio -- (A) variante corta de una página para correctivos rápidos con selector corto/completo en FormatoViewer, y (B) sección numerada 'Evidencia Fotográfica del Proceso' con cuadrícula print-friendly, compartida entre Preventivo y Correctivo largos.",
+      "cambios": [
+        "sigab-frontend/src/components/formatos/FormatoOSCorrectivoCorto.jsx (nuevo): variante compacta de una página para correctivos exprés -- membrete IMSS, datos del equipo (equipo/marca/modelo/serie/inventario/localización completa), descripción de la falla, trabajo realizado, refacciones (sección condicional -- solo aparece si hay renglones o si se está editando), horarios (inicio/término/tiempo real) + técnico, y firmas técnico + recibe de conformidad (nombre y matrícula). Sin checklist de estado final ni secciones no aplicables. Reutiliza formatoThemes/formatoHelpers, no duplica estilos. Commit bfbd296",
+        "sigab-frontend/src/components/formatos/FormatoViewer.jsx: nuevo selector 'Formato corto / Formato completo' en la toolbar, visible solo para tipo_mantenimiento === 'correctivo', mismo patrón visual que el selector de tema existente; el título del visor indica '· Formato corto' cuando aplica. Commit bfbd296",
+        "sigab-frontend/src/components/formatos/formatoHelpers.jsx: nuevo componente compartido FormatoEvidenciaFotografica -- cuadrícula de 2 columnas print-friendly para o.fotos, pie numerado ('Evidencia N -- descripción' si hay descripción, si no solo el número), break-inside:avoid por foto para que no se corten entre páginas al imprimir. No renderiza nada si la orden no trae fotos. Acepta o.fotos como array de strings u objetos {url, descripcion} -- el shape que ahora emite el backend. Commit 2102110",
+        "sigab-backend/routes/formatos.py: el endpoint GET /api/formatos/{tipo}/{orden_id} ahora expone orden.fotos -- lista de {url, descripcion} leída de os_evidencias (EVIDENCIA_OS, ordenada por id), filtrada a imágenes (los .pdf quedan fuera de la galería, mismo criterio de extensión que OrdenDetalleModal.jsx). url es ruta_archivo tal cual (/static/uploads/...), que el frontend ya usa directo como src de <img>. Sin cambios de esquema: consulta de solo lectura sobre la tabla existente; el tenant ya queda validado por la consulta de la orden (404 si no es del hospital), mismo patrón que routes/ordenes.py. Cierra el pendiente de wiring documentado al crear la galería. Commit 8ff1a60",
+        "sigab-frontend/src/components/formatos/formatoThemes.js (fmtFecha) + FormatoHeader.jsx: fix del bug preexistente de zona horaria -- new Date('YYYY-MM-DD') se interpreta como medianoche UTC y al formatear en hora local (Tijuana, UTC-7/-8) retrocedía un día (el formato imprimía 7/7/2026 siendo 8 de julio). fmtFecha ahora parsea 'YYYY-MM-DD' (sin hora) como fecha LOCAL vía new Date(y, m-1, d); los timestamps con hora conservan el comportamiento previo. FormatoHeader.jsx tenía un fmtFecha duplicado con el mismo bug: se elimina y ahora importa el helper central de formatoThemes.js (los 5 formatos quedan cubiertos por un único fmtFecha). Test nuevo formatoThemes.test.js con 3 casos (fecha YYYY-MM-DD local, timestamp con hora, valores vacíos) -- la suite pasa de 19 a 22 tests. Verificado con Playwright con timezone_id America/Tijuana: el membrete imprime 8/7/2026 (captura 05-fix-fecha-correctivo-corto.png)",
+        "sigab-frontend/src/components/formatos/FormatoOSPreventivo.jsx: la sección 5 'Evidencia Fotográfica' (antes 4 celdas fijas con ícono de placeholder aunque no hubiera fotos) se reemplaza por el componente compartido -- ahora solo aparece si hay fotos reales. Footer bump v.3.2.0 -> v.3.3.0. Commit 2102110",
+        "sigab-frontend/src/components/formatos/FormatoOSCorrectivo.jsx: no tenía sección de evidencia; se agrega como nueva sección 7 'Evidencia Fotográfica del Proceso' reutilizando el mismo componente compartido (misma estructura de datos o.fotos) -- no se copia/pega. 'Recibe de Conformidad del Servicio' se renumera de 7 a 8 de forma fija (no depende de si hay fotos). Footer bump v.3.2.0 -> v.3.3.0. Commit 2102110"
+      ],
+      "verificar": [
+        "Órdenes de Servicio -> abrir el formato de una orden correctivo: debe verse el selector 'Formato corto / Formato completo' en la toolbar del visor (no aparece para preventivo/predictivo/reporte_falla). 'Formato corto' debe mostrar una sola página densa con las 6 secciones descritas (sin checklist de estado final)",
+        "Repetir el formato corto en los 3 temas de impresión (Blanco IMSS / Verde IMSS / Neon SIGAH): debe verse legible y sin desbordes en ninguno",
+        "Con una orden correctivo o preventivo que tenga fotos en o.fotos: debe verse la sección numerada 'Evidencia Fotográfica del Proceso' con cuadrícula de 2 columnas y pie 'Evidencia N -- descripción'; sin fotos, la sección no debe aparecer en absoluto (ni placeholders vacíos)",
+        "Correctivo completo: confirmar que 'Recibe de Conformidad del Servicio' ahora es la sección 8 (antes 7) y que la nueva sección 7 de evidencia aparece antes solo cuando hay fotos",
+        "Con una orden real que tenga evidencias subidas (OrdenDetalleModal -> Evidencias Fotográficas): abrir su formato imprimible -- las mismas imágenes deben aparecer en la galería del formato (los PDF de evidencia NO deben aparecer ahí); requiere backend redeployado con este cambio",
+        "Formato de cualquier orden con fecha (p. ej. fecha_creacion '2026-07-08'): el membrete debe imprimir 8/7/2026, no 7/7/2026 (bug de zona horaria corregido; verificable forzando TZ America/Tijuana)",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (22 tests: 19 base + 3 nuevos de fmtFecha en formatoThemes.test.js)"
+      ],
+      "rollback": "git revert de los commits de esta versión (bfbd296, 2102110 y el commit del wiring backend) sobre esta rama. Los cambios de frontend son componentes de presentación y el de backend es una consulta de solo lectura sobre una tabla existente -- no tocan esquema, no requieren rollback de base de datos. Si ya se desplegó, revertir + redeploy de frontend (y de backend si se desplegó el wiring). Renumerado de 4.0.22 a 4.0.25 durante rebase 2026-07-09 sobre v4.0/piloto-clinica-1 (colisión con loop-thinkcentre y con la renumeración de feat/porteo-imss-v4-2026-07-08, que ocuparon 4.0.20-4.0.24 mientras esta rama esperaba revisión).",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
     {
       "version": "4.0.24",
       "fecha": "2026-07-09",
