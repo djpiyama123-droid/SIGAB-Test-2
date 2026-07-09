@@ -1,4 +1,5 @@
 import { ESTADO_COLORS, ESTADO_LABELS, ESTADO_DOT_COLORS } from '../utils/constants';
+import { getMediaUrl } from '../api/sigah';
 
 const ADQUISICION_LABELS = {
   recurso_propio: 'Recurso Propio',
@@ -24,7 +25,7 @@ export default function EquipoCard({ equipo, onClick }) {
       <div className="relative h-36 bg-[var(--content-bg)]/50 flex items-center justify-center overflow-hidden">
         {equipo.imagen_url ? (
           <img
-            src={equipo.imagen_url}
+            src={getMediaUrl(equipo.imagen_url)}
             alt={equipo.nombre}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => { e.target.style.display = 'none'; }}

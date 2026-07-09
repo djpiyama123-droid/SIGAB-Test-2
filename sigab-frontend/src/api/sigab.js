@@ -17,8 +17,12 @@
 import axios from 'axios';
 
 // iPadOS se anuncia como Mac; se distingue por pantalla multitouch
-const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent) ||
-  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+// Guard de `typeof navigator`: permite importar este módulo en tests bajo
+// Node (sin DOM) sin romper — no cambia la detección en navegador real.
+const isIOS = typeof navigator !== 'undefined' && (
+  /iP(hone|od|ad)/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+);
 
 // Cliente axios con proxy via Vite (/api → localhost:8000/api)
 const client = axios.create({
@@ -55,6 +59,22 @@ client.interceptors.response.use(
     return Promise.reject(err);
   }
 );
+
+// ── Media (fotos/PDFs subidos) — URL absoluta iOS-Safari-safe (SIG-11) ────
+// El backend devuelve rutas relativas (ej. "/static/uploads/equipos/x.jpg").
+// Safari iOS no siempre las resuelve bien cuando el documento se abre desde
+// un origen distinto (QR escaneado, tunel remoto, etc). Reutiliza la MISMA
+// baseURL de axios (no inventa otra fuente de verdad): si baseURL es
+// relativa ("/api") el prefijo queda vacío (sin cambio de comportamiento
+// hoy); si en el futuro baseURL es absoluta ("https://host/api") el helper
+// prefija automáticamente con ese origen.
+const mediaBase = client.defaults.baseURL.replace(/\/api\/?$/, '');
+
+export const getMediaUrl = (path) => {
+  if (!path) return '';
+  if (/^(https?:|data:|blob:)/i.test(path)) return path;
+  return `${mediaBase}${path.startsWith('/') ? path : `/${path}`}`;
+};
 
 export const api = {
   // ── Auth ──────────────────────────────────────────────────

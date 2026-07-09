@@ -26,6 +26,29 @@
       "deploy_backend": ""
     },
     {
+      "version": "4.0.26",
+      "fecha": "2026-07-08",
+      "tipo": "patch",
+      "autor": "sesion-sonnet-asus",
+      "commit": "",
+      "resumen": "SIG-11: helper getMediaUrl(path) en api/sigab.js para que las rutas relativas del backend (/static/uploads/...) se resuelvan de forma segura en Safari iOS, aplicado en 8 componentes del frontend. Renumerado de 4.0.21 a 4.0.26 durante rebase 2026-07-09 sobre v4.0/piloto-clinica-1 (colisión con loop-thinkcentre y con las renumeraciones de feat/porteo-imss-v4-2026-07-08 y feat/formatos-corta-larga-2026-07-08, que ocuparon 4.0.20-4.0.25).",
+      "cambios": [
+        "sigab-frontend/src/api/sigab.js: nuevo export getMediaUrl(path) -- reutiliza client.defaults.baseURL (sin inventar otra fuente de verdad), deja intactas las rutas ya absolutas (http/https/data/blob) y prefija las relativas. No toca los helpers PDF iOS existentes (prepararVentanaPdf/abrirPdf/triggerDownload)",
+        "sigab-frontend/src/api/sigab.js: guard `typeof navigator !== 'undefined'` en la detección isIOS existente -- permite importar el módulo bajo Vitest (Node, sin navigator) sin ReferenceError; no cambia la detección en navegador real",
+        "sigab-frontend/src/api/sigab.test.js: test unitario nuevo (path relativo, path ya absoluto, path vacío/nulo)",
+        "Reemplazo de imagen_url/ruta_archivo/contrato_pdf_url/hojas_servicio_urls/doc.url/pdf_url/fotos[] por getMediaUrl(...) en: pages/EquipoPublico.jsx, components/EquipoForm.jsx, components/EquipoTable.jsx (2 usos), components/EquipoCard.jsx, components/HospitalMap.jsx (2 usos), components/EquipoDetail.jsx (6 usos), components/EventoDetalleModal.jsx, components/formatos/FormatoOSPreventivo.jsx",
+        "EXCLUIDOS por rework paralelo del formato IMSS de órdenes -- pendientes de aplicar el mismo getMediaUrl tras ese porteo: pages/Ordenes.jsx (líneas 336 y 367, href={a.url}), components/OrdenDetalleModal.jsx (líneas 268-281, ev.ruta_archivo), components/NuevaOrdenModal.jsx (sin usos de /static/uploads encontrados actualmente)"
+      ],
+      "verificar": [
+        "Escanear el QR de un equipo con imagen desde un iPhone (Safari): la ficha pública (EquipoPublico) debe mostrar la foto, no un ícono roto",
+        "Abrir detalle de un equipo con imagen_url, fotos adicionales, contrato PDF y hojas de servicio desde Safari iOS: todo debe cargar/abrir igual que en escritorio",
+        "npm run build y npx vitest run verdes"
+      ],
+      "rollback": "git revert de los 2 commits de este cambio sobre v4.0/piloto-clinica-1 + redeploy frontend. Cambio de solo frontend (helper + JSX), sin migraciones ni llamadas nuevas a la API -- revert seguro sin rollback de base de datos. Renumerado de 4.0.21 a 4.0.26 durante rebase 2026-07-09 sobre v4.0/piloto-clinica-1 (colisión con loop-thinkcentre y con las renumeraciones de feat/porteo-imss-v4-2026-07-08 y feat/formatos-corta-larga-2026-07-08, que ocuparon 4.0.20-4.0.25).",
+      "deploy_frontend": "",
+      "deploy_backend": ""
+    },
+    {
       "version": "4.0.25",
       "fecha": "2026-07-08",
       "tipo": "minor",
