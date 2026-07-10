@@ -143,6 +143,17 @@ release note por ciclo, como siempre.
      Gustavo o un agente con permiso de `sigab-backend/` resuelva el
      mismatch de nombres antes de que el frontend pueda cerrar el punto.
 
+**Nota de corrección (loop-thinkcentre, 2026-07-10)**: los 2 bloqueos de arriba
+(fetch de la rama v3 y los 3 campos huérfanos del backend) quedaron resueltos
+al día siguiente de escribirse esta nota, en v4.0.24/v4.0.25 (`sesion-sonnet-asus`,
+commits `cd05789`/`cb20aa4`/`db91b84`): el modelo SQLAlchemy y la whitelist de
+`PUT /ordenes/{id}` ya exponen `localizacion_completa`, `recibe_conformidad_nombre`
+y `recibe_matricula`, y los 5 componentes de `formatos/` + `OrdenServicioRapidaModal.jsx`/
+`NuevaOrdenModal.jsx`/`OrdenDetalleModal.jsx` ya leen/escriben esos 3 campos
+(verificado por grep en el código actual, 2026-07-10). La petición de portar el
+formato IMSS de Órdenes a v4 está cerrada — no repetir este diagnóstico en
+ciclos futuros.
+
 **Qué se hizo en su lugar este ciclo (v4.0.21, Prioridad 2 del carril)**: el
 chunk principal de JS (`index-*.js`, se descarga en TODA visita a la app,
 antes de login) pesaba 1,003 kB / 202.76 kB gzip porque `Layout.jsx`,
