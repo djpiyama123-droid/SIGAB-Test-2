@@ -1,6 +1,23 @@
 {
-  "actual": "4.0.30",
+  "actual": "4.0.31",
   "versiones": [
+    {
+      "version": "4.0.31",
+      "fecha": "2026-07-09",
+      "tipo": "patch",
+      "autor": "sesion-fable5-asus",
+      "commit": "",
+      "resumen": "Correcciones menores post-revisión: migración multi-tenant con 2 columnas inexistentes (rompería instalación limpia p.ej. hospital #2) y race condition en el modal de nuevo preventivo.",
+      "cambios": [
+        "alembic a1b2c3d4e5f6: COMPOSITE_INDEXES corrige preventivos_programados.fecha_programada → proxima_ejecucion y tecnovigilancia_eventos.fecha → fecha_evento (columnas reales verificadas contra modelos y contra DESCRIBE en producción)",
+        "PreventivoForm.jsx: cleanup del useEffect de carga del equipo (flag cancelado) — una respuesta HTTP tardía ya no puede pintar el equipo equivocado al abrir/cerrar modales rápido"
+      ],
+      "verificar": [
+        "Abrir 'Programar Mantenimiento Preventivo' desde dos equipos distintos en rápida sucesión: el modal debe mostrar siempre el equipo del último click",
+        "En un entorno limpio (BD nueva): alembic upgrade head debe pasar sin error de columna inexistente"
+      ],
+      "rollback": "git revert del commit sobre v4.0/piloto-clinica-1"
+    },
     {
       "version": "4.0.30",
       "fecha": "2026-07-09",
