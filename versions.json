@@ -6,7 +6,7 @@
       "fecha": "2026-07-10",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "354d1ed",
       "resumen": "Design system móvil: la barra de navegación inferior (usada en TODA página en móvil) ahora sigue el patrón 'Escanear central' del screen Stitch de Dashboard móvil.",
       "cambios": [
         "sigab-frontend/src/components/Layout.jsx: BOTTOM_NAV reordenado (Inicio, Equipos, Escanear, Ordenes, IA) y 'Escanear' ahora se renderiza como FAB circular elevado (56px, bg-[var(--accent)], -mt-7, sombra, borde del color de fondo de la barra) en vez de ser el 5° ítem en fila plana -- coincide con el nombre literal del screen Stitch 'Dashboard móvil + bottom-bar con Escanear central' (8af028299b1c4cd4af17babd042028b8). Los 4 ítems restantes ahora declaran min-h-[48px] min-w-[48px] explícito (antes solo p-2) para garantizar el target táctil mínimo del design system independientemente de fuente/idioma",
