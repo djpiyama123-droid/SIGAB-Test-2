@@ -1,6 +1,24 @@
 {
-  "actual": "4.0.32",
+  "actual": "4.0.33",
   "versiones": [
+    {
+      "version": "4.0.33",
+      "fecha": "2026-07-10",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Design system móvil: la barra de navegación inferior (usada en TODA página en móvil) ahora sigue el patrón 'Escanear central' del screen Stitch de Dashboard móvil.",
+      "cambios": [
+        "sigab-frontend/src/components/Layout.jsx: BOTTOM_NAV reordenado (Inicio, Equipos, Escanear, Ordenes, IA) y 'Escanear' ahora se renderiza como FAB circular elevado (56px, bg-[var(--accent)], -mt-7, sombra, borde del color de fondo de la barra) en vez de ser el 5° ítem en fila plana -- coincide con el nombre literal del screen Stitch 'Dashboard móvil + bottom-bar con Escanear central' (8af028299b1c4cd4af17babd042028b8). Los 4 ítems restantes ahora declaran min-h-[48px] min-w-[48px] explícito (antes solo p-2) para garantizar el target táctil mínimo del design system independientemente de fuente/idioma",
+        "docs/DESIGN-SYSTEM-V4.md: fila 'Móvil' de la tabla de avance actualizada de Pendiente a Parcial con el detalle de este cambio"
+      ],
+      "verificar": [
+        "En viewport móvil (<1024px, breakpoint lg de Tailwind), en cualquier página con Layout (Dashboard, Equipos, Ordenes, etc.): la barra inferior debe mostrar 5 accesos -- Inicio, Equipos, un botón circular verde/azul elevado 'Escanear' en el centro, Ordenes, IA -- y tocar 'Escanear' debe navegar a /scan igual que antes",
+        "Los otros 4 íconos deben seguir resaltando con var(--bottom-nav-active) al estar en la ruta activa, sin cambio de comportamiento",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests, sin regresiones) -- verificado en este ciclo"
+      ],
+      "rollback": "git revert del commit de esta versión sobre v4.0/piloto-clinica-1. Cambio de un solo componente de frontend (reordenar array + JSX condicional), sin lógica de negocio ni backend -- revert seguro"
+    },
     {
       "version": "4.0.32",
       "fecha": "2026-07-10",

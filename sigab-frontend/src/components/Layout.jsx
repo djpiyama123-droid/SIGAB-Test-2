@@ -13,9 +13,9 @@ export default function Layout() {
   const BOTTOM_NAV = [
     { path: '/', label: 'Inicio', icon: 'LayoutDashboard' },
     { path: '/equipos', label: 'Equipos', icon: 'Cpu' },
+    { path: '/scan', label: 'Escanear', icon: 'QrCode', central: true },
     { path: '/ordenes', label: 'Ordenes', icon: 'ClipboardList' },
     { path: '/copilot', label: 'IA', icon: 'BrainCircuit' },
-    { path: '/scan', label: 'Escanear', icon: 'QrCode' },
   ];
 
   return (
@@ -72,19 +72,38 @@ export default function Layout() {
             borderColor: 'var(--bottom-nav-border)',
           }}
         >
-          {BOTTOM_NAV.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className="flex flex-col items-center gap-1 p-2 transition-colors"
-              style={({ isActive }) => ({
-                color: isActive ? 'var(--bottom-nav-active)' : 'var(--bottom-nav-muted)',
-              })}
-            >
-              {NAV_ICONS[item.icon] && React.createElement(NAV_ICONS[item.icon], { size: 20 })}
-              <span className="text-[10px] font-medium">{item.label}</span>
-            </NavLink>
-          ))}
+          {BOTTOM_NAV.map((item) =>
+            item.central ? (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className="flex flex-col items-center -mt-7 transition-transform active:scale-95"
+                aria-label={item.label}
+              >
+                <span
+                  className="flex items-center justify-center w-14 h-14 rounded-full shadow-lg border-4"
+                  style={{ background: 'var(--accent)', borderColor: 'var(--bottom-nav-bg)' }}
+                >
+                  {NAV_ICONS[item.icon] && React.createElement(NAV_ICONS[item.icon], { size: 24, color: '#fff' })}
+                </span>
+                <span className="text-[10px] font-medium mt-0.5" style={{ color: 'var(--bottom-nav-muted)' }}>
+                  {item.label}
+                </span>
+              </NavLink>
+            ) : (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className="flex flex-col items-center justify-center gap-1 min-h-[48px] min-w-[48px] p-2 transition-colors"
+                style={({ isActive }) => ({
+                  color: isActive ? 'var(--bottom-nav-active)' : 'var(--bottom-nav-muted)',
+                })}
+              >
+                {NAV_ICONS[item.icon] && React.createElement(NAV_ICONS[item.icon], { size: 20 })}
+                <span className="text-[10px] font-medium">{item.label}</span>
+              </NavLink>
+            )
+          )}
         </nav>
       </div>
     </div>
