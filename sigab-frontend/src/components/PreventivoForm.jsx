@@ -37,9 +37,11 @@ export default function PreventivoForm({ equipoId, open, onClose, onCreated }) {
   useEffect(() => {
     if (!open || !equipoId) return;
     setForm(VACIO);
+    let cancelado = false; // evita que una respuesta tardía pinte el equipo equivocado
     api.getEquipo(equipoId)
-      .then((res) => setEquipo(res?.equipo || null))
-      .catch(() => setEquipo(null));
+      .then((res) => { if (!cancelado) setEquipo(res?.equipo || null); })
+      .catch(() => { if (!cancelado) setEquipo(null); });
+    return () => { cancelado = true; };
   }, [open, equipoId]);
 
   if (!open) return null;

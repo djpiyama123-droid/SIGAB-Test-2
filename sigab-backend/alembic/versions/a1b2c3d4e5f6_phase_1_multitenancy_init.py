@@ -78,8 +78,8 @@ COMPOSITE_INDEXES: list[tuple[str, list[str]]] = [
     ("equipos", ["criticidad"]),
     ("ordenes_servicio", ["estado"]),
     ("alertas", ["created_at"]),
-    ("preventivos_programados", ["fecha_programada"]),
-    ("tecnovigilancia_eventos", ["fecha"]),
+    ("preventivos_programados", ["proxima_ejecucion"]),
+    ("tecnovigilancia_eventos", ["fecha_evento"]),
     ("usuarios", ["matricula"]),
 ]
 
