@@ -40,6 +40,19 @@ const ORDEN_OPTIONS = [
 // a navegar fuera de Inventario y volver (ver petición Gustavo 2026-07-05, punto 3).
 const FILTRO_PARAM_KEYS = ['estado', 'criticidad', 'tipo_adquisicion', 'area', 'piso', 'marca', 'tipo_equipo', 'buscar'];
 
+// Chips de filtro rápido táctil (solo móvil, gap Stitch prioridad S).
+// Mapean al mismo `filtros.estado` que el <select> de escritorio — clases
+// completas (no interpoladas) para que Tailwind las detecte sin depender
+// del safelist. Patrón de acento: bg-{color}-500/10 text-{color}-500
+// border-{color}-500/20 (ver docs/DESIGN-SYSTEM-V4.md).
+const ESTADO_CHIPS = [
+  { value: 'operativo', label: 'Operativo', activo: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
+  { value: 'en_mantenimiento', label: 'En Mantenimiento', activo: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' },
+  { value: 'fuera_servicio', label: 'Fuera de Servicio', activo: 'bg-red-500/10 text-red-500 border-red-500/20' },
+];
+const CHIP_INACTIVO = 'bg-[var(--content-surface)] text-[var(--content-muted)] border-[var(--content-border)]';
+const CHIP_BASE = 'inline-flex items-center justify-center min-h-[44px] px-4 rounded-full border text-sm font-medium whitespace-nowrap transition-colors active:scale-[0.97]';
+
 export default function Equipos() {
   const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -280,6 +293,41 @@ export default function Equipos() {
             <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">{activeFilterCount}</span>
           )}
         </button>
+      </div>
+
+      {/* Chips de filtro rápido táctil (móvil) — comparten `filtros.estado`/
+          `filtros.criticidad` con los <select> de "Filtros avanzados"; tocar
+          un chip actualiza el mismo estado que ve el select y viceversa. */}
+      <div className="md:hidden -mx-4 px-4 overflow-x-auto">
+        <div className="flex items-center gap-2 pb-1 w-max">
+          <button
+            type="button"
+            onClick={() => updateFiltros({ ...filtros, estado: undefined, criticidad: undefined })}
+            className={`${CHIP_BASE} ${!filtros.estado && !filtros.criticidad ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : CHIP_INACTIVO}`}
+          >
+            Todos
+          </button>
+          {ESTADO_CHIPS.map((chip) => {
+            const activo = filtros.estado === chip.value;
+            return (
+              <button
+                key={chip.value}
+                type="button"
+                onClick={() => updateFiltros({ ...filtros, estado: activo ? undefined : chip.value })}
+                className={`${CHIP_BASE} ${activo ? chip.activo : CHIP_INACTIVO}`}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => updateFiltros({ ...filtros, criticidad: filtros.criticidad === 'alta' ? undefined : 'alta' })}
+            className={`${CHIP_BASE} ${filtros.criticidad === 'alta' ? 'bg-red-500/10 text-red-500 border-red-500/20' : CHIP_INACTIVO}`}
+          >
+            Criticidad Alta
+          </button>
+        </div>
       </div>
 
       {/* Filtros avanzados */}
