@@ -1,6 +1,24 @@
 {
-  "actual": "4.0.31",
+  "actual": "4.0.32",
   "versiones": [
+    {
+      "version": "4.0.32",
+      "fecha": "2026-07-10",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "834d6d7 c8694e8",
+      "resumen": "Design system Dashboard: corrige 3 botones por debajo del target táctil mínimo (44px) que exige docs/DESIGN-SYSTEM-V4.md, y corrige nota obsoleta en CONTEXTO-COMPARTIDO.md sobre la petición de Órdenes IMSS (ya resuelta en v4.0.24/25).",
+      "cambios": [
+        "sigab-frontend/src/pages/Dashboard.jsx: los botones 'Poka-Yoke', 'NOM-016' (header) y 'Reintentar conexión' (estado de error) medían ~36px de alto (py-2 + text-sm), por debajo del mínimo táctil 44-48px definido en docs/DESIGN-SYSTEM-V4.md. Se agregó min-h-[44px] + justify-center a los 3 sin tocar color/layout/comportamiento",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance de Dashboard actualizada con este hallazgo",
+        "docs/cerebro/CONTEXTO-COMPARTIDO.md: se agregó una nota de corrección aclarando que los 2 bloqueos reportados el 2026-07-08 sobre el porteo del formato IMSS de Órdenes (fetch de rama v3 y 3 campos huérfanos del backend) quedaron resueltos al día siguiente en v4.0.24/v4.0.25 -- verificado por grep en el código actual que los 3 campos (localizacion_completa, recibe_conformidad_nombre, recibe_matricula) ya se leen/escriben en los 5 componentes de formatos/ y en los 3 modales de Órdenes. Evita que un ciclo futuro repita el mismo diagnóstico ya cerrado"
+      ],
+      "verificar": [
+        "En viewport móvil, medir con devtools los 3 botones de pages/Dashboard.jsx (header 'Poka-Yoke'/'NOM-016' y 'Reintentar conexión' forzando un error de red): deben tener al menos 44px de alto, mismo color y comportamiento que antes",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests, sin regresiones)"
+      ],
+      "rollback": "git revert del commit de esta versión sobre v4.0/piloto-clinica-1. Cambio de solo 3 clases CSS en un archivo de frontend + 2 archivos de documentación, sin lógica ni backend -- revert seguro sin rollback de base de datos"
+    },
     {
       "version": "4.0.31",
       "fecha": "2026-07-09",
