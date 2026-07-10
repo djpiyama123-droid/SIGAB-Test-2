@@ -78,7 +78,7 @@ export default function Dashboard() {
           <hr className="border-rose-500/20 my-4" />
           <button
             onClick={() => window.location.reload()}
-            className="inline-flex items-center gap-2 px-6 py-2 bg-rose-600 hover:bg-rose-500 active:scale-[0.97] text-white text-sm font-medium rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f172a]"
+            className="inline-flex items-center justify-center gap-2 px-6 py-2 min-h-[44px] bg-rose-600 hover:bg-rose-500 active:scale-[0.97] text-white text-sm font-medium rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f172a]"
           >
             Reintentar conexión
           </button>
@@ -133,14 +133,14 @@ export default function Dashboard() {
         <div className="flex gap-3">
           <button
             onClick={() => setShowPokaYoke(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 rounded-xl hover:bg-emerald-600 hover:text-white active:scale-[0.97] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 rounded-xl hover:bg-emerald-600 hover:text-white active:scale-[0.97] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
           >
             <ShieldCheck className="h-4 w-4" />
             <span className="text-sm font-medium hidden sm:inline">Poka-Yoke</span>
           </button>
           <button
             onClick={() => navigate('/checklists')}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#006CB7]/20 border border-[#006CB7]/40 text-[#5bb3e8] rounded-xl hover:bg-[#006CB7] hover:text-white active:scale-[0.97] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#006CB7]/50"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-[#006CB7]/20 border border-[#006CB7]/40 text-[#5bb3e8] rounded-xl hover:bg-[#006CB7] hover:text-white active:scale-[0.97] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#006CB7]/50"
           >
             <ClipboardCheck className="h-4 w-4" />
             <span className="text-sm font-medium hidden sm:inline">NOM-016</span>
