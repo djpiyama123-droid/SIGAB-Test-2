@@ -18,6 +18,7 @@ import EquipoCard from '../components/EquipoCard';
 import EquipoTable from '../components/EquipoTable';
 import EquipoDetail from '../components/EquipoDetail';
 import EquipoForm from '../components/EquipoForm';
+import QRPanel from '../components/QRPanel';
 import { useToast } from '../components/Toast';
 import { ESTADO_COLORS, ESTADO_LABELS, TIPO_ADQ_OPTIONS } from '../utils/constants';
 import { Download, Plus, LayoutGrid, List } from 'lucide-react';
@@ -77,6 +78,7 @@ export default function Equipos() {
   const [exportandoCsv, setExportandoCsv] = useState(false);
   const [filtrosExpandidos, setFiltrosExpandidos] = useState(false);
   const [seleccionado, setSeleccionado] = useState(null);
+  const [qrEquipo, setQrEquipo] = useState(null);
   const equipoIdIntentado = useRef(null);
 
   // Catálogos para filtros
@@ -491,7 +493,7 @@ export default function Equipos() {
       ) : vista === VISTAS.tarjeta ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {equipos.map((eq) => (
-            <EquipoCard key={eq.id} equipo={eq} onClick={abrirDetalle} />
+            <EquipoCard key={eq.id} equipo={eq} onClick={abrirDetalle} onQR={setQrEquipo} />
           ))}
         </div>
       ) : (
@@ -544,6 +546,14 @@ export default function Equipos() {
             cargar();
           }}
           onQuickUpdate={cargar}
+        />
+      )}
+
+      {/* QR de acceso rápido desde la vista tarjeta (sin pasar por el detalle) */}
+      {qrEquipo && (
+        <QRPanel
+          equipo={qrEquipo}
+          onClose={() => setQrEquipo(null)}
         />
       )}
     </div>

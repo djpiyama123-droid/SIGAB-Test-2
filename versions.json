@@ -1,6 +1,26 @@
 {
-  "actual": "4.0.34",
+  "actual": "4.0.35",
   "versiones": [
+    {
+      "version": "4.0.35",
+      "fecha": "2026-07-11",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Design system Inventario: la vista tarjeta de Equipos gana acceso directo al QR ('QR por card', pedido explícito del screen Stitch de Inventario móvil), sin necesitar abrir el detalle completo primero.",
+      "cambios": [
+        "sigab-frontend/src/components/EquipoCard.jsx: se agregó un botón circular (44x44px, icono QR, mismo SVG que EquipoTable.jsx) como overlay en la esquina inferior derecha de la miniatura de cada tarjeta. Usa `e.stopPropagation()` para no disparar `onClick` (que abre EquipoDetail) y solo se renderiza si `equipo.qr_token` existe -- mismo criterio que ya usaba EquipoTable.jsx (vista tabla) para decidir si mostrar el botón.",
+        "sigab-frontend/src/pages/Equipos.jsx: nuevo estado `qrEquipo` + import de `QRPanel` (mismo componente que ya reutilizaba EquipoTable.jsx internamente, sin duplicar lógica de generación/descarga de QR). Se pasa `onQR={setQrEquipo}` a EquipoCard y se renderiza QRPanel junto al modal de EquipoDetail existente.",
+        "docs/DESIGN-SYSTEM-V4.md: fila 'Equipos / Inventario' actualizada con este hallazgo -- la vista tarjeta era la única de las dos vistas de Inventario (tarjeta/tabla) sin acceso directo a QR, pese a que el screen ID de Stitch de Inventario móvil lo pide explícitamente ('chips de filtro, badges, QR por card')."
+      ],
+      "verificar": [
+        "Vista tarjeta de /equipos (grid de EquipoCard, tanto desktop como móvil): cada tarjeta con QR asignado debe mostrar un botón circular con ícono QR sobre la esquina inferior derecha de la miniatura; tocarlo/hacer click debe abrir el panel de QR directo, SIN abrir el modal de detalle del equipo.",
+        "Tarjetas de equipos SIN qr_token asignado: no deben mostrar el botón (mismo comportamiento que la columna 'Imprimir QR' de la vista tabla, que lo deshabilita).",
+        "Click en cualquier otra parte de la tarjeta (fuera del botón QR) sigue abriendo EquipoDetail como antes, sin regresión.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests, sin regresiones) -- verificado en este ciclo."
+      ],
+      "rollback": "git revert del commit de esta versión sobre v4.0/piloto-clinica-1. Cambio de 2 archivos de frontend (un botón nuevo + estado local), sin lógica de negocio nueva ni backend -- revert seguro."
+    },
     {
       "version": "4.0.34",
       "fecha": "2026-07-10",

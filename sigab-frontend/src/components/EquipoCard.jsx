@@ -15,7 +15,7 @@ const ADQUISICION_COLORS = {
   subrogado: 'bg-purple-500/20 text-purple-400 border border-purple-700/40'
 };
 
-export default function EquipoCard({ equipo, onClick }) {
+export default function EquipoCard({ equipo, onClick, onQR }) {
   return (
     <div
       className="bg-[var(--content-surface)] rounded-xl border border-[var(--content-border)] overflow-hidden hover:border-[var(--content-border)] cursor-pointer transition-all group"
@@ -23,6 +23,18 @@ export default function EquipoCard({ equipo, onClick }) {
     >
       {/* Imagen del equipo */}
       <div className="relative h-36 bg-[var(--content-bg)]/50 flex items-center justify-center overflow-hidden">
+        {equipo.qr_token && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onQR?.(equipo); }}
+            title="Ver código QR"
+            aria-label="Ver código QR del equipo"
+            className="absolute bottom-2 right-2 z-10 w-11 h-11 flex items-center justify-center rounded-full bg-[var(--content-surface)]/90 backdrop-blur-sm border border-[var(--content-border)] text-[var(--content-text)] hover:bg-[var(--content-surface)] transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+          </button>
+        )}
         {equipo.imagen_url ? (
           <img
             src={getMediaUrl(equipo.imagen_url)}
