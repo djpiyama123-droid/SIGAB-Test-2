@@ -6,7 +6,7 @@
       "fecha": "2026-07-10",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "e98e9a5",
       "resumen": "Perf: separa framer-motion del chunk 'charts' en vite.config.js -- Reservas y TVDashboard ya no descargan la librería de animación que no usan.",
       "cambios": [
         "sigab-frontend/vite.config.js: manualChunks() agrupaba recharts + framer-motion + d3-* en un solo chunk 'charts' de 529.78 kB (159.31 kB gzip). Auditado el uso real: framer-motion SOLO lo importan sigab-frontend/src/components/cards/KPICard.jsx y StatusIndicator.jsx, ambos usados EXCLUSIVAMENTE por pages/Dashboard.jsx. En cambio pages/Reservas.jsx (AreaChart del heatmap), pages/TVDashboard.jsx (vía components/DashboardCharts.jsx) y components/charts/MaintenanceChart.jsx (lazy dentro de Dashboard) usan recharts pero NO framer-motion, y aun así tenían que descargar el chunk combinado completo por ser una sola unidad de Rollup. Se agregó una rama `if (id.includes('framer-motion')) return 'motion'` ANTES del chequeo de recharts/d3- (mismo manualChunks, sin tocar lógica de negocio ni componentes). Resultado verificado con `npm run build`: 'charts' bajó a 399.96 kB (116.42 kB gzip, -25%) y 'motion' quedó como chunk aparte de 129.57 kB (42.76 kB gzip). Dashboard.jsx (que necesita ambos) descarga la misma suma de bytes que antes -- el ahorro es para Reservas/TVDashboard cuando se visitan sin pasar antes por Dashboard. Verificado que el calendario heatmap sigue intacto tras el split: `grep -a anim-cell-pop dist/assets/Reservas-*.js` sigue encontrando las clases del componente.",
