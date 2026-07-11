@@ -1,6 +1,25 @@
 {
-  "actual": "4.0.33",
+  "actual": "4.0.34",
   "versiones": [
+    {
+      "version": "4.0.34",
+      "fecha": "2026-07-10",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Perf: separa framer-motion del chunk 'charts' en vite.config.js -- Reservas y TVDashboard ya no descargan la librería de animación que no usan.",
+      "cambios": [
+        "sigab-frontend/vite.config.js: manualChunks() agrupaba recharts + framer-motion + d3-* en un solo chunk 'charts' de 529.78 kB (159.31 kB gzip). Auditado el uso real: framer-motion SOLO lo importan sigab-frontend/src/components/cards/KPICard.jsx y StatusIndicator.jsx, ambos usados EXCLUSIVAMENTE por pages/Dashboard.jsx. En cambio pages/Reservas.jsx (AreaChart del heatmap), pages/TVDashboard.jsx (vía components/DashboardCharts.jsx) y components/charts/MaintenanceChart.jsx (lazy dentro de Dashboard) usan recharts pero NO framer-motion, y aun así tenían que descargar el chunk combinado completo por ser una sola unidad de Rollup. Se agregó una rama `if (id.includes('framer-motion')) return 'motion'` ANTES del chequeo de recharts/d3- (mismo manualChunks, sin tocar lógica de negocio ni componentes). Resultado verificado con `npm run build`: 'charts' bajó a 399.96 kB (116.42 kB gzip, -25%) y 'motion' quedó como chunk aparte de 129.57 kB (42.76 kB gzip). Dashboard.jsx (que necesita ambos) descarga la misma suma de bytes que antes -- el ahorro es para Reservas/TVDashboard cuando se visitan sin pasar antes por Dashboard. Verificado que el calendario heatmap sigue intacto tras el split: `grep -a anim-cell-pop dist/assets/Reservas-*.js` sigue encontrando las clases del componente.",
+        "docs/CONSOLIDACION-V4.md: punto 3 de la sección 7 (pendientes hacia el piloto) actualizado con los números nuevos del split y una nota de qué queda pendiente (recharts sigue siendo el chunk más grande, 400 kB)."
+      ],
+      "verificar": [
+        "Network tab con caché deshabilitado: entrar directo a /reservas (sin pasar por /dashboard antes) -- NO debe descargarse ningún chunk con 'motion' en el nombre, solo 'charts-*.js' (~400 kB) y el propio 'Reservas-*.js'.",
+        "Entrar a /dashboard: SÍ debe descargarse tanto 'charts-*.js' como 'motion-*.js' (KPICard/StatusIndicator siguen animando igual que antes -- sin cambio visual).",
+        "Reservas: el calendario heatmap (celdas de actividad, animación de aparición, tooltip) debe verse y comportarse exactamente igual que antes del cambio.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests, sin regresiones) -- verificado en este ciclo."
+      ],
+      "rollback": "git revert del commit de esta versión sobre v4.0/piloto-clinica-1. Cambio de una condición en vite.config.js (config de build, no de runtime) -- revert seguro, solo cambia cómo Rollup agrupa archivos JS ya existentes, ningún componente se modificó."
+    },
     {
       "version": "4.0.33",
       "fecha": "2026-07-10",

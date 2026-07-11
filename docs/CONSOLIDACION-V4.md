@@ -147,7 +147,16 @@ de reintentar.
 
 1. Probar fix de PDFs en iPhone/iPad reales (post-deploy).
 2. Implementar en código el pulido visual de las pantallas Stitch.
-3. Recortar bundle de gráficas (1.3 MB / 361 kB gzip).
+3. Recortar bundle de gráficas — ya se partió `framer-motion` (solo usado por
+   `Dashboard.jsx` vía `KPICard`/`StatusIndicator`) del chunk `charts`
+   (recharts + d3, usado también por `Reservas.jsx`/`TVDashboard.jsx`/
+   `MaintenanceChart.jsx` sin necesitar animación): `charts` bajó de 530 kB
+   a 400 kB (116 kB gzip) y `motion` quedó en 130 kB (43 kB gzip) aparte
+   (v4.0.34). Rutas que no usan framer-motion (Reservas, TVDashboard) ya no
+   lo descargan si se visitan sin pasar antes por Dashboard. Pendiente: el
+   chunk `charts` (400 kB) sigue siendo el más grande de la app — evaluar a
+   futuro si recharts puede sustituirse por algo más ligero solo para
+   Reservas (un simple `AreaChart` de tooltip).
 4. Generar pantalla Stitch de Reservas cuando el servidor coopere.
 5. Revisar ramas "pendientes de revisión" (§3) — decidir merge o cierre.
 6. `claude login` en ThinkCentre + agregar `gustavo` al grupo docker.
