@@ -6,7 +6,7 @@
       "fecha": "2026-07-11",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "5d07c73",
       "resumen": "Design system Dashboard: 2 bugs de contraste reales encontrados comparando contra el barrido histórico de feat/ui-cinematic (commit 86373f7) -- tooltip de MaintenanceChart y banner de alertas rojas, ambos invisibles/inconsistentes en temas claros.",
       "cambios": [
         "sigab-frontend/src/components/charts/MaintenanceChart.jsx: el Tooltip de recharts usaba backgroundColor:'#0f172a'/borderColor:'#334155' fijos sin color/itemStyle/labelStyle -- en temas claros (blue/green) mostraba una caja oscura flotando sobre un dashboard claro. Se migró a var(--content-bg)/var(--content-border)/var(--content-text), se agregaron itemStyle/labelStyle explícitos y se cambió el cursor de hover a un gris neutro (rgba(100,116,139,0.08)) en vez de blanco fijo -- mismo patrón ya usado en components/charts/DegradationChart.jsx.",
