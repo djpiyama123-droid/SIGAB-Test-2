@@ -6,7 +6,7 @@
       "fecha": "2026-07-11",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "ad5b2db",
       "resumen": "Design system Inventario: la vista tarjeta de Equipos gana acceso directo al QR ('QR por card', pedido explícito del screen Stitch de Inventario móvil), sin necesitar abrir el detalle completo primero.",
       "cambios": [
         "sigab-frontend/src/components/EquipoCard.jsx: se agregó un botón circular (44x44px, icono QR, mismo SVG que EquipoTable.jsx) como overlay en la esquina inferior derecha de la miniatura de cada tarjeta. Usa `e.stopPropagation()` para no disparar `onClick` (que abre EquipoDetail) y solo se renderiza si `equipo.qr_token` existe -- mismo criterio que ya usaba EquipoTable.jsx (vista tabla) para decidir si mostrar el botón.",
