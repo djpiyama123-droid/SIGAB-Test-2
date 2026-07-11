@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.35",
+  "actual": "4.0.36",
   "versiones": [
+    {
+      "version": "4.0.36",
+      "fecha": "2026-07-11",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Design system Dashboard: 2 bugs de contraste reales encontrados comparando contra el barrido histórico de feat/ui-cinematic (commit 86373f7) -- tooltip de MaintenanceChart y banner de alertas rojas, ambos invisibles/inconsistentes en temas claros.",
+      "cambios": [
+        "sigab-frontend/src/components/charts/MaintenanceChart.jsx: el Tooltip de recharts usaba backgroundColor:'#0f172a'/borderColor:'#334155' fijos sin color/itemStyle/labelStyle -- en temas claros (blue/green) mostraba una caja oscura flotando sobre un dashboard claro. Se migró a var(--content-bg)/var(--content-border)/var(--content-text), se agregaron itemStyle/labelStyle explícitos y se cambió el cursor de hover a un gris neutro (rgba(100,116,139,0.08)) en vez de blanco fijo -- mismo patrón ya usado en components/charts/DegradationChart.jsx.",
+        "sigab-frontend/src/components/AlertaBanner.jsx: el mensaje de cada alerta usaba text-red-200 (rosa claro, pensado para fondo oscuro) sobre bg-red-900/30 -- casi sin contraste en temas claros. Ninguno de los barridos de contraste anteriores lo capturo (sus greps no cubrian text-red-200/text-red-500/60). Migrado a var(--content-text) para el mensaje, var(--content-muted) para el equipo, y text-red-600 para icono/prioridad (legible en claro y oscuro).",
+        "docs/DESIGN-SYSTEM-V4.md: fila Dashboard y seccion ATAJO actualizadas con el hallazgo -- MaintenanceChart.jsx y StatsCards.jsx (este ultimo confirmado SIN bug, solo lo usa TVDashboard.jsx que es 100% fixed-dark) quedan resueltos; AlertaBanner.jsx documentado como hallazgo nuevo fuera de los barridos previos."
+      ],
+      "verificar": [
+        "Dashboard en tema Verde-Blanco IMSS (green) y Azul (blue) con al menos una alerta activa: el banner rojo de arriba debe mostrar el texto del mensaje claramente legible (no rosa palido sobre fondo casi invisible).",
+        "Dashboard con la grafica 'Mantenimientos Programados vs Completados' (MaintenanceChart): pasar el mouse sobre una barra en tema claro -- el tooltip debe verse con fondo claro consistente con el resto de la pagina, no una caja oscura suelta.",
+        "Dashboard en tema oscuro (glass/dark): mismo componente, verificar que no hubo regresion visual (debe seguir viendose igual que antes, la caja de tooltip ahora usa var(--content-bg) que en dark sigue siendo oscuro).",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests, sin regresiones) -- verificado en este ciclo."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1. Cambio de 2 archivos de frontend, solo estilos/colores (sin logica de negocio nueva) -- revert seguro.",
+      "candidata-produccion": false
+    },
     {
       "version": "4.0.35",
       "fecha": "2026-07-11",

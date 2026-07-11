@@ -41,14 +41,17 @@ export default function MaintenanceChart() {
             tickLine={false} 
             axisLine={false} 
           />
-          <Tooltip 
-            cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
-            contentStyle={{ 
-              backgroundColor: '#0f172a', 
-              borderColor: '#334155', 
+          <Tooltip
+            cursor={{ fill: 'rgba(100, 116, 139, 0.08)' }}
+            contentStyle={{
+              backgroundColor: 'var(--content-bg)',
+              borderColor: 'var(--content-border)',
               borderRadius: '12px',
-              fontSize: '12px'
-            }} 
+              fontSize: '12px',
+              color: 'var(--content-text)'
+            }}
+            itemStyle={{ color: 'var(--content-muted)' }}
+            labelStyle={{ color: 'var(--content-text)' }}
           />
           <Legend 
             verticalAlign="top" 

@@ -52,7 +52,7 @@ Tailwind fija porque no dependen del tema de fondo.
 | Pantalla | Estado | Commit | Notas |
 |---|---|---|---|
 | Preventivos | ✅ Aplicado | `45868a3` | Badges legibles en claro, iconos Lucide, targets 48px |
-| Dashboard | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste: títulos con `text-white` fijo (header, "Mapa de Activos", "Cumplimiento de Mantenimiento", estado de error) invisibles en temas claros → ahora usan `var(--content-text)`. KPICard y StatusIndicator ya eran theme-aware. Ciclo 2026-07-10 (loop-thinkcentre): los 3 botones de `pages/Dashboard.jsx` (header "Poka-Yoke"/"NOM-016" y "Reintentar conexión" del estado de error) medían ~36px de alto (`py-2` + texto `text-sm`), por debajo del mínimo táctil `44–48px` que exige este mismo documento → se agregó `min-h-[44px] justify-center` a los 3, sin tocar layout/color. Es el único hallazgo de este tipo en el archivo (los demás elementos interactivos del módulo viven en `HospitalMap`/`KPICard`/`StatusIndicator`, ya auditados en ciclos previos). Pendiente: layout Stitch completo (screen ID `f0a7d832f5c54a9491da2f699e137490`) |
+| Dashboard | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste: títulos con `text-white` fijo (header, "Mapa de Activos", "Cumplimiento de Mantenimiento", estado de error) invisibles en temas claros → ahora usan `var(--content-text)`. KPICard y StatusIndicator ya eran theme-aware. Ciclo 2026-07-10 (loop-thinkcentre): los 3 botones de `pages/Dashboard.jsx` (header "Poka-Yoke"/"NOM-016" y "Reintentar conexión" del estado de error) medían ~36px de alto (`py-2` + texto `text-sm`), por debajo del mínimo táctil `44–48px` que exige este mismo documento → se agregó `min-h-[44px] justify-center` a los 3, sin tocar layout/color. Es el único hallazgo de este tipo en el archivo (los demás elementos interactivos del módulo viven en `HospitalMap`/`KPICard`/`StatusIndicator`, ya auditados en ciclos previos). Ciclo (este ciclo, loop-thinkcentre): 2 bugs de contraste más en componentes hijos de Dashboard, encontrados al comparar contra el commit `86373f7` de `feat/ui-cinematic` (ver sección ATAJO abajo) — `components/charts/MaintenanceChart.jsx` (tooltip de recharts con `backgroundColor`/`borderColor` fijos oscuros sin `color`/`itemStyle`/`labelStyle`, inconsistente en temas claros) y `components/AlertaBanner.jsx` (banner de alertas rojas con `text-red-200` sobre `bg-red-900/30`, invisible en temas claros) → ambos migrados a tokens de tema, detalle completo en la sección ATAJO. Pendiente: layout Stitch completo (screen ID `f0a7d832f5c54a9491da2f699e137490`) |
 | Equipos / Inventario | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste: toggles de vista, botón "Filtros" (móvil) y "Limpiar filtros" usaban `hover:text-white` fijo — invisibles en hover sobre temas claros → ahora `hover:text-[var(--content-text)]`. Ciclo 2026-07-11 (loop-thinkcentre): la vista tarjeta (`EquipoCard.jsx`) no tenía acceso directo al QR — había que abrir el detalle completo primero, mientras que `EquipoTable.jsx` (vista tabla, ambas variantes móvil/desktop) sí lo tenía desde v4.0 base. El screen ID de Stitch de Inventario móvil (`b8a...9fa0`) lo llama explícitamente "chips de filtro, badges, QR por card" — se agregó el mismo botón QR (icono, 44×44px, mismo SVG/patrón que `EquipoTable`) como overlay circular en la esquina inferior derecha de la miniatura de cada tarjeta, con `stopPropagation` para no abrir el detalle; abre `QRPanel` directo, gestionado en `pages/Equipos.jsx` (mismo componente que ya usaba `EquipoTable`, sin duplicar lógica). Solo se muestra si el equipo tiene `qr_token` (mismo criterio que la tabla). Pendiente: resto del layout Stitch completo (screen ID `aa22f6401767433fbaf79ca5362948cf`) |
 | Detalle de Equipo | 🟡 Parcial | v4.0.16 | Se corrigió bug de contraste en `EquipoDetail.jsx`, `EquipoForm.jsx` y `HistorialEquipoModal.jsx`: campos "Criticidad", "N° Contrato/Servicio", "Proveedor", traslados, tabs e historial (órdenes/preventivos) usaban `text-white` fijo como texto de cuerpo → ahora `var(--content-text)`. Badges de estado siguen con `text-white` fijo (correcto, van sobre fondo de color). v4.0.16: nueva sección "Próximo Mantenimiento" con vista de calendario (`CalendarioMantenimiento.jsx`), adaptando el patrón visual del heatmap de Reservas a un mes con el día objetivo resaltado por urgencia — petición directa de Gustavo (punto 5/5 de Inventario). Pendiente: layout Stitch completo (screen ID `f9b01c3c7232494e9bb95899c10d40b2` / variantes 2562px, 2386px) |
 | Mapa de Activos (Dashboard) | 🟡 Parcial | (este ciclo) | Se corrigió bug de contraste reportado por Gustavo con capturas: `HospitalMap.jsx` tenía el panel "Ficha Técnica" y el tooltip "Ver Ficha" con fondo FIJO oscuro (`#0f172a`) mezclado con texto de tokens de tema (`var(--content-text)`, oscuro en temas claros) → invisible en Azul/Verde. Ahora panel y tooltip usan `var(--content-surface)`/`var(--content-bg)` consistentemente. También corregidos: badges COFEPRIS/Criticidad (patrón `*-500/10`), hover de tabs de piso y "Limpiar filtros". Modales hijos `QRPanel.jsx` y `OrdenServicioRapidaModal.jsx` también corregidos (mismo patrón). Pendiente: layout Stitch completo |
@@ -103,8 +103,35 @@ solapamiento antes de portar). **Antes de rehacer el backlog manualmente,
 revisar `git show 86373f7` y decidir por archivo: cherry-pick, reaplicación
 manual, o descartar si ya no aplica.** Ese mismo commit también agrega una
 regla genérica a `index.css` para `<option>` de `<select>` nativos (ya
-portada hoy, ver más abajo) — sección `MaintenanceChart.jsx`/`StatsCards.jsx`
-del diff no ha sido comparada contra la v4 actual, revisar si aplica.
+portada hoy, ver más abajo).
+
+**Actualización (loop-thinkcentre, este ciclo)**: se comparó `MaintenanceChart.jsx`
+y `StatsCards.jsx` (la sección pendiente de este mismo párrafo) contra el diff
+de `86373f7`. `StatsCards.jsx` se confirmó SIN bug — su único consumidor es
+`TVDashboard.jsx` (kiosko 100% fixed-dark, `bg-slate-950`), así que sus tintes
+fijos son autoconsistentes por diseño (mismo criterio que `NuevaRefaccionModal`
+de Almacén). `MaintenanceChart.jsx` (usado por `Dashboard.jsx`, sí theme-aware)
+SÍ tenía el bug: el `Tooltip` de recharts usaba `backgroundColor:'#0f172a'`/
+`borderColor:'#334155'` fijos, sin `color`/`itemStyle`/`labelStyle` — en temas
+claros (blue/green) mostraba una caja de tooltip oscura flotando sobre un
+dashboard claro, inconsistente con el patrón ya establecido en
+`DegradationChart.jsx` (`CustomTooltip` con `var(--content-bg)`). Se portó el
+mismo fix de `86373f7`: `contentStyle` a `var(--content-bg)`/`var(--content-border)`/
+`var(--content-text)`, más `itemStyle`/`labelStyle` explícitos y `cursor` neutro
+(`rgba(100,116,139,0.08)` en vez de blanco fijo). El grid/eje (`stroke` gris fijo)
+se dejó igual, mismo criterio que `DegradationChart.jsx` (líneas de apoyo, no
+texto — no rompen legibilidad).
+
+De paso se encontró un bug real NO capturado por ningún barrido anterior:
+`AlertaBanner.jsx` (usado en `Dashboard.jsx`, el banner de alertas rojas arriba
+de los KPIs) tenía `text-red-200` (rosa claro, pensado para fondo oscuro) como
+texto del mensaje sobre `bg-red-900/30` — en temas claros esa combinación pierde
+casi todo el contraste. Ninguno de los greps del barrido de contraste (`text-white
+|text-black|bg-white`, luego `text-red-300|text-orange-300|text-yellow-300`)
+cubría `text-red-200`/`text-red-500/60`, por eso quedó fuera de los backlogs de
+abajo. Se portó el mismo fix de `86373f7`: mensaje a `var(--content-text)`,
+metadato del equipo a `var(--content-muted)`, icono/prioridad a `text-red-600`
+(legible en claro y oscuro), fondo a `bg-red-500/10 border-red-500/40`.
 
 ## Backlog de contraste — barrido completo (2026-07-04)
 
