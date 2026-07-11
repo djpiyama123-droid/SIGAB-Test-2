@@ -1,6 +1,23 @@
 {
-  "actual": "4.0.36",
+  "actual": "4.0.37",
   "versiones": [
+    {
+      "version": "4.0.37",
+      "fecha": "2026-07-11",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Fix build: corrige comentario CSS mal cerrado en index.css que causaba un warning de sintaxis en cada build de produccion desde el 26-jun (commit a1e8ac45, landing 'Quirofano de datos') y dejaba texto crudo filtrado al stylesheet final.",
+      "cambios": [
+        "sigab-frontend/src/index.css: el bloque de comentario de la seccion 'Landing cinematic — Direccion A \"Quirofano de datos\"' (linea ~704) nunca tuvo su apertura `/*` -- el commit original que lo agrego (a1e8ac45, 2026-06-26) ya lo omitia, y quedo enmascarado porque esbuild solo emite un warning (no error) al minificar CSS invalido, no rompe el build. Se agrego la linea de apertura `/* ════...` que faltaba, siguiendo el mismo patron de encabezado de bloque usado en el resto del archivo (lineas 12, 119, 245, 405). Verificado con `npm run build`: el warning 'Unexpected literal \"Quirofano de datos\"' desaparecio, el CSS final bajo de 164.34 kB a 164.15 kB (ya no incluye el texto crudo del comentario roto), y `grep -a anim-cell-pop dist/assets/Reservas-*.js` sigue encontrando el heatmap intacto (cero relacion funcional con este fix, solo verificacion de la regla de oro del ciclo)."
+      ],
+      "verificar": [
+        "LandingPage publica (/, sin login): debe verse exactamente igual que antes -- el fix es puramente de comentario CSS invisible en runtime, sin cambio de estilos aplicados.",
+        "npm run build en sigab-frontend/ ya no debe imprimir el warning 'warnings when minifying css: Unexpected literal' -- verificar con build limpio.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests, sin regresiones) -- verificado en este ciclo."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1. Cambio de una sola linea de comentario CSS en un archivo -- revert seguro, no toca ninguna regla de estilo real."
+    },
     {
       "version": "4.0.36",
       "fecha": "2026-07-11",

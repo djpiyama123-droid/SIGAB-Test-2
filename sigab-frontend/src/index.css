@@ -701,6 +701,8 @@ option {
   background-color: var(--content-bg);
   color: var(--content-text);
 }
+
+/* ════════════════════════════════════════════════════════════════════
    Landing cinematic — Dirección A "Quirófano de datos"
    CSS-first, 0 kb de lib. Todo respeta prefers-reduced-motion.
    ════════════════════════════════════════════════════════════════════ */
