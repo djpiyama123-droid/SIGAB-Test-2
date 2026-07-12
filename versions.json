@@ -1,6 +1,25 @@
 {
-  "actual": "4.0.40",
+  "actual": "4.0.41",
   "versiones": [
+    {
+      "version": "4.0.41",
+      "fecha": "2026-07-12",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "52a821a",
+      "resumen": "Design system Checklists NOM-016: alinea el acento primario de ChecklistPage.jsx de azul a verde IMSS, cuarta instancia del mismo bug ya corregido en Reservas/Metrología/Trazabilidad.",
+      "cambios": [
+        "sigab-frontend/src/pages/ChecklistPage.jsx: icono de título, círculo+icono de 'Selecciona una Plantilla Normativa', hover de tarjetas de plantilla, borde de la tarjeta del checklist activo, radio buttons SI/NO/N-A, borde de foco de 'Observaciones Adicionales', botón 'Finalizar y Certificar Auditoría' y etiqueta del nombre de checklist en 'Historial Compliance' migrados de blue-400/500/600 a emerald. No hay convención de azul=documento que preservar en este archivo (sin enlaces a PDF/certificados). Botones ya cumplían el mínimo táctil 44px (py-4/p-4) -- sin cambios de tamaño.",
+        "docs/DESIGN-SYSTEM-V4.md: fila Checklists NOM-016 actualizada en la tabla de avance; punto 4 del backlog marcado resuelto para este archivo pero NO cerrado como categoría -- grep -rln \"blue-[0-9]\" pages/ components/ todavía devuelve ~25 archivos sin clasificar uno por uno, queda como candidato explícito del próximo ciclo."
+      ],
+      "verificar": [
+        "Página Checklists (Cumplimiento NOM-016): icono de título, círculo de 'Selecciona una Plantilla Normativa' y hover de las tarjetas de plantilla deben verse verdes (emerald), no azules.",
+        "Abrir una plantilla: el borde de la tarjeta activa, los radio buttons SI/NO/N-A al marcarlos, el borde de foco del textarea 'Observaciones Adicionales' y el botón 'Finalizar y Certificar Auditoría' deben verse en verde.",
+        "Panel 'Historial Compliance' (columna derecha): la etiqueta con el nombre del checklist de cada tarjeta debe verse verde, no azul.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests) -- verificado en este ciclo. Verificado grep -al anim-cell-pop dist/assets/Reservas-*.js (heatmap intacto)."
+      ],
+      "rollback": "git revert del commit de esta versión sobre v4.0/piloto-clinica-1. Cambio de un solo archivo de frontend (ChecklistPage.jsx), solo clases Tailwind de color -- sin cambios de lógica ni de datos -- revert seguro."
+    },
     {
       "version": "4.0.40",
       "fecha": "2026-07-12",
