@@ -218,6 +218,7 @@ async def _nuevo_equipo(
     qr_token: str | None = None,
 ) -> Equipo:
     eq = Equipo(
+        tenant_id=1,
         serie=serie or _serie_unica(),
         nombre="Equipo de prueba",
         marca="ACME",

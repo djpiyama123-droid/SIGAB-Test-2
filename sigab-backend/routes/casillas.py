@@ -81,8 +81,7 @@ async def upsert_casillas(
     await session.refresh(casillas)
 
     # Emitir evento SSE para actualizar Dashboard en tiempo real
-    await sse_manager.broadcast({
-        "type": "casilla.updated",
+    await sse_manager.broadcast("casilla.updated", {
         "orden_id": orden_id,
         "estado_final": casillas.estado_final,
         "dominio": casillas.dominio,

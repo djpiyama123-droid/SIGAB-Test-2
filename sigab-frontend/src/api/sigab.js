@@ -151,6 +151,14 @@ export const api = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+  // Galería: agrega N fotos a equipo.fotos (no reemplaza, ver subirImagenEquipo).
+  subirImagenesEquipo: (id, files) => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append('files', file));
+    return client.post(`/equipos/${id}/imagenes`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 
   // ── Órdenes ───────────────────────────────────────────────
   // NOTA: '/ordenes/' lleva slash final porque el backend registra la

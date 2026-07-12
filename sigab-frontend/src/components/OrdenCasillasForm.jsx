@@ -292,6 +292,22 @@ export default function OrdenCasillasForm({ ordenId: ordenIdProp, equipoData = {
   // ── Imprimir hoja física ────────────────────────────────────────────────────
   const handleImprimir = () => printFormato();
 
+  // ── Descargar PDF generado por el backend (hoja CENEVAL con evidencia) ─────
+  const handleDescargarPdf = async () => {
+    if (!ordenId) return;
+    const win = api.prepararVentanaPdf(); // síncrono: antes del await, o el popup blocker lo mata
+    const tid = toast.loading('Generando PDF…');
+    try {
+      const blob = await api.descargarPdfCasillas(ordenId);
+      await api.abrirPdf(blob, `casillas-${ordenId}.pdf`, win);
+      toast.success('PDF generado', { id: tid });
+    } catch (err) {
+      win?.close();
+      console.error(err);
+      toast.error(err.response?.data?.detail || 'No se pudo generar el PDF', { id: tid });
+    }
+  };
+
   const toggleGrupo = (i) => setGruposAbiertos((g) => ({ ...g, [i]: !g[i] }));
 
   return (
@@ -533,7 +549,7 @@ export default function OrdenCasillasForm({ ordenId: ordenIdProp, equipoData = {
               </button>
               <button
                 type="submit"
-                disabled={guardando || !ordenId}
+                disabled={guardando}
                 className="px-6 py-2 text-sm font-semibold rounded-lg bg-teal-600 hover:bg-teal-500 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-lg shadow-teal-900/30"
               >
                 {guardando ? '⏳ Guardando...' : '💾 Guardar y cerrar orden'}

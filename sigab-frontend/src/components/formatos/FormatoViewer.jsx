@@ -86,6 +86,25 @@ export default function FormatoViewer({ orden: initialOrden, onClose, autoprint 
     setEditedOrden((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleDescargarPdf = async () => {
+    const id = currentOrden.id;
+    if (!id || String(id).includes('mock')) {
+      toast.error('Esta es una plantilla de vista previa, no hay PDF que descargar.');
+      return;
+    }
+    const win = api.prepararVentanaPdf(); // síncrono: antes del await, o el popup blocker lo mata
+    const tid = toast.loading('Generando PDF…');
+    try {
+      const blob = await api.descargarPdfOrden(id);
+      await api.abrirPdf(blob, `orden-${currentOrden.numero_orden || id}.pdf`, win);
+      toast.success('PDF generado', { id: tid });
+    } catch (err) {
+      win?.close();
+      console.error(err);
+      toast.error(err.response?.data?.detail || 'No se pudo generar el PDF', { id: tid });
+    }
+  };
+
   const handleSave = async () => {
     if (!currentOrden.id || String(currentOrden.id).includes('mock') || currentOrden.numero_orden?.endsWith('0001') && !currentOrden.created_at) {
       toast.error('Esta es una plantilla de vista previa. Para guardar cambios, abre el formato desde una orden real en la pestaña Órdenes de Servicio.');
@@ -189,6 +208,17 @@ export default function FormatoViewer({ orden: initialOrden, onClose, autoprint 
             >
               🖨 Imprimir
             </button>
+            {currentOrden.id && !String(currentOrden.id).includes('mock') && (
+              <button
+                onClick={handleDescargarPdf}
+                disabled={isEditing}
+                className={`px-4 py-1.5 bg-teal-700 hover:bg-teal-600 text-white text-xs font-semibold rounded border border-teal-500 transition-colors ${
+                  isEditing ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                📄 Descargar PDF
+              </button>
+            )}
             <button
               onClick={onClose}
               className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium rounded border border-slate-600 transition-colors"

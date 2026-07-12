@@ -22,26 +22,42 @@ export default function QRScanner() {
     setScanning(false);
   }, []);
 
-  const handleResult = useCallback((text) => {
+  const handleResult = useCallback(async (text) => {
     stopCamera();
     setSuccess(text);
     try { navigator.vibrate?.(200); } catch (_) {}
 
-    // Si es URL completa que contiene /equipo/ → extraer token y navegar
+    let qrToken = null;
     if (text.includes('/equipo/')) {
-      const token = text.split('/equipo/').pop().split('?')[0].split('#')[0];
-      setTimeout(() => navigate(`/equipo/${token}`), 600);
-      return;
-    }
-    // Si parece un token (alfanumérico 12-20 chars) → navegar directo
-    if (/^[a-zA-Z0-9_-]{8,32}$/.test(text.trim())) {
-      setTimeout(() => navigate(`/equipo/${text.trim()}`), 600);
-      return;
-    }
-    // Es una URL externa completa → seguirla
-    if (text.startsWith('http')) {
+      // URL completa que contiene /equipo/ → extraer token
+      qrToken = text.split('/equipo/').pop().split('?')[0].split('#')[0];
+    } else if (/^[a-zA-Z0-9_-]{8,32}$/.test(text.trim())) {
+      // Parece un token (alfanumérico 12-20 chars)
+      qrToken = text.trim();
+    } else if (text.startsWith('http')) {
+      // URL externa completa → seguirla tal cual
       setTimeout(() => { window.location.href = text; }, 600);
+      return;
+    } else {
+      return;
     }
+
+    // Con sesión activa: resolver el equipo (endpoint público, no requiere auth)
+    // y llevar al detalle DENTRO de la app (Inventario con ?equipoId=), que trae
+    // "Abrir Orden de Servicio" / "Acción Rápida" — el landing público (/equipo/:token)
+    // es solo lectura y no tiene esas acciones (bug: escanear un QR logueado no
+    // dejaba crear una OS).
+    if (localStorage.getItem('token')) {
+      try {
+        const res = await fetch(`/api/equipos/public/${qrToken}`);
+        if (res.ok) {
+          const data = await res.json();
+          setTimeout(() => navigate(`/equipos?equipoId=${data.equipo.id}`), 600);
+          return;
+        }
+      } catch (_) { /* sin conexión al endpoint público: cae al landing público */ }
+    }
+    setTimeout(() => navigate(`/equipo/${qrToken}`), 600);
   }, [navigate, stopCamera]);
 
   const scanFrame = useCallback(() => {
