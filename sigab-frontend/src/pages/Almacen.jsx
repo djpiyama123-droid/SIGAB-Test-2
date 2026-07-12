@@ -285,7 +285,7 @@ export default function Almacen() {
             Buscar
           </button>
           <button
-            onClick={() => toast('Predicción IA de consumo — próximamente conectada a SIGAH Copilot', { icon: '🧠' })}
+            onClick={() => toast.info('Predicción IA de consumo — próximamente conectada a SIGAH Copilot', { icon: '🧠' })}
             className="flex items-center gap-2 bg-purple-600/10 border border-purple-500/50 text-purple-400 px-4 py-2 rounded-xl font-bold hover:bg-purple-600/20 transition-all active:scale-95">
             <TrendingDown className="h-4 w-4 rotate-180" />
             Smart Predicción

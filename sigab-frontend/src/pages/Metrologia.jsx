@@ -220,7 +220,7 @@ export default function Metrologia() {
                       <button
                         onClick={() => {
                           if (c.certificado_url) window.open(c.certificado_url, '_blank');
-                          else toast('Certificado aún no cargado para este equipo', { icon: '📄' });
+                          else toast.info('Certificado aún no cargado para este equipo', { icon: '📄' });
                         }}
                         title={c.certificado_url ? 'Abrir certificado' : 'Sin certificado'}
                         className="text-blue-400 hover:text-blue-300 shadow-sm">

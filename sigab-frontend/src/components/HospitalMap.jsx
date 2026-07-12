@@ -734,7 +734,7 @@ export default function HospitalMap() {
       );
       toast.dismiss(tid);
       if (abiertas.length === 0) {
-        toast('Sin OS abiertas — abriendo formulario para crear una nueva');
+        toast.info('Sin OS abiertas — abriendo formulario para crear una nueva');
         setEquipoOS(equipo);
       } else if (abiertas.length === 1) {
         // Navegar a Órdenes con la OS abierta seleccionada por query string
