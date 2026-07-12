@@ -40,6 +40,21 @@ export const TEMAS_CONFIG = {
   },
 };
 
+// Lista cerrada y ordenada de los 3 temas canónicos; congelada contra
+// mutación accidental. FormatoViewer.jsx y cualquier selector de tema
+// debe iterar / validar contra esta lista en vez de hardcodear los
+// nombres en otro archivo.
+export const TEMAS_CANONICOS = Object.freeze(['blanco-imss', 'verde-imss', 'neon-sigah']);
+
+// Resuelve el objeto de estilos para `tema`. Si el tema es desconocido,
+// vacío o no es string, devuelve el fallback (por defecto blanco-imss).
+// Reemplaza el patrón antes repetido en los 5 Formato*.jsx:
+//   `const t = TEMAS_CONFIG[tema] || TEMAS_CONFIG['blanco-imss'];`
+export const normalizeTema = (tema, fallback = TEMAS_CONFIG['blanco-imss']) => {
+  const t = typeof tema === 'string' ? TEMAS_CONFIG[tema] : undefined;
+  return t && typeof t === 'object' ? t : fallback;
+};
+
 export const fmtFecha = (f) => {
   if (!f) return '__/__/____';
   try {

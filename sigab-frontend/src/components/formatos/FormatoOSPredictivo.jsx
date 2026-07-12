@@ -3,7 +3,7 @@
  * No. Orden: OS-PR-XXXX · NOM-016-SSA3-2012
  * Layout fiel al documento .docx oficial IMSS + cabecera especial IA
  */
-import { TEMAS_CONFIG, fmtFecha } from './formatoThemes';
+import { fmtFecha, normalizeTema } from './formatoThemes';
 import { CB, SecHeader } from './formatoHelpers';
 import FormatoHeader from './FormatoHeader';
 
@@ -18,7 +18,7 @@ const QR_SVG = () => (
 );
 
 export default function FormatoOSPredictivo({ orden, tema = 'blanco-imss', isEditing = false, onChange }) {
-  const t = TEMAS_CONFIG[tema] || TEMAS_CONFIG['blanco-imss'];
+  const t = normalizeTema(tema);
   const o = orden || {};
 
   const folio = o.numero_orden || `OS-PR-${String(o.id || '0000').padStart(4, '0')}`;

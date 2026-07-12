@@ -11,12 +11,12 @@
  * v.1.0.0 — 2026-07-08, petición directa de Gustavo: selector "Formato
  * corto / Formato completo" en FormatoViewer.jsx para órdenes correctivas.
  */
-import { TEMAS_CONFIG, fmtFecha } from './formatoThemes';
+import { fmtFecha, normalizeTema } from './formatoThemes';
 import { SecHeader } from './formatoHelpers';
 import FormatoHeader from './FormatoHeader';
 
 export default function FormatoOSCorrectivoCorto({ orden, tema = 'blanco-imss', isEditing = false, onChange }) {
-  const t = TEMAS_CONFIG[tema] || TEMAS_CONFIG['blanco-imss'];
+  const t = normalizeTema(tema);
   const o = orden || {};
 
   const folio = o.numero_orden || `OS-C-${String(o.id || '0000').padStart(4, '0')}`;
