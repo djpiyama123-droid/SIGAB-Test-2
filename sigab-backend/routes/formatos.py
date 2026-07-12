@@ -83,8 +83,9 @@ async def formato_con_datos(
         if equipo:
             orden_dict["equipo_marca"]      = equipo.marca
             orden_dict["equipo_modelo"]     = equipo.modelo
-            orden_dict["equipo_inventario"] = equipo.no_inventario
-            orden_dict["ubicacion_fisica"]  = equipo.ubicacion_fisica
+            orden_dict["equipo_inventario"] = equipo.inventario
+            if not orden_dict.get("ubicacion_fisica"):
+                orden_dict["ubicacion_fisica"] = equipo.ubicacion
 
     # Evidencias fotográficas → o.fotos para la sección "Evidencia
     # Fotográfica del Proceso" de los formatos largos (v4.0.22). Solo
