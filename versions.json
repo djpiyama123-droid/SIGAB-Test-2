@@ -6,7 +6,7 @@
       "fecha": "2026-07-12",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "2f08672",
       "resumen": "Design system Detalle de Equipo: sube los 6 botones del footer de acciones del modal al mínimo táctil de 44px, mismo patrón ya aplicado en Dashboard (v4.0.35) y Reservas (v4.0.38).",
       "cambios": [
         "sigab-frontend/src/components/EquipoDetail.jsx: los 6 botones del footer del modal de detalle (Eliminar, Nueva OS, Historial, QR, Cerrar, Editar) medían ~36px de alto (py-2 + text-sm), por debajo del mínimo táctil 44px que exige docs/DESIGN-SYSTEM-V4.md -- se agregó min-h-[44px] a los 6. El botón 'Cerrar' no tenía flex items-center (solo texto plano), se agregó junto con justify-center para que el min-height centre el contenido igual que el resto. El <select> inline de cambio rápido de estado (pill compacto, text-xs/py-1) se dejó sin tocar a propósito: es un badge/pill, no un CTA primario, sigue el mismo criterio ya aplicado a badges de estado en toda la app.",
