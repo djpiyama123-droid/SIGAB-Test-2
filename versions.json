@@ -1,6 +1,24 @@
 {
-  "actual": "4.0.38",
+  "actual": "4.0.39",
   "versiones": [
+    {
+      "version": "4.0.39",
+      "fecha": "2026-07-12",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Design system Detalle de Equipo: sube los 6 botones del footer de acciones del modal al mínimo táctil de 44px, mismo patrón ya aplicado en Dashboard (v4.0.35) y Reservas (v4.0.38).",
+      "cambios": [
+        "sigab-frontend/src/components/EquipoDetail.jsx: los 6 botones del footer del modal de detalle (Eliminar, Nueva OS, Historial, QR, Cerrar, Editar) medían ~36px de alto (py-2 + text-sm), por debajo del mínimo táctil 44px que exige docs/DESIGN-SYSTEM-V4.md -- se agregó min-h-[44px] a los 6. El botón 'Cerrar' no tenía flex items-center (solo texto plano), se agregó junto con justify-center para que el min-height centre el contenido igual que el resto. El <select> inline de cambio rápido de estado (pill compacto, text-xs/py-1) se dejó sin tocar a propósito: es un badge/pill, no un CTA primario, sigue el mismo criterio ya aplicado a badges de estado en toda la app.",
+        "docs/DESIGN-SYSTEM-V4.md: fila 'Detalle de Equipo' actualizada con el hallazgo y la decisión de no tocar el select de estado."
+      ],
+      "verificar": [
+        "Abrir el detalle de cualquier equipo (Inventario → click en una tarjeta/fila): los 6 botones del footer (Eliminar, Nueva OS, Historial, QR, Cerrar, Editar) deben verse con más alto que antes, ~44px, especialmente notorio en móvil al tocar con el dedo.",
+        "El <select> de 'Estado' (pill verde/ámbar/rojo junto a 'Criticidad') debe seguir viéndose igual que antes -- no se tocó a propósito.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests) -- verificado en este ciclo. Verificado también grep -a anim-cell-pop dist/assets/Reservas-*.js (heatmap presente en el build, sin relación funcional con este cambio)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1. Cambio de un solo archivo de frontend (EquipoDetail.jsx), solo clases Tailwind de alto mínimo -- sin cambios de lógica ni de datos -- revert seguro."
+    },
     {
       "version": "4.0.38",
       "fecha": "2026-07-11",
