@@ -39,7 +39,7 @@ const ORDEN_OPTIONS = [
 
 // Claves de `filtros` que se reflejan en la URL para que la lista sobreviva
 // a navegar fuera de Inventario y volver (ver petición Gustavo 2026-07-05, punto 3).
-const FILTRO_PARAM_KEYS = ['estado', 'criticidad', 'tipo_adquisicion', 'area', 'piso', 'marca', 'tipo_equipo', 'buscar'];
+const FILTRO_PARAM_KEYS = ['estado', 'criticidad', 'tipo_adquisicion', 'area', 'piso', 'marca', 'tipo_equipo', 'buscar', 'fotos_incompletas'];
 
 // Chips de filtro rápido táctil (solo móvil, gap Stitch prioridad S).
 // Mapean al mismo `filtros.estado` que el <select> de escritorio — clases
@@ -407,6 +407,16 @@ export default function Equipos() {
             <option value="media">🟡 Media</option>
             <option value="baja">🟢 Baja</option>
           </select>
+
+          <label className="flex items-center gap-2 px-3 py-2 bg-[var(--content-bg)]/60 border border-[var(--content-border)] rounded-lg text-sm text-[var(--content-muted)] cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={Boolean(filtros.fotos_incompletas)}
+              onChange={(e) => updateFiltros({ ...filtros, fotos_incompletas: e.target.checked ? 'true' : undefined })}
+              className="accent-amber-500"
+            />
+            ⚠ Fotos incompletas
+          </label>
 
           {/* Filtro tipo de adquisición */}
           <select

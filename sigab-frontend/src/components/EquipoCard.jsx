@@ -15,7 +15,25 @@ const ADQUISICION_COLORS = {
   subrogado: 'bg-purple-500/20 text-purple-400 border border-purple-700/40'
 };
 
+// Cuenta fotos en equipo.fotos (array, JSON string, CSV o URL única) sin duplicar
+// la lógica completa de normalizarFotos (EquipoForm/EquipoDetail) — aquí solo
+// necesitamos el conteo para el badge.
+function contarFotos(equipo) {
+  const f = equipo.fotos;
+  if (Array.isArray(f)) return f.filter(Boolean).length;
+  if (typeof f === 'string' && f.trim() && f !== '[]' && f !== 'null') {
+    try {
+      const parsed = JSON.parse(f);
+      return Array.isArray(parsed) ? parsed.filter(Boolean).length : 1;
+    } catch {
+      return f.split(',').map((x) => x.trim()).filter(Boolean).length;
+    }
+  }
+  return equipo.imagen_url ? 1 : 0;
+}
+
 export default function EquipoCard({ equipo, onClick, onQR }) {
+  const fotosIncompletas = contarFotos(equipo) < 3;
   return (
     <div
       className="bg-[var(--content-surface)] rounded-xl border border-[var(--content-border)] overflow-hidden hover:border-[var(--content-border)] cursor-pointer transition-all group"
@@ -69,6 +87,11 @@ export default function EquipoCard({ equipo, onClick, onQR }) {
             style={{ top: equipo.criticidad === 'alta' ? '2.25rem' : '0.5rem' }}
           >
             !
+          </span>
+        )}
+        {fotosIncompletas && (
+          <span className="absolute bottom-2 left-2 bg-amber-500/90 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">
+            ⚠ Fotos incompletas
           </span>
         )}
       </div>

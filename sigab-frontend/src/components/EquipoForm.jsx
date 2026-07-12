@@ -29,6 +29,25 @@ const CRITICIDADES = [
 
 const CLASES_COFEPRIS = ['I', 'II', 'III'];
 
+// Normaliza equipo.fotos (array, JSON string, CSV o URL única) a un array de URLs.
+// Mismo criterio que EquipoDetail.jsx para que ambos lean la misma forma de dato.
+function normalizarFotos(fotos, imagenUrl) {
+  let arr = [];
+  if (Array.isArray(fotos)) arr = fotos.filter(Boolean);
+  else if (typeof fotos === 'string') {
+    const s = fotos.trim();
+    if (s && s !== '[]' && s !== 'null') {
+      try {
+        const parsed = JSON.parse(s);
+        arr = Array.isArray(parsed) ? parsed.filter(Boolean) : [s];
+      } catch {
+        arr = s.split(',').map((x) => x.trim()).filter(Boolean);
+      }
+    }
+  }
+  return arr.length > 0 ? arr : (imagenUrl ? [imagenUrl] : []);
+}
+
 const VACIO = {
   serie: '',
   inventario: '',
@@ -57,8 +76,9 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
 
   const [form, setForm] = useState(VACIO);
   const [zonas, setZonas] = useState([]);
-  const [archivoImagen, setArchivoImagen] = useState(null);
-  const [previewImagen, setPreviewImagen] = useState(null);
+  // Galería: fotos ya guardadas (edición) + fotos nuevas elegidas en este formulario.
+  const [fotosExistentes, setFotosExistentes] = useState([]);
+  const [fotosNuevas, setFotosNuevas] = useState([]); // [{ file, preview }]
   const [guardando, setGuardando] = useState(false);
   const [errores, setErrores] = useState({});
 
@@ -83,12 +103,12 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
           ? equipo.fecha_proximo_mantenimiento.slice(0, 10)
           : '',
       });
-      setPreviewImagen(equipo.imagen_url || null);
+      setFotosExistentes(normalizarFotos(equipo.fotos, equipo.imagen_url));
     } else {
       setForm(VACIO);
-      setPreviewImagen(null);
+      setFotosExistentes([]);
     }
-    setArchivoImagen(null);
+    setFotosNuevas([]);
     setErrores({});
   }, [equipo]);
 
@@ -97,30 +117,39 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
     if (errores[k]) setErrores((er) => ({ ...er, [k]: null }));
   };
 
-  const handleArchivo = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleArchivos = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Solo se permiten imágenes (PNG, JPG, WEBP)');
-      return;
+    const validos = [];
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) {
+        toast.error(`"${file.name}": solo se permiten imágenes (PNG, JPG, WEBP)`);
+        continue;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`"${file.name}": no puede superar 10 MB`);
+        continue;
+      }
+      validos.push(file);
     }
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('La imagen no puede superar 10 MB');
-      return;
-    }
+    if (validos.length === 0) return;
 
-    setArchivoImagen(file);
-    const reader = new FileReader();
-    reader.onload = (ev) => setPreviewImagen(ev.target.result);
-    reader.readAsDataURL(file);
-  };
-
-  const quitarImagen = () => {
-    setArchivoImagen(null);
-    setPreviewImagen(esEdicion ? null : null);
+    validos.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setFotosNuevas((prev) => [...prev, { file, preview: ev.target.result }]);
+      };
+      reader.readAsDataURL(file);
+    });
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
+
+  const quitarFotoNueva = (idx) => {
+    setFotosNuevas((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const totalFotos = fotosExistentes.length + fotosNuevas.length;
 
   const validar = () => {
     const e = {};
@@ -175,15 +204,21 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
         toast.success(res.mensaje || 'Equipo creado');
       }
 
-      // Subir imagen si hay archivo nuevo
-      if (archivoImagen && equipoId) {
+      // Subir fotos nuevas de la galería, si hay
+      if (fotosNuevas.length > 0 && equipoId) {
         try {
-          await api.subirImagenEquipo(equipoId, archivoImagen);
-          toast.success('Imagen guardada');
+          const res = await api.subirImagenesEquipo(equipoId, fotosNuevas.map((f) => f.file));
+          if (!res.completas) {
+            toast.warning(`Equipo guardado con ${res.fotos.length}/3 fotos — puedes completar la galería después ("fotos incompletas")`);
+          } else {
+            toast.success('Fotos guardadas');
+          }
         } catch (err) {
-          toast.error('Equipo guardado, pero falló la subida de imagen');
+          toast.error('Equipo guardado, pero falló la subida de fotos');
           console.error(err);
         }
+      } else if (totalFotos < 3) {
+        toast.warning('Equipo guardado sin fotos (mínimo recomendado: 3 — puedes agregarlas después)');
       }
 
       onSaved?.(equipoId);
@@ -228,41 +263,60 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Imagen del equipo */}
+          {/* Galería de fotos del equipo */}
           <section>
-            <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-2">Imagen del equipo</h3>
-            <div className="flex items-start gap-4">
-              <div className="w-32 h-32 rounded-xl bg-[var(--content-bg)] border-2 border-dashed border-[var(--content-border)] overflow-hidden flex items-center justify-center flex-shrink-0">
-                {previewImagen ? (
-                  <img src={getMediaUrl(previewImagen)} alt="preview" className="w-full h-full object-cover" />
-                ) : (
-                  <svg className="w-10 h-10 text-[var(--content-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                )}
+            <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-2">
+              Fotos del equipo ({totalFotos})
+            </h3>
+            <p className="text-xs text-[var(--content-muted)] mb-2">
+              Recomendado: (1) el equipo, (2) placa con N° de serie, (3) etiqueta naranja de inventario IMSS.
+              La primera foto es la imagen principal (mapa/ficha).
+            </p>
+            {totalFotos < 3 && (
+              <div className="text-xs text-amber-500 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2 mb-3">
+                ⚠ Menos de 3 fotos — se puede guardar igual, quedará marcado como "fotos incompletas".
               </div>
-              <div className="flex-1 space-y-2">
+            )}
+            <div className="flex flex-wrap gap-3 mb-3">
+              {fotosExistentes.map((url, idx) => (
+                <div key={`ex-${idx}`} className="relative w-24 h-24 rounded-xl overflow-hidden border border-[var(--content-border)]">
+                  <img src={getMediaUrl(url)} alt={`foto ${idx + 1}`} className="w-full h-full object-cover" />
+                  {idx === 0 && (
+                    <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center py-0.5">Principal</span>
+                  )}
+                </div>
+              ))}
+              {fotosNuevas.map((f, idx) => (
+                <div key={`nu-${idx}`} className="relative w-24 h-24 rounded-xl overflow-hidden border border-emerald-500/50">
+                  <img src={f.preview} alt={`nueva ${idx + 1}`} className="w-full h-full object-cover" />
+                  {fotosExistentes.length === 0 && idx === 0 && (
+                    <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center py-0.5">Principal</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => quitarFotoNueva(idx)}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-xs flex items-center justify-center hover:bg-red-600"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              <label className="w-24 h-24 rounded-xl bg-[var(--content-bg)] border-2 border-dashed border-[var(--content-border)] flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 flex-shrink-0">
+                <svg className="w-6 h-6 text-[var(--content-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                <span className="text-[10px] text-[var(--content-muted)] mt-1">Agregar</span>
                 <input
                   ref={fileInputRef}
                   type="file"
+                  multiple
                   accept="image/png,image/jpeg,image/webp"
-                  onChange={handleArchivo}
-                  className="block w-full text-xs text-[var(--content-muted)] file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-[var(--content-surface)] file:text-[var(--content-text)] hover:file:bg-[var(--content-border)] file:cursor-pointer"
+                  onChange={handleArchivos}
+                  className="hidden"
                 />
-                <p className="text-xs text-[var(--content-muted)]">
-                  PNG, JPG o WEBP. Máximo 10 MB. La imagen se mostrará en el mapa y la ficha técnica.
-                </p>
-                {previewImagen && (
-                  <button
-                    type="button"
-                    onClick={quitarImagen}
-                    className="text-xs text-red-400 hover:text-red-300 underline"
-                  >
-                    Quitar imagen
-                  </button>
-                )}
-              </div>
+              </label>
             </div>
+            <p className="text-xs text-[var(--content-muted)]">PNG, JPG o WEBP. Máximo 10 MB por foto.</p>
           </section>
 
           {/* Datos básicos */}

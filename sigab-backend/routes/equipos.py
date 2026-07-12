@@ -24,6 +24,7 @@ import secrets
 import uuid
 import csv
 import io
+import json
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from config import get_db, UPLOAD_DIR, MAX_UPLOAD_MB, PUBLIC_BASE_URL
@@ -189,6 +190,14 @@ async def crear_equipo(
             datos=data,
             session=session
         )
+    except IntegrityError as e:
+        await session.rollback()
+        if "serie" in str(e.orig).lower():
+            raise HTTPException(
+                status_code=409,
+                detail=f"Ya existe un equipo registrado con el número de serie '{data.get('serie')}'. Verifica que no esté duplicado.",
+            )
+        raise HTTPException(status_code=409, detail="No se pudo crear el equipo: dato duplicado o inválido.")
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=409, detail=f"Error al crear: {str(e)}")
@@ -352,6 +361,72 @@ async def subir_imagen_equipo(
     await session.commit()
 
     return {"ok": True, "imagen_url": url_publica}
+
+
+@router.post("/{equipo_id}/imagenes")
+async def subir_imagenes_equipo(
+    equipo_id: int,
+    files: list[UploadFile] = File(...),
+    user: dict = Depends(require_action("edit_equipo")),
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """Sube N fotos (galería) y las agrega a `equipo.fotos`.
+
+    A diferencia de POST /{id}/imagen (una sola, reemplaza imagen_url), este
+    endpoint AGREGA fotos a la galería existente. `imagen_url` siempre se
+    sincroniza con la primera foto de `fotos` (principal para mapa/ficha).
+    """
+    stmt_eq = select(Equipo).where(Equipo.id == equipo_id, Equipo.tenant_id == tenant_id)
+    equipo = (await session.execute(stmt_eq)).scalar_one_or_none()
+    if not equipo:
+        raise HTTPException(status_code=404, detail="Equipo no encontrado")
+
+    extensiones_validas = {".png", ".jpg", ".jpeg", ".webp"}
+    from PIL import Image as _PILImage
+
+    fotos_existentes = []
+    if equipo.fotos:
+        try:
+            parsed = json.loads(equipo.fotos)
+            if isinstance(parsed, list):
+                fotos_existentes = [f for f in parsed if f]
+        except Exception:
+            fotos_existentes = [equipo.fotos]  # valor legado no-JSON (URL única)
+
+    carpeta = os.path.join("static", "uploads", "equipos")
+    os.makedirs(carpeta, exist_ok=True)
+
+    nuevas_urls = []
+    for file in files:
+        nombre_original = file.filename or "imagen.png"
+        ext = os.path.splitext(nombre_original)[1].lower()
+        if ext not in extensiones_validas:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Formato no soportado en '{nombre_original}'. Usa: {', '.join(extensiones_validas)}",
+            )
+
+        contenido = await file.read()
+        if len(contenido) > MAX_UPLOAD_MB * 1024 * 1024:
+            raise HTTPException(status_code=413, detail=f"'{nombre_original}' excede {MAX_UPLOAD_MB} MB")
+
+        try:
+            _PILImage.open(io.BytesIO(contenido)).verify()
+        except Exception:
+            raise HTTPException(status_code=400, detail=f"'{nombre_original}' no es una imagen válida")
+
+        nombre_archivo = f"eq_{equipo_id}_{uuid.uuid4().hex[:8]}{ext}"
+        with open(os.path.join(carpeta, nombre_archivo), "wb") as f:
+            f.write(contenido)
+        nuevas_urls.append(f"/static/uploads/equipos/{nombre_archivo}")
+
+    todas_fotos = fotos_existentes + nuevas_urls
+    equipo.fotos = json.dumps(todas_fotos)
+    equipo.imagen_url = todas_fotos[0]
+    await session.commit()
+
+    return {"ok": True, "fotos": todas_fotos, "imagen_url": equipo.imagen_url, "completas": len(todas_fotos) >= 3}
 
 
 @router.get("/{equipo_id}/historial")
@@ -525,6 +600,7 @@ async def listar_equipos(
     marca: Optional[str] = None,
     zona_id: Optional[int] = None,
     clase_cofepris: Optional[str] = None,
+    fotos_incompletas: Optional[bool] = None,
     orden: Optional[str] = "nombre",
     limit: int = 50,
     offset: int = 0,
@@ -555,6 +631,18 @@ async def listar_equipos(
         conditions.append(Equipo.zona_id == zona_id)
     if clase_cofepris:
         conditions.append(Equipo.clase_cofepris == clase_cofepris)
+    if fotos_incompletas:
+        # ponytail: fotos siempre es NULL o JSON válido (único escritor es
+        # subir_imagenes_equipo, que hace json.dumps) — json_length() nunca
+        # ve basura no-JSON. Si en el futuro otro flujo escribe `fotos`, revisar.
+        conditions.append(
+            sa.or_(
+                Equipo.fotos.is_(None),
+                Equipo.fotos == '',
+                Equipo.fotos == '[]',
+                sa.func.json_length(Equipo.fotos) < 3,
+            )
+        )
     if buscar:
         conditions.append(
             sa.or_(

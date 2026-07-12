@@ -3,6 +3,21 @@ import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
 import { getMediaUrl } from '../api/sigah';
 import QRPanel from './QRPanel';
 
+// Ver EquipoCard.jsx para la misma lógica — solo necesitamos el conteo aquí.
+function contarFotos(equipo) {
+  const f = equipo.fotos;
+  if (Array.isArray(f)) return f.filter(Boolean).length;
+  if (typeof f === 'string' && f.trim() && f !== '[]' && f !== 'null') {
+    try {
+      const parsed = JSON.parse(f);
+      return Array.isArray(parsed) ? parsed.filter(Boolean).length : 1;
+    } catch {
+      return f.split(',').map((x) => x.trim()).filter(Boolean).length;
+    }
+  }
+  return equipo.imagen_url ? 1 : 0;
+}
+
 const CRITICIDAD_BADGE = {
   alta: 'bg-red-500/20 text-red-400 border border-red-700/50',
   media: 'bg-yellow-500/20 text-yellow-400 border border-yellow-700/50',
@@ -124,7 +139,7 @@ export default function EquipoTable({ equipos, onSelect }) {
                 >
                   {/* Thumbnail */}
                   <td className="px-3 py-2">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--content-bg)] overflow-hidden flex items-center justify-center flex-shrink-0">
+                    <div className="relative w-8 h-8 rounded-lg bg-[var(--content-bg)] overflow-hidden flex items-center justify-center flex-shrink-0">
                       {eq.imagen_url ? (
                         <img
                           src={getMediaUrl(eq.imagen_url)}
@@ -136,6 +151,14 @@ export default function EquipoTable({ equipos, onSelect }) {
                         <svg className="w-4 h-4 text-[var(--content-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                         </svg>
+                      )}
+                      {contarFotos(eq) < 3 && (
+                        <span
+                          title="Fotos incompletas (menos de 3)"
+                          className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center ring-1 ring-[var(--content-surface)]"
+                        >
+                          !
+                        </span>
                       )}
                     </div>
                   </td>
