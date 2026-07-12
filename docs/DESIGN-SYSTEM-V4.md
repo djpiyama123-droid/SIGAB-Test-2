@@ -73,6 +73,7 @@ Tailwind fija porque no dependen del tema de fondo.
 | Reservas | 🟡 Parcial | (este ciclo) | Ciclo 2026-07-11 (loop-thinkcentre): el módulo ya era theme-safe pero sus acentos primarios (botones "Nueva Reserva"/"Confirmar Reserva", icono del modal, bordes de foco de los 6 inputs del formulario) usaban `blue-600`/`blue-500` fijo — el único módulo del rediseño con un azul de marca en vez del verde `#047857` Verde-Blanco IMSS que usan `Equipos.jsx`/`Ordenes.jsx`/`Almacen.jsx`/`Login.jsx` (`bg-emerald-600 hover:bg-emerald-500`, `focus:border-emerald-500`). Migrados los 11 usos de azul-como-primario a emerald; se dejó intacto el único azul restante (icono "Editar reserva" en `DiaReservasModal`), que sigue el patrón establecido en todo el resto de la app de azul=editar/rojo=eliminar como acento secundario, no como color de marca. De paso, 4 botones ("Cancelar"/"Confirmar Reserva" del modal, "Nueva reserva" del footer de día, "Nueva Reserva" del header) medían 36-40px de alto (`py-2`/`py-2.5` + `text-sm`), por debajo del mínimo táctil 44px de este documento → se agregó `min-h-[44px] justify-center`, mismo patrón que el fix de Dashboard del ciclo anterior. El heatmap (`ActividadHeatmap`, `anim-cell-pop`) y el `AreaChart` de recharts (ya usaban verde `#16a34a`) no se tocaron. 4 variantes de Stitch pendientes de elegir para el layout completo (`9ad9c5aa…`, `0d916bcd…`, `73bb15a3…`, `1e753e9a…`) — sigue siendo el siguiente candidato del punto 3 del backlog de abajo |
 | Metrología | ✅ Aplicado | (este ciclo) | Mismo bug de marca que Reservas: `pages/Metrologia.jsx` usaba `blue-500`/`blue-600` como acento único del módulo (icono de título, botón "Nueva Calibración", 6 bordes de foco del formulario, botón "Registrar Calibración", hover del nombre de equipo en la tabla) → migrado a emerald. Se dejó intacto el icono "Abrir certificado" (`text-blue-400`), que sigue el patrón ya establecido en `Ordenes.jsx` ("Ver PDF"/"Formato") de azul=acceso a documento, no acento de marca. El botón "Nueva Calibración" medía ~40px (`py-2` sin `text-sm`) → se agregó `min-h-[44px] justify-center` |
 | Trazabilidad | ✅ Aplicado | (este ciclo) | Mismo bug: `pages/Trazabilidad.jsx` usaba azul como acento único (icono de título, botón "Registrar Traslado", 5 bordes de foco, botón de envío del modal, link de estado vacío, punto de la línea de tiempo, badge "área destino") → migrado a emerald íntegro (no hay convención de azul=documento en este archivo que preservar, a diferencia de Metrología). El badge de "área destino" pasó de `bg-blue-900/50 text-blue-300 border-blue-800` a su equivalente emerald, conservando el contraste con el badge neutro de "área origen". Botón "Registrar Traslado" (~40px) → `min-h-[44px] justify-center` |
+| Checklists NOM-016 | ✅ Aplicado | (este ciclo) | Cuarta instancia del mismo bug de azul-como-marca (Reservas v4.0.38, Metrología/Trazabilidad v4.0.40): `pages/ChecklistPage.jsx` usaba `blue-500`/`blue-600` como acento único (icono de título, círculo+icono de "Selecciona una Plantilla Normativa", hover de las tarjetas de plantilla, borde de la tarjeta del checklist activo, radio buttons SI/NO/N-A, borde de foco de "Observaciones Adicionales", botón "Finalizar y Certificar Auditoría" y la etiqueta del nombre de checklist en "Historial Compliance") → migrado íntegro a emerald, mismo patrón validado 3 veces. No hay convención de azul=documento que preservar en este archivo (no tiene enlaces a PDF/certificados). Los botones ya cumplían el mínimo táctil 44px (`py-4` en "Finalizar", `p-4` en tarjetas de plantilla) — sin cambios de tamaño necesarios, solo color. |
 | Móvil (Dashboard/Inventario/Detalle/Orden) | 🟡 Parcial | (este ciclo) | `components/Layout.jsx`: la barra de navegación inferior (compartida por TODAS las páginas en móvil, no solo Dashboard) tenía los 5 accesos en fila plana — no reflejaba el patrón "bottom-bar con Escanear central" del screen ID `8af028299b1c4cd4af17babd042028b8` (nombre literal de la pantalla Stitch). "Escanear" ahora se renderiza como FAB circular elevado (56px, `bg-[var(--accent)]`, `-mt-7` sobre la barra) centrado entre Equipos y Ordenes, en vez de ser el 5° ítem en fila. Los 4 ítems restantes ahora declaran `min-h-[48px] min-w-[48px]` explícito (antes solo `p-2`, ya cumplía el mínimo mas no lo garantizaba si cambia el tamaño de fuente/idioma). Pendiente: el resto del layout Stitch por pantalla (Inventario/Detalle/Orden móvil) — screen IDs en `CONSOLIDACION-V4.md` §6, sección Móvil |
 
 Leyenda: ✅ aplicado y verificado · 🟡 en progreso/parcial · ⬜ sin empezar.
@@ -87,13 +88,17 @@ Leyenda: ✅ aplicado y verificado · 🟡 en progreso/parcial · ⬜ sin empeza
    pantalla por pantalla).
 3. Aplicar el mismo criterio de "sin colores fijos que dependan del fondo"
    a Detalle de Equipo y Reservas (layout Stitch), un módulo por ciclo.
-4. **Nuevo hallazgo (este ciclo)**: `pages/ChecklistPage.jsx` tiene el mismo
-   bug de azul-como-marca que tenían Reservas/Metrología/Trazabilidad (icono
-   de título, tarjetas de selección de plantilla, checkbox de items, borde
-   de foco de "Observaciones" y el botón final "Finalizar y Certificar
-   Auditoría", todos `blue-500`/`blue-600`) — no se tocó este ciclo por
-   presupuesto de tiempo, queda como candidato directo del próximo ciclo,
-   mismo patrón de migración a emerald ya validado 3 veces.
+4. ✅ Resuelto (este ciclo): `pages/ChecklistPage.jsx` tenía el mismo bug de
+   azul-como-marca que Reservas/Metrología/Trazabilidad — migrado íntegro a
+   emerald (detalle en la tabla de avance). **No cerrado como categoría**:
+   `grep -rln "blue-[0-9]" pages/ components/` todavía devuelve ~25 archivos
+   con algún uso de azul — la mayoría es el patrón correcto
+   azul=editar/documento o badges de estado, pero no se clasificó archivo
+   por archivo este ciclo (sin presupuesto de tiempo). Candidato del próximo
+   ciclo: repetir la clasificación manual que ya se hizo para Reservas/
+   Metrología/Trazabilidad/Checklists sobre esa lista, empezando por
+   `pages/Dashboard.jsx`, `pages/Ordenes.jsx` y `pages/Analitica.jsx` (los
+   de mayor tráfico en el piloto).
 5. Evaluar si el tema por defecto (`glass`, oscuro) debe seguir siendo el
    default o si Verde-Blanco IMSS (`green`) debe ser el default de
    producción — decisión de Gustavo, no del loop.
