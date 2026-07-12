@@ -6,7 +6,7 @@
       "fecha": "2026-07-12",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "994bc36",
       "resumen": "Design system Metrología y Trazabilidad: migra el acento de marca de azul a verde IMSS (mismo bug ya corregido en Reservas v4.0.38) y sube los botones de encabezado al mínimo táctil de 44px.",
       "cambios": [
         "sigab-frontend/src/pages/Metrologia.jsx: icono de título (página y modal), botón 'Nueva Calibración', 6 bordes de foco del formulario, botón 'Registrar Calibración' y hover del nombre de equipo en la tabla migrados de blue-500/blue-600 a emerald. Se dejo intacto el icono 'Abrir certificado' (text-blue-400): sigue el patron ya establecido en Ordenes.jsx ('Ver PDF'/'Formato') de azul = acceso a documento, no color de marca. Boton 'Nueva Calibracion' (~40px, py-2 sin text-sm) subido a min-h-[44px] justify-center.",
