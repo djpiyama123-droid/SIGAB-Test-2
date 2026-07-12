@@ -1,0 +1,19 @@
+name: Backup mirror a SIGAB-v4
+
+on:
+  push:
+    branches: [ v4.0/piloto-clinica-1 ]
+
+jobs:
+  mirror:
+    name: Mirror a SIGAB-v4 main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout completo
+      uses: actions/checkout@v4
+      with:
+          fetch-depth: 0
+
+      - name: Push mirror a SIGAB-v4
+      run: |
+          git push --force https://x-access-token:${{ secrets.V4_MIRROR_TOKEN }}@github.com/djpiyama123-droid/SIGAB-v4.git HEAD:main
