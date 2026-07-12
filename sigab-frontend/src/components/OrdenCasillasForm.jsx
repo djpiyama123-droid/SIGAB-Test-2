@@ -549,7 +549,7 @@ export default function OrdenCasillasForm({ ordenId: ordenIdProp, equipoData = {
               </button>
               <button
                 type="submit"
-                disabled={guardando || !ordenId}
+                disabled={guardando}
                 className="px-6 py-2 text-sm font-semibold rounded-lg bg-teal-600 hover:bg-teal-500 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-lg shadow-teal-900/30"
               >
                 {guardando ? '⏳ Guardando...' : '💾 Guardar y cerrar orden'}

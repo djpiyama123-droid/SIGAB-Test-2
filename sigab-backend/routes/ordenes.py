@@ -303,6 +303,36 @@ async def subir_evidencia(
     return {"ok": True, "id": nueva_evidencia.id, "url": file_url}
 
 
+@router.delete("/evidencia/{evidencia_id}")
+async def eliminar_evidencia(
+    evidencia_id: int,
+    user: dict = Depends(get_current_user),
+    tenant_id: int = Depends(get_current_tenant),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """Elimina una foto de evidencia subida por error (ej. prueba de diagnóstico)."""
+    stmt = (
+        select(EVIDENCIA_OS)
+        .join(OrdenServicio, OrdenServicio.id == EVIDENCIA_OS.orden_id)
+        .where(EVIDENCIA_OS.id == evidencia_id, OrdenServicio.tenant_id == tenant_id)
+    )
+    evidencia = (await session.execute(stmt)).scalar_one_or_none()
+    if not evidencia:
+        raise HTTPException(status_code=404, detail="Evidencia no encontrada")
+
+    ruta = evidencia.ruta_archivo.lstrip("/")
+    await session.delete(evidencia)
+    await session.commit()
+
+    if os.path.isfile(ruta):
+        try:
+            os.remove(ruta)
+        except Exception:
+            pass
+
+    return {"ok": True}
+
+
 @router.put("/{orden_id}/finalizar")
 async def finalizar_orden(
     orden_id: int,
