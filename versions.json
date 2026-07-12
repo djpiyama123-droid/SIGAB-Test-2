@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.37",
+  "actual": "4.0.38",
   "versiones": [
+    {
+      "version": "4.0.38",
+      "fecha": "2026-07-11",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Design system Reservas: alinea los acentos primarios del módulo (botones, icono de modal, bordes de foco) de azul fijo a verde Verde-Blanco IMSS, y sube 4 botones al mínimo táctil de 44px.",
+      "cambios": [
+        "sigab-frontend/src/pages/Reservas.jsx: los botones 'Nueva Reserva'/'Confirmar Reserva'/'Nueva reserva' (footer de día), el icono del encabezado del modal de creación y los bordes de foco de los 6 inputs del formulario usaban bg-blue-600/text-blue-500/focus:border-blue-500 -- el único módulo del rediseño con azul como color de marca en vez del verde #047857 que usan Equipos.jsx/Ordenes.jsx/Almacen.jsx/Login.jsx (bg-emerald-600 hover:bg-emerald-500, focus:border-emerald-500). Migrados 11 usos a emerald. Se dejó intacto el único azul restante (icono 'Editar reserva' de DiaReservasModal), que sigue el patrón ya establecido en toda la app de azul=editar/rojo=eliminar como acento secundario, no como color de marca -- no es un bug de contraste, es consistente.",
+        "sigab-frontend/src/pages/Reservas.jsx: 4 botones ('Cancelar'/'Confirmar Reserva' del modal de creación, 'Nueva reserva' del footer del modal de día, 'Nueva Reserva' del encabezado de la página) medían 36-40px de alto (py-2/py-2.5 + text-sm), por debajo del mínimo táctil de 44px que exige docs/DESIGN-SYSTEM-V4.md -- se agregó min-h-[44px] justify-center a los 4, mismo patrón usado en el fix de Dashboard del ciclo anterior (v4.0.35).",
+        "docs/DESIGN-SYSTEM-V4.md: fila Reservas actualizada (sigue Parcial -- queda pendiente elegir una de las 4 variantes de Stitch para el layout completo, ya listado en el backlog)."
+      ],
+      "verificar": [
+        "Página Reservas en cualquier tema claro (green/blue): el botón 'Nueva Reserva' del encabezado y el botón flotante 'Nueva reserva' dentro del modal de un día deben verse verdes (emerald), no azules.",
+        "Abrir 'Nueva Reserva': el icono junto al título del modal y el borde de foco de los inputs (equipo, área, piso, fechas, motivo) deben iluminarse en verde al enfocar, no en azul. El botón 'Confirmar Reserva' debe ser verde.",
+        "Dentro del modal de un día (click en una celda del heatmap con reservas), el botón de editar (lápiz) de cada tarjeta debe seguir siendo azul -- eso es intencional, no se tocó.",
+        "El heatmap 'Mapa de actividad' y la gráfica de área 'Reservas por día' deben verse exactamente igual que antes (sin cambios, ya usaban verde).",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests) -- verificado en este ciclo. Verificado también grep -a anim-cell-pop dist/assets/Reservas-*.js (heatmap presente en el build)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1. Cambio de un solo archivo de frontend (Reservas.jsx), solo clases Tailwind de color y alto mínimo -- sin cambios de lógica ni de datos -- revert seguro."
+    },
     {
       "version": "4.0.37",
       "fecha": "2026-07-11",

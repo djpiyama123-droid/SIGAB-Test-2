@@ -134,7 +134,7 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
       <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden anim-scale-in" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--content-border)] bg-[var(--content-bg)]/40">
           <h2 className="text-lg font-bold text-[var(--content-text)] flex items-center gap-2">
-            <CalendarClock className="h-5 w-5 text-blue-500" />
+            <CalendarClock className="h-5 w-5 text-emerald-500" />
             {editando ? 'Editar Reserva' : 'Nueva Reserva de Equipo'}
           </h2>
           <button onClick={onClose} className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors">
@@ -152,14 +152,14 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
                 placeholder="Buscar por nombre, serie o modelo..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl pl-10 pr-4 py-2 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-blue-500/80 transition-colors"
+                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl pl-10 pr-4 py-2 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-emerald-500/80 transition-colors"
               />
             </div>
             <select
               required
               value={form.equipo_id}
               onChange={e => set('equipo_id', e.target.value)}
-              className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-[var(--content-text)] focus:outline-none focus:border-blue-500 transition-colors text-sm"
+              className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-[var(--content-text)] focus:outline-none focus:border-emerald-500 transition-colors text-sm"
             >
               <option value="">— Seleccionar equipo ({filteredEquipos.length}) —</option>
               {filteredEquipos.map(eq => (
@@ -178,7 +178,7 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
                 required
                 value={form.area_reserva}
                 onChange={e => set('area_reserva', e.target.value)}
-                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="Ej. Quirófano 3, UCIN"
               />
             </div>
@@ -187,7 +187,7 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
               <input
                 value={form.piso_reserva}
                 onChange={e => set('piso_reserva', e.target.value)}
-                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="Ej. 1er Piso, Sótano"
               />
             </div>
@@ -200,7 +200,7 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
                 required
                 value={form.fecha_inicio}
                 onChange={e => set('fecha_inicio', e.target.value)}
-                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-500 transition-colors"
               />
             </div>
             <div>
@@ -209,7 +209,7 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
                 type="datetime-local"
                 value={form.fecha_fin}
                 onChange={e => set('fecha_fin', e.target.value)}
-                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-500 transition-colors"
               />
             </div>
           </div>
@@ -221,7 +221,7 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
               value={form.motivo}
               onChange={e => set('motivo', e.target.value)}
               rows={3}
-              className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-blue-500 transition-colors resize-none"
+              className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-emerald-500 transition-colors resize-none"
               placeholder="Indica el procedimiento quirúrgico o clínico, estudio o traslado de paciente para el cual se requiere el equipo..."
             />
           </div>
@@ -230,14 +230,14 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-[var(--content-border)] text-[var(--content-muted)] hover:bg-[var(--content-bg)] transition-all text-sm font-semibold"
+              className="flex-1 min-h-[44px] rounded-xl border border-[var(--content-border)] text-[var(--content-muted)] hover:bg-[var(--content-bg)] transition-all text-sm font-semibold"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all disabled:opacity-50 text-sm active:scale-95"
+              className="flex-1 min-h-[44px] rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-all disabled:opacity-50 text-sm active:scale-95"
             >
               {saving ? (editando ? 'Guardando...' : 'Creando Reserva...') : (editando ? 'Guardar cambios' : 'Confirmar Reserva')}
             </button>
@@ -417,7 +417,7 @@ function DiaReservasModal({ dia, reservas, onClose, onNueva, onEditar, onElimina
           )}
         </div>
         <div className="px-4 py-3 border-t border-[var(--content-border)] flex justify-end">
-          <button onClick={onNueva} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95">
+          <button onClick={onNueva} className="flex items-center justify-center gap-2 min-h-[44px] bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95">
             <Plus className="h-4 w-4" /> Nueva reserva
           </button>
         </div>
@@ -506,7 +506,7 @@ export default function Reservas() {
         </div>
         <button
           onClick={() => setModalNueva(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-semibold transition-all shadow-lg active:scale-95 text-sm self-start"
+          className="flex items-center justify-center gap-2 min-h-[44px] bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-semibold transition-all shadow-lg active:scale-95 text-sm self-start"
         >
           <Plus className="h-4 w-4" />
           Nueva Reserva
