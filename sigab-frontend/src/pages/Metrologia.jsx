@@ -49,7 +49,7 @@ function NuevaCalibracionModal({ onClose, onSaved }) {
       <div className="bg-slate-955 border border-slate-800 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-900 bg-slate-900/40">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-blue-500" />
+            <ShieldCheck className="h-5 w-5 text-emerald-500" />
             Nueva Calibración
           </h2>
           <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
@@ -60,7 +60,7 @@ function NuevaCalibracionModal({ onClose, onSaved }) {
           <div>
             <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Equipo *</label>
             <select required value={form.equipo_id} onChange={e => set('equipo_id', e.target.value)}
-              className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors">
+              className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-colors">
               <option value="">— Seleccionar equipo —</option>
               {equipos.map(eq => (
                 <option key={eq.id} value={eq.id}>{eq.nombre} — {eq.serie}</option>
@@ -71,29 +71,29 @@ function NuevaCalibracionModal({ onClose, onSaved }) {
             <div className="col-span-2">
               <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Tipo de medición *</label>
               <input required value={form.tipo_medicion} onChange={e => set('tipo_medicion', e.target.value)}
-                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-650 focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-650 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="Ej. Presión arterial, Temperatura, Flujo O₂" />
             </div>
             <div>
               <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Fecha de calibración *</label>
               <input type="date" required value={form.fecha_calibracion} onChange={e => set('fecha_calibracion', e.target.value)}
-                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-colors" />
             </div>
             <div>
               <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Vigencia (meses)</label>
               <input type="number" min={1} max={120} value={form.vigencia_meses} onChange={e => set('vigencia_meses', e.target.value)}
-                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-colors" />
             </div>
             <div>
               <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Entidad calibradora</label>
               <input value={form.entidad_calibradora} onChange={e => set('entidad_calibradora', e.target.value)}
-                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-655 focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-655 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="Laboratorio NOM-028" />
             </div>
             <div>
               <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Número de certificado</label>
               <input value={form.certificado_numero} onChange={e => set('certificado_numero', e.target.value)}
-                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-655 focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-655 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="CERT-2026-001" />
             </div>
           </div>
@@ -103,7 +103,7 @@ function NuevaCalibracionModal({ onClose, onSaved }) {
               Cancelar
             </button>
             <button type="submit" disabled={saving}
-              className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all disabled:opacity-50">
+              className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-all disabled:opacity-50">
               {saving ? 'Registrando...' : 'Registrar Calibración'}
             </button>
           </div>
@@ -143,14 +143,14 @@ export default function Metrologia() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-[var(--content-text)] flex items-center gap-3">
-            <ShieldCheck className="h-8 w-8 text-blue-500" />
+            <ShieldCheck className="h-8 w-8 text-emerald-500" />
             Metrología y Calibración
           </h1>
           <p className="text-[var(--content-muted)] mt-1">Control de exactitud y certificados de instrumentos de medición.</p>
         </div>
         <button
           onClick={() => setModalNueva(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl font-semibold transition-all shadow-lg active:scale-95">
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-semibold transition-all shadow-lg active:scale-95 min-h-[44px] justify-center">
           <Plus className="h-4 w-4" />
           Nueva Calibración
         </button>
@@ -201,7 +201,7 @@ export default function Metrologia() {
                 return (
                   <tr key={c.id} className="hover:bg-slate-800/30 transition-colors group">
                     <td className="px-6 py-4">
-                      <p className="font-bold text-[var(--content-text)] group-hover:text-blue-400 transition-colors">{c.equipo_nombre}</p>
+                      <p className="font-bold text-[var(--content-text)] group-hover:text-emerald-400 transition-colors">{c.equipo_nombre}</p>
                       <p className="text-[10px] text-[var(--content-muted)] uppercase">{c.equipo_serie}</p>
                     </td>
                     <td className="px-6 py-4 text-sm text-[var(--content-muted)]">{c.tipo_medicion}</td>

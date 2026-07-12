@@ -48,7 +48,7 @@ function RegistrarTrasladoModal({ onClose, onSaved }) {
       <div className="bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-900 bg-slate-900/40">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-blue-500" />
+            <MapPin className="h-5 w-5 text-emerald-500" />
             Registrar Traslado
           </h2>
           <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
@@ -59,7 +59,7 @@ function RegistrarTrasladoModal({ onClose, onSaved }) {
           <div>
             <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Equipo *</label>
             <select required value={form.equipo_id} onChange={e => set('equipo_id', e.target.value)}
-              className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors">
+              className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-colors">
               <option value="">— Seleccionar equipo —</option>
               {equipos.map(eq => (
                 <option key={eq.id} value={eq.id}>{eq.nombre} — {eq.serie}</option>
@@ -70,26 +70,26 @@ function RegistrarTrasladoModal({ onClose, onSaved }) {
             <div>
               <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Área de destino *</label>
               <input required value={form.area_destino} onChange={e => set('area_destino', e.target.value)}
-                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="Ej. UCI, Urgencias, Quirófano" />
             </div>
             <div>
               <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Piso</label>
               <input type="number" min={1} value={form.piso_destino} onChange={e => set('piso_destino', e.target.value)}
-                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="1" />
             </div>
           </div>
           <div>
             <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Motivo</label>
             <input value={form.motivo} onChange={e => set('motivo', e.target.value)}
-              className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
               placeholder="Ej. Préstamo temporal, mantenimiento, reubicación" />
           </div>
           <div>
             <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Notas adicionales</label>
             <textarea rows={2} value={form.notas} onChange={e => set('notas', e.target.value)}
-              className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-655 focus:outline-none focus:border-blue-500 transition-colors resize-none"
+              className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-655 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
               placeholder="Observaciones del traslado..." />
           </div>
           <div className="flex gap-3 pt-2">
@@ -98,7 +98,7 @@ function RegistrarTrasladoModal({ onClose, onSaved }) {
               Cancelar
             </button>
             <button type="submit" disabled={saving}
-              className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all disabled:opacity-50">
+              className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-all disabled:opacity-50">
               {saving ? 'Registrando...' : 'Registrar Traslado'}
             </button>
           </div>
@@ -129,14 +129,14 @@ export default function Trazabilidad() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-bold text-[var(--content-text)] flex items-center gap-2">
-            <MapPin className="h-6 w-6 text-blue-500" />
+            <MapPin className="h-6 w-6 text-emerald-500" />
             Trazabilidad de Equipos
           </h1>
           <p className="text-[var(--content-muted)] text-sm">Historial de movimientos y traslados — NOM-016</p>
         </div>
         <button
           onClick={() => setModalTraslado(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl font-semibold transition-all shadow-lg active:scale-95">
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-semibold transition-all shadow-lg active:scale-95 min-h-[44px] justify-center">
           <Plus className="h-4 w-4" />
           Registrar Traslado
         </button>
@@ -149,7 +149,7 @@ export default function Trazabilidad() {
           <MapPin className="h-10 w-10 text-slate-700 mx-auto mb-3" />
           <p className="text-slate-500 font-medium">Sin movimientos registrados.</p>
           <button onClick={() => setModalTraslado(true)}
-            className="mt-4 text-blue-500 text-sm font-semibold hover:text-blue-400 transition-colors">
+            className="mt-4 text-emerald-500 text-sm font-semibold hover:text-emerald-400 transition-colors">
             + Registrar primer traslado
           </button>
         </div>
@@ -158,7 +158,7 @@ export default function Trazabilidad() {
           {movimientos.map((m, i) => (
             <div key={m.id || i} className="flex gap-4">
               <div className="flex flex-col items-center">
-                <div className="w-3 h-3 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+                <div className="w-3 h-3 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
                 {i < movimientos.length - 1 && (
                   <div className="w-0.5 flex-1 bg-[var(--content-surface)] my-1" />
                 )}
@@ -179,7 +179,7 @@ export default function Trazabilidad() {
                     {m.piso_origen && ` • P${m.piso_origen}`}
                   </span>
                   <ArrowRight className="h-3 w-3 text-slate-500" />
-                  <span className="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded text-xs border border-blue-800">
+                  <span className="bg-emerald-900/50 text-emerald-300 px-2 py-0.5 rounded text-xs border border-emerald-800">
                     {m.area_destino}
                     {m.piso_destino && ` • P${m.piso_destino}`}
                   </span>
