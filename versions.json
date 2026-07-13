@@ -6,7 +6,7 @@
       "fecha": "2026-07-12",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "b33f399",
       "resumen": "Design system: clasifica el azul residual en Dashboard/Ordenes/Analitica del backlog de blue-[0-9] y corrige 2 bugs de acento único fuera de lugar.",
       "cambios": [
         "sigab-frontend/src/pages/Dashboard.jsx: icono ClipboardCheck de 'Cumplimiento de Mantenimiento' (unico icono de titulo con color fijo del archivo) de blue-500 a emerald-500.",
