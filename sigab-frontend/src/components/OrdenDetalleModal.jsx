@@ -232,7 +232,7 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
               </div>
               
               <div className="bg-[var(--content-bg)]/50 p-4 rounded-lg border border-[var(--content-border)]">
-                <h3 className="text-sm font-semibold text-blue-400 mb-2">Información</h3>
+                <h3 className="text-sm font-semibold text-emerald-400 mb-2">Información</h3>
                 <ul className="text-sm text-[var(--content-muted)] space-y-1">
                   <li><strong>Técnico:</strong> {orden.tecnico_nombre}</li>
                   <li><strong>Fecha:</strong> {orden.fecha}</li>
@@ -301,7 +301,7 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
                         archivo en vez de <img>, así que el flujo de subida/listado no
                         requiere más cambios. Visor inline de PDF queda como pendiente. */}
                     <input type="file" accept="image/*,application/pdf" onChange={e => setEvidenciaFile(e.target.files[0])} className="text-xs text-[var(--content-muted)] w-full" />
-                    <button disabled={!evidenciaFile || subiendo} className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-500 disabled:opacity-50">
+                    <button disabled={!evidenciaFile || subiendo} className="px-3 py-1.5 bg-emerald-600 text-white text-xs rounded hover:bg-emerald-500 disabled:opacity-50">
                       {subiendo ? 'Subiendo' : 'Subir'}
                     </button>
                   </form>

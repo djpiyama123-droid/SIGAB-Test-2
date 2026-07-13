@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.43",
+  "actual": "4.0.44",
   "versiones": [
+    {
+      "version": "4.0.44",
+      "fecha": "2026-07-13",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Design system: clasifica los 3 usos de azul de OrdenDetalleModal.jsx (candidato del backlog) y corrige 2 bugs reales de acento fuera de lugar.",
+      "cambios": [
+        "sigab-frontend/src/components/OrdenDetalleModal.jsx: título de sección 'Información' (text-blue-400) migrado a emerald-400 -- su hermano directo 'Detalles del Fallo', mismo layout y jerarquía, ya usaba emerald sin razón categórica para que uno de los dos fuera azul.",
+        "sigab-frontend/src/components/OrdenDetalleModal.jsx: botón 'Subir' del formulario de evidencias (bg-blue-600) migrado a emerald-600 -- es una acción primaria de formulario, mismo rol que 'Firmar y Cerrar' (ya emerald), sin convención de documento que justifique el azul.",
+        "sigab-frontend/src/components/OrdenDetalleModal.jsx: botón '🖨️ PDF' del header (bg-blue-600) revisado y confirmado SIN bug -- sigue la convención ya validada azul=documento (Metrología/Ordenes), no se tocó.",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance actualizada (Órdenes de Servicio), punto 4 del backlog actualizado -- OrdenDetalleModal.jsx cerrado, candidato siguiente es QRPanel.jsx o HistorialEquipoModal.jsx."
+      ],
+      "verificar": [
+        "Inventario/Órdenes: abrir el detalle de una orden de servicio (icono de lupa o click en fila) -- el título de sección 'Información' (Técnico/Fecha/Formato IMSS) debe verse en verde, no azul.",
+        "En el mismo modal, con la orden abierta y no cerrada: el formulario de 'Evidencias Fotográficas' debe mostrar el botón 'Subir' en verde.",
+        "El botón '🖨️ PDF' del header del modal de detalle de orden debe seguir en azul (a propósito, no se tocó).",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests). Verificado grep -al anim-cell-pop dist/assets/Reservas-*.js (heatmap intacto)."
+      ],
+      "rollback": "git revert del commit de esta versión sobre v4.0/piloto-clinica-1. Cambio de un solo archivo de frontend, solo 2 clases Tailwind de color -- sin cambios de lógica de negocio ni de datos -- revert seguro."
+    },
     {
       "version": "4.0.43",
       "fecha": "2026-07-13",
