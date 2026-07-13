@@ -1,6 +1,25 @@
 {
-  "actual": "4.0.44",
+  "actual": "4.0.45",
   "versiones": [
+    {
+      "version": "4.0.45",
+      "fecha": "2026-07-13",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Design system: corrige el badge de 'área destino' de HistorialEquipoModal.jsx (azul) para igualar la convención emerald ya validada en Trazabilidad.jsx; confirma QRPanel.jsx sin bug (azul=documento).",
+      "cambios": [
+        "sigab-frontend/src/components/HistorialEquipoModal.jsx: badge de 'área destino' de la pestaña Traslados (dentro de Historial Técnico del detalle de equipo) migrado de bg-blue-900/50 text-blue-300 border-blue-800 a bg-emerald-900/50 text-emerald-300 border-emerald-800 -- mismo dato semántico (movimiento área origen→destino) que pages/Trazabilidad.jsx, que ya usa emerald para el badge equivalente desde v4.0.40; sin razón categórica para que este componente hermano siguiera en azul.",
+        "sigab-frontend/src/components/QRPanel.jsx: revisado, SIN cambios -- el botón '🏷️ Etiqueta A6' (bg-blue-600) descarga un PDF de etiqueta, sigue la convención ya validada azul=documento (mismo patrón que el botón '🖨️ PDF' de OrdenDetalleModal.jsx, confirmado en v4.0.44).",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance actualizada (nueva fila 'Detalle de Equipo (Historial)'), punto 4 del backlog actualizado -- candidato siguiente es EventoDetalleModal.jsx o HistorialModal.jsx."
+      ],
+      "verificar": [
+        "Inventario: abrir el detalle de un equipo con traslados registrados > botón 'Historial' > pestaña 'Traslados' -- el badge del área de destino de cada movimiento debe verse en verde (emerald), no azul. El badge de área de origen (neutral) no cambia.",
+        "QRPanel (botón QR en tarjeta/tabla de Inventario): el botón 'Etiqueta A6' debe seguir en azul (a propósito, no se tocó); el botón 'Generar QR' sigue en verde.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests) -- verificado en este ciclo. Verificado grep -al anim-cell-pop dist/assets/Reservas-*.js (heatmap intacto)."
+      ],
+      "rollback": "git revert del commit de esta versión sobre v4.0/piloto-clinica-1. Cambio de un solo archivo de frontend, solo clases Tailwind de color -- sin cambios de lógica de negocio ni de datos -- revert seguro."
+    },
     {
       "version": "4.0.44",
       "fecha": "2026-07-13",

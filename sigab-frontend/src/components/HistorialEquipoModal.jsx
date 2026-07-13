@@ -173,7 +173,7 @@ function ListaTraslados({ traslados }) {
               {t.piso_origen && ` · P${t.piso_origen}`}
             </span>
             <span className="text-[var(--content-muted)]">→</span>
-            <span className="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded text-xs border border-blue-800">
+            <span className="bg-emerald-900/50 text-emerald-300 px-2 py-0.5 rounded text-xs border border-emerald-800">
               {t.area_destino}
               {t.piso_destino && ` · P${t.piso_destino}`}
             </span>
