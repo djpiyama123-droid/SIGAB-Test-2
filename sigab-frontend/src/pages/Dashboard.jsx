@@ -218,7 +218,7 @@ export default function Dashboard() {
         <GridItem span={isControlRoom ? 4 : 3}>
           <div className="rounded-xl border border-[var(--content-border)] bg-[var(--content-bg)]/40 backdrop-blur-sm p-5">
             <h3 className="text-lg font-medium text-[var(--content-text)] flex items-center gap-2">
-              <ClipboardCheck className="h-5 w-5 text-blue-500" />
+              <ClipboardCheck className="h-5 w-5 text-emerald-500" />
               Cumplimiento de Mantenimiento
             </h3>
             <p className="text-[var(--content-muted)] text-xs mb-6">Programado vs. Ejecutado por mes</p>

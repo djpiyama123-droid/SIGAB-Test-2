@@ -633,7 +633,7 @@ export default function Ordenes() {
         {FILTROS_TIPO.map((t) => (
           <button key={t} onClick={() => setTipo(t)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors ${
-              tipoFiltro === t ? 'bg-blue-800/60 text-blue-300' : 'bg-[var(--content-surface)] text-[var(--content-muted)] hover:bg-[var(--content-border)]'
+              tipoFiltro === t ? 'bg-emerald-800/60 text-emerald-300' : 'bg-[var(--content-surface)] text-[var(--content-muted)] hover:bg-[var(--content-border)]'
             }`}>
             {t || 'Todos'}
           </button>

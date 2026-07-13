@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.41",
+  "actual": "4.0.42",
   "versiones": [
+    {
+      "version": "4.0.42",
+      "fecha": "2026-07-12",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Design system: clasifica el azul residual en Dashboard/Ordenes/Analitica del backlog de blue-[0-9] y corrige 2 bugs de acento único fuera de lugar.",
+      "cambios": [
+        "sigab-frontend/src/pages/Dashboard.jsx: icono ClipboardCheck de 'Cumplimiento de Mantenimiento' (unico icono de titulo con color fijo del archivo) de blue-500 a emerald-500.",
+        "sigab-frontend/src/pages/Ordenes.jsx: toggle activo del filtro 'Tipo' (bg-blue-800/60 text-blue-300) migrado a emerald-800/60 text-emerald-300 -- mismo componente que el toggle de 'Estado' 6 lineas arriba, que ya usaba emerald; inconsistencia sin razon funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila nueva de tabla de avance con el detalle de la clasificacion; punto 4 del backlog actualizado con la lista concreta de archivos que aun faltan por clasificar (EquipoCard/EquipoDetail/EquipoTable/HospitalMap/OrdenDetalleModal entre otros) y los que ya se confirmaron sin bug (Analitica.jsx completo, Reportes.jsx, StatsCards.jsx, KPICard.jsx)."
+      ],
+      "verificar": [
+        "Dashboard: la seccion 'Cumplimiento de Mantenimiento' debe mostrar el icono de clipboard en verde (emerald), no azul.",
+        "Ordenes de Servicio: los filtros 'Tipo' (Todos/correctivo/preventivo/instalacion/calibracion) deben resaltar en verde al seleccionarse, igual que los filtros 'Estado' de la fila de arriba.",
+        "Ordenes de Servicio: los enlaces 'Ver PDF' (tabla de archivos por año) y '🖨 Formato' (columna de acciones) deben seguir en azul -- es la convencion azul=documento, no se toco.",
+        "Analitica (Ingenieria Clinica 4.0): las 4 tarjetas KPI deben mantener su color distinto cada una (verde/rojo/azul/morado) -- es un sistema categorico intencional, no se toco.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests) -- verificado en este ciclo. Verificado grep -al anim-cell-pop dist/assets/Reservas-*.js (heatmap intacto)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1. Cambios de 2 archivos de frontend, solo clases Tailwind de color -- sin cambios de logica ni de datos -- revert seguro."
+    },
     {
       "version": "4.0.41",
       "fecha": "2026-07-12",
