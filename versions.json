@@ -6,7 +6,7 @@
       "fecha": "2026-07-13",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "d17e3a0",
       "resumen": "Design system: corrige el badge de 'área destino' de HistorialEquipoModal.jsx (azul) para igualar la convención emerald ya validada en Trazabilidad.jsx; confirma QRPanel.jsx sin bug (azul=documento).",
       "cambios": [
         "sigab-frontend/src/components/HistorialEquipoModal.jsx: badge de 'área destino' de la pestaña Traslados (dentro de Historial Técnico del detalle de equipo) migrado de bg-blue-900/50 text-blue-300 border-blue-800 a bg-emerald-900/50 text-emerald-300 border-emerald-800 -- mismo dato semántico (movimiento área origen→destino) que pages/Trazabilidad.jsx, que ya usa emerald para el badge equivalente desde v4.0.40; sin razón categórica para que este componente hermano siguiera en azul.",
