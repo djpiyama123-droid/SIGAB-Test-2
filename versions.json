@@ -6,7 +6,7 @@
       "fecha": "2026-07-13",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "b381e82",
       "resumen": "Design system: clasifica los 3 usos de azul de OrdenDetalleModal.jsx (candidato del backlog) y corrige 2 bugs reales de acento fuera de lugar.",
       "cambios": [
         "sigab-frontend/src/components/OrdenDetalleModal.jsx: título de sección 'Información' (text-blue-400) migrado a emerald-400 -- su hermano directo 'Detalles del Fallo', mismo layout y jerarquía, ya usaba emerald sin razón categórica para que uno de los dos fuera azul.",
