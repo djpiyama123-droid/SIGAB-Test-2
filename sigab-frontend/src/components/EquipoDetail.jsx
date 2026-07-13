@@ -489,8 +489,8 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
                           <span className={`text-[10px] px-2 py-0.5 rounded-full capitalize ${
                             os.estado === 'cerrada'
                               ? 'bg-emerald-500/20 text-emerald-400'
-                              : os.estado === 'en_progreso'
-                              ? 'bg-blue-500/20 text-blue-400'
+                              : os.estado === 'cancelada'
+                              ? 'bg-[var(--content-surface)] text-[var(--content-muted)]'
                               : 'bg-amber-500/20 text-amber-400'
                           }`}>
                             {os.estado?.replace('_', ' ')}

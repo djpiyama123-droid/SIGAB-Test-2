@@ -1,6 +1,29 @@
 {
-  "actual": "4.0.42",
+  "actual": "4.0.43",
   "versiones": [
+    {
+      "version": "4.0.43",
+      "fecha": "2026-07-13",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Design system: quinta instancia del bug de azul-como-acento en Mapa de Activos (HospitalMap.jsx) migrada a verde IMSS, mas un bug real de semantica de color en el badge de estado de ordenes del detalle de equipo.",
+      "cambios": [
+        "sigab-frontend/src/components/HospitalMap.jsx: acento interactivo del modulo (3 tabs de piso activos, borde de foco de busqueda y select de estado, spinner de carga, indicador de resultados filtrados, punto de encabezado de grupo de piso, enlace Limpiar filtros del estado vacio) migrado de blue-500/600 a emerald -- mismo patron ya aplicado en Reservas/Metrologia/Trazabilidad/Checklists.",
+        "sigab-frontend/src/components/HospitalMap.jsx: etiqueta 'Ubicacion' (icono+texto) de text-blue-400 a var(--content-muted), alineada con la convencion de etiquetas de campo (Area/Serie/Piso) del resto de Inventario. Boton 'Programar Mantenimiento Preventivo' (azul) se dejo igual -- es parte de un esquema categorico de 5 colores por accion, no el bug de acento unico.",
+        "sigab-frontend/src/components/EquipoDetail.jsx: badge de estado del mini-historial de ordenes (dentro del modal de detalle) coloreaba 'en_progreso' en azul y usaba ambar como fallback generico (capturando tambien abierta/cancelada), inconsistente con la convencion de Ordenes.jsx (abierta=rojo, en_progreso=ambar, cerrada=esmeralda, cancelada=neutral) y con su propio componente hermano HistorialEquipoModal.jsx -- corregido para igualar ese patron hermano (cerrada=esmeralda, cancelada=neutral, resto=ambar).",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance actualizada (Mapa de Activos), punto 4 del backlog actualizado -- EquipoCard/EquipoDetail/EquipoTable revisados y confirmados sin el bug (azul categorico o convencion documento), candidato siguiente es OrdenDetalleModal.jsx."
+      ],
+      "verificar": [
+        "Dashboard > Mapa de Activos: los tabs de piso activos (Todos los pisos / 1er Piso / etc.) deben resaltar en verde, no azul.",
+        "Mapa de Activos: el buscador y el select de estado deben mostrar borde verde al enfocarlos (focus), y el spinner de carga inicial debe girar en verde.",
+        "Mapa de Activos: con un filtro aplicado que no arroje resultados, el enlace 'Limpiar filtros' debe verse en verde.",
+        "Inventario > abrir un equipo > seccion de historial de ordenes (mini-lista en el detalle): una orden 'en_progreso' debe verse en ambar (no azul), igual que en el modal de Historial completo.",
+        "El boton '📅 Programar Mantenimiento Preventivo' del panel del Mapa de Activos debe seguir en azul (a proposito, no se toco).",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests). Verificado grep -al anim-cell-pop dist/assets/Reservas-*.js (heatmap intacto)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1. Cambios de 2 archivos de frontend, solo clases Tailwind de color y una condicion de badge -- sin cambios de logica de negocio ni de datos -- revert seguro."
+    },
     {
       "version": "4.0.42",
       "fecha": "2026-07-12",

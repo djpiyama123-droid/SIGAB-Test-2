@@ -531,13 +531,13 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
         {(equipo.area || equipo.piso) && (
           <div className="mx-4 border-t border-[var(--content-border)] pt-3 pb-4">
             <div className="flex items-start gap-2">
-              <svg className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" viewBox="0 0 24 24"
+              <svg className="w-3.5 h-3.5 text-[var(--content-muted)] flex-shrink-0 mt-0.5" viewBox="0 0 24 24"
                    fill="none" stroke="currentColor" strokeWidth={2}>
                 <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/>
                 <circle cx="12" cy="10" r="3"/>
               </svg>
               <div>
-                <p className="text-[10px] text-blue-400 uppercase tracking-widest font-medium mb-0.5">
+                <p className="text-[10px] text-[var(--content-muted)] uppercase tracking-widest font-medium mb-0.5">
                   Ubicacion
                 </p>
                 <p className="text-[var(--content-text)] text-xs font-semibold">{equipo.area}</p>
@@ -663,7 +663,7 @@ export default function HospitalMap() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-48 text-[var(--content-muted)]">
-        <div className="animate-spin w-6 h-6 border-2 border-[var(--content-border)] border-t-blue-500 rounded-full mr-3" />
+        <div className="animate-spin w-6 h-6 border-2 border-[var(--content-border)] border-t-emerald-500 rounded-full mr-3" />
         Cargando mapa de activos...
       </div>
     );
@@ -800,7 +800,7 @@ export default function HospitalMap() {
                 placeholder="Buscar equipo, zona, serie..."
                 value={busqueda}
                 onChange={e => setBusqueda(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 bg-[var(--content-bg)]/60 border border-[var(--content-border)] rounded-lg text-xs text-[var(--content-text)] placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                className="w-full pl-8 pr-3 py-1.5 bg-[var(--content-bg)]/60 border border-[var(--content-border)] rounded-lg text-xs text-[var(--content-text)] placeholder-slate-500 focus:outline-none focus:border-emerald-500"
               />
             </div>
 
@@ -808,7 +808,7 @@ export default function HospitalMap() {
             <select
               value={filtroEstado}
               onChange={e => setFiltroEstado(e.target.value)}
-              className="py-1.5 pl-2.5 pr-6 bg-[var(--content-bg)]/60 border border-[var(--content-border)] rounded-lg text-xs text-[var(--content-muted)] focus:outline-none focus:border-blue-500 appearance-none cursor-pointer"
+              className="py-1.5 pl-2.5 pr-6 bg-[var(--content-bg)]/60 border border-[var(--content-border)] rounded-lg text-xs text-[var(--content-muted)] focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer"
             >
               <option value="">Todos los estados</option>
               {Object.entries(STATUS_CONFIG).map(([k, cfg]) => (
@@ -850,7 +850,7 @@ export default function HospitalMap() {
               onClick={() => setPisoActivo('todos')}
               className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                 pisoActivo === 'todos'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-emerald-600 text-white'
                   : 'bg-[var(--content-bg)]/60 text-[var(--content-muted)] hover:text-[var(--content-text)] hover:bg-[var(--content-border)]'
               }`}
             >
@@ -868,7 +868,7 @@ export default function HospitalMap() {
                   onClick={() => setPisoActivo(piso)}
                   className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                     pisoActivo === piso
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-emerald-600 text-white'
                       : 'bg-[var(--content-bg)]/60 text-[var(--content-muted)] hover:text-[var(--content-text)] hover:bg-[var(--content-border)]'
                   }`}
                 >
@@ -883,7 +883,7 @@ export default function HospitalMap() {
                 onClick={() => setPisoActivo('otras')}
                 className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                   pisoActivo === 'otras'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-emerald-600 text-white'
                     : 'bg-[var(--content-bg)]/60 text-[var(--content-muted)] hover:text-[var(--content-text)] hover:bg-[var(--content-border)]'
                 }`}
               >
@@ -898,7 +898,7 @@ export default function HospitalMap() {
           {/* Contador de resultados cuando hay filtros */}
           {hayFiltros && (
             <div className="text-[10px] text-[var(--content-muted)] flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               Mostrando {totalEquiposFiltrados} equipo{totalEquiposFiltrados !== 1 ? 's' : ''} en {zonasFiltradas.length} zona{zonasFiltradas.length !== 1 ? 's' : ''}
             </div>
           )}
@@ -915,7 +915,7 @@ export default function HospitalMap() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 6a8 8 0 100 16 8 8 0 000-16z"/>
               </svg>
               <span className="text-sm">Sin resultados para los filtros aplicados</span>
-              <button onClick={limpiarFiltros} className="text-xs text-blue-400 hover:text-blue-300 underline">
+              <button onClick={limpiarFiltros} className="text-xs text-emerald-400 hover:text-emerald-300 underline">
                 Limpiar filtros
               </button>
             </div>
@@ -947,7 +947,7 @@ export default function HospitalMap() {
                 return groups.map(group => (
                   <div key={group.key} className="rounded-xl p-3 border border-[var(--content-border)]" style={{ background: "var(--content-surface)" }}>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-1.5 h-1.5 rounded bg-blue-500/60" />
+                      <div className="w-1.5 h-1.5 rounded bg-emerald-500/60" />
                       <span className="text-[var(--content-muted)] text-[10px] font-bold uppercase tracking-widest">
                         {group.label}
                       </span>
