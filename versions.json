@@ -6,7 +6,7 @@
       "fecha": "2026-07-13",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "f6cdaa9",
       "resumen": "Design system: quinta instancia del bug de azul-como-acento en Mapa de Activos (HospitalMap.jsx) migrada a verde IMSS, mas un bug real de semantica de color en el badge de estado de ordenes del detalle de equipo.",
       "cambios": [
         "sigab-frontend/src/components/HospitalMap.jsx: acento interactivo del modulo (3 tabs de piso activos, borde de foco de busqueda y select de estado, spinner de carga, indicador de resultados filtrados, punto de encabezado de grupo de piso, enlace Limpiar filtros del estado vacio) migrado de blue-500/600 a emerald -- mismo patron ya aplicado en Reservas/Metrologia/Trazabilidad/Checklists.",
