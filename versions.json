@@ -6,7 +6,7 @@
       "fecha": "2026-07-14",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "7a2b86e",
       "resumen": "Design system: cierra la clasificación de azul-como-marca (punto 4 del backlog) revisando los 9 archivos restantes; corrige 1 bug real en OrdenCasillasForm.jsx.",
       "cambios": [
         "sigab-frontend/src/components/OrdenCasillasForm.jsx: la sección condicional 'Nueva Orden de Servicio' (caja bg-blue-950/40, título text-blue-400) migrada a bg-teal-950/40/text-teal-400 -- rompía con las 6 secciones restantes del mismo formulario (Bloques A-F, todas text-teal-400 como acento de encabezado) y con sus propios inputs internos, que ya usaban focus:border-teal-500. Resto de teal quedaba, no era acento válido.",
