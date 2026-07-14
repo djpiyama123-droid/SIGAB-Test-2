@@ -238,7 +238,7 @@ export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
 
               {/* Clasificacion */}
               <div className="bg-[var(--content-bg)]/50 p-4 rounded-lg border border-[var(--content-border)]">
-                <h3 className="text-sm font-semibold text-blue-400 mb-2">Clasificacion</h3>
+                <h3 className="text-sm font-semibold text-emerald-400 mb-2">Clasificacion</h3>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <span className="text-[var(--content-muted)]">Tipo: </span>
@@ -392,7 +392,7 @@ export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
                         onChange={(e) => setEvidFile(e.target.files[0])}
                         className="text-xs text-[var(--content-muted)] flex-1" />
                       <button disabled={!evidFile || subiendo}
-                        className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-500 disabled:opacity-50">
+                        className="px-3 py-1.5 bg-emerald-600 text-white text-xs rounded hover:bg-emerald-500 disabled:opacity-50">
                         {subiendo ? 'Subiendo...' : 'Subir'}
                       </button>
                     </div>

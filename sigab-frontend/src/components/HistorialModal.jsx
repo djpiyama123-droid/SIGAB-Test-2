@@ -67,7 +67,7 @@ export default function HistorialModal({ equipoId, equipoNombre, open, onClose }
                 <div key={m.id || i} className="flex gap-3">
                   {/* Timeline dot */}
                   <div className="flex flex-col items-center">
-                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
                     {i < movimientos.length - 1 && (
                       <div className="w-0.5 flex-1 bg-[var(--content-surface)] my-1" />
                     )}
@@ -82,7 +82,7 @@ export default function HistorialModal({ equipoId, equipoNombre, open, onClose }
                           {m.piso_origen && ` • P${m.piso_origen}`}
                         </span>
                         <span className="text-[var(--content-muted)]">→</span>
-                        <span className="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded text-xs border border-blue-800">
+                        <span className="bg-emerald-900/50 text-emerald-300 px-2 py-0.5 rounded text-xs border border-emerald-800">
                           {m.area_destino}
                           {m.piso_destino && ` • P${m.piso_destino}`}
                         </span>
