@@ -1,6 +1,25 @@
 {
-  "actual": "4.0.46",
+  "actual": "4.0.47",
   "versiones": [
+    {
+      "version": "4.0.47",
+      "fecha": "2026-07-14",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Design system: cierra la clasificación de azul-como-marca (punto 4 del backlog) revisando los 9 archivos restantes; corrige 1 bug real en OrdenCasillasForm.jsx.",
+      "cambios": [
+        "sigab-frontend/src/components/OrdenCasillasForm.jsx: la sección condicional 'Nueva Orden de Servicio' (caja bg-blue-950/40, título text-blue-400) migrada a bg-teal-950/40/text-teal-400 -- rompía con las 6 secciones restantes del mismo formulario (Bloques A-F, todas text-teal-400 como acento de encabezado) y con sus propios inputs internos, que ya usaban focus:border-teal-500. Resto de teal quedaba, no era acento válido.",
+        "pages/Copilot.jsx, formatos/FormatoViewer.jsx, pages/Formatos.jsx, pages/CommandCenter.jsx, pages/AuditPage.jsx, pages/EquipoPublico.jsx, pages/SuperAdmin.jsx y pages/AdminGlobal.jsx revisados archivo por archivo -- todos confirmados SIN el bug de acento único: azul=IA (Copilot), toolbar con color por acción autoconsistente (FormatoViewer), azul=información (banner de Formatos), mapas de color categóricos explícitos (CommandCenter, AuditPage), azul=documento (enlace Manual de EquipoPublico), marca propia SIGAH.mx fuera del alcance clínico (SuperAdmin), o KPI categórico de 4 colores (AdminGlobal).",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance actualizada (nueva fila 'Órdenes de Servicio (formato IMSS, OrdenCasillasForm.jsx)'), punto 4 del backlog cerrado -- ningún archivo de sigab-frontend/src queda sin clasificar contra este bug."
+      ],
+      "verificar": [
+        "Órdenes de Servicio: abrir el formulario de checklist NOM-016 para crear una nueva orden desde cero (sin ordenId) -- la caja 'Nueva Orden de Servicio' debe verse en verde-azulado (teal), no azul, igual que los títulos 'A — Dominio del activo' / 'B — Tipo de servicio' / etc. del resto del formulario.",
+        "En el mismo formulario, con una orden ya existente (ordenId presente), esa caja no debe aparecer -- sin cambios ahí.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests). Verificado grep -al anim-cell-pop dist/assets/Reservas-*.js (heatmap intacto)."
+      ],
+      "rollback": "git revert del commit de esta versión sobre v4.0/piloto-clinica-1. Cambio de un solo archivo de frontend, solo clases Tailwind de color -- sin cambios de lógica de negocio ni de datos -- revert seguro."
+    },
     {
       "version": "4.0.46",
       "fecha": "2026-07-13",

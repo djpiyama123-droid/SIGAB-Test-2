@@ -357,8 +357,8 @@ export default function OrdenCasillasForm({ ordenId: ordenIdProp, equipoData = {
 
             {/* ── Datos de la OS (solo si no hay ordenId) ─── */}
             {!ordenIdProp && (
-              <section className="bg-blue-950/40 border border-blue-700/50 rounded-xl p-4 space-y-3">
-                <h3 className="text-xs font-semibold uppercase tracking-widest text-blue-400 mb-1">
+              <section className="bg-teal-950/40 border border-teal-700/50 rounded-xl p-4 space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-widest text-teal-400 mb-1">
                   📝 Nueva Orden de Servicio
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

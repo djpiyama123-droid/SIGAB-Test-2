@@ -78,6 +78,7 @@ Tailwind fija porque no dependen del tema de fondo.
 | Dashboard / Órdenes | ✅ Clasificación azul completa | (este ciclo) | Continuación del punto 4 del backlog: se clasificó `blue-[0-9]` archivo por archivo en `pages/Dashboard.jsx`, `pages/Ordenes.jsx` y `pages/Analitica.jsx` (los 3 candidatos explícitos del ciclo anterior). Bugs reales encontrados y corregidos: `Dashboard.jsx` (icono `ClipboardCheck` de "Cumplimiento de Mantenimiento", único icono de título con color fijo del archivo, sin acompañar a ningún sistema categórico → `blue-500` a `emerald-500`) y `Ordenes.jsx` (toggle activo del filtro "Tipo" con `bg-blue-800/60 text-blue-300`, mismo componente que el toggle de "Estado" 6 líneas arriba que ya usa `emerald-800/60`/`emerald-300` — inconsistencia sin razón funcional, ambos ahora emerald). Confirmados SIN bug (azul es categórico o convención establecida, no acento de marca): `Ordenes.jsx` líneas "Ver PDF"/"🖨 Formato" (`text-blue-400`, convención azul=documento ya validada en Metrología); `Analitica.jsx` completo — las 4 tarjetas KPI (Disponibilidad/Riesgo/MTBF/MTTR) usan un color distinto cada una (emerald/red/blue/purple) como sistema categórico de diferenciación entre métricas, igual que `KPICard.jsx` (`COLOR_MAP` con 10 variantes, `Dashboard.jsx` ya usa `color="blue"` en un KPICard de forma legítima); el badge "Powered by Gemma" (`blue-500/10`) sigue la misma convención de azul=IA ya usada en `Copilot.jsx` ("Análisis de Imagen (Gemma Vision)", título `text-blue-400`) — no se tocó ninguno de los dos por ser un sistema de color intencional, no el bug de acento único. |
 | Historial de Traslados (`components/HistorialModal.jsx`) | ✅ Clasificación azul completa | (este ciclo) | Distinto de `HistorialEquipoModal.jsx` (footer de `EquipoDetail.jsx`) — este modal se usa desde `EquipoTable.jsx`/`EquipoCard.jsx` para ver la línea de tiempo de traslados. Mismo dato que `pages/Trazabilidad.jsx` (ya emerald desde v4.0.40): el punto de la línea de tiempo (`bg-blue-500`) y el badge de "área destino" (`bg-blue-900/50 text-blue-300 border-blue-800`) usaban azul sin razón categórica → migrados a `bg-emerald-500` y `bg-emerald-900/50 text-emerald-300 border-emerald-800`, mismo patrón que `Trazabilidad.jsx`/`HistorialEquipoModal.jsx` |
 | Móvil (Dashboard/Inventario/Detalle/Orden) | 🟡 Parcial | (este ciclo) | `components/Layout.jsx`: la barra de navegación inferior (compartida por TODAS las páginas en móvil, no solo Dashboard) tenía los 5 accesos en fila plana — no reflejaba el patrón "bottom-bar con Escanear central" del screen ID `8af028299b1c4cd4af17babd042028b8` (nombre literal de la pantalla Stitch). "Escanear" ahora se renderiza como FAB circular elevado (56px, `bg-[var(--accent)]`, `-mt-7` sobre la barra) centrado entre Equipos y Ordenes, en vez de ser el 5° ítem en fila. Los 4 ítems restantes ahora declaran `min-h-[48px] min-w-[48px]` explícito (antes solo `p-2`, ya cumplía el mínimo mas no lo garantizaba si cambia el tamaño de fuente/idioma). Pendiente: el resto del layout Stitch por pantalla (Inventario/Detalle/Orden móvil) — screen IDs en `CONSOLIDACION-V4.md` §6, sección Móvil |
+| Órdenes de Servicio (formato IMSS, `OrdenCasillasForm.jsx`) | ✅ Clasificación azul completa | (este ciclo) | Cierre del punto 4 del backlog (clasificación de azul-como-marca en los 9 archivos restantes, ver detalle completo en el backlog abajo). Único bug real: la sección condicional "Nueva Orden de Servicio" de `components/OrdenCasillasForm.jsx` usaba una caja azul (`bg-blue-950/40`/`text-blue-400`) que rompía con las 6 secciones restantes del mismo formulario (Bloques A-F, todas `text-teal-400`) y con sus propios inputs internos (ya `focus:border-teal-500`) → migrada a `bg-teal-950/40`/`text-teal-400`. Los otros 8 archivos (`Copilot.jsx`, `FormatoViewer.jsx`, `Formatos.jsx`, `CommandCenter.jsx`, `AuditPage.jsx`, `EquipoPublico.jsx`, `SuperAdmin.jsx`, `AdminGlobal.jsx`) se revisaron y confirmaron SIN bug — azul categórico, azul=documento/IA/información, o marca propia autoconsistente fuera del alcance clínico. |
 
 Leyenda: ✅ aplicado y verificado · 🟡 en progreso/parcial · ⬜ sin empezar.
 
@@ -123,15 +124,43 @@ Leyenda: ✅ aplicado y verificado · 🟡 en progreso/parcial · ⬜ sin empeza
    el mismo dato que `Trazabilidad.jsx` (ya emerald desde v4.0.40) con color
    distinto sin razón categórica → migrados a `bg-emerald-500` y
    `bg-emerald-900/50 text-emerald-300 border-emerald-800` respectivamente,
-   mismo patrón que `HistorialEquipoModal.jsx`. **Aún no cerrado como
-   categoría**: quedan sin clasificar `OrdenCasillasForm.jsx`,
-   `formatos/FormatoViewer.jsx`, `pages/AdminGlobal.jsx`,
-   `pages/AuditPage.jsx`, `pages/CommandCenter.jsx`, `pages/Copilot.jsx`,
-   `pages/EquipoPublico.jsx`, `pages/Formatos.jsx`, `pages/SuperAdmin.jsx`
-   (`pages/Reportes.jsx`, `components/StatsCards.jsx` y
-   `components/cards/KPICard.jsx` ya se revisaron en ciclos previos y NO
-   tienen el bug). Candidato del próximo ciclo: `pages/Copilot.jsx` o
-   `formatos/FormatoViewer.jsx` (ambos con usos de azul sin clasificar).
+   mismo patrón que `HistorialEquipoModal.jsx`.
+   **Categoría cerrada (2026-07-14, loop-thinkcentre)**: se clasificaron los
+   9 archivos restantes del backlog. `pages/Copilot.jsx` confirmado SIN bug
+   — el avatar de mensajes IA (gradiente `blue-500`→`purple-600`) y el panel
+   "Vision (Gemma)" (`text-blue-400`, botón "Analizar" `bg-blue-600`) siguen
+   la convención azul=IA ya validada (mismo patrón que el badge "Powered by
+   Gemma"); el panel "Diagnóstico de Falla" usa amarillo y "Resumen IA" usa
+   esmeralda a propósito — 3 sub-herramientas de Copilot con color categórico
+   propio, no un acento de marca único. `formatos/FormatoViewer.jsx`
+   confirmado SIN bug — archivo 100% fixed-dark autoconsistente (sin ningún
+   `var(--content-*)`), el botón "🖨 Imprimir" (azul) convive con
+   "✍️ Editar"/"💾 Guardar" (ámbar/esmeralda) y "📄 Descargar PDF" (teal) como
+   parte de una barra de herramientas con un color por acción, no un módulo
+   con azul como único acento. `pages/Formatos.jsx`, `pages/CommandCenter.jsx`,
+   `pages/AuditPage.jsx`, `pages/EquipoPublico.jsx` y `pages/SuperAdmin.jsx`
+   confirmados SIN bug — banner informativo (azul=información), mapas de
+   color categóricos explícitos (`FASE_BADGE`/`STACK_COLOR`/`colorMap` de
+   CommandCenter, badge INSERT/UPDATE/DELETE de AuditPage), azul=documento
+   (enlace "Manual" de EquipoPublico) o marca propia autoconsistente ajena al
+   verde IMSS (gradiente azul→teal "SIGAH.mx" de SuperAdmin, panel comercial
+   fuera del alcance clínico de este design system). `pages/AdminGlobal.jsx`
+   confirmado SIN bug — el KPI "Total Hospitales" en azul es 1 de 4 colores
+   categóricos de KPI (azul/esmeralda/ámbar/slate, mismo patrón que
+   `Analitica.jsx`) y el punto azul del feed de actividad es un indicador
+   informativo genérico, no ligado a ningún acento de marca del archivo (no
+   hay botones primarios ni bordes de foco en azul en el resto del archivo
+   que lo hagan inconsistente). **Único bug real encontrado**:
+   `components/OrdenCasillasForm.jsx` — la sección condicional "Nueva Orden
+   de Servicio" (caja `bg-blue-950/40 border-blue-700/50`, título
+   `text-blue-400`) rompía con las 6 secciones restantes del mismo formulario
+   (Bloques A-F, todas `text-teal-400` como acento de encabezado) — y sus
+   propios inputs internos ya usaban `focus:border-teal-500`, confirmando que
+   el azul era un resto de plantilla genérica, no una decisión de diseño →
+   migrada a `bg-teal-950/40 border-teal-700/50` / `text-teal-400`, igualando
+   el resto del formulario. Con esto se cierra el punto 4 del backlog —
+   ningún archivo de `sigab-frontend/src` queda sin clasificar contra el bug
+   de azul-como-marca-única.
 5. Evaluar si el tema por defecto (`glass`, oscuro) debe seguir siendo el
    default o si Verde-Blanco IMSS (`green`) debe ser el default de
    producción — decisión de Gustavo, no del loop.
