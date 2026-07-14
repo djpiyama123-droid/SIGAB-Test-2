@@ -1,6 +1,28 @@
 {
-  "actual": "4.0.45",
+  "actual": "4.0.46",
   "versiones": [
+    {
+      "version": "4.0.46",
+      "fecha": "2026-07-13",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "820beac",
+      "resumen": "Design system: clasifica los usos de azul de EventoDetalleModal.jsx y HistorialModal.jsx (candidatos del backlog), corrige 3 bugs reales de acento fuera de lugar.",
+      "cambios": [
+        "sigab-frontend/src/components/EventoDetalleModal.jsx: título de sección 'Clasificacion' (text-blue-400) migrado a emerald-400 -- su hermano directo 'Dispositivo medico (snapshot)', mismo layout y jerarquía, ya usaba emerald sin razón categórica para que uno de los dos fuera azul.",
+        "sigab-frontend/src/components/EventoDetalleModal.jsx: botón 'Subir' del formulario de evidencias (bg-blue-600) migrado a emerald-600 -- mismo bug ya corregido en OrdenDetalleModal.jsx (acción primaria de formulario sin convención de documento que justifique el azul).",
+        "sigab-frontend/src/components/EventoDetalleModal.jsx: botón 'PDF NOM-240' del header (bg-blue-600) revisado y confirmado SIN bug -- sigue la convención ya validada azul=documento, no se tocó.",
+        "sigab-frontend/src/components/HistorialModal.jsx: punto de la línea de tiempo (bg-blue-500) y badge de 'área destino' (bg-blue-900/50 text-blue-300 border-blue-800) migrados a emerald -- mismo dato semántico que pages/Trazabilidad.jsx (ya emerald desde v4.0.40), sin razón categórica para que este modal (historial de traslados desde Inventario) siguiera en azul.",
+        "docs/DESIGN-SYSTEM-V4.md: tabla de avance actualizada (Tecnovigilancia/Eventos Adversos, nueva fila 'Historial de Traslados'), punto 4 del backlog actualizado -- candidato siguiente es pages/Copilot.jsx o formatos/FormatoViewer.jsx."
+      ],
+      "verificar": [
+        "Tecnovigilancia: abrir el detalle de un evento adverso -- la sección 'Clasificacion' (Tipo/Severidad/Fecha) debe tener su título en verde, no azul.",
+        "En el mismo modal, con el evento no cerrado: el formulario de evidencias debe mostrar el botón 'Subir' en verde. El botón 'PDF NOM-240' del header debe seguir en azul (a propósito, no se tocó).",
+        "Inventario: abrir el detalle de un equipo con traslados > botón 'Historial' (icono de reloj en tabla/tarjeta, distinto del footer del detalle) -- el punto de la línea de tiempo y el badge de área destino deben verse en verde, no azul.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (35 tests). Verificado grep -al anim-cell-pop dist/assets/Reservas-*.js (heatmap intacto)."
+      ],
+      "rollback": "git revert del commit de esta versión sobre v4.0/piloto-clinica-1. Solo clases Tailwind de color en 2 archivos de frontend -- sin cambios de lógica de negocio ni de datos -- revert seguro."
+    },
     {
       "version": "4.0.45",
       "fecha": "2026-07-13",
