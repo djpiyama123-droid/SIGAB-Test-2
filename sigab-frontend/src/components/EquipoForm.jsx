@@ -55,8 +55,11 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
 
   const [form, setForm] = useState(VACIO);
   const [zonas, setZonas] = useState([]);
-  const [archivoImagen, setArchivoImagen] = useState(null);
-  const [previewImagen, setPreviewImagen] = useState(null);
+  // P3-Bug3: soporte para múltiples fotos. archivosNuevos es la lista (File[]) de
+  // imágenes a subir; previewsNuevos son los data-URL equivalentes para mostrar.
+  // La primera entrada (idx 0) se considera la "principal" → se usa en mapa/ficha.
+  const [archivosNuevos, setArchivosNuevos] = useState([]);
+  const [previewsNuevos, setPreviewsNuevos] = useState([]);
   const [guardando, setGuardando] = useState(false);
   const [errores, setErrores] = useState({});
 
@@ -81,12 +84,11 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
           ? equipo.fecha_proximo_mantenimiento.slice(0, 10)
           : '',
       });
-      setPreviewImagen(equipo.imagen_url || null);
     } else {
       setForm(VACIO);
-      setPreviewImagen(null);
     }
-    setArchivoImagen(null);
+    setArchivosNuevos([]);
+    setPreviewsNuevos([]);
     setErrores({});
   }, [equipo]);
 
@@ -95,30 +97,74 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
     if (errores[k]) setErrores((er) => ({ ...er, [k]: null }));
   };
 
-  const handleArchivo = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // P3-Bug3: handler multi-archivo. Acepta varios PNG/JPG/WEBP, hasta 10 MB c/u.
+  // Convierte cada uno a data-URL para preview. La primera entrada de la lista
+  // resultante se considera la "principal" (mapa/ficha).
+  const MAX_FOTOS = 8;
+  const MAX_BYTES  = 10 * 1024 * 1024;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Solo se permiten imágenes (PNG, JPG, WEBP)');
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('La imagen no puede superar 10 MB');
-      return;
+  const handleArchivos = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const validos = [];
+    const rechazados = [];
+    for (const f of files) {
+      if (!f.type.startsWith('image/')) {
+        rechazados.push(`${f.name}: no es imagen`);
+        continue;
+      }
+      if (f.size > MAX_BYTES) {
+        rechazados.push(`${f.name}: > 10 MB`);
+        continue;
+      }
+      validos.push(f);
     }
 
-    setArchivoImagen(file);
-    const reader = new FileReader();
-    reader.onload = (ev) => setPreviewImagen(ev.target.result);
-    reader.readAsDataURL(file);
+    if (rechazados.length > 0) {
+      toast.warn(`Ignoradas: ${rechazados.join(' · ')}`);
+    }
+
+    const espacioLibre = MAX_FOTOS - archivosNuevos.length;
+    if (validos.length > espacioLibre) {
+      toast.warn(`Máximo ${MAX_FOTOS} fotos. Se tomaron las primeras ${espacioLibre}.`);
+      validos.splice(espacioLibre);
+    }
+    if (validos.length === 0) return;
+
+    const nuevosArchivos = [...archivosNuevos, ...validos];
+    setArchivosNuevos(nuevosArchivos);
+
+    // Generar previews (data-URL) para los nuevos. Se hace en orden.
+    validos.forEach((f) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setPreviewsNuevos((prev) => [...prev, ev.target.result]);
+      };
+      reader.readAsDataURL(f);
+    });
   };
 
-  const quitarImagen = () => {
-    setArchivoImagen(null);
-    setPreviewImagen(esEdicion ? null : null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+  const quitarFotoNueva = (idx) => {
+    setArchivosNuevos((prev) => prev.filter((_, i) => i !== idx));
+    setPreviewsNuevos((prev) => prev.filter((_, i) => i !== idx));
   };
+
+  // P3-Bug3: helper para contar el total de fotos que tendrá el equipo al guardar.
+  // En edición = imagen_url (1) + JSON.parse(fotos).length + archivosNuevos.length.
+  // En alta    = archivosNuevos.length (aún no existen guardadas).
+  const fotosExistentes = (() => {
+    if (!esEdicion) return [];
+    const arr = [];
+    if (equipo?.imagen_url) arr.push(equipo.imagen_url);
+    if (equipo?.fotos) {
+      try { arr.push(...JSON.parse(equipo.fotos).filter(Boolean)); }
+      catch { /* JSON inválido → ignorar */ }
+    }
+    return arr;
+  })();
+  const totalFotos = fotosExistentes.length + archivosNuevos.length;
+  const fotosIncompletas = totalFotos < 3;
 
   const validar = () => {
     const e = {};
@@ -173,14 +219,30 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
         toast.success(res.mensaje || 'Equipo creado');
       }
 
-      // Subir imagen si hay archivo nuevo
-      if (archivoImagen && equipoId) {
-        try {
-          await api.subirImagenEquipo(equipoId, archivoImagen);
-          toast.success('Imagen guardada');
-        } catch (err) {
-          toast.error('Equipo guardado, pero falló la subida de imagen');
-          console.error(err);
+      // P3-Bug3: subir todas las fotos nuevas en orden. La primera (idx 0) se considera
+      // "principal" → se usa en mapa/ficha. Subida secuencial para no saturar el backend
+      // y para mantener el orden esperado por el contrato de `imagen_url` + `fotos[]`.
+      // TODO(Claude-Code): cuando exista endpoint multi-upload / soporte de flag `principal`
+      // en el endpoint existente, reemplazar este loop por una sola llamada.
+      // Handoff documentado en COORDINACION_SIGAB.md §6.
+      if (archivosNuevos.length > 0 && equipoId) {
+        let subidas = 0;
+        let fallidas = 0;
+        for (let i = 0; i < archivosNuevos.length; i++) {
+          try {
+            await api.subirImagenEquipo(equipoId, archivosNuevos[i]);
+            subidas++;
+          } catch (err) {
+            fallidas++;
+            console.error(`Falló la subida de la foto ${i + 1}/${archivosNuevos.length}`, err);
+          }
+        }
+        if (subidas > 0 && fallidas === 0) {
+          toast.success(subidas === 1 ? 'Imagen guardada' : `${subidas} imágenes guardadas`);
+        } else if (subidas > 0 && fallidas > 0) {
+          toast.warn(`Equipo guardado. ${subidas} imágenes subidas, ${fallidas} fallaron.`);
+        } else {
+          toast.error('Equipo guardado, pero falló la subida de imágenes');
         }
       }
 
@@ -226,38 +288,114 @@ export default function EquipoForm({ equipo, onClose, onSaved }) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Imagen del equipo */}
+          {/* P3-Bug3: Fotos del equipo — input multiple + previews + advertencia <3.
+              La primera foto (idx 0) es la "principal" que se muestra en mapa y ficha. */}
           <section>
-            <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-2">Imagen del equipo</h3>
-            <div className="flex items-start gap-4">
-              <div className="w-32 h-32 rounded-xl bg-[var(--content-bg)] border-2 border-dashed border-[var(--content-border)] overflow-hidden flex items-center justify-center flex-shrink-0">
-                {previewImagen ? (
-                  <img src={previewImagen} alt="preview" className="w-full h-full object-cover" />
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-[var(--content-muted)]">
+                Fotos del equipo
+                <span className="ml-2 text-[10px] font-normal text-[var(--content-muted)]">
+                  ({totalFotos}/{MAX_FOTOS})
+                </span>
+              </h3>
+              {totalFotos > 0 && (
+                <span className="text-[10px] text-[var(--content-muted)]">
+                  {esEdicion ? `${fotosExistentes.length} guardadas + ${archivosNuevos.length} nuevas` : `${archivosNuevos.length} nuevas`}
+                </span>
+              )}
+            </div>
+
+            {/* Advertencia NO bloqueante: <3 fotos */}
+            {fotosIncompletas && (
+              <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-600/40 bg-amber-900/15 p-2.5 text-xs text-amber-300">
+                <svg className="w-4 h-4 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+                </svg>
+                <div>
+                  <p className="font-semibold">Recomendamos al menos 3 fotos por equipo</p>
+                  <p className="text-amber-300/80 mt-0.5">
+                    Frontal, placa de datos y panorámica del entorno. Esto facilita la identificación
+                    en sala y el cumplimiento NOM-016. No bloquea el guardado.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Input + galería de previews */}
+            <div className="flex items-start gap-3">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-[var(--content-bg)] border-2 border-dashed border-[var(--content-border)] overflow-hidden flex items-center justify-center flex-shrink-0">
+                {previewsNuevos[0] ? (
+                  <img src={previewsNuevos[0]} alt="principal" className="w-full h-full object-cover" />
+                ) : (esEdicion && fotosExistentes[0]) ? (
+                  <img src={fotosExistentes[0]} alt="actual" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                 ) : (
-                  <svg className="w-10 h-10 text-[var(--content-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <svg className="w-8 h-8 text-[var(--content-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 )}
               </div>
-              <div className="flex-1 space-y-2">
+
+              <div className="flex-1 min-w-0 space-y-2">
                 <input
                   ref={fileInputRef}
                   type="file"
+                  multiple
                   accept="image/png,image/jpeg,image/webp"
-                  onChange={handleArchivo}
+                  onChange={handleArchivos}
                   className="block w-full text-xs text-[var(--content-muted)] file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-[var(--content-surface)] file:text-white hover:file:bg-[var(--content-border)] file:cursor-pointer"
                 />
                 <p className="text-xs text-[var(--content-muted)]">
-                  PNG, JPG o WEBP. Máximo 10 MB. La imagen se mostrará en el mapa y la ficha técnica.
+                  PNG/JPG/WEBP · máx 10 MB c/u · máx {MAX_FOTOS} fotos. La <strong>primera</strong> será la <strong>principal</strong> (mapa y ficha).
                 </p>
-                {previewImagen && (
-                  <button
-                    type="button"
-                    onClick={quitarImagen}
-                    className="text-xs text-red-400 hover:text-red-300 underline"
-                  >
-                    Quitar imagen
-                  </button>
+
+                {/* Miniaturas de las nuevas + etiqueta "Principal" en la primera */}
+                {previewsNuevos.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {previewsNuevos.map((src, idx) => (
+                      <div
+                        key={idx}
+                        className="relative w-14 h-14 rounded-lg overflow-hidden border border-[var(--content-border)] group flex-shrink-0"
+                      >
+                        <img src={src} alt={`nueva-${idx}`} className="w-full h-full object-cover" />
+                        {idx === 0 && (
+                          <span className="absolute top-0 left-0 right-0 bg-emerald-600/90 text-white text-[8px] font-bold uppercase tracking-wider text-center py-0.5">
+                            Principal
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => quitarFotoNueva(idx)}
+                          aria-label={`Quitar foto ${idx + 1}`}
+                          className="absolute bottom-0 right-0 w-5 h-5 rounded-tl-lg bg-red-600/90 hover:bg-red-500 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* En edición: muestra las guardadas como referencia (read-only) */}
+                {esEdicion && fotosExistentes.length > 1 && (
+                  <div className="pt-1">
+                    <p className="text-[10px] text-[var(--content-muted)] mb-1 uppercase tracking-wider font-semibold">
+                      Guardadas ({fotosExistentes.length})
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {fotosExistentes.map((src, idx) => (
+                        <div
+                          key={idx}
+                          className="relative w-10 h-10 rounded overflow-hidden border border-[var(--content-border)] flex-shrink-0 opacity-70"
+                          title={idx === 0 ? 'Principal actual' : `Foto ${idx + 1}`}
+                        >
+                          <img src={src} alt={`guardada-${idx}`} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                          {idx === 0 && (
+                            <span className="absolute inset-0 ring-2 ring-emerald-500/60 rounded pointer-events-none" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>

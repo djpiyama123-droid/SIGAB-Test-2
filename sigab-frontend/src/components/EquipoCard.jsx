@@ -1,6 +1,21 @@
 import { ESTADO_COLORS, ESTADO_LABELS, ESTADO_DOT_COLORS } from '../utils/constants';
 
+// P3-Bug3: helper que cuenta total de fotos de un equipo (imagen_url + JSON fotos).
+// Devuelve { total, hasPrincipal } — usado para badge "fotos incompletas".
+export function countEquipoFotos(equipo) {
+  if (!equipo) return { total: 0, hasPrincipal: false };
+  const hasPrincipal = Boolean(equipo.imagen_url);
+  let extras = 0;
+  if (equipo.fotos) {
+    try { extras = JSON.parse(equipo.fotos).filter(Boolean).length; }
+    catch { extras = 0; }
+  }
+  return { total: (hasPrincipal ? 1 : 0) + extras, hasPrincipal };
+}
+
 export default function EquipoCard({ equipo, onClick }) {
+  const { total: totalFotos, hasPrincipal } = countEquipoFotos(equipo);
+  const fotosIncompletas = totalFotos < 3;
   return (
     <div
       className="bg-[var(--content-surface)] rounded-xl border border-[var(--content-border)] overflow-hidden hover:border-[var(--content-border)] cursor-pointer transition-all group"
@@ -31,6 +46,19 @@ export default function EquipoCard({ equipo, onClick }) {
         {equipo.criticidad === 'alta' && (
           <span className="absolute top-2 right-2 bg-red-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
             Crítico
+          </span>
+        )}
+        {/* P3-Bug3: badge fotos incompletas — solo aparece si <3 fotos */}
+        {fotosIncompletas && (
+          <span
+            className="absolute bottom-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold backdrop-blur-sm bg-amber-900/70 text-amber-200 border border-amber-700/50"
+            title={hasPrincipal ? `Solo ${totalFotos} foto(s); recomienda ≥3 (frontal, placa, panorámica)` : 'Sin foto principal'}
+          >
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h2l2-3h10l2 3h2a1 1 0 011 1v11a1 1 0 01-1 1H3a1 1 0 01-1-1V8a1 1 0 011-1z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
+            {hasPrincipal ? `Fotos incompletas (${totalFotos}/3)` : 'Sin foto'}
           </span>
         )}
       </div>

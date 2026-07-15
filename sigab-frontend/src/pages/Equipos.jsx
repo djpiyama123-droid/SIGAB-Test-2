@@ -11,10 +11,10 @@
  * - Alta de nuevos equipos (EquipoForm modal)
  * - Vista detallada con historial de OS y traslados (EquipoDetail)
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/sigah';
-import EquipoCard from '../components/EquipoCard';
+import EquipoCard, { countEquipoFotos } from '../components/EquipoCard';
 import EquipoTable from '../components/EquipoTable';
 import EquipoDetail from '../components/EquipoDetail';
 import EquipoForm from '../components/EquipoForm';
@@ -50,6 +50,9 @@ export default function Equipos() {
   const [exportandoCsv, setExportandoCsv] = useState(false);
   const [filtrosExpandidos, setFiltrosExpandidos] = useState(false);
   const [seleccionado, setSeleccionado] = useState(null);
+  // P3-Bug3: chip/filtro "Fotos incompletas" (<3 fotos) — filtro client-side
+  // sobre la lista ya paginada (no agrega round-trip al backend).
+  const [soloFotosIncompletas, setSoloFotosIncompletas] = useState(false);
 
   // Catálogos para filtros
   const [areas, setAreas] = useState([]);
@@ -132,6 +135,19 @@ export default function Equipos() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
   const activeFilterCount = Object.keys(filtros).filter(k => filtros[k]).length;
+
+  // P3-Bug3: lista visible tras aplicar el chip client-side de "fotos incompletas".
+  // Se calcula con useMemo para que los badges en hijos no cambien de referencia
+  // en cada render y se mantenga la estabilidad de EquipoCard/EquipoTable.
+  const equiposVisibles = useMemo(() => {
+    if (!soloFotosIncompletas) return equipos;
+    return equipos.filter((eq) => countEquipoFotos(eq).total < 3);
+  }, [equipos, soloFotosIncompletas]);
+
+  const fotosIncompletasCount = useMemo(
+    () => equipos.filter((eq) => countEquipoFotos(eq).total < 3).length,
+    [equipos]
+  );
 
   const handleExportarCsv = async () => {
     try {
@@ -354,6 +370,34 @@ export default function Equipos() {
             </select>
           )}
         </div>
+
+        {/* P3-Bug3: chip de filtro "Fotos incompletas" — client-side toggle.
+            Filtra la página actual por equipos con <3 fotos. Independiente de los
+            filtros del backend (se aplica después). */}
+        {fotosIncompletasCount > 0 && (
+          <div className="pt-1 flex items-center gap-2 flex-wrap">
+            <span className="text-[10px] text-[var(--content-muted)] uppercase tracking-widest font-semibold">Filtros rápidos:</span>
+            <button
+              type="button"
+              onClick={() => setSoloFotosIncompletas((v) => !v)}
+              aria-pressed={soloFotosIncompletas}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                soloFotosIncompletas
+                  ? 'bg-amber-600 text-white border-amber-500'
+                  : 'bg-amber-900/25 text-amber-300 border-amber-700/50 hover:bg-amber-900/40'
+              }`}
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h2l2-3h10l2 3h2a1 1 0 011 1v11a1 1 0 01-1 1H3a1 1 0 01-1-1V8a1 1 0 011-1z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+              📸 Fotos incompletas
+              <span className={`text-[10px] px-1.5 py-0 rounded-full ${soloFotosIncompletas ? 'bg-white/20' : 'bg-amber-800/40'}`}>
+                {fotosIncompletasCount}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Contenido */}
@@ -366,7 +410,7 @@ export default function Equipos() {
             <p className="text-[var(--content-muted)] text-sm animate-pulse">Cargando inventario...</p>
           </div>
         </div>
-      ) : equipos.length === 0 ? (
+      ) : equiposVisibles.length === 0 ? (
         <div className="text-center py-16">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--content-surface)] flex items-center justify-center">
             <svg className="w-8 h-8 text-[var(--content-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -374,16 +418,26 @@ export default function Equipos() {
             </svg>
           </div>
           <p className="text-[var(--content-muted)] text-base font-medium">No se encontraron equipos</p>
-          <p className="text-[var(--content-muted)] text-sm mt-1">Intenta con otros filtros de búsqueda</p>
+          <p className="text-[var(--content-muted)] text-sm mt-1">
+            {soloFotosIncompletas ? 'Sin equipos con fotos incompletas en esta página' : 'Intenta con otros filtros de búsqueda'}
+          </p>
+          {soloFotosIncompletas && (
+            <button
+              onClick={() => setSoloFotosIncompletas(false)}
+              className="mt-3 text-xs text-blue-400 hover:text-blue-300 underline"
+            >
+              Quitar filtro de fotos incompletas
+            </button>
+          )}
         </div>
       ) : vista === VISTAS.tarjeta ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {equipos.map((eq) => (
+          {equiposVisibles.map((eq) => (
             <EquipoCard key={eq.id} equipo={eq} onClick={setSeleccionado} />
           ))}
         </div>
       ) : (
-        <EquipoTable equipos={equipos} onChange={cargar} />
+        <EquipoTable equipos={equiposVisibles} onChange={cargar} />
       )}
 
       {/* Paginación */}

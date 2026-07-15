@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
 import EquipoDetail from './EquipoDetail';
 import QRPanel from './QRPanel';
+import { countEquipoFotos } from './EquipoCard';
 
 const CRITICIDAD_BADGE = {
   alta: 'bg-red-500/20 text-red-400 border border-red-700/50',
@@ -29,7 +30,10 @@ export default function EquipoTable({ equipos, onChange }) {
     <>
       {/* Vista móvil: tarjetas compactas */}
       <div className="block md:hidden space-y-2">
-        {equipos.map((eq) => (
+        {equipos.map((eq) => {
+          const { total: totalFotosEq, hasPrincipal: hasPrincEq } = countEquipoFotos(eq);
+          const fotosIncEq = totalFotosEq < 3;
+          return (
           <div key={eq.id}
             onClick={() => setSelected(eq)}
             className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 cursor-pointer hover:border-[var(--content-border)] active:bg-slate-700/50 transition-colors">
@@ -54,6 +58,17 @@ export default function EquipoTable({ equipos, onChange }) {
               {eq.inventario && <span className="font-mono text-blue-400 text-xs">NII: {eq.inventario}</span>}
               {eq.area && <span className="text-[var(--content-muted)] text-xs">{eq.area}{eq.piso ? ` · Piso ${eq.piso}` : ''}</span>}
             </div>
+            {fotosIncEq && (
+              <div className="mt-2">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-900/30 text-amber-300 border border-amber-700/40">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h2l2-3h10l2 3h2a1 1 0 011 1v11a1 1 0 01-1 1H3a1 1 0 01-1-1V8a1 1 0 011-1z" />
+                    <circle cx="12" cy="13" r="4" />
+                  </svg>
+                  {hasPrincEq ? `Fotos incompletas (${totalFotosEq}/3)` : 'Sin foto'}
+                </span>
+              </div>
+            )}
             <div className="mt-2 flex items-center justify-between">
               <div className="flex gap-2">
                 {eq.tickets_abiertos > 0 && (
@@ -79,7 +94,8 @@ export default function EquipoTable({ equipos, onChange }) {
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
         <p className="text-[var(--content-muted)] text-xs text-center py-1">{equipos.length} equipos</p>
       </div>
 
@@ -153,7 +169,19 @@ export default function EquipoTable({ equipos, onChange }) {
                     </span>
                   </td>
 
-                  <td className="px-3 py-3 text-[var(--content-text)] font-medium max-w-[200px] truncate">{eq.nombre}</td>
+                  <td className="px-3 py-3 text-[var(--content-text)] font-medium max-w-[200px]">
+                    <div className="truncate">{eq.nombre}</div>
+                    {fotosIncEq && (
+                      <span className="mt-0.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-amber-900/30 text-amber-300 border border-amber-700/40"
+                            title={hasPrincEq ? `Solo ${totalFotosEq} foto(s); recomienda ≥3` : 'Sin foto principal'}>
+                        <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h2l2-3h10l2 3h2a1 1 0 011 1v11a1 1 0 01-1 1H3a1 1 0 01-1-1V8a1 1 0 011-1z" />
+                          <circle cx="12" cy="13" r="4" />
+                        </svg>
+                        {hasPrincEq ? `Fotos ${totalFotosEq}/3` : 'Sin foto'}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-3 py-3 text-[var(--content-muted)] text-xs">{eq.marca} / {eq.modelo}</td>
 
                   <td className="px-3 py-3">

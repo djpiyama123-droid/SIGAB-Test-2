@@ -708,23 +708,36 @@ export default function HospitalMap() {
 
   // Acción Rápida: si el equipo tiene OS abierta o en_progreso → navegar a Órdenes con filtro;
   // si no tiene → ir directo al flujo de crear OS rápida.
+  // P1-Bug1: cualquier fallo (red, 5xx, 404, datos faltantes) degrada a estado silencioso
+  // y abre directamente el formulario de OS nueva — sin toast rojo al abrir la app.
   const handleAccionRapida = async (equipo) => {
     if (accionRapidaLoading) return;
     setAccionRapidaLoading(true);
     const tid = toast.loading('Buscando OS abiertas del equipo...');
+    const abrirFormularioNuevaOS = () => {
+      setEquipoOS(equipo);
+    };
     try {
       // Buscar OS del equipo en estado abierta o en_progreso
       const res = await fetch(`/api/ordenes/?equipo_id=${equipo.id}&estado=abierta&limit=5`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
       });
-      const data = await res.json();
+      if (!res.ok) {
+        // 4xx/5xx → degradar a silencio + abrir formulario
+        console.warn(`Acción rápida: HTTP ${res.status} — degradando a formulario nuevo`);
+        toast.dismiss(tid);
+        abrirFormularioNuevaOS();
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
       const abiertas = (data.ordenes || []).filter(o =>
         o.estado === 'abierta' || o.estado === 'en_progreso' || o.estado === 'pendiente_validacion'
       );
       toast.dismiss(tid);
       if (abiertas.length === 0) {
-        toast('Sin OS abiertas — abriendo formulario para crear una nueva');
-        setEquipoOS(equipo);
+        // P1-Bug1: estado silencioso/placeholder — abrir el formulario ES el feedback
+        // (no hace falta toast adicional; el modal apareciendo en pantalla es la señal).
+        abrirFormularioNuevaOS();
       } else if (abiertas.length === 1) {
         // Navegar a Órdenes con la OS abierta seleccionada por query string
         toast.success(`OS ${abiertas[0].numero_orden} encontrada`);
@@ -734,8 +747,10 @@ export default function HospitalMap() {
         navigate(`/ordenes?equipoId=${equipo.id}&estado=abierta`);
       }
     } catch (err) {
-      console.error(err);
-      toast.error('No se pudo consultar OS del equipo', { id: tid });
+      // Red / parse / cualquier excepción → degradar a silencio + abrir formulario
+      console.error('Acción rápida: fallo de red/parse — degradando a formulario nuevo', err);
+      toast.dismiss(tid);
+      abrirFormularioNuevaOS();
     } finally {
       setAccionRapidaLoading(false);
     }

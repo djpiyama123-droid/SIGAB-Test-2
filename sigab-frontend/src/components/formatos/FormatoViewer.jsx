@@ -159,6 +159,24 @@ export default function FormatoViewer({ orden: initialOrden, onClose, autoprint 
             >
               🖨 Imprimir
             </button>
+            {/* P6b: botón "Descargar PDF" — usa el mismo flujo de print() (que abre
+                el diálogo del navegador) pero con un hint explícito para que el
+                usuario elija "Guardar como PDF" como destino. Cuando exista un
+                endpoint backend que devuelva un blob PDF nativo, reemplazar
+                print() por api.descargarFormatoPdf(tipo, id) + triggerDownload(). */}
+            <button
+              onClick={() => {
+                toast.info('En el diálogo, elige "Guardar como PDF" como destino');
+                print();
+              }}
+              disabled={isEditing}
+              className={`px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded border border-indigo-500 transition-colors ${
+                isEditing ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              title="Abre el diálogo de impresión. Elige 'Guardar como PDF' como destino para descargar el archivo."
+            >
+              📄 Descargar PDF
+            </button>
             <button
               onClick={onClose}
               className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium rounded border border-slate-600 transition-colors"
