@@ -40,8 +40,15 @@ export default defineConfig({
             if (id.includes('recharts') || id.includes('d3-')) {
               return 'charts';
             }
-            if (id.includes('qrcode') || id.includes('jsqr')) {
-              return 'qr';
+            // Separados: qrcode.react (generar/mostrar) se carga en Equipos/
+            // QRBatch, tráfico alto; jsqr (decodificar cámara) solo lo usa
+            // QRScanner.jsx, una ruta aislada -- antes compartían chunk y
+            // toda visita a Inventario descargaba jsqr sin necesitarlo.
+            if (id.includes('qrcode')) {
+              return 'qr-display';
+            }
+            if (id.includes('jsqr')) {
+              return 'qr-scan';
             }
             if (id.includes('react-router')) {
               return 'router';
