@@ -6,7 +6,7 @@
       "fecha": "2026-07-15",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "ce92d5f",
+      "commit": "e9d9053",
       "resumen": "Accesibilidad: agrega aria-label=\"Cerrar\" a 19 botones de cerrar icon-only (sin texto visible) en 17 archivos -- eran invisibles para lectores de pantalla.",
       "cambios": [
         "Barrido nuevo (no cubierto por los backlogs de contraste ni de azul-como-marca ya cerrados): grep -rn \"onClick={onClose}\" sobre TODO sigab-frontend/src, clasificando manualmente cada <button> de cerrar de modal contra la presencia de aria-label.",
