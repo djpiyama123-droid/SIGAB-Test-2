@@ -1,6 +1,25 @@
 {
-  "actual": "4.0.47",
+  "actual": "4.0.48",
   "versiones": [
+    {
+      "version": "4.0.48",
+      "fecha": "2026-07-15",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "17a201b",
+      "resumen": "Tests: cubre los 3 helpers PDF iOS-safe de api/sigab.js (prepararVentanaPdf/abrirPdf/triggerDownload), la regla dura del proyecto que prohíbe romper el flujo de PDFs en iPhone/iPad -- no tenían ningún test.",
+      "cambios": [
+        "sigab-frontend/src/api/pdfHelpers.test.js (nuevo, 13 tests): stubea navigator/window/document/URL/File con vi.stubGlobal + vi.resetModules (isIOS se calcula al top-level del módulo a partir de navigator, así que cada grupo reimporta el módulo con el navigator correcto).",
+        "prepararVentanaPdf: no-iOS abre pestaña síncrona antes del fetch (protección contra popup blocker); iOS (iPhone e iPad anunciado como Mac + multitouch) no abre nada.",
+        "abrirPdf: no-iOS con ventana pre-abierta viva navega esa ventana; con ventana cerrada por el popup blocker o sin ventana previa cae a window.open. iOS con share sheet disponible usa navigator.share y no toca URL.createObjectURL; cancelación del usuario (AbortError) no cae a ningún fallback; fallo del share con otro error o canShare=false SÍ caen al flujo de blob URL -- rama que no tenía cobertura y es la que evita que un fallo de la share sheet deje al usuario sin poder ver el PDF.",
+        "triggerDownload: mismo árbol de casos (no-iOS con <a download>, iOS con share, fallback de share a <a download>)."
+      ],
+      "verificar": [
+        "Este ciclo es solo de tests, sin tocar sigab-frontend/src/api/sigab.js -- no hay comportamiento nuevo que verificar visualmente en la app.",
+        "npx vitest run en sigab-frontend/ debe quedar verde (48 tests, 13 nuevos). npm run build verde. grep -al anim-cell-pop dist/assets/Reservas-*.js confirma heatmap intacto."
+      ],
+      "rollback": "git revert del commit de esta versión sobre v4.0/piloto-clinica-1. Solo agrega un archivo de test nuevo, no toca código de producción -- revert trivial y sin riesgo."
+    },
     {
       "version": "4.0.47",
       "fecha": "2026-07-14",
