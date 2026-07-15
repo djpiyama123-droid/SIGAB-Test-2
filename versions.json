@@ -1,6 +1,26 @@
 {
-  "actual": "4.0.48",
+  "actual": "4.0.49",
   "versiones": [
+    {
+      "version": "4.0.49",
+      "fecha": "2026-07-15",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "a439a43",
+      "resumen": "Perf: separa el chunk de bundle 'qr' en 'qr-display' (qrcode.react) y 'qr-scan' (jsqr) -- Inventario dejaba de descargar 130 kB de jsqr que nunca usa.",
+      "cambios": [
+        "sigab-frontend/vite.config.js: manualChunks agrupaba qrcode.react (usado en EquipoDetail.jsx via Equipos.jsx, y QRBatch.jsx -- trafico alto) con jsqr (solo usado por QRScanner.jsx, la ruta lazy de escaneo por camara) en un unico chunk 'qr' de 147 kB / 52.10 kB gzip.",
+        "Como EquipoDetail.jsx importa qrcode.react de forma estatica, cualquier visita a Inventario (Equipos.jsx) descargaba el chunk combinado completo, incluyendo jsqr sin necesitarlo -- verificado con grep sobre los chunks generados: antes del cambio ambos apuntaban al mismo archivo 'qr-*.js'.",
+        "Ahora 'qr-display' (qrcode.react, 16.68 kB / 6.28 kB gzip) es lo unico que carga Equipos/EquipoDetail/QRBatch; 'qr-scan' (jsqr, 130.25 kB / 47.26 kB gzip) solo se descarga si el usuario entra a la pantalla de escaner de camara. Verificado con grep que Equipos-*.js solo referencia qr-display y QRScanner-*.js solo referencia qr-scan."
+      ],
+      "verificar": [
+        "Inventario: abrir el detalle de cualquier equipo con QR y confirmar que el codigo QR se sigue mostrando igual que antes (sin cambio visual, solo se movio a otro chunk).",
+        "Etiquetado Masivo QR (QRBatch): confirmar que las etiquetas imprimibles siguen generandose bien.",
+        "Escaner QR (boton 'Escanear' del bottom-nav movil o ruta /qr/escanear): confirmar que la camara sigue detectando codigos QR con normalidad -- es la unica pantalla que ahora carga jsqr bajo demanda en vez de siempre.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (48 tests). Verificado grep -al anim-cell-pop dist/assets/Reservas-*.js (heatmap intacto, sin tocar)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1. Cambio de un solo archivo de configuracion de build (manualChunks), sin logica de negocio -- revert trivial y sin riesgo."
+    },
     {
       "version": "4.0.48",
       "fecha": "2026-07-15",
