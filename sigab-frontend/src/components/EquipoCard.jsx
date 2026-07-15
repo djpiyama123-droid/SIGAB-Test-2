@@ -1,6 +1,11 @@
 import { ESTADO_COLORS, ESTADO_LABELS, ESTADO_DOT_COLORS } from '../utils/constants';
 import { getMediaUrl } from '../api/sigah';
 
+// Badge "⚠ Fotos incompletas" OCULTO temporalmente para la presentación HGR1
+// del 2026-07-15 (pedido de Gustavo: no contaminar visualmente la demo).
+// Reactivar poniendo true en la versión posterior a la junta.
+const MOSTRAR_BADGE_FOTOS_INCOMPLETAS = false;
+
 const ADQUISICION_LABELS = {
   recurso_propio: 'Recurso Propio',
   contrato_consolidado: 'Consolidado',
@@ -89,7 +94,7 @@ export default function EquipoCard({ equipo, onClick, onQR }) {
             !
           </span>
         )}
-        {fotosIncompletas && (
+        {MOSTRAR_BADGE_FOTOS_INCOMPLETAS && fotosIncompletas && (
           <span className="absolute bottom-2 left-2 bg-amber-500/90 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">
             ⚠ Fotos incompletas
           </span>
