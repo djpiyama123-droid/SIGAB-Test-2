@@ -3,6 +3,12 @@ import { ESTADO_COLORS, ESTADO_LABELS } from '../utils/constants';
 import { getMediaUrl } from '../api/sigah';
 import QRPanel from './QRPanel';
 
+// Badge amarillo "!" de fotos incompletas OCULTO temporalmente para la
+// presentación HGR1 del 2026-07-15 (pedido de Gustavo: no contaminar
+// visualmente el inventario en la demo). Reactivar poniendo true en la
+// versión posterior a la junta. El filtro "Fotos incompletas" sigue activo.
+const MOSTRAR_BADGE_FOTOS_INCOMPLETAS = false;
+
 // Ver EquipoCard.jsx para la misma lógica — solo necesitamos el conteo aquí.
 function contarFotos(equipo) {
   const f = equipo.fotos;
@@ -152,7 +158,7 @@ export default function EquipoTable({ equipos, onSelect }) {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                         </svg>
                       )}
-                      {contarFotos(eq) < 3 && (
+                      {MOSTRAR_BADGE_FOTOS_INCOMPLETAS && contarFotos(eq) < 3 && (
                         <span
                           title="Fotos incompletas (menos de 3)"
                           className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center ring-1 ring-[var(--content-surface)]"
