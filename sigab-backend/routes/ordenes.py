@@ -22,6 +22,7 @@ import os
 import secrets
 from datetime import datetime, date
 import sqlalchemy as sa
+from sqlalchemy.exc import IntegrityError
 from config import get_db, UPLOAD_DIR
 from auth.dependencies import get_current_user, require_action
 from auth.tenancy import get_current_tenant
@@ -173,16 +174,6 @@ async def crear_orden(
     tenant_id: int = Depends(get_current_tenant),
     session: AsyncSession = Depends(get_async_session),
 ):
-    # Generar número de orden: OS-YYYYMMDD-XXXX (contador por año, dentro del tenant).
-    hoy = date.today()
-    stmt_count = select(func.count()).select_from(OrdenServicio).where(
-        OrdenServicio.tenant_id == tenant_id,
-        sa.extract('year', OrdenServicio.fecha) == hoy.year,
-    )
-    res_count = await session.execute(stmt_count)
-    n = res_count.scalar() + 1
-    numero = f"OS-{hoy.strftime('%Y%m%d')}-{n:04d}"
-
     # Defensivo: ignorar tenant_id que pueda venir del cliente.
     data.pop("tenant_id", None)
 
@@ -190,13 +181,44 @@ async def crear_orden(
     # Quitamos materiales de la data para no fallar en el constructor si no están en el modelo
     materiales_data = data.pop("materiales", [])
 
-    orden = OrdenServicio(**data, tenant_id=tenant_id)
-    orden.numero_orden = numero
+    try:
+        orden = OrdenServicio(**data, tenant_id=tenant_id)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Datos de orden inválidos: {e}")
+
+    hoy = date.today()
     orden.fecha = hoy
-    
-    session.add(orden)
-    await session.commit()
-    await session.refresh(orden)
+
+    # Folio OS-YYYYMMDD-XXXX (contador por año, dentro del tenant). El conteo
+    # y el INSERT no son atómicos entre sí, así que dos altas simultáneas
+    # (p. ej. dos técnicos usando "OS Rápida" al mismo tiempo) pueden calcular
+    # el mismo folio: reintenta con el siguiente número si el UNIQUE de
+    # numero_orden choca, en vez de tumbar la petición con un 500 crudo.
+    MAX_INTENTOS = 5
+    for intento in range(MAX_INTENTOS):
+        stmt_count = select(func.count()).select_from(OrdenServicio).where(
+            OrdenServicio.tenant_id == tenant_id,
+            sa.extract('year', OrdenServicio.fecha) == hoy.year,
+        )
+        res_count = await session.execute(stmt_count)
+        n = res_count.scalar() + 1 + intento
+        orden.numero_orden = f"OS-{hoy.strftime('%Y%m%d')}-{n:04d}"
+
+        try:
+            session.add(orden)
+            await session.commit()
+            await session.refresh(orden)
+            break
+        except IntegrityError:
+            await session.rollback()
+            if intento == MAX_INTENTOS - 1:
+                raise HTTPException(
+                    status_code=409,
+                    detail="No se pudo generar un folio de orden único. Intenta de nuevo.",
+                )
+        except Exception as e:
+            await session.rollback()
+            raise HTTPException(status_code=409, detail=f"No se pudo crear la orden: {e}")
 
     # Agregar materiales
     for mat in materiales_data:
@@ -204,12 +226,12 @@ async def crear_orden(
         cant = mat.get("cantidad", 1) if isinstance(mat, dict) else 1
         nuevo_mat = MATERIAL_OS(orden_id=orden.id, descripcion=desc, cantidad=cant)
         session.add(nuevo_mat)
-    
+
     await session.commit()
     cache_service.invalidate_prefix(f"dashboard_resumen_{tenant_id}")
     cache_service.invalidate_prefix(f"dashboard_mapa_{tenant_id}")
 
-    return {"ok": True, "numero_orden": numero, "orden_id": orden.id}
+    return {"ok": True, "numero_orden": orden.numero_orden, "orden_id": orden.id}
 
 
 @router.put("/{orden_id}/cerrar")
