@@ -217,7 +217,7 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
             >
               📋 Físico
             </button>
-            <button onClick={onClose} className="p-2 text-[var(--content-muted)] hover:text-[var(--content-text)] bg-[var(--content-surface)] rounded-lg">✕</button>
+            <button onClick={onClose} aria-label="Cerrar" className="p-2 text-[var(--content-muted)] hover:text-[var(--content-text)] bg-[var(--content-surface)] rounded-lg">✕</button>
           </div>
         </div>
 

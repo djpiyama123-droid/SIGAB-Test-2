@@ -126,7 +126,7 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
             <h2 className="text-lg font-bold text-[var(--content-text)]">Reportar Evento Adverso</h2>
             <p className="text-xs text-[var(--content-muted)]">NOM-240-SSA1-2012 — Paso {paso} de 3</p>
           </div>
-          <button onClick={onClose} className="p-2 text-[var(--content-muted)] hover:text-[var(--content-text)] bg-[var(--content-surface)] rounded-lg">
+          <button onClick={onClose} aria-label="Cerrar" className="p-2 text-[var(--content-muted)] hover:text-[var(--content-text)] bg-[var(--content-surface)] rounded-lg">
             ✕
           </button>
         </div>

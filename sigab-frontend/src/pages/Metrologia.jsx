@@ -52,7 +52,7 @@ function NuevaCalibracionModal({ onClose, onSaved }) {
             <ShieldCheck className="h-5 w-5 text-emerald-500" />
             Nueva Calibración
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={onClose} aria-label="Cerrar" className="text-slate-400 hover:text-white transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>

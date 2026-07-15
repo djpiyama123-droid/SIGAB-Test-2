@@ -43,7 +43,7 @@ function NuevaRefaccionModal({ onClose, onSaved }) {
             <Package className="h-5 w-5 text-emerald-500" />
             Nueva Refacción
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={onClose} aria-label="Cerrar" className="text-slate-400 hover:text-white transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -135,7 +135,7 @@ function AjustarStockModal({ item, onClose, onSaved }) {
       <div className="bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-900 bg-slate-900/40">
           <h2 className="text-lg font-bold text-white">Ajustar Stock</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={onClose} aria-label="Cerrar" className="text-slate-400 hover:text-white transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>

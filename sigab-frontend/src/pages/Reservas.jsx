@@ -137,7 +137,7 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
             <CalendarClock className="h-5 w-5 text-emerald-500" />
             {editando ? 'Editar Reserva' : 'Nueva Reserva de Equipo'}
           </h2>
-          <button onClick={onClose} className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors">
+          <button onClick={onClose} aria-label="Cerrar" className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -344,7 +344,7 @@ function DiaReservasModal({ dia, reservas, onClose, onNueva, onEditar, onElimina
             {fechaLabel}
             <span className="text-xs text-[var(--content-muted)] font-normal">({lista.length})</span>
           </h2>
-          <button onClick={onClose} className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors">
+          <button onClick={onClose} aria-label="Cerrar" className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>

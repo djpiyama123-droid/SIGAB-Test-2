@@ -88,7 +88,7 @@ export default function QRPanel({ equipo, onClose }) {
             <h2 className="text-sm font-bold text-[var(--content-text)]">Código QR</h2>
             <p className="text-xs text-[var(--content-muted)]">{equipo.nombre}</p>
           </div>
-          <button onClick={onClose} className="text-[var(--content-muted)] hover:text-[var(--content-text)] p-1.5 rounded-lg hover:bg-[var(--content-border)]">✕</button>
+          <button onClick={onClose} aria-label="Cerrar" className="text-[var(--content-muted)] hover:text-[var(--content-text)] p-1.5 rounded-lg hover:bg-[var(--content-border)]">✕</button>
         </div>
 
         <div className="p-6 space-y-5">

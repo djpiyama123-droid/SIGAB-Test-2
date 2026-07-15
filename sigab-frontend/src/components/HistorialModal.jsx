@@ -43,6 +43,7 @@ export default function HistorialModal({ equipoId, equipoNombre, open, onClose }
           </div>
           <button
             onClick={onClose}
+            aria-label="Cerrar"
             className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[var(--content-border)]"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">

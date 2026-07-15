@@ -425,6 +425,7 @@ function FichaTecnica({ equipo, onClose, onAbrirOS, onVerHistorial, onAbrirQR, o
         <h3 className="text-[var(--content-text)] font-semibold text-sm">Ficha Tecnica</h3>
         <button
           onClick={onClose}
+          aria-label="Cerrar"
           className="text-[var(--content-muted)] hover:text-[var(--content-text)] transition-colors w-7 h-7 flex items-center
                      justify-center rounded-lg hover:bg-[var(--content-surface)]"
         >

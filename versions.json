@@ -1,6 +1,25 @@
 {
-  "actual": "4.0.49",
+  "actual": "4.0.50",
   "versiones": [
+    {
+      "version": "4.0.50",
+      "fecha": "2026-07-15",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "ce92d5f",
+      "resumen": "Accesibilidad: agrega aria-label=\"Cerrar\" a 19 botones de cerrar icon-only (sin texto visible) en 17 archivos -- eran invisibles para lectores de pantalla.",
+      "cambios": [
+        "Barrido nuevo (no cubierto por los backlogs de contraste ni de azul-como-marca ya cerrados): grep -rn \"onClick={onClose}\" sobre TODO sigab-frontend/src, clasificando manualmente cada <button> de cerrar de modal contra la presencia de aria-label.",
+        "19 botones (icono X de lucide-react, svg inline, o el caracter '✕' sin texto acompañante) en 17 archivos no tenian nombre accesible -- un lector de pantalla los anuncia como 'boton' sin mas contexto, indistinguibles entre si dentro del mismo documento.",
+        "Corregidos con aria-label=\"Cerrar\", la misma convencion que ya usaban Sidebar.jsx/ModalWrapper.jsx/Lightbox.jsx (los 3 que ya lo tenian, confirmando que no es una convencion nueva sino una que faltaba generalizar): pages/Reservas.jsx (2 modales), pages/Almacen.jsx (2 modales), pages/Metrologia.jsx, pages/Capacitaciones.jsx, pages/Trazabilidad.jsx, components/QRPanel.jsx, components/OCRScannerModal.jsx, components/EquipoDetail.jsx, components/EventoAdversoModal.jsx, components/EventoDetalleModal.jsx, components/OrdenDetalleModal.jsx, components/NuevaOrdenModal.jsx, components/HistorialEquipoModal.jsx, components/EquipoForm.jsx, components/OrdenServicioRapidaModal.jsx, components/PreventivoForm.jsx, components/HistorialModal.jsx, components/HospitalMap.jsx.",
+        "No se tocaron los botones 'Cancelar'/'Cerrar' con texto visible (ya tienen nombre accesible por su contenido) ni pages/Copilot.jsx / formatos/FormatoViewer.jsx (su boton de cerrar ya incluye el texto visible '✕ Cerrar', no es icon-only). Cambio 100% aditivo -- solo el atributo aria-label, sin tocar clases, layout, tamaños ni logica de ningun componente."
+      ],
+      "verificar": [
+        "Cambio invisible en pantalla (no altera nada visual) -- para verificar hay que usar un lector de pantalla (VoiceOver/NVDA) o el inspector de accesibilidad del navegador y confirmar que los botones de cerrar de los modales listados ahora anuncian 'Cerrar' en vez de 'boton' generico.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (48 tests). Verificado grep -al anim-cell-pop dist/assets/Reservas-*.js (heatmap intacto, sin tocar)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1. Cambio de solo atributos aria-label en 17 archivos de frontend, sin logica de negocio -- revert trivial y sin riesgo."
+    },
     {
       "version": "4.0.49",
       "fecha": "2026-07-15",
