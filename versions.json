@@ -6,7 +6,7 @@
       "fecha": "2026-07-16",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "c9fc9f1",
       "resumen": "Accesibilidad: agrega navegacion por teclado (role/tabIndex/onKeyDown) a las filas y tarjetas clicables de Inventario, Ordenes, Tecnovigilancia y Etiquetado QR -- antes solo se podian abrir con mouse/touch.",
       "cambios": [
         "Tercer barrido de accesibilidad (los dos anteriores, v4.0.50/v4.0.51, cubrieron aria-label en botones de cerrar e iconos sueltos): grep de contenedores <div>/<tr> con onClick que abren un detalle o alternan una seleccion -- ninguno tenia role, tabIndex ni onKeyDown, asi que un usuario de solo-teclado o lector de pantalla no podia abrir NINGUNA fila de Inventario, Ordenes de Servicio, Tecnovigilancia ni seleccionar equipos en Etiquetado Masivo QR.",
