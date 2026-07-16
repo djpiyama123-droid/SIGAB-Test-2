@@ -35,11 +35,17 @@ connect_args = {
     } 
 }
 
+# VPS-02: pool_pre_ping evita el 500 intermitente "Lost connection to MySQL
+# server during query" (2013) cuando el pool entrega una conexión que MySQL/
+# Docker ya cerró por inactividad — valida con un ping antes de usarla.
+# pool_recycle recicla conexiones antes de que el servidor las cierre solo.
+_POOL_KWARGS = {"pool_pre_ping": True, "pool_recycle": 1800}
+
 # En modo desarrollo local, permitimos desactivar SSL si el contenedor MySQL no lo soporta
 if os.getenv("SIGAH_SSL_DISABLED", "true") == "true":
-    engine = create_async_engine(DATABASE_URL, echo=False, future=True)
+    engine = create_async_engine(DATABASE_URL, echo=False, future=True, **_POOL_KWARGS)
 else:
-    engine = create_async_engine(DATABASE_URL, connect_args=connect_args, echo=False, future=True)
+    engine = create_async_engine(DATABASE_URL, connect_args=connect_args, echo=False, future=True, **_POOL_KWARGS)
 
 async_session_maker = sessionmaker(
     engine, class_=AsyncSession, expire_on_commit=False
