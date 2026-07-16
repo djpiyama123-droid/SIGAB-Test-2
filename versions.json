@@ -1,6 +1,25 @@
 {
-  "actual": "4.0.50",
+  "actual": "4.0.51",
   "versiones": [
+    {
+      "version": "4.0.51",
+      "fecha": "2026-07-15",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "6b7ff4e",
+      "resumen": "Accesibilidad: agrega aria-label al FAB movil de \"Nueva OS\" (Ordenes.jsx) y al boton de refrescar de SuperAdmin.jsx -- ambos icon-only sin nombre accesible.",
+      "cambios": [
+        "Continuacion del barrido de accesibilidad de v4.0.50 (aria-label en botones de cerrar): esta vez el barrido cubrio TODOS los botones icon-only (sin texto visible) que tampoco tenian ni aria-label ni title, buscando por icono comun (Trash2, Pencil, Download, RefreshCw, Eye, Camera, Filter, ChevronDown/Right, ExternalLink) y por el patron de FAB movil (fixed bottom-6 right-6) usado en 3 paginas.",
+        "sigab-frontend/src/pages/Ordenes.jsx: el FAB movil principal 'Nueva OS' (icono Plus/X segun estado, w-14 h-14, la unica accion primaria movil del modulo de Ordenes de Servicio) no tenia title ni aria-label -- a diferencia de los otros 2 FAB del mismo patron visual en la app (Equipos.jsx 'Nuevo equipo' y Tecnovigilancia.jsx 'Reportar evento adverso', ambos ya con title). Se agrego aria-label dinamico ('Nueva OS' / 'Cancelar') que refleja el mismo texto que ya usa la version desktop del boton.",
+        "sigab-frontend/src/pages/SuperAdmin.jsx: el boton de refrescar 'Topologia y Nodos' (icono RefreshCw solo, sin onClick funcional) tampoco tenia nombre accesible -- se agrego aria-label descriptivo. Panel comercial de menor trafico, cambio de bajo impacto pero correcto.",
+        "Se revisaron y confirmaron SIN bug (ya tienen title o texto visible): Equipos.jsx (exportar CSV, FAB nuevo equipo), AdminGlobal.jsx (boton Actualizar), AuditPage.jsx (Verificar Cadena de Bloques), Reservas.jsx (Editar/Eliminar reserva, ya con title), QRBatch.jsx (Imprimir, Vista Previa), Ordenes.jsx (Escanear OS IMSS, Nueva OS Casillas, ambos FAB con title), CommandCenter.jsx (Abrir, Ver/Ocultar detalle), Capacitaciones.jsx (enlace con ChevronRight decorativo)."
+      ],
+      "verificar": [
+        "Cambio invisible en pantalla (no altera clases, layout ni logica) -- verificar con lector de pantalla o inspector de accesibilidad que el FAB movil de Ordenes de Servicio anuncia 'Nueva OS' (o 'Cancelar' si el formulario esta abierto) en vez de 'boton' generico.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (48 tests). Verificado grep -al anim-cell-pop dist/assets/Reservas-*.js (heatmap intacto, sin tocar)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1. Cambio de solo 2 atributos aria-label en 2 archivos de frontend, sin logica de negocio -- revert trivial y sin riesgo."
+    },
     {
       "version": "4.0.50",
       "fecha": "2026-07-15",
