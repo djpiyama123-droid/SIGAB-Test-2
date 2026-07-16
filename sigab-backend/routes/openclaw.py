@@ -112,10 +112,10 @@ async def crear_ticket_whatsapp(
 
         await cur.execute(
             """INSERT INTO ordenes_servicio
-            (numero_orden, tipo_formato, equipo_id, equipo_nombre, equipo_marca, equipo_modelo, equipo_serie,
-             ubicacion_fisica, piso, area, tipo_mantenimiento, falla_reportada, descripcion_servicio,
+            (tenant_id, numero_orden, tipo_formato, equipo_id, equipo_nombre, equipo_marca, equipo_modelo, equipo_serie,
+             ubicacion_fisica, piso, area, tipo_mantenimiento, tipo_atencion, falla_reportada, descripcion_servicio,
              observaciones, tecnico_nombre, fecha, estado, prioridad, origen)
-            VALUES (%s, 'correctivo_corto', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURDATE(), 'abierta', %s, 'whatsapp')""",
+            VALUES (1, %s, 'correctivo_corto', %s, %s, %s, %s, %s, %s, %s, %s, %s, 'correctivo', %s, %s, %s, %s, CURDATE(), 'abierta', %s, 'whatsapp')""",
             (
                 numero_orden, equipo_id, equipo_nombre, equipo_marca, equipo_modelo,
                 equipo_serie, ubicacion, piso, area, tipo_mantenimiento, falla_reportada,
@@ -153,8 +153,8 @@ async def crear_ticket_whatsapp(
             )
 
         await cur.execute(
-            """INSERT INTO alertas (tipo, equipo_id, orden_id, mensaje, prioridad)
-               VALUES ('ticket_abierto_mucho_tiempo', %s, %s, %s, %s)""",
+            """INSERT INTO alertas (tipo, equipo_id, orden_id, mensaje, prioridad, leida, enviada_whatsapp, created_at)
+               VALUES ('ticket_abierto_mucho_tiempo', %s, %s, %s, %s, 0, 0, NOW())""",
             (
                 equipo_id, orden_id,
                 f"Nuevo ticket WhatsApp: {falla_reportada or equipo_nombre or 'Sin descripción'}",
