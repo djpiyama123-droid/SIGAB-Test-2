@@ -23,7 +23,7 @@ import {
   Trash2
 } from 'lucide-react';
 import toast from '../lib/toast';
-import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import MiniAreaChart from '../components/charts/MiniAreaChart';
 import { ymd, etiquetaCorta, agruparPorDia, statsReservas, serieDiaria, reservasDelDia } from '../utils/fechas';
 import { generarReservasMock } from '../utils/reservasMock';
 
@@ -526,30 +526,12 @@ export default function Reservas() {
               <TrendingUp className="h-4 w-4 text-emerald-500" />
               Reservas por día · últimos 30 días
             </h3>
-            <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={serie} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="grad-reservas" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#16a34a" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#16a34a" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="label"
-                  tick={{ fontSize: 11, fill: 'var(--content-muted)' }}
-                  interval="preserveStartEnd"
-                  minTickGap={28}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip
-                  contentStyle={{ background: 'var(--content-surface)', border: '1px solid var(--content-border)', borderRadius: 12, fontSize: 12 }}
-                  labelStyle={{ color: 'var(--content-text)' }}
-                  formatter={(v) => [`${v} reserva${v !== 1 ? 's' : ''}`, '']}
-                />
-                <Area type="monotone" dataKey="count" stroke="#16a34a" strokeWidth={2} fill="url(#grad-reservas)" dot={false} />
-              </AreaChart>
-            </ResponsiveContainer>
+            <MiniAreaChart
+              data={serie}
+              height={180}
+              color="#16a34a"
+              formatTooltip={(v) => `${v} reserva${v !== 1 ? 's' : ''}`}
+            />
           </div>
 
           {/* Heatmap de actividad */}

@@ -1,6 +1,29 @@
 {
-  "actual": "4.0.52",
+  "actual": "4.0.53",
   "versiones": [
+    {
+      "version": "4.0.53",
+      "fecha": "2026-07-16",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Reservas.jsx ya no importa recharts: la grafica 'Reservas por dia' se reimplemento como SVG propio (MiniAreaChart), asi que la ruta Reservas ya no descarga el chunk charts (382 kB/112 kB gzip) compartido con Dashboard/Analitica/TVDashboard.",
+      "cambios": [
+        "Candidato explicito del backlog de bundle (docs/CONSOLIDACION-V4.md §7 punto 3 y docs/DESIGN-SYSTEM-V4.md): el chunk charts (recharts+d3, via manualChunks de vite.config.js) es el mas pesado de la app y Reservas.jsx solo lo necesitaba para una sola grafica de linea con tooltip (30 puntos, 'Reservas por dia - ultimos 30 dias') -- el resto del modulo (heatmap ActividadHeatmap) ya era SVG/CSS propio sin recharts.",
+        "Nuevo sigab-frontend/src/components/charts/MiniAreaChart.jsx: SVG a mano, sin dependencias nuevas -- mismo degradado y color (#16a34a), curva suavizada (Bezier de punto medio entre cada par de puntos, aproximacion ligera del type=monotone de recharts), eje X con etiquetas dispersas, tooltip flotante con mouse Y touch (recharts solo soportaba mouse de forma confiable).",
+        "sigab-frontend/src/pages/Reservas.jsx: se quito el import de recharts (AreaChart/Area/XAxis/Tooltip/ResponsiveContainer) y se reemplazo el bloque de la grafica por <MiniAreaChart data={serie} height={180} color=\"#16a34a\" formatTooltip={...} />. El heatmap ActividadHeatmap (regla dura del proyecto) no se toco.",
+        "Nuevo sigab-frontend/src/components/charts/MiniAreaChart.test.js: 4 casos sobre la funcion pura buildSmoothPath (exportada) -- sin puntos, un solo punto, 30 puntos con el numero correcto de segmentos C, y el caso de todos los conteos en 0 (maxCount cae a 1 via Math.max(1, ...), sin producir NaN en el path).",
+        "Medido con npm run build: Reservas-*.js paso a 25.02 kB (7.84 kB gzip) y grep -o 'charts-.*.js' dist/assets/Reservas-*.js no encuentra ninguna referencia -- la ruta Reservas ya no solicita el chunk charts. El chunk charts en si sigue en 382 kB (Dashboard/Analitica/TVDashboard lo siguen necesitando), la ganancia es que Reservas ya no lo carga.",
+        "No se pudo verificar visualmente en navegador real (login/backend no disponibles en este nodo ThinkCentre, que es replica sin stack levantada) -- verificado por build+vitest verdes y lectura del codigo/matematica del SVG; pendiente que un humano confirme visualmente en Reservas (desktop y movil) que la grafica se ve y se comporta igual que antes."
+      ],
+      "verificar": [
+        "Pagina Reservas (desktop y movil): la tarjeta 'Reservas por dia - ultimos 30 dias' debe verse igual que antes -- linea verde con relleno degradado, fechas dispersas en el eje X, tooltip con fecha + 'N reservas' al pasar el mouse o tocar en movil.",
+        "El heatmap 'Mapa de actividad' debajo de la grafica no deberia haber cambiado -- clic en un dia sigue abriendo el modal de reservas de ese dia.",
+        "Con DevTools > Network > JS abierto, navegar directo a /reservas sin pasar antes por /dashboard: no debe aparecer ninguna peticion a charts-*.js.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (52 tests)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1, o volver a v4.0.52. Cambio acotado a 1 archivo nuevo + 1 modificado (Reservas.jsx), sin tocar backend/BD ni el heatmap -- revert de bajo riesgo."
+    },
     {
       "version": "4.0.52",
       "fecha": "2026-07-16",

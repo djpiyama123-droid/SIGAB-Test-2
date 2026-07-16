@@ -153,10 +153,16 @@ de reintentar.
    `MaintenanceChart.jsx` sin necesitar animación): `charts` bajó de 530 kB
    a 400 kB (116 kB gzip) y `motion` quedó en 130 kB (43 kB gzip) aparte
    (v4.0.34). Rutas que no usan framer-motion (Reservas, TVDashboard) ya no
-   lo descargan si se visitan sin pasar antes por Dashboard. Pendiente: el
-   chunk `charts` (400 kB) sigue siendo el más grande de la app — evaluar a
-   futuro si recharts puede sustituirse por algo más ligero solo para
-   Reservas (un simple `AreaChart` de tooltip).
+   lo descargan si se visitan sin pasar antes por Dashboard.
+   **Actualizado (v4.0.53, loop-thinkcentre)**: `Reservas.jsx` ya no importa
+   `recharts` — su única gráfica ("Reservas por día") se reimplementó como
+   SVG propio (`components/charts/MiniAreaChart.jsx`, sin dependencias
+   nuevas), así que la ruta Reservas ya no descarga el chunk `charts` en
+   absoluto. El chunk `charts` (382 kB) sigue siendo el más grande de la
+   app pero ahora solo lo cargan Dashboard/Analítica/TVDashboard/Preventivos
+   (vía `MaintenanceChart`/`DegradationChart`/`DashboardCharts`) — candidato
+   a futuro si se quiere seguir recortando, aunque esas gráficas son más
+   complejas (series múltiples, ejes dobles) que la de Reservas.
 4. Generar pantalla Stitch de Reservas cuando el servidor coopere.
 5. Revisar ramas "pendientes de revisión" (§3) — decidir merge o cierre.
 6. `claude login` en ThinkCentre + agregar `gustavo` al grupo docker.
