@@ -333,6 +333,7 @@ export default function Ordenes() {
         <button
           onClick={() => setShowForm((v) => !v)}
           className={`w-14 h-14 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-150 hover:scale-105 active:scale-95 ${showForm ? 'bg-rose-600 shadow-rose-900/50' : 'bg-emerald-600 shadow-emerald-900/50'}`}
+          aria-label={showForm ? 'Cancelar' : 'Nueva OS'}
         >
           {showForm ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
         </button>

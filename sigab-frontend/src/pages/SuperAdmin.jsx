@@ -296,7 +296,7 @@ export default function SuperAdmin() {
               <h2 className="text-base font-bold text-white flex items-center gap-2">
                 <Server className="w-4 h-4 text-teal-400" /> Topología y Nodos
               </h2>
-              <button className="text-slate-500 hover:text-white transition-colors">
+              <button className="text-slate-500 hover:text-white transition-colors" aria-label="Actualizar topología y nodos">
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
             </div>
