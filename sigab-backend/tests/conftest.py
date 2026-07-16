@@ -248,6 +248,13 @@ async def equipo_existente(session: AsyncSession) -> Equipo:
 
 
 @pytest_asyncio.fixture
+async def equipo_existente_con_ubicacion(session: AsyncSession) -> Equipo:
+    """Equipo con ubicacion ya fijada pero SIN area/piso — para probar que un
+    PUT con ubicacion=None y nada granular de dónde derivar preserva el valor actual."""
+    return await _nuevo_equipo(session, ubicacion="Almacén general", area=None, piso=None)
+
+
+@pytest_asyncio.fixture
 async def equipo_con_trazabilidad(session: AsyncSession, usuario_jefe: Usuario) -> Equipo:
     eq = await _nuevo_equipo(session, serie=_serie_unica("TRZ"))
     session.add(Trazabilidad(

@@ -1,8 +1,6 @@
 """Crea o actualiza el usuario admin inicial para SIGAH.
 
-Uso (desde el directorio sigah-backend):
-    ./venv/bin/python scripts/seed_admin.py
-o con env vars:
+Uso (desde el directorio sigah-backend) — SIGAH_ADMIN_PASSWORD es obligatoria:
     SIGAH_ADMIN_MATRICULA=ADMIN001 SIGAH_ADMIN_PASSWORD=mi_clave \
       ./venv/bin/python scripts/seed_admin.py
 """
@@ -19,9 +17,18 @@ from config import DB_CONFIG
 
 
 MATRICULA = os.getenv("SIGAH_ADMIN_MATRICULA", "ADMIN001")
-PASSWORD = os.getenv("SIGAH_ADMIN_PASSWORD", "sigah_admin_2026")
+# VPS-05: sin default — un fallback hardcodeado aquí es una contraseña real
+# expuesta en un repo público. Falla explícito si no se provee.
+PASSWORD = os.getenv("SIGAH_ADMIN_PASSWORD")
 NOMBRE = os.getenv("SIGAH_ADMIN_NOMBRE", "Administrador SIGAH")
 EMAIL = os.getenv("SIGAH_ADMIN_EMAIL", "admin@hgr1.imss.gob.mx")
+
+if not PASSWORD:
+    sys.exit(
+        "SIGAH_ADMIN_PASSWORD no está definida. Este script ya no trae una "
+        "contraseña por defecto (quedaba expuesta en el repo público). "
+        "Uso: SIGAH_ADMIN_PASSWORD=tu_clave ./venv/bin/python scripts/seed_admin.py"
+    )
 
 
 async def main():
@@ -54,7 +61,6 @@ async def main():
                 print(f"Admin creado: {MATRICULA}")
 
         print(f"\n  Matrícula: {MATRICULA}")
-        print(f"  Password : {PASSWORD}")
         print(f"  Rol      : admin")
     finally:
         conn.close()

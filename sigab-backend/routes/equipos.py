@@ -50,8 +50,42 @@ from database import get_async_session
 from models.equipo import Equipo
 from models.orden_servicio import OrdenServicio
 from models.preventivo import PreventivoProgramado
+from pydantic import BaseModel, field_validator
 
 router = APIRouter()
+
+UBICACION_DEFAULT = "H.G.R. 1 - Sin especificar"
+
+
+class _UbicacionConsolidada(BaseModel):
+    """VPS-01: garantiza que ubicacion nunca llegue vacía al INSERT/UPDATE
+    (la columna equipos.ubicacion es NOT NULL — IntegrityError 1048 si no)."""
+    ubicacion: str
+
+    @field_validator("ubicacion")
+    @classmethod
+    def no_vacia(cls, v):
+        v = (v or "").strip()
+        if not v:
+            raise ValueError("ubicacion no puede quedar vacía")
+        return v
+
+
+def consolidar_ubicacion(data: dict) -> str:
+    """Arma equipos.ubicacion desde unidad/piso/area cuando el cliente no
+    manda un string ya armado (formularios que solo capturan campos granulares)."""
+    ubicacion_actual = str(data.get("ubicacion") or "").strip()
+    if ubicacion_actual:
+        return ubicacion_actual
+    unidad = str(data.get("unidad") or "").strip() or "H.G.R. 1"
+    piso = str(data.get("piso") or "").strip()
+    area = str(data.get("area") or "").strip()
+    if not piso and not area:
+        ubicacion = f"{unidad} - Sin especificar"
+    else:
+        partes = [unidad] + ([f"Piso {piso}"] if piso else []) + ([area] if area else [])
+        ubicacion = " - ".join(partes)
+    return _UbicacionConsolidada(ubicacion=ubicacion or UBICACION_DEFAULT).ubicacion
 
 # ... rutas ...
 
@@ -160,6 +194,10 @@ async def crear_equipo(
 
     # Defensivo: ignorar cualquier tenant_id que venga del cliente.
     data.pop("tenant_id", None)
+
+    # VPS-01: consolidar piso/área/unidad en ubicacion ANTES del INSERT
+    # (columna NOT NULL; el frontend puede enviar solo campos granulares).
+    data["ubicacion"] = consolidar_ubicacion(data)
 
     # Crear instancia del modelo
     nuevo_equipo = Equipo(**data, tenant_id=tenant_id)

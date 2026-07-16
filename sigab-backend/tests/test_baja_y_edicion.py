@@ -34,7 +34,7 @@ async def test_put_ubicacion_vacia_se_deriva_de_area_y_piso(client, auth_headers
 
     # Releer
     resp_get = await client.get(f"/api/equipos/{equipo_simple.id}", headers=auth_headers_biomedico)
-    body = resp_get.json()
+    body = resp_get.json()["equipo"]
     assert body["ubicacion"] == "Quirófano 3 · 2do piso", body
 
 
@@ -48,7 +48,7 @@ async def test_put_ubicacion_null_sin_area_ni_piso_no_nullifica(client, auth_hea
     assert resp.status_code in (200, 400), resp.text
     if resp.status_code == 200:
         resp_get = await client.get(f"/api/equipos/{equipo_simple.id}", headers=auth_headers_biomedico)
-        assert resp_get.json()["ubicacion"] == ubicacion_previa, "Se nullificó la ubicación previa"
+        assert resp_get.json()["equipo"]["ubicacion"] == ubicacion_previa, "Se nullificó la ubicación previa"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
