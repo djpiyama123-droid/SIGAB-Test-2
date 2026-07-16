@@ -1,6 +1,29 @@
 {
-  "actual": "4.0.51",
+  "actual": "4.0.52",
   "versiones": [
+    {
+      "version": "4.0.52",
+      "fecha": "2026-07-16",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Accesibilidad: agrega navegacion por teclado (role/tabIndex/onKeyDown) a las filas y tarjetas clicables de Inventario, Ordenes, Tecnovigilancia y Etiquetado QR -- antes solo se podian abrir con mouse/touch.",
+      "cambios": [
+        "Tercer barrido de accesibilidad (los dos anteriores, v4.0.50/v4.0.51, cubrieron aria-label en botones de cerrar e iconos sueltos): grep de contenedores <div>/<tr> con onClick que abren un detalle o alternan una seleccion -- ninguno tenia role, tabIndex ni onKeyDown, asi que un usuario de solo-teclado o lector de pantalla no podia abrir NINGUNA fila de Inventario, Ordenes de Servicio, Tecnovigilancia ni seleccionar equipos en Etiquetado Masivo QR.",
+        "sigab-frontend/src/components/EquipoCard.jsx (vista tarjeta de Inventario) y sigab-frontend/src/components/EquipoTable.jsx (tarjeta movil + fila de escritorio): role=\"button\"/tabIndex/onKeyDown (Enter/Espacio) + foco visible, siguiendo el patron ya establecido en EquipoDetail.jsx (mini-historial de ordenes, el unico lugar del codigo que ya tenia esta implementacion).",
+        "sigab-frontend/src/pages/Ordenes.jsx (tarjeta movil + fila de escritorio) y sigab-frontend/src/pages/Tecnovigilancia.jsx (fila de escritorio): mismo patron.",
+        "sigab-frontend/src/pages/QRBatch.jsx (tarjeta de seleccion de equipo): mismo patron + aria-pressed, porque esta tarjeta alterna una seleccion en vez de navegar a un detalle.",
+        "Guarda nueva e.target !== e.currentTarget en cada onKeyDown (no presente en el precedente de EquipoDetail.jsx): varias filas/tarjetas tienen botones anidados con su propio onClick + stopPropagation (boton QR y badge de tickets abiertos en EquipoTable.jsx) -- sin la guarda, Enter/Espacio con foco en ese boton anidado hace bubble del keydown (que stopPropagation de un onClick NO detiene) y abre tambien el detalle de la fila completa.",
+        "Los <tr> NO llevan role=\"button\" (rompería la semantica de fila para lectores de pantalla) -- solo tabIndex/onKeyDown/foco via outline (mas confiable que ring/box-shadow sobre <tr> entre navegadores). Los <div> de tarjeta si llevan role=\"button\" + foco via ring.",
+        "Fuera de alcance a proposito: pages/Reservas.jsx (el onClick del heatmap es una regla dura del proyecto, no se toco), components/EquipoDetail.jsx (galeria de fotos ya usa <button> real), y los 3 overlays de fondo de modal (onClick={onClose} en el backdrop, cierre de conveniencia para mouse -- el teclado ya cierra con el boton \"Cerrar\" o Escape)."
+      ],
+      "verificar": [
+        "Inventario (vista tarjeta y vista tabla), Ordenes de Servicio (tarjeta movil y tabla), Tecnovigilancia (tabla) y Etiquetado Masivo QR (tarjetas de seleccion): navegar con Tab debe poner el foco (anillo verde visible) en cada fila/tarjeta, y Enter o Espacio debe abrir el mismo detalle/accion que el click de mouse.",
+        "En Inventario vista tabla y Ordenes vista tabla: con el foco en el boton anidado (QR, tickets abiertos, CENEVAL, Cerrar), Enter/Espacio debe activar SOLO ese boton, sin abrir tambien el detalle de la fila completa (verificar la guarda e.target !== e.currentTarget).",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (48 tests). Verificado grep -al anim-cell-pop dist/assets/Reservas-*.js (heatmap intacto, Reservas.jsx no se tocó)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1. Cambio aditivo (atributos role/tabIndex/aria-label/onKeyDown + una clase de foco) en 5 archivos de frontend, sin logica de negocio ni cambios de layout visual -- revert trivial y sin riesgo."
+    },
     {
       "version": "4.0.51",
       "fecha": "2026-07-15",

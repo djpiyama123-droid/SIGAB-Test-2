@@ -41,8 +41,15 @@ export default function EquipoCard({ equipo, onClick, onQR }) {
   const fotosIncompletas = contarFotos(equipo) < 3;
   return (
     <div
-      className="bg-[var(--content-surface)] rounded-xl border border-[var(--content-border)] overflow-hidden hover:border-[var(--content-border)] cursor-pointer transition-all group"
+      className="bg-[var(--content-surface)] rounded-xl border border-[var(--content-border)] overflow-hidden hover:border-[var(--content-border)] cursor-pointer transition-all group focus:outline-none focus:ring-2 focus:ring-emerald-500/70"
       onClick={() => onClick?.(equipo)}
+      role="button"
+      tabIndex={0}
+      aria-label={`Ver detalle de ${equipo.nombre}`}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(equipo); }
+      }}
     >
       {/* Imagen del equipo */}
       <div className="relative h-36 bg-[var(--content-bg)]/50 flex items-center justify-center overflow-hidden">

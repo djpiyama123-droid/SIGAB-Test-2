@@ -146,7 +146,13 @@ export default function Tecnovigilancia() {
                 {eventos.map((ev) => (
                   <tr key={ev.id}
                     onClick={() => setSelectedId(ev.id)}
-                    className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/50 cursor-pointer transition-colors">
+                    tabIndex={0}
+                    aria-label={`Ver evento ${ev.numero_reporte}`}
+                    onKeyDown={(e) => {
+                      if (e.target !== e.currentTarget) return;
+                      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedId(ev.id); }
+                    }}
+                    className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/50 cursor-pointer transition-colors focus:outline-2 focus:outline-emerald-500 focus:-outline-offset-2">
                     <td className="px-4 py-3 font-mono text-[var(--content-muted)] text-xs">{ev.numero_reporte}</td>
                     <td className="px-4 py-3 text-[var(--content-text)]">{ev.dispositivo_nombre || '—'}</td>
                     <td className="px-4 py-3 text-[var(--content-muted)] text-xs">

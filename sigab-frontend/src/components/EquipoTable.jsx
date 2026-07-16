@@ -64,7 +64,14 @@ export default function EquipoTable({ equipos, onSelect }) {
         {equipos.map((eq) => (
           <div key={eq.id}
             onClick={() => onSelect(eq)}
-            className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 cursor-pointer hover:border-[var(--content-border)] active:bg-slate-700/50 transition-colors">
+            role="button"
+            tabIndex={0}
+            aria-label={`Ver detalle de ${eq.nombre}`}
+            onKeyDown={(e) => {
+              if (e.target !== e.currentTarget) return;
+              if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(eq); }
+            }}
+            className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 cursor-pointer hover:border-[var(--content-border)] active:bg-slate-700/50 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/70">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
                 {eq.imagen_url && (
@@ -140,8 +147,14 @@ export default function EquipoTable({ equipos, onSelect }) {
               {equipos.map((eq) => (
                 <tr
                   key={eq.id}
-                  className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/30 cursor-pointer transition-colors"
+                  className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/30 cursor-pointer transition-colors focus:outline-2 focus:outline-emerald-500 focus:-outline-offset-2"
                   onClick={() => onSelect(eq)}
+                  tabIndex={0}
+                  aria-label={`Ver detalle de ${eq.nombre}`}
+                  onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget) return;
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(eq); }
+                  }}
                 >
                   {/* Thumbnail */}
                   <td className="px-3 py-2">

@@ -373,7 +373,15 @@ export default function QRBatch() {
                 <div
                   key={eq.id}
                   onClick={() => toggleSeleccion(eq.id)}
-                  className={`group cursor-pointer p-3 border rounded-xl transition-all duration-200 ${
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={selected}
+                  aria-label={`${selected ? 'Quitar de' : 'Agregar a'} la selección: ${eq.nombre}`}
+                  onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget) return;
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSeleccion(eq.id); }
+                  }}
+                  className={`group cursor-pointer p-3 border rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500/70 ${
                     selected
                       ? 'bg-purple-500/10 border-purple-500 shadow-lg shadow-purple-500/10 ring-1 ring-purple-500/20'
                       : 'bg-[var(--content-surface)] border-[var(--content-border)]/50 hover:border-[var(--content-border)] hover:bg-[var(--content-border)]/30'

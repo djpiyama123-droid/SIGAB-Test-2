@@ -667,7 +667,14 @@ export default function Ordenes() {
               <div
                 key={os.id}
                 onClick={() => setSelectedOrden(os.id)}
-                className="p-4 hover:bg-[var(--content-border)]/30 transition-colors cursor-pointer"
+                role="button"
+                tabIndex={0}
+                aria-label={`Ver orden ${os.numero_orden}`}
+                onKeyDown={(e) => {
+                  if (e.target !== e.currentTarget) return;
+                  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedOrden(os.id); }
+                }}
+                className="p-4 hover:bg-[var(--content-border)]/30 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/70 focus:ring-inset"
               >
                 <div className="flex justify-between items-start mb-2">
                   <span className="font-mono text-xs text-emerald-400">{os.numero_orden}</span>
@@ -735,7 +742,13 @@ export default function Ordenes() {
                 {ordenes.map((os) => (
                   <tr key={os.id}
                     onClick={() => setSelectedOrden(os.id)}
-                    className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/50 cursor-pointer transition-colors">
+                    tabIndex={0}
+                    aria-label={`Ver orden ${os.numero_orden}`}
+                    onKeyDown={(e) => {
+                      if (e.target !== e.currentTarget) return;
+                      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedOrden(os.id); }
+                    }}
+                    className="border-t border-[var(--content-border)]/50 hover:bg-[var(--content-border)]/50 cursor-pointer transition-colors focus:outline-2 focus:outline-emerald-500 focus:-outline-offset-2">
                     <td className="px-4 py-3 font-mono text-[var(--content-muted)] text-xs whitespace-nowrap">{os.numero_orden}</td>
                     <td className="px-4 py-3 text-[var(--content-text)] text-xs max-w-[120px] truncate">{os.equipo_nombre || '—'}</td>
                     <td className="px-4 py-3 text-[var(--content-muted)] text-xs max-w-xs truncate hidden sm:table-cell">{os.falla_reportada || '—'}</td>
