@@ -6,7 +6,7 @@
       "fecha": "2026-07-16",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "64a5bc0",
       "resumen": "Reservas.jsx ya no importa recharts: la grafica 'Reservas por dia' se reimplemento como SVG propio (MiniAreaChart), asi que la ruta Reservas ya no descarga el chunk charts (382 kB/112 kB gzip) compartido con Dashboard/Analitica/TVDashboard.",
       "cambios": [
         "Candidato explicito del backlog de bundle (docs/CONSOLIDACION-V4.md §7 punto 3 y docs/DESIGN-SYSTEM-V4.md): el chunk charts (recharts+d3, via manualChunks de vite.config.js) es el mas pesado de la app y Reservas.jsx solo lo necesitaba para una sola grafica de linea con tooltip (30 puntos, 'Reservas por dia - ultimos 30 dias') -- el resto del modulo (heatmap ActividadHeatmap) ya era SVG/CSS propio sin recharts.",
