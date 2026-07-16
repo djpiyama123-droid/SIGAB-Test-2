@@ -35,11 +35,16 @@ connect_args = {
     } 
 }
 
-# VPS-02: pool_pre_ping evita el 500 intermitente "Lost connection to MySQL
-# server during query" (2013) cuando el pool entrega una conexión que MySQL/
-# Docker ya cerró por inactividad — valida con un ping antes de usarla.
-# pool_recycle recicla conexiones antes de que el servidor las cierre solo.
-_POOL_KWARGS = {"pool_pre_ping": True, "pool_recycle": 1800}
+# VPS-02: pool_recycle recicla conexiones proactivamente antes de que MySQL/
+# Docker las cierre solas por inactividad, evitando el 500 "Lost connection to
+# MySQL server during query" (2013).
+# NOTA (2026-07-16): pool_pre_ping=True se probó y se REVIRTIÓ — con
+# SQLAlchemy 2.0.36 + asyncmy 0.2.10 el ping de pre-chequeo revienta con
+# `AsyncAdapt_asyncmy_connection.ping() missing 1 required positional
+# argument: 'reconnect'` (bug de compatibilidad del dialecto asyncmy), lo que
+# tumbaba CUALQUIER endpoint con 500 de forma intermitente — peor que el bug
+# original. No reactivar sin antes confirmar el fix upstream de SQLAlchemy/asyncmy.
+_POOL_KWARGS = {"pool_recycle": 1800}
 
 # En modo desarrollo local, permitimos desactivar SSL si el contenedor MySQL no lo soporta
 if os.getenv("SIGAH_SSL_DISABLED", "true") == "true":
