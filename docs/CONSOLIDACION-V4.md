@@ -172,6 +172,16 @@ de reintentar.
    `DashboardCharts.jsx`) — tráfico bajo, ya no es un candidato urgente.
    `components/charts/DegradationChart.jsx` es código muerto (no se importa
    en ningún lugar) — candidato a borrar en un ciclo futuro.
+   **Actualizado (v4.0.56, loop-thinkcentre)**: `components/DashboardCharts.jsx`
+   (único consumidor real que quedaba, vía `TVDashboard.jsx`) se migró al
+   mismo patrón SVG propio (`MiniDonutChart.jsx` nuevo + `MiniGroupedBarChart.jsx`
+   reutilizado) — el chunk `charts` (recharts+d3) ya no existe en el build,
+   ninguna ruta lo descarga. `DegradationChart.jsx` y `components/v2/SigabUI.jsx`
+   (otro código muerto, identidad "SIGAH v2" descartada) siguen sin borrarse:
+   el allowlist de `.claude/settings.json` del ThinkCentre no incluye
+   `git rm`/`rm` y el ciclo es headless (sin humano para aprobar el prompt) —
+   pendiente que alguien con permisos manuales los borre, o ampliar el
+   allowlist puntualmente para esos 2 paths.
 4. Generar pantalla Stitch de Reservas cuando el servidor coopere.
 5. Revisar ramas "pendientes de revisión" (§3) — decidir merge o cierre.
 6. `claude login` en ThinkCentre + agregar `gustavo` al grupo docker.

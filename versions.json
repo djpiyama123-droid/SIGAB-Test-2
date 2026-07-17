@@ -1,6 +1,30 @@
 {
-  "actual": "4.0.55",
+  "actual": "4.0.56",
   "versiones": [
+    {
+      "version": "4.0.56",
+      "fecha": "2026-07-17",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "DashboardCharts.jsx (usado por el kiosko TVDashboard) ya no importa recharts: se reimplemento como 2 componentes SVG propios, asi que el chunk 'charts' (recharts+d3, 375 kB) desaparece por completo del build -- ya no queda ninguna ruta viva que lo descargue.",
+      "cambios": [
+        "Continuacion de la serie v4.0.53/v4.0.54 (Reservas y Dashboard ya migrados a SVG propio en ciclos previos): components/DashboardCharts.jsx era el ultimo consumidor real de recharts en toda la app (usado solo por pages/TVDashboard.jsx, el kiosko de sala de bajo trafico) -- confirmado con grep -rn \"^import.*recharts\" antes de tocar nada.",
+        "Nuevo sigab-frontend/src/components/charts/MiniDonutChart.jsx: dona SVG a mano via stroke-dasharray sobre un circulo (no arcos de path), tecnica que evita el caso degenerado de una sola categoria con 100% del total (un arco de path con angulo 360 se rompe; un circulo con dasharray no). Reemplaza el PieChart de 'Equipos por Estado': centro con el total (o el detalle de la categoria en hover), leyenda lateral con color+nombre+valor+porcentaje siempre visible (antes eran labels flotantes de recharts).",
+        "components/DashboardCharts.jsx: la grafica de barras 'Ordenes de Servicio (ultimos 6 meses)' no necesito un componente nuevo -- se reutilizo components/charts/MiniGroupedBarChart.jsx (ya creado en v4.0.54 para MaintenanceChart.jsx) con una sola serie ({key:'Total', label:'Ordenes', color:'#3b82f6'}), mismo color que el BarChart de recharts que reemplaza.",
+        "Nuevo sigab-frontend/src/components/charts/MiniDonutChart.test.js: se extrajo la funcion pura buildDonutSegments (fraccion/porcentaje/dasharray/dashoffset por segmento) para poder probarla sin montar el componente -- 5 casos: sin datos, reparto correcto entre 2 categorias, una sola categoria con 100% del total (el caso que rompe los arcos de path), total en 0 sin NaN, y el caso real de 5 categorias de equipos_por_estado sumando ~100%.",
+        "Medido con npm run build: dist/assets ya no contiene ningun chunk 'charts-*' ni referencia a recharts/d3 -- el ultimo consumidor vivo (TVDashboard/DashboardCharts) dejo de necesitarlo. components/charts/DegradationChart.jsx sigue existiendo como codigo muerto (import de recharts sin usar, no se pudo borrar este ciclo -- ver nota de permisos abajo) pero al no ser importado por nadie, Vite no lo incluye en ningun chunk del build real.",
+        "No se pudo ejecutar 'git rm' para borrar components/charts/DegradationChart.jsx y components/v2/SigabUI.jsx (codigo muerto confirmado, candidatos documentados desde v4.0.54/antes) -- el allowlist de .claude/settings.json de este nodo no incluye 'git rm' ni 'Bash(rm:*)' (explicitamente denegado) y no hay humano para aprobar el prompt en un ciclo headless. Queda pendiente que alguien con permisos manuales borre ambos archivos, o que se amplie el allowlist con 'Bash(git rm sigab-frontend/src/components/v2/SigabUI.jsx:*)' y el equivalente de DegradationChart.jsx.",
+        "No se pudo verificar visualmente en navegador real (mismo motivo que v4.0.54: sin login/backend levantado en este nodo) -- verificado por build+vitest verdes y lectura de la matematica del SVG (stroke-dasharray es una tecnica de donut estandar, sin casos borde nuevos mas alla de los ya cubiertos por el test); pendiente que un humano confirme visualmente en TVDashboard (pantalla de kiosko, tema fijo oscuro) que ambas graficas se ven y comportan igual que antes."
+      ],
+      "verificar": [
+        "Abrir /tv-dashboard (o la ruta del kiosko TVDashboard) en un navegador con datos reales: la dona 'Equipos por Estado' debe mostrar los mismos 5 colores/categorias que antes (verde=operativo, amarillo=mantenimiento, rojo=fuera de servicio, azul=traslado, gris=baja) con porcentajes en la leyenda lateral, y la barra 'Ordenes de Servicio (ultimos 6 meses)' debe mostrar los mismos meses/valores que antes.",
+        "Pasar el mouse sobre cada segmento de la dona: debe atenuar los demas segmentos y mostrar el valor+porcentaje de ese segmento en el centro.",
+        "Caso de borde real: si un hospital tiene TODOS sus equipos en un solo estado (0% en las demas categorias), la dona debe verse como un circulo completo de un solo color, sin romperse (cubierto por test, pendiente confirmar visualmente).",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (62 tests, 5 nuevos)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1, o volver a v4.0.55. Cambio acotado a components/DashboardCharts.jsx + 2 archivos nuevos (MiniDonutChart.jsx/.test.js), sin tocar backend, login ni ninguna otra pantalla -- revert de bajo riesgo."
+    },
     {
       "version": "4.0.55",
       "fecha": "2026-07-17",

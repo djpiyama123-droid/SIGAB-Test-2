@@ -1,16 +1,5 @@
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Legend
-} from 'recharts';
+import MiniDonutChart from './charts/MiniDonutChart';
+import MiniGroupedBarChart from './charts/MiniGroupedBarChart';
 import { STATUS_HEX } from '../utils/tokens';
 
 // Use centralized STATUS_HEX tokens as single source of truth
@@ -39,7 +28,7 @@ export default function DashboardCharts({ resumen }) {
     const date = new Date(year, parseInt(month) - 1);
     const monthName = date.toLocaleString('es-ES', { month: 'short' });
     return {
-      mes: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+      name: monthName.charAt(0).toUpperCase() + monthName.slice(1),
       Total: item.total
     };
   });
@@ -48,47 +37,16 @@ export default function DashboardCharts({ resumen }) {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
       <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 shadow-sm">
         <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-4">Equipos por Estado</h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={equiposData}
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                labelLine={false}
-              >
-                {equiposData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip 
-                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#fff' }}
-                itemStyle={{ color: '#cbd5e1' }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        <MiniDonutChart data={equiposData} height={220} />
       </div>
 
       <div className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-4 shadow-sm">
         <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-4">Órdenes de Servicio (últimos 6 meses)</h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={ordenesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-              <XAxis dataKey="mes" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-              <Tooltip 
-                cursor={{ fill: '#1e293b' }}
-                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#fff' }}
-              />
-              <Bar dataKey="Total" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <MiniGroupedBarChart
+          data={ordenesData}
+          series={[{ key: 'Total', label: 'Órdenes', color: '#3b82f6' }]}
+          height={240}
+        />
       </div>
     </div>
   );
