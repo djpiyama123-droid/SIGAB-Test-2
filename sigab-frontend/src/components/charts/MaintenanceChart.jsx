@@ -1,15 +1,4 @@
-import React from 'react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts';
+import MiniGroupedBarChart from './MiniGroupedBarChart';
 
 const data = [
   { name: 'Ene', programadas: 12, completadas: 10 },
@@ -18,63 +7,15 @@ const data = [
   { name: 'Abr', programadas: 18, completadas: 16 },
 ];
 
+const series = [
+  { key: 'programadas', label: 'Programadas', color: '#3b82f6' },
+  { key: 'completadas', label: 'Completadas', color: '#10B981' },
+];
+
 export default function MaintenanceChart() {
   return (
     <div className="w-full h-72">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={data}
-          margin={{ top: 20, right: 10, left: -20, bottom: 0 }}
-          barGap={8}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-          <XAxis 
-            dataKey="name" 
-            stroke="#64748b" 
-            fontSize={10} 
-            tickLine={false} 
-            axisLine={false} 
-          />
-          <YAxis 
-            stroke="#64748b" 
-            fontSize={10} 
-            tickLine={false} 
-            axisLine={false} 
-          />
-          <Tooltip
-            cursor={{ fill: 'rgba(100, 116, 139, 0.08)' }}
-            contentStyle={{
-              backgroundColor: 'var(--content-bg)',
-              borderColor: 'var(--content-border)',
-              borderRadius: '12px',
-              fontSize: '12px',
-              color: 'var(--content-text)'
-            }}
-            itemStyle={{ color: 'var(--content-muted)' }}
-            labelStyle={{ color: 'var(--content-text)' }}
-          />
-          <Legend 
-            verticalAlign="top" 
-            align="right" 
-            iconType="circle"
-            wrapperStyle={{ paddingBottom: '20px', fontSize: '10px' }}
-          />
-          <Bar 
-            dataKey="programadas" 
-            name="Programadas" 
-            fill="#3b82f6" 
-            radius={[4, 4, 0, 0]} 
-            barSize={12}
-          />
-          <Bar 
-            dataKey="completadas" 
-            name="Completadas" 
-            fill="#10B981" 
-            radius={[4, 4, 0, 0]} 
-            barSize={12}
-          />
-        </BarChart>
-      </ResponsiveContainer>
+      <MiniGroupedBarChart data={data} series={series} height={288} />
     </div>
   );
 }

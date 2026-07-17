@@ -158,11 +158,20 @@ de reintentar.
    `recharts` — su única gráfica ("Reservas por día") se reimplementó como
    SVG propio (`components/charts/MiniAreaChart.jsx`, sin dependencias
    nuevas), así que la ruta Reservas ya no descarga el chunk `charts` en
-   absoluto. El chunk `charts` (382 kB) sigue siendo el más grande de la
-   app pero ahora solo lo cargan Dashboard/Analítica/TVDashboard/Preventivos
-   (vía `MaintenanceChart`/`DegradationChart`/`DashboardCharts`) — candidato
-   a futuro si se quiere seguir recortando, aunque esas gráficas son más
-   complejas (series múltiples, ejes dobles) que la de Reservas.
+   absoluto.
+   **Actualizado (v4.0.54, loop-thinkcentre)**: mismo tratamiento para
+   `Dashboard.jsx` — su única gráfica (`MaintenanceChart`, barras
+   "Cumplimiento de Mantenimiento") se reimplementó como SVG propio
+   (`components/charts/MiniGroupedBarChart.jsx`), así que Dashboard —la
+   pantalla de mayor tráfico de la app, primera tras iniciar sesión— tampoco
+   descarga ya el chunk `charts`. De paso se corrigió esta misma nota: NO es
+   cierto que Analítica/Preventivos lo carguen (verificado por grep, ninguno
+   importa `recharts` ni componentes de `charts/`; no está claro desde
+   cuándo la nota quedó desactualizada). El único consumidor real que queda
+   del chunk `charts` (375 kB) es `TVDashboard.jsx` (kiosko de sala, vía
+   `DashboardCharts.jsx`) — tráfico bajo, ya no es un candidato urgente.
+   `components/charts/DegradationChart.jsx` es código muerto (no se importa
+   en ningún lugar) — candidato a borrar en un ciclo futuro.
 4. Generar pantalla Stitch de Reservas cuando el servidor coopere.
 5. Revisar ramas "pendientes de revisión" (§3) — decidir merge o cierre.
 6. `claude login` en ThinkCentre + agregar `gustavo` al grupo docker.

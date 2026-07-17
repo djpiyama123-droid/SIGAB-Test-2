@@ -1,6 +1,29 @@
 {
-  "actual": "4.0.53",
+  "actual": "4.0.54",
   "versiones": [
+    {
+      "version": "4.0.54",
+      "fecha": "2026-07-17",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "MaintenanceChart.jsx (grafica de Dashboard) ya no importa recharts: se reimplemento como SVG propio (MiniGroupedBarChart), asi que Dashboard -- la pantalla de mayor trafico de la app -- ya no descarga el chunk charts (375 kB/111 kB gzip).",
+      "cambios": [
+        "Continuacion directa de v4.0.53 (mismo patron aplicado a Reservas/MiniAreaChart): components/charts/MaintenanceChart.jsx era el ultimo import de recharts dentro de pages/Dashboard.jsx (grafica de barras 'Cumplimiento de Mantenimiento', Programadas vs Completadas por mes) -- Dashboard es la primera pantalla que ve cualquier usuario tras iniciar sesion.",
+        "Nuevo sigab-frontend/src/components/charts/MiniGroupedBarChart.jsx: SVG a mano, sin dependencias nuevas -- barras agrupadas por categoria con leyenda superior (circulo+etiqueta por serie, mismo patron visual que el Legend de recharts) y tooltip flotante con mouse y touch mostrando el valor de cada serie del grupo mas cercano.",
+        "sigab-frontend/src/components/charts/MaintenanceChart.jsx: se quito el import de recharts (BarChart/Bar/XAxis/YAxis/CartesianGrid/Tooltip/Legend/ResponsiveContainer/Cell) y ahora solo pasa los datos estaticos a <MiniGroupedBarChart data={data} series={series} height={288} />, mismos colores (programadas #3b82f6, completadas #10B981).",
+        "Nuevo sigab-frontend/src/components/charts/MiniGroupedBarChart.test.js: 5 casos sobre la funcion pura buildGroupedBars (exportada) -- sin datos, un grupo con 2 series, la barra mas alta llega al tope del area interna, todos los valores en 0 sin producir NaN, y el caso real de 4 meses de MaintenanceChart.",
+        "Hallazgo de paso: la nota de docs/CONSOLIDACION-V4.md parrafo 7.3 decia que Analitica.jsx y Preventivos.jsx tambien cargaban el chunk charts -- verificado con grep que ninguno de los dos importa recharts ni ningun componente de charts/, la nota estaba desactualizada. Corregida en el mismo commit. El unico consumidor real que queda del chunk charts es TVDashboard.jsx (kiosko de sala, via DashboardCharts.jsx) -- trafico bajo comparado con Dashboard. components/charts/DegradationChart.jsx es codigo muerto (no se importa en ningun lugar), no tocado, candidato a borrar en un ciclo futuro.",
+        "Medido con npm run build: grep -c 'charts-' dist/assets/Dashboard-*.js dist/assets/MaintenanceChart-*.js da 0 en ambos -- la ruta Dashboard ya no solicita el chunk charts. El chunk charts en si sigue en 375 kB (TVDashboard lo sigue necesitando).",
+        "No se pudo verificar visualmente en navegador real (login/backend no disponibles en este nodo ThinkCentre, replica sin stack levantada) -- verificado por build+vitest verdes y lectura del codigo/matematica del SVG; pendiente que un humano confirme visualmente en Dashboard (desktop y movil) que la grafica de Cumplimiento de Mantenimiento se ve y se comporta igual que antes."
+      ],
+      "verificar": [
+        "Pagina Dashboard (desktop y movil), tras iniciar sesion: la tarjeta 'Cumplimiento de Mantenimiento' debe verse igual que antes -- 2 barras por mes (azul Programadas, verde Completadas), leyenda arriba a la derecha, tooltip con el nombre del mes y el valor de cada serie al pasar el mouse o tocar en movil.",
+        "Con DevTools > Network > JS abierto, iniciar sesion y llegar a /dashboard: no debe aparecer ninguna peticion a charts-*.js.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (57 tests)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1, o volver a v4.0.53. Cambio acotado a 1 archivo nuevo + su test y 1 modificado (MaintenanceChart.jsx), sin tocar backend/BD -- revert de bajo riesgo."
+    },
     {
       "version": "4.0.53",
       "fecha": "2026-07-16",
