@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../api/sigah';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from './Toast';
+import useEscapeClose from '../hooks/useEscapeClose';
 
 export default function ChangePasswordModal({ isOpen, onClose, required }) {
   const { setUser, user } = useAuth();
@@ -11,6 +12,10 @@ export default function ChangePasswordModal({ isOpen, onClose, required }) {
   const [confirmar, setConfirmar] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // required=true (cambio obligatorio) ya oculta el botón "Cancelar" a propósito
+  // más abajo — Escape no debe abrir un atajo para saltarse ese flujo.
+  useEscapeClose(onClose, isOpen && !required);
 
   if (!isOpen) return null;
 

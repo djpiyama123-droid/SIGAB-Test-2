@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import OCRScannerModal from './OCRScannerModal';
 import { useToast } from './Toast';
+import useEscapeClose from '../hooks/useEscapeClose';
 
 export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
   const toast = useToast();
@@ -162,6 +163,11 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
       toast.error('No se pudo abrir el formato físico', { id: tid });
     }
   };
+
+  // Se desactiva mientras showOCR está abierto: si no, Escape dispararía
+  // ambos listeners (este y el de OCRScannerModal) y cerraría los 2 modales
+  // de un solo golpe en vez de solo el scanner anidado.
+  useEscapeClose(onClose, !showOCR);
 
   if (loading || !data) {
     return (

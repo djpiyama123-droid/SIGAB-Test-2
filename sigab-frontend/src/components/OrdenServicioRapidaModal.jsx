@@ -16,6 +16,7 @@
 import { useState } from 'react';
 import { api } from '../api/sigah';
 import { useToast } from './Toast';
+import useEscapeClose from '../hooks/useEscapeClose';
 
 export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) {
   const toast = useToast();
@@ -35,6 +36,8 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
     recibe_matricula: '',
   });
   const [guardando, setGuardando] = useState(false);
+
+  useEscapeClose(onClose);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 

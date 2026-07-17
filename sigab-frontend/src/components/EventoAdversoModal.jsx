@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import toast from '../lib/toast';
 import { normalizar } from '../utils/texto';
+import useEscapeClose from '../hooks/useEscapeClose';
 
 const TIPOS_EVENTO = [
   { value: 'muerte', label: 'Muerte' },
@@ -116,6 +117,8 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
   };
 
   const eq = form.equipo_selected;
+
+  useEscapeClose(onClose);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">

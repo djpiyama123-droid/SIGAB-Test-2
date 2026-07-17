@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, CheckCircle, XCircle, ShieldCheck, QrCode, ClipboardList, PenTool } from 'lucide-react';
 import { useToast } from './Toast';
+import useEscapeClose from '../hooks/useEscapeClose';
 
 const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
   const toast = useToast();
@@ -36,6 +37,8 @@ const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
       setLoading(false);
     }
   };
+
+  useEscapeClose(onClose, isOpen);
 
   if (!isOpen) return null;
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
+import useEscapeClose from '../hooks/useEscapeClose';
 
 /**
  * HistorialModal — Modal que muestra la timeline de trazabilidad de un equipo.
@@ -22,6 +23,8 @@ export default function HistorialModal({ equipoId, equipoNombre, open, onClose }
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [open, equipoId]);
+
+  useEscapeClose(onClose, open);
 
   if (!open) return null;
 

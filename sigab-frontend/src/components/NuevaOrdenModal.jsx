@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '../api/sigah';
+import useEscapeClose from '../hooks/useEscapeClose';
 
 /**
  * NuevaOrdenModal — Modal reutilizable para crear Órdenes de Servicio.
@@ -32,6 +33,8 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
   });
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState(null);
+
+  useEscapeClose(onClose, open);
 
   if (!open) return null;
 

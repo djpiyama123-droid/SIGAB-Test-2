@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/sigah';
 import { useToast } from './Toast';
+import useEscapeClose from '../hooks/useEscapeClose';
 
 const TABS = [
   { id: 'ordenes', label: 'Órdenes de Servicio' },
@@ -33,6 +34,8 @@ export default function HistorialEquipoModal({ equipo, onClose }) {
       })
       .finally(() => setLoading(false));
   }, [equipo?.id]); // eslint-disable-line
+
+  useEscapeClose(onClose, !!equipo);
 
   if (!equipo) return null;
 

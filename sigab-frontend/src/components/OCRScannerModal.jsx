@@ -15,6 +15,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { api } from '../api/sigah';
 import toast from '../lib/toast';
+import useEscapeClose from '../hooks/useEscapeClose';
 
 // Etiquetas legibles en español para los campos extraídos por Gemma
 const FIELD_LABELS = {
@@ -69,6 +70,8 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  useEscapeClose(onClose);
 
   // ── Cámara: arrancar getUserMedia ───────────────────────────────
   const startCamera = useCallback(async () => {

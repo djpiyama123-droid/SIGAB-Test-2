@@ -1,6 +1,28 @@
 {
-  "actual": "4.0.54",
+  "actual": "4.0.55",
   "versiones": [
+    {
+      "version": "4.0.55",
+      "fecha": "2026-07-17",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Los modales de la app no cerraban con la tecla Escape: ModalWrapper.jsx ya tenia esa logica pero ningun modal real la usaba. Se extrajo a un hook (useEscapeClose) y se conecto en los 10 modales que carecian de ella.",
+      "cambios": [
+        "Cuarto barrido de accesibilidad del ciclo (los 3 anteriores cubrieron aria-label de botones de cerrar, title de iconos sueltos, y navegacion por teclado en filas/tarjetas de lista -- ver tabla de avance de docs/DESIGN-SYSTEM-V4.md). Hallazgo: components/ui/ModalWrapper.jsx ya implementa cierre con Escape (useEffect + document.addEventListener), pero grep -rl 'ModalWrapper' sobre sigab-frontend/src no encontro NINGUN consumidor real -- cada modal de la app monta su propio overlay a mano, asi que ese patron correcto nunca llego a ejecutarse en produccion.",
+        "Nuevo sigab-frontend/src/hooks/useEscapeClose.js: hook de 10 lineas, mismo patron exacto que ModalWrapper.jsx (useEffect + keydown listener + cleanup), con un parametro 'active' opcional (default true) para poder desactivarlo condicionalmente.",
+        "Conectado en los 10 modales sin el patron: HistorialModal.jsx, ChangePasswordModal.jsx, EventoAdversoModal.jsx, NuevaOrdenModal.jsx, EventoDetalleModal.jsx, OCRScannerModal.jsx, HistorialEquipoModal.jsx, OrdenDetalleModal.jsx, OrdenServicioRapidaModal.jsx, TripleValidationModal.jsx. En los 10 se verifico primero que el boton de cerrar (icono X) y el click en el overlay de fondo ya cierran el modal de forma incondicional en cualquier momento (incluso durante guardando/subiendo) -- Escape replica ese mismo comportamiento ya existente, no agrega una via de cierre nueva ni bypassea ningun estado de carga.",
+        "Dos matices manejados a proposito, no automaticos del hook: (1) ChangePasswordModal.jsx con required=true (cambio de contrasena obligatorio -- el mismo caso que ya oculta el boton 'Cancelar') desactiva el hook (isOpen && !required) para no abrir un atajo de teclado que salte ese flujo de seguridad; (2) OrdenDetalleModal.jsx desactiva su propio listener mientras su modal hijo OCRScannerModal esta abierto (!showOCR) -- sin esa guarda, ambos listeners viven en document y una sola pulsacion de Escape cerraria los 2 modales apilados de un solo golpe en vez de solo el scanner anidado (unico caso real de modales anidados en la app, verificado revisando los demas puntos de montaje condicional).",
+        "No se agrego test dedicado del hook: el proyecto no tiene jsdom/@testing-library/react instalado (los tests existentes son de funciones puras sobre datos, no de componentes React montados), y no se justifica agregar esa dependencia nueva solo para un hook de 10 lineas que reimplementa un patron ya escrito y revisado en ModalWrapper.jsx.",
+        "No se toco ModalWrapper.jsx en si (su logica ya era correcta, el bug era que nadie la consumia) ni ningun otro archivo fuera de los 10 modales + el hook nuevo."
+      ],
+      "verificar": [
+        "Abrir cada uno de estos modales y presionar Escape: debe cerrar igual que el boton X o clic fuera -- Historial de traslados (icono reloj en tarjeta/tabla de Equipos), Cambiar Contrasena (menu de usuario; con cambio OBLIGATORIO tras rotar password NO debe cerrar con Escape, solo con Guardar), Reportar Evento Adverso (Tecnovigilancia), Nueva Orden de Servicio, Detalle de Evento Adverso, Escaner OCR de Orden IMSS, Historial Completo de Equipo, Detalle de Orden de Servicio, Orden de Servicio Rapida (desde ficha de equipo en el mapa), Triple Validacion (si esta enganchada en algun flujo).",
+        "Caso especifico de modales anidados: abrir el Detalle de una Orden de Servicio, luego abrir el Escaner OCR desde dentro (boton de escanear formato fisico) -- la PRIMERA pulsacion de Escape debe cerrar SOLO el escaner (volver al detalle de la orden), la SEGUNDA pulsacion (ya sin el escaner abierto) debe cerrar el detalle completo.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (57 tests, sin nuevos)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1, o volver a v4.0.54. Cambio aditivo (1 hook nuevo + 1 import y 1-2 lineas por modal en 10 archivos), sin tocar logica de negocio, layout ni backend -- revert de bajo riesgo."
+    },
     {
       "version": "4.0.54",
       "fecha": "2026-07-17",

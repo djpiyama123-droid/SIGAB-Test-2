@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { api, getMediaUrl } from '../api/sigah';
 import { TV_ESTADO_COLORS, TV_SEVERIDAD_COLORS, TV_TIPO_LABELS, TV_ESTADO_LABELS } from '../utils/constants';
 import toast from '../lib/toast';
+import useEscapeClose from '../hooks/useEscapeClose';
 
 const TIMELINE_STEPS = ['reportado', 'en_investigacion', 'documentado', 'escalado_cofepris', 'cerrado'];
 const TIPO_EVIDENCIA_OPTS = ['foto_dispositivo', 'reporte_clinico', 'bitacora', 'comunicacion_fabricante', 'otro'];
@@ -142,6 +143,8 @@ export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
       });
     } catch { return String(f); }
   };
+
+  useEscapeClose(onClose);
 
   if (loading || !data) {
     return (
