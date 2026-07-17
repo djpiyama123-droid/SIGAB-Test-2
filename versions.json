@@ -6,7 +6,7 @@
       "fecha": "2026-07-17",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "fe4e982",
       "resumen": "DashboardCharts.jsx (usado por el kiosko TVDashboard) ya no importa recharts: se reimplemento como 2 componentes SVG propios, asi que el chunk 'charts' (recharts+d3, 375 kB) desaparece por completo del build -- ya no queda ninguna ruta viva que lo descargue.",
       "cambios": [
         "Continuacion de la serie v4.0.53/v4.0.54 (Reservas y Dashboard ya migrados a SVG propio en ciclos previos): components/DashboardCharts.jsx era el ultimo consumidor real de recharts en toda la app (usado solo por pages/TVDashboard.jsx, el kiosko de sala de bajo trafico) -- confirmado con grep -rn \"^import.*recharts\" antes de tocar nada.",
