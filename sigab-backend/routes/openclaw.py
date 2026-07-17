@@ -327,8 +327,8 @@ async def cambiar_estado_equipo(
 
         # Registrar alerta del cambio
         await cur.execute(
-            """INSERT INTO alertas (tipo, equipo_id, mensaje, prioridad)
-               VALUES ('cambio_estado_bot', %s, %s, %s)""",
+            """INSERT INTO alertas (tipo, equipo_id, mensaje, prioridad, leida, enviada_whatsapp, created_at)
+               VALUES ('cambio_estado_bot', %s, %s, %s, 0, 0, NOW())""",
             (
                 equipo["id"],
                 f"WhatsApp Bot: {equipo['nombre']} cambió de {estado_anterior} → {nuevo_estado}",
@@ -532,11 +532,11 @@ async def escanear_os_whatsapp(
 
         await cur.execute(
             """INSERT INTO ordenes_servicio
-            (numero_orden, tipo_formato, equipo_id, equipo_nombre, equipo_marca, equipo_modelo, equipo_serie,
-             ubicacion_fisica, piso, area, tipo_mantenimiento, falla_reportada, descripcion_servicio,
-             observaciones, tecnico_nombre, fecha, tiempo_real_hrs, estado, prioridad, origen)
-            VALUES (%s, 'correctivo_corto', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                    'pendiente_validacion', %s, 'scan_whatsapp')""",
+            (tenant_id, numero_orden, tipo_formato, equipo_id, equipo_nombre, equipo_marca, equipo_modelo, equipo_serie,
+             ubicacion_fisica, piso, area, tipo_mantenimiento, tipo_atencion, falla_reportada, descripcion_servicio,
+             observaciones, tecnico_nombre, fecha, tiempo_real_hrs, estado, prioridad, origen, created_at, updated_at)
+            VALUES (1, %s, 'correctivo_corto', %s, %s, %s, %s, %s, %s, %s, %s, %s, 'correctivo', %s, %s, %s, %s, %s, %s,
+                    'pendiente_validacion', %s, 'scan_whatsapp', NOW(), NOW())""",
             (
                 numero, equipo_id,
                 mapped.get("equipo_nombre"), mapped.get("equipo_marca"),
@@ -580,8 +580,8 @@ async def escanear_os_whatsapp(
 
         # Alerta para validación
         await cur.execute(
-            """INSERT INTO alertas (tipo, equipo_id, orden_id, mensaje, prioridad)
-               VALUES ('os_pendiente_validacion', %s, %s, %s, %s)""",
+            """INSERT INTO alertas (tipo, equipo_id, orden_id, mensaje, prioridad, leida, enviada_whatsapp, created_at)
+               VALUES ('os_pendiente_validacion', %s, %s, %s, %s, 0, 0, NOW())""",
             (
                 equipo_id, orden_id,
                 f"OS {numero} creada por escaneo WhatsApp — requiere validación",
@@ -735,10 +735,10 @@ async def intake_group_message(
 
         await cur.execute(
             """INSERT INTO ordenes_servicio
-            (numero_orden, tipo_formato, equipo_id, equipo_nombre, equipo_serie,
-             area, tipo_mantenimiento, falla_reportada, tecnico_nombre,
-             fecha, estado, prioridad, origen)
-            VALUES (%s, 'correctivo_corto', %s, %s, %s, %s, %s, %s, %s, CURDATE(), 'abierta', %s, %s)""",
+            (tenant_id, numero_orden, tipo_formato, equipo_id, equipo_nombre, equipo_serie,
+             area, tipo_mantenimiento, tipo_atencion, falla_reportada, tecnico_nombre,
+             fecha, estado, prioridad, origen, created_at, updated_at)
+            VALUES (1, %s, 'correctivo_corto', %s, %s, %s, %s, %s, 'correctivo', %s, %s, CURDATE(), 'abierta', %s, %s, NOW(), NOW())""",
             (
                 numero, equipo_id, equipo_nombre, equipo_serie,
                 area, tipo_mant, falla, sender_name or "WhatsApp Bot",
@@ -763,8 +763,8 @@ async def intake_group_message(
             )
 
         await cur.execute(
-            """INSERT INTO alertas (tipo, equipo_id, orden_id, mensaje, prioridad)
-               VALUES ('ticket_abierto_mucho_tiempo', %s, %s, %s, %s)""",
+            """INSERT INTO alertas (tipo, equipo_id, orden_id, mensaje, prioridad, leida, enviada_whatsapp, created_at)
+               VALUES ('ticket_abierto_mucho_tiempo', %s, %s, %s, %s, 0, 0, NOW())""",
             (equipo_id, orden_id, f"OS creada desde grupo WhatsApp por {sender_name or 'desconocido'}: {falla[:80]}", prioridad),
         )
 
