@@ -6,7 +6,7 @@
       "fecha": "2026-07-17",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "8813873",
       "resumen": "Los modales de la app no cerraban con la tecla Escape: ModalWrapper.jsx ya tenia esa logica pero ningun modal real la usaba. Se extrajo a un hook (useEscapeClose) y se conecto en los 10 modales que carecian de ella.",
       "cambios": [
         "Cuarto barrido de accesibilidad del ciclo (los 3 anteriores cubrieron aria-label de botones de cerrar, title de iconos sueltos, y navegacion por teclado en filas/tarjetas de lista -- ver tabla de avance de docs/DESIGN-SYSTEM-V4.md). Hallazgo: components/ui/ModalWrapper.jsx ya implementa cierre con Escape (useEffect + document.addEventListener), pero grep -rl 'ModalWrapper' sobre sigab-frontend/src no encontro NINGUN consumidor real -- cada modal de la app monta su propio overlay a mano, asi que ese patron correcto nunca llego a ejecutarse en produccion.",
