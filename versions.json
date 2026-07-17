@@ -6,7 +6,7 @@
       "fecha": "2026-07-17",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "4f536f7",
       "resumen": "MaintenanceChart.jsx (grafica de Dashboard) ya no importa recharts: se reimplemento como SVG propio (MiniGroupedBarChart), asi que Dashboard -- la pantalla de mayor trafico de la app -- ya no descarga el chunk charts (375 kB/111 kB gzip).",
       "cambios": [
         "Continuacion directa de v4.0.53 (mismo patron aplicado a Reservas/MiniAreaChart): components/charts/MaintenanceChart.jsx era el ultimo import de recharts dentro de pages/Dashboard.jsx (grafica de barras 'Cumplimiento de Mantenimiento', Programadas vs Completadas por mes) -- Dashboard es la primera pantalla que ve cualquier usuario tras iniciar sesion.",
