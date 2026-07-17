@@ -14,6 +14,7 @@ Tests cover:
 """
 import io
 import json
+import os
 import zipfile
 import pytest
 from fastapi.testclient import TestClient
@@ -49,16 +50,71 @@ VALID_METADATA = {
 }
 
 
+TEST_DATABASE_URL = os.getenv(
+    "SIGAH_TEST_DATABASE_URL",
+    "mysql+asyncmy://sigah:sigah@127.0.0.1:3306/sigah_test",
+)
+
+
 @pytest.fixture
 def client():
-    """Mock client — assumes main app is importable."""
+    """TestClient contra la BD de pruebas, con auth simulada sensible al header.
+
+    - Sin header Authorization → 401 (test_sin_auth_retorna_401).
+    - "Bearer fake-admin-token" → principal admin.
+    - Cualquier otro Bearer → principal operador (dispara el 403 de require_roles).
+    """
+    from typing import Optional
+
+    from fastapi import Header, HTTPException
+    from sqlalchemy.ext.asyncio import create_async_engine
+    from sqlmodel.ext.asyncio.session import AsyncSession
+
     from main import app
-    return TestClient(app)
+    from auth.dependencies import get_current_user
+    from database import get_async_session
+
+    async def _fake_user(authorization: Optional[str] = Header(default=None)) -> dict:
+        if not authorization or not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="No autenticado")
+        if authorization == "Bearer fake-admin-token":
+            return {"id": 1, "rol": "admin", "matricula": "ADMIN-TEST", "tenant_id": 1}
+        return {"id": 2, "rol": "operador", "matricula": "OP-TEST", "tenant_id": 1}
+
+    async def _test_session():
+        engine = create_async_engine(TEST_DATABASE_URL, echo=False, future=True)
+        try:
+            async with AsyncSession(engine, expire_on_commit=False) as s:
+                yield s
+        finally:
+            await engine.dispose()
+
+    # Limpieza de series TEST-% de corridas previas: el endpoint hace commit real,
+    # y test_zip_valido_crea_equipo_nuevo asume que TEST-001 no existe.
+    import pymysql
+
+    conn = pymysql.connect(
+        host="127.0.0.1", port=3306, user="sigah", password="sigah",
+        database="sigah_test", autocommit=True,
+    )
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM equipos WHERE serie LIKE 'TEST-0%'")
+    finally:
+        conn.close()
+
+    app.dependency_overrides[get_current_user] = _fake_user
+    app.dependency_overrides[get_async_session] = _test_session
+    try:
+        yield TestClient(app)
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_async_session, None)
 
 
 @pytest.fixture
 def admin_token():
-    """Mock admin JWT — bypass real auth for unit tests."""
+    """Token admin simulado — el override de get_current_user lo reconoce."""
     return "Bearer fake-admin-token"
 
 

@@ -46,8 +46,8 @@ async def seeded(conn):
         serie = "TST-" + uuid.uuid4().hex[:10].upper()
         await cur.execute(
             "INSERT INTO equipos (tenant_id, serie, nombre, marca, modelo, ubicacion, estado, criticidad, "
-            "tipo_equipo, clase_cofepris, qr_token, pos_x, pos_y, created_at, updated_at) "
-            "VALUES (%s,%s,'Equipo Test','ACME','X1','UCI','operativo','media','biomedico','II',%s,50,50,NOW(),NOW())",
+            "tipo_equipo, clase_cofepris, qr_token, pos_x, pos_y, tipo_adquisicion, imagen_referencial, created_at, updated_at) "
+            "VALUES (%s,%s,'Equipo Test','ACME','X1','UCI','operativo','media','biomedico','II',%s,50,50,'recurso_propio',0,NOW(),NOW())",
             (TENANT, serie, uuid.uuid4().hex[:16]),
         )
         equipo_id = cur.lastrowid
