@@ -464,8 +464,9 @@ export default function Ordenes() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Equipo — autocompletado en tiempo real */}
             <div className="relative" ref={equipoRef}>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Equipo (nombre)</label>
+              <label htmlFor="orden-equipo-nombre" className="text-xs text-[var(--content-muted)] block mb-1">Equipo (nombre)</label>
               <input
+                id="orden-equipo-nombre"
                 value={form.equipo_nombre}
                 onChange={(e) => buscarEquipos(e.target.value)}
                 onFocus={() => equipoSug.length > 0 && setShowEqSug(true)}
@@ -493,31 +494,31 @@ export default function Ordenes() {
 
             {/* No. Serie — auto-rellenado al seleccionar equipo */}
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">No. Serie</label>
-              <input value={form.equipo_serie} onChange={set('equipo_serie')}
+              <label htmlFor="orden-equipo-serie" className="text-xs text-[var(--content-muted)] block mb-1">No. Serie</label>
+              <input id="orden-equipo-serie" value={form.equipo_serie} onChange={set('equipo_serie')}
                 placeholder="Auto-completado al seleccionar equipo"
                 className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
             </div>
 
             {/* Técnico */}
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Técnico</label>
-              <input value={form.tecnico_nombre} onChange={set('tecnico_nombre')}
+              <label htmlFor="orden-tecnico-nombre" className="text-xs text-[var(--content-muted)] block mb-1">Técnico</label>
+              <input id="orden-tecnico-nombre" value={form.tecnico_nombre} onChange={set('tecnico_nombre')}
                 placeholder="Nombre del técnico responsable"
                 className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
             </div>
 
             {/* Área — select del catálogo de áreas del hospital */}
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Área</label>
+              <label htmlFor="orden-area" className="text-xs text-[var(--content-muted)] block mb-1">Área</label>
               {areasOpts.length > 0 ? (
-                <select value={form.area} onChange={set('area')}
+                <select id="orden-area" value={form.area} onChange={set('area')}
                   className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]">
                   <option value="">— selecciona un área —</option>
                   {areasOpts.map((a) => <option key={a} value={a}>{a}</option>)}
                 </select>
               ) : (
-                <input value={form.area} onChange={set('area')}
+                <input id="orden-area" value={form.area} onChange={set('area')}
                   placeholder="Área del equipo"
                   className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
               )}
@@ -525,22 +526,22 @@ export default function Ordenes() {
 
             {/* Piso — select del catálogo o auto-rellenado */}
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Piso</label>
+              <label htmlFor="orden-piso" className="text-xs text-[var(--content-muted)] block mb-1">Piso</label>
               {pisosOpts.length > 0 ? (
-                <select value={form.piso} onChange={set('piso')}
+                <select id="orden-piso" value={form.piso} onChange={set('piso')}
                   className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]">
                   <option value="">— selecciona un piso —</option>
                   {pisosOpts.map((p) => <option key={p} value={p}>{p}</option>)}
                 </select>
               ) : (
-                <input value={form.piso} onChange={set('piso')}
+                <input id="orden-piso" value={form.piso} onChange={set('piso')}
                   placeholder="Piso / nivel"
                   className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
               )}
             </div>
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Prioridad</label>
-              <select value={form.prioridad} onChange={set('prioridad')}
+              <label htmlFor="orden-prioridad" className="text-xs text-[var(--content-muted)] block mb-1">Prioridad</label>
+              <select id="orden-prioridad" value={form.prioridad} onChange={set('prioridad')}
                 className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]">
                 {['baja','media','alta','critica'].map((p) => (
                   <option key={p} value={p}>{p}</option>
@@ -548,8 +549,8 @@ export default function Ordenes() {
               </select>
             </div>
             <div className="col-span-2">
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Formato IMSS</label>
-              <select value={form.tipo_formato} onChange={handleTipoFormatoChange}
+              <label htmlFor="orden-tipo-formato" className="text-xs text-[var(--content-muted)] block mb-1">Formato IMSS</label>
+              <select id="orden-tipo-formato" value={form.tipo_formato} onChange={handleTipoFormatoChange}
                 className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]">
                 <option value="correctivo_corto">Correctivo Corto</option>
                 <option value="correctivo_largo">Correctivo Largo (Complejo)</option>
@@ -562,38 +563,38 @@ export default function Ordenes() {
 
           {/* Localización completa — v.3.2.0 (formato IMSS oficial) */}
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">Localización completa del equipo o instalación</label>
-            <input value={form.localizacion_completa} onChange={set('localizacion_completa')}
+            <label htmlFor="orden-localizacion-completa" className="text-xs text-[var(--content-muted)] block mb-1">Localización completa del equipo o instalación</label>
+            <input id="orden-localizacion-completa" value={form.localizacion_completa} onChange={set('localizacion_completa')}
               placeholder="Detalle adicional de ubicación..."
               className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
           </div>
 
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">Falla reportada *</label>
-            <textarea required rows={3} value={form.falla_reportada} onChange={set('falla_reportada')}
+            <label htmlFor="orden-falla-reportada" className="text-xs text-[var(--content-muted)] block mb-1">Falla reportada *</label>
+            <textarea id="orden-falla-reportada" required rows={3} value={form.falla_reportada} onChange={set('falla_reportada')}
               className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
           </div>
 
           {/* Horarios y tiempos — v.3.2.0 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Hora de inicio</label>
-              <input type="time" value={form.hora_inicio} onChange={set('hora_inicio')}
+              <label htmlFor="orden-hora-inicio" className="text-xs text-[var(--content-muted)] block mb-1">Hora de inicio</label>
+              <input id="orden-hora-inicio" type="time" value={form.hora_inicio} onChange={set('hora_inicio')}
                 className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
             </div>
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Hora de término</label>
-              <input type="time" value={form.hora_termino} onChange={set('hora_termino')}
+              <label htmlFor="orden-hora-termino" className="text-xs text-[var(--content-muted)] block mb-1">Hora de término</label>
+              <input id="orden-hora-termino" type="time" value={form.hora_termino} onChange={set('hora_termino')}
                 className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
             </div>
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">T. estimado (hrs)</label>
-              <input type="number" min="0" step="0.5" value={form.tiempo_estimado_hrs} onChange={set('tiempo_estimado_hrs')} placeholder="1.0"
+              <label htmlFor="orden-tiempo-estimado" className="text-xs text-[var(--content-muted)] block mb-1">T. estimado (hrs)</label>
+              <input id="orden-tiempo-estimado" type="number" min="0" step="0.5" value={form.tiempo_estimado_hrs} onChange={set('tiempo_estimado_hrs')} placeholder="1.0"
                 className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
             </div>
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">T. real (hrs)</label>
-              <input type="number" min="0" step="0.5" value={form.tiempo_real_hrs} onChange={set('tiempo_real_hrs')} placeholder="(al cerrar)"
+              <label htmlFor="orden-tiempo-real" className="text-xs text-[var(--content-muted)] block mb-1">T. real (hrs)</label>
+              <input id="orden-tiempo-real" type="number" min="0" step="0.5" value={form.tiempo_real_hrs} onChange={set('tiempo_real_hrs')} placeholder="(al cerrar)"
                 className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
             </div>
           </div>
@@ -601,13 +602,13 @@ export default function Ordenes() {
           {/* Recibe de conformidad — v.3.2.0 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Recibe de conformidad (Nombre)</label>
-              <input value={form.recibe_conformidad_nombre} onChange={set('recibe_conformidad_nombre')} placeholder="Nombre de quien recibe"
+              <label htmlFor="orden-recibe-conformidad-nombre" className="text-xs text-[var(--content-muted)] block mb-1">Recibe de conformidad (Nombre)</label>
+              <input id="orden-recibe-conformidad-nombre" value={form.recibe_conformidad_nombre} onChange={set('recibe_conformidad_nombre')} placeholder="Nombre de quien recibe"
                 className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
             </div>
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Matrícula</label>
-              <input value={form.recibe_matricula} onChange={set('recibe_matricula')} placeholder="Matrícula"
+              <label htmlFor="orden-recibe-matricula" className="text-xs text-[var(--content-muted)] block mb-1">Matrícula</label>
+              <input id="orden-recibe-matricula" value={form.recibe_matricula} onChange={set('recibe_matricula')} placeholder="Matrícula"
                 className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-emerald-600" />
             </div>
           </div>
