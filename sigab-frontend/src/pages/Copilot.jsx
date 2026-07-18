@@ -634,12 +634,12 @@ Puedo ayudarte con:
                 className="flex-1 bg-[var(--content-bg)]/60 border border-[var(--content-border)] rounded-xl px-3 py-2 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-emerald-600 resize-none disabled:opacity-50"
               />
               {streaming ? (
-                <button onClick={detenerStream}
+                <button onClick={detenerStream} title="Detener respuesta"
                   className="p-3 bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors flex-shrink-0">
                   <IconStop />
                 </button>
               ) : (
-                <button onClick={() => enviarMensaje()} disabled={!input.trim()}
+                <button onClick={() => enviarMensaje()} disabled={!input.trim()} title="Enviar mensaje"
                   className="p-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition-colors disabled:opacity-40 flex-shrink-0">
                   <IconSend />
                 </button>
@@ -660,8 +660,9 @@ Puedo ayudarte con:
         `}>
           {/* Botón retráctil para móviles */}
           <div className="lg:hidden flex justify-center mb-2 -mt-2">
-            <button 
+            <button
               onClick={() => { setShowDiagnostico(false); setShowVision(false); }}
+              title="Contraer panel de herramientas"
               className="w-12 h-1 bg-[var(--content-surface)] rounded-full"
             />
           </div>

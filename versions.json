@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.57",
+  "actual": "4.0.58",
   "versiones": [
+    {
+      "version": "4.0.58",
+      "fecha": "2026-07-18",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Sexto barrido de accesibilidad: los botones de Enviar/Detener del chat de Copilot y el handle de contraer el panel de herramientas en movil eran icon-only (o vacios) sin ningun nombre accesible -- invisibles para un lector de pantalla en el flujo IA de mayor interaccion de la app.",
+      "cambios": [
+        "Continuacion de la serie de barridos de accesibilidad (aria-label de botones de cerrar v4.0.51x2, navegacion por teclado en filas/tarjetas v4.0.56, Escape v4.0.55, focus trap v4.0.57 -- ver tabla de avance de docs/DESIGN-SYSTEM-V4.md). Los 5 barridos anteriores cubrieron botones de cerrar (patron onClick={onClose}) y un set fijo de iconos conocidos (Trash2/Pencil/Download/etc.) o filas/tarjetas de lista -- ninguno inspecciono sigab-frontend/src/pages/Copilot.jsx boton por boton, asi que 3 quedaron sin nombre accesible.",
+        "sigab-frontend/src/pages/Copilot.jsx: boton 'Detener respuesta' (IconStop, visible solo mientras hay streaming activo) y boton 'Enviar mensaje' (IconSend) -- ambos solo tenian el icono SVG como contenido, sin title ni aria-label. Se agrego title siguiendo la misma convencion ya usada por el boton hermano 'Limpiar chat' (linea 550, tambien title en vez de aria-label para iconos sueltos de esta pagina).",
+        "Boton retractil del panel de herramientas en movil (linea ~663): no tenia icono NI texto, solo un div decorativo (barra de 48x4px) -- el boton mas vacio de accesibilidad encontrado en todos los barridos (cero contenido, cero nombre). Se agrego title='Contraer panel de herramientas'.",
+        "Busqueda de cobertura: grep -rPzol sobre TODO sigab-frontend/src con 2 patrones (boton con un solo hijo <Icono/> auto-cerrado sin aria-label/title, y boton con hijo <div>/<span> vacio sin aria-label/title) confirmo que Copilot.jsx era el UNICO archivo con instancias de este patron especifico -- no se encontraron mas casos en el resto de la app.",
+        "Cambio 100% aditivo (solo el atributo title en 3 botones), sin tocar clases, layout, disabled ni logica de negocio -- cero riesgo visual o funcional."
+      ],
+      "verificar": [
+        "pages/Copilot.jsx: con un lector de pantalla (o inspeccionando el Accessibility Tree de DevTools), confirmar que el boton de enviar mensaje anuncia 'Enviar mensaje', el boton de detener streaming (visible solo durante una respuesta en curso) anuncia 'Detener respuesta', y el handle retractil del panel movil (visible en viewport <lg, con Diagnostico o Vision expandido) anuncia 'Contraer panel de herramientas'.",
+        "Confirmar visualmente que los 3 botones no cambiaron de tamano/posicion/color -- el cambio es solo el atributo title (tooltip nativo del navegador en hover, sin efecto de layout).",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (62 tests, sin nuevos -- cambio de puro markup, no hay logica nueva que testear)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1, o volver a v4.0.57. Cambio acotado a 1 archivo (pages/Copilot.jsx, 3 atributos title agregados) -- revert trivial, no toca backend ni rutas."
+    },
     {
       "version": "4.0.57",
       "fecha": "2026-07-17",
