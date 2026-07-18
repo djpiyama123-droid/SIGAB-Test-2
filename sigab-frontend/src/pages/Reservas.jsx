@@ -144,11 +144,12 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/* Selector de Equipo */}
           <div>
-            <label className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Equipo Biomédico *</label>
+            <label htmlFor="reserva-equipo" className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Equipo Biomédico *</label>
             <div className="relative mb-2">
               <Search className="absolute left-3.5 top-3 h-4 w-4 text-[var(--content-muted)]" />
               <input
                 type="text"
+                aria-label="Buscar equipo por nombre, serie o modelo"
                 placeholder="Buscar por nombre, serie o modelo..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
@@ -156,6 +157,7 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
               />
             </div>
             <select
+              id="reserva-equipo"
               required
               value={form.equipo_id}
               onChange={e => set('equipo_id', e.target.value)}
@@ -173,8 +175,9 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
           <div className="grid grid-cols-2 gap-4">
             {/* Ubicación Destino */}
             <div>
-              <label className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Área Destino *</label>
+              <label htmlFor="reserva-area" className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Área Destino *</label>
               <input
+                id="reserva-area"
                 required
                 value={form.area_reserva}
                 onChange={e => set('area_reserva', e.target.value)}
@@ -183,8 +186,9 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
               />
             </div>
             <div>
-              <label className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Piso / Nivel</label>
+              <label htmlFor="reserva-piso" className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Piso / Nivel</label>
               <input
+                id="reserva-piso"
                 value={form.piso_reserva}
                 onChange={e => set('piso_reserva', e.target.value)}
                 className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl px-4 py-2.5 text-sm text-[var(--content-text)] placeholder:text-[var(--content-muted)] focus:outline-none focus:border-emerald-500 transition-colors"
@@ -194,8 +198,9 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
 
             {/* Fechas */}
             <div>
-              <label className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Fecha / Hora Inicio *</label>
+              <label htmlFor="reserva-fecha-inicio" className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Fecha / Hora Inicio *</label>
               <input
+                id="reserva-fecha-inicio"
                 type="datetime-local"
                 required
                 value={form.fecha_inicio}
@@ -204,8 +209,9 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
               />
             </div>
             <div>
-              <label className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Fecha / Hora Fin</label>
+              <label htmlFor="reserva-fecha-fin" className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Fecha / Hora Fin</label>
               <input
+                id="reserva-fecha-fin"
                 type="datetime-local"
                 value={form.fecha_fin}
                 onChange={e => set('fecha_fin', e.target.value)}
@@ -216,8 +222,9 @@ function NuevaReservaModal({ onClose, onSaved, reserva }) {
 
           {/* Motivo */}
           <div>
-            <label className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Motivo de Reserva</label>
+            <label htmlFor="reserva-motivo" className="text-xs text-[var(--content-muted)] font-medium uppercase mb-1.5 block">Motivo de Reserva</label>
             <textarea
+              id="reserva-motivo"
               value={form.motivo}
               onChange={e => set('motivo', e.target.value)}
               rows={3}
