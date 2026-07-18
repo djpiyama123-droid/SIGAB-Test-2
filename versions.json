@@ -1,6 +1,28 @@
 {
-  "actual": "4.0.58",
+  "actual": "4.0.59",
   "versiones": [
+    {
+      "version": "4.0.59",
+      "fecha": "2026-07-18",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "cc9ec12",
+      "resumen": "Septimo barrido de accesibilidad: los 6 <label> del formulario de Nueva/Editar Reserva (Reservas.jsx) no estaban asociados a su input via htmlFor/id -- un lector de pantalla anunciaba los campos sin nombre al enfocarlos con Tab.",
+      "cambios": [
+        "Categoria nueva, no cubierta por los 6 barridos anteriores (aria-label de botones de cerrar v4.0.50/51, navegacion por teclado en filas/tarjetas v4.0.52, Escape v4.0.55, focus trap v4.0.57, title de iconos sueltos de Copilot v4.0.58): asociacion programatica de <label> con su control de formulario. grep -rn '<label' sobre TODO sigab-frontend/src sin 'htmlFor' encontro 117 lineas en decenas de archivos -- alcance demasiado grande para un solo ciclo (regla del proyecto: un modulo por ciclo, cambio pequeno terminado en vez de uno grande a medias). Se eligio Reservas.jsx porque es el candidato explicito del punto 3 del backlog de docs/DESIGN-SYSTEM-V4.md ('siguiente candidato' para profundizar el modulo) y su formulario de Nueva Reserva es el unico punto de entrada para crear una reserva en toda la app.",
+        "sigab-frontend/src/pages/Reservas.jsx (NuevaReservaModal): los 6 <label> del formulario ('Equipo Biomedico', 'Area Destino', 'Piso / Nivel', 'Fecha / Hora Inicio', 'Fecha / Hora Fin', 'Motivo de Reserva') ahora llevan htmlFor apuntando al id nuevo de su <select>/<input>/<textarea> correspondiente (reserva-equipo, reserva-area, reserva-piso, reserva-fecha-inicio, reserva-fecha-fin, reserva-motivo). Antes un lector de pantalla anunciaba cada campo como 'edit text' o 'combo box' sin nombre, obligando a adivinar que campo era cual solo por el orden de lectura.",
+        "Caso especial: el label 'Equipo Biomedico *' esta visualmente encima de DOS controles -- un input de texto que filtra la lista (busqueda por nombre/serie/modelo) y el <select> real que fija el valor que se envia al guardar. El htmlFor se enlazo al <select> (el control que realmente determina el dato del formulario); el input de filtro, que antes solo tenia placeholder (no es un nombre accesible valido segun WCAG, desaparece al escribir y los lectores de pantalla no lo tratan como label), recibio su propio aria-label='Buscar equipo por nombre, serie o modelo' para no quedar mudo.",
+        "Cambio 100% aditivo (atributos id/htmlFor/aria-label), sin tocar clases, layout, validacion ni logica de negocio del formulario -- cero riesgo visual o funcional. El heatmap ActividadHeatmap (regla dura del proyecto) no se toco.",
+        "docs/DESIGN-SYSTEM-V4.md: nueva fila de tabla de avance para esta categoria transversal, y nota en el punto 3 del backlog senalando que quedan ~111 lineas de <label> sin htmlFor en el resto de la app (Copilot.jsx, Ordenes.jsx, Metrologia.jsx, ChecklistPage.jsx, Equipos.jsx y otros) como candidato del proximo barrido, un modulo a la vez."
+      ],
+      "verificar": [
+        "Reservas de Equipos: abrir 'Nueva Reserva' (boton del header o del footer de un dia del heatmap) y, con un lector de pantalla (o el inspector de accesibilidad de DevTools), tabular por cada campo -- debe anunciar el nombre del campo ('Equipo Biomedico', 'Area Destino', etc.) en vez de solo el tipo de control.",
+        "El input de busqueda de equipo (arriba del select) debe anunciar 'Buscar equipo por nombre, serie o modelo' al enfocarlo.",
+        "Confirmar visualmente que el formulario no cambio de tamano/posicion/color -- el cambio es solo atributos id/htmlFor/aria-label, sin efecto de layout.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (62 tests, sin nuevos -- cambio de puro markup). grep -al anim-cell-pop dist/assets/Reservas-*.js confirma heatmap intacto."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1, o volver a v4.0.58. Cambio acotado a 1 archivo (pages/Reservas.jsx, atributos id/htmlFor/aria-label) -- revert trivial, no toca backend ni rutas."
+    },
     {
       "version": "4.0.58",
       "fecha": "2026-07-18",
