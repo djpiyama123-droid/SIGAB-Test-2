@@ -6,7 +6,7 @@
       "fecha": "2026-07-17",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "2f68d31",
       "resumen": "Quinto barrido de accesibilidad: ningun modal de la app atrapaba el foco de teclado, asi que Tab podia sacar al usuario del modal abierto hacia la pagina de fondo. Nuevo hook useFocusTrap conectado en los mismos 10 modales del barrido de Escape (v4.0.55).",
       "cambios": [
         "Continuacion directa de la serie de barridos de accesibilidad de este ciclo (aria-label de botones de cerrar, title de iconos sueltos, navegacion por teclado en filas/tarjetas de lista, cierre con Escape -- ver tabla de avance de docs/DESIGN-SYSTEM-V4.md). Con Escape ya resuelto (v4.0.55), quedaba un hueco de teclado distinto: ninguno de los overlays de modal implementaba el patron WAI-ARIA de dialogo (foco inicial dentro del dialogo + Tab/Shift+Tab ciclando sin escapar al fondo) -- un usuario que navega solo con teclado podia, sin querer, tabular fuera del modal abierto hacia botones/enlaces de la pagina detras del overlay (visualmente oculta pero seguia siendo parte del DOM enfocable).",
