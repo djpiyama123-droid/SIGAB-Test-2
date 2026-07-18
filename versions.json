@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.59",
+  "actual": "4.0.60",
   "versiones": [
+    {
+      "version": "4.0.60",
+      "fecha": "2026-07-18",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "0f082e0",
+      "resumen": "Septimo barrido de accesibilidad, continuacion: los 11 <label> del formulario 'Nueva Orden de Servicio' (Ordenes.jsx) no estaban asociados a su input/select/textarea via htmlFor/id.",
+      "cambios": [
+        "Continuacion de v4.0.59 (mismo barrido, mismo hallazgo: 117 lineas de <label> sin htmlFor en sigab-frontend/src, alcance demasiado grande para un ciclo). Siguiente candidato explicito de la lista pendiente: pages/Ordenes.jsx, formulario 'Nueva Orden de Servicio' -- el flujo de creacion de registros NOM-016 de mayor trafico despues de Reservas.",
+        "sigab-frontend/src/pages/Ordenes.jsx: los 11 <label> del formulario (Equipo, No. Serie, Tecnico, Area, Piso, Prioridad, Formato IMSS, Localizacion completa, Falla reportada, Hora de inicio, Hora de termino, T. estimado, T. real, Recibe de conformidad Nombre, Matricula) ahora llevan htmlFor apuntando al id nuevo de su control (orden-equipo-nombre, orden-equipo-serie, orden-tecnico-nombre, orden-area, orden-piso, orden-prioridad, orden-tipo-formato, orden-localizacion-completa, orden-falla-reportada, orden-hora-inicio, orden-hora-termino, orden-tiempo-estimado, orden-tiempo-real, orden-recibe-conformidad-nombre, orden-recibe-matricula).",
+        "Caso especial: los campos Area y Piso renderizan un <select> (si hay catalogo cargado) o un <input> (fallback) de forma condicional -- solo uno de los dos existe en el DOM en un momento dado, asi que ambas ramas comparten el mismo id sin colision.",
+        "Cambio 100% aditivo (atributos id/htmlFor), sin tocar clases, layout, validacion ni logica de negocio del formulario -- cero riesgo visual o funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada (Reservas + Ordenes) y lista de pendientes recortada -- quedan ~100 lineas en Copilot.jsx, Metrologia.jsx, ChecklistPage.jsx, Equipos.jsx, Almacen.jsx, Trazabilidad.jsx, Capacitaciones.jsx, SuperAdmin.jsx, LandingPage.jsx y varios componentes/modales compartidos, candidato del proximo barrido."
+      ],
+      "verificar": [
+        "Ordenes de Servicio: abrir 'Nueva Orden' (boton del header o FAB movil) y, con un lector de pantalla (o el inspector de accesibilidad de DevTools), tabular por cada campo -- debe anunciar el nombre del campo ('Equipo (nombre)', 'Tecnico', 'Area', etc.) en vez de solo el tipo de control.",
+        "Confirmar visualmente que el formulario no cambio de tamano/posicion/color -- el cambio es solo atributos id/htmlFor, sin efecto de layout.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (62 tests, sin nuevos -- cambio de puro markup)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1, o volver a v4.0.59. Cambio acotado a 1 archivo (pages/Ordenes.jsx, atributos id/htmlFor) -- revert trivial, no toca backend ni rutas."
+    },
     {
       "version": "4.0.59",
       "fecha": "2026-07-18",
