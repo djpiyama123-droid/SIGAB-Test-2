@@ -6,7 +6,7 @@
       "fecha": "2026-07-18",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "1b4e90d",
       "resumen": "Sexto barrido de accesibilidad: los botones de Enviar/Detener del chat de Copilot y el handle de contraer el panel de herramientas en movil eran icon-only (o vacios) sin ningun nombre accesible -- invisibles para un lector de pantalla en el flujo IA de mayor interaccion de la app.",
       "cambios": [
         "Continuacion de la serie de barridos de accesibilidad (aria-label de botones de cerrar v4.0.51x2, navegacion por teclado en filas/tarjetas v4.0.56, Escape v4.0.55, focus trap v4.0.57 -- ver tabla de avance de docs/DESIGN-SYSTEM-V4.md). Los 5 barridos anteriores cubrieron botones de cerrar (patron onClick={onClose}) y un set fijo de iconos conocidos (Trash2/Pencil/Download/etc.) o filas/tarjetas de lista -- ninguno inspecciono sigab-frontend/src/pages/Copilot.jsx boton por boton, asi que 3 quedaron sin nombre accesible.",
