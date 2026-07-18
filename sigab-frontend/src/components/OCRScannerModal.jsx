@@ -16,6 +16,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { api } from '../api/sigah';
 import toast from '../lib/toast';
 import useEscapeClose from '../hooks/useEscapeClose';
+import useFocusTrap from '../hooks/useFocusTrap';
 
 // Etiquetas legibles en español para los campos extraídos por Gemma
 const FIELD_LABELS = {
@@ -70,8 +71,10 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const fileInputRef = useRef(null);
+  const dialogRef = useRef(null);
 
   useEscapeClose(onClose);
+  useFocusTrap(dialogRef);
 
   // ── Cámara: arrancar getUserMedia ───────────────────────────────
   const startCamera = useCallback(async () => {
@@ -204,7 +207,7 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
   // ── Render ──────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-      <div className="bg-[var(--content-bg)] border border-[var(--content-border)]/50 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92vh]">
+      <div ref={dialogRef} className="bg-[var(--content-bg)] border border-[var(--content-border)]/50 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92vh]">
         {/* ── Zona Visual (izquierda) ── */}
         <div className="md:w-1/2 p-4 bg-[var(--content-surface)] border-r border-[var(--content-border)] flex flex-col">
           {/* Tabs Cámara / Archivo */}

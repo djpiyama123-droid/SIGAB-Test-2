@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '../api/sigah';
 import OCRScannerModal from './OCRScannerModal';
 import { useToast } from './Toast';
 import useEscapeClose from '../hooks/useEscapeClose';
+import useFocusTrap from '../hooks/useFocusTrap';
 
 export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
   const toast = useToast();
@@ -166,8 +167,12 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
 
   // Se desactiva mientras showOCR está abierto: si no, Escape dispararía
   // ambos listeners (este y el de OCRScannerModal) y cerraría los 2 modales
-  // de un solo golpe en vez de solo el scanner anidado.
+  // de un solo golpe en vez de solo el scanner anidado. Mismo criterio para
+  // el focus trap: si ambos estuvieran activos a la vez, Tab podría quedar
+  // atrapado en este contenedor exterior en vez del scanner anidado.
+  const dialogRef = useRef(null);
   useEscapeClose(onClose, !showOCR);
+  useFocusTrap(dialogRef, !showOCR);
 
   if (loading || !data) {
     return (
@@ -198,7 +203,7 @@ export default function OrdenDetalleModal({ ordenId, onClose, onUpdated }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-      <div className="bg-[var(--content-surface)] rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-[var(--content-border)] flex flex-col">
+      <div ref={dialogRef} className="bg-[var(--content-surface)] rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-[var(--content-border)] flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-[var(--content-border)] sticky top-0 bg-[var(--content-surface)] z-10">
           <div>

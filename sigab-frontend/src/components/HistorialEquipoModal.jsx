@@ -2,10 +2,11 @@
 // HistorialEquipoModal.jsx — Vista completa de historial técnico
 // Se invoca desde el botón "Ver Historial Completo" en FichaTecnica
 // ============================================================
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '../api/sigah';
 import { useToast } from './Toast';
 import useEscapeClose from '../hooks/useEscapeClose';
+import useFocusTrap from '../hooks/useFocusTrap';
 
 const TABS = [
   { id: 'ordenes', label: 'Órdenes de Servicio' },
@@ -35,7 +36,9 @@ export default function HistorialEquipoModal({ equipo, onClose }) {
       .finally(() => setLoading(false));
   }, [equipo?.id]); // eslint-disable-line
 
+  const dialogRef = useRef(null);
   useEscapeClose(onClose, !!equipo);
+  useFocusTrap(dialogRef, !!equipo);
 
   if (!equipo) return null;
 
@@ -45,6 +48,7 @@ export default function HistorialEquipoModal({ equipo, onClose }) {
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
         className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col my-8"
         onClick={(e) => e.stopPropagation()}
       >

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { api } from '../api/sigah';
 import useEscapeClose from '../hooks/useEscapeClose';
+import useFocusTrap from '../hooks/useFocusTrap';
 
 /**
  * NuevaOrdenModal — Modal reutilizable para crear Órdenes de Servicio.
@@ -34,7 +35,9 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState(null);
 
+  const dialogRef = useRef(null);
   useEscapeClose(onClose, open);
+  useFocusTrap(dialogRef, open);
 
   if (!open) return null;
 
@@ -69,6 +72,7 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
 
       {/* Modal */}
       <form
+        ref={dialogRef}
         onSubmit={handleCrear}
         className="relative bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl"
         onClick={(e) => e.stopPropagation()}

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '../api/sigah';
 import useEscapeClose from '../hooks/useEscapeClose';
+import useFocusTrap from '../hooks/useFocusTrap';
 
 /**
  * HistorialModal — Modal que muestra la timeline de trazabilidad de un equipo.
@@ -24,7 +25,9 @@ export default function HistorialModal({ equipoId, equipoNombre, open, onClose }
       .finally(() => setLoading(false));
   }, [open, equipoId]);
 
+  const dialogRef = useRef(null);
   useEscapeClose(onClose, open);
+  useFocusTrap(dialogRef, open);
 
   if (!open) return null;
 
@@ -35,6 +38,7 @@ export default function HistorialModal({ equipoId, equipoNombre, open, onClose }
 
       {/* Modal */}
       <div
+        ref={dialogRef}
         className="relative bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >

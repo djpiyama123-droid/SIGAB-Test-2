@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '../api/sigah';
 import toast from '../lib/toast';
 import { normalizar } from '../utils/texto';
 import useEscapeClose from '../hooks/useEscapeClose';
+import useFocusTrap from '../hooks/useFocusTrap';
 
 const TIPOS_EVENTO = [
   { value: 'muerte', label: 'Muerte' },
@@ -118,11 +119,13 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
 
   const eq = form.equipo_selected;
 
+  const dialogRef = useRef(null);
   useEscapeClose(onClose);
+  useFocusTrap(dialogRef);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-      <div className="bg-[var(--content-surface)] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-[var(--content-border)]">
+      <div ref={dialogRef} className="bg-[var(--content-surface)] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-[var(--content-border)]">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-[var(--content-border)] sticky top-0 bg-[var(--content-surface)] z-10">
           <div>

@@ -1,6 +1,30 @@
 {
-  "actual": "4.0.56",
+  "actual": "4.0.57",
   "versiones": [
+    {
+      "version": "4.0.57",
+      "fecha": "2026-07-17",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Quinto barrido de accesibilidad: ningun modal de la app atrapaba el foco de teclado, asi que Tab podia sacar al usuario del modal abierto hacia la pagina de fondo. Nuevo hook useFocusTrap conectado en los mismos 10 modales del barrido de Escape (v4.0.55).",
+      "cambios": [
+        "Continuacion directa de la serie de barridos de accesibilidad de este ciclo (aria-label de botones de cerrar, title de iconos sueltos, navegacion por teclado en filas/tarjetas de lista, cierre con Escape -- ver tabla de avance de docs/DESIGN-SYSTEM-V4.md). Con Escape ya resuelto (v4.0.55), quedaba un hueco de teclado distinto: ninguno de los overlays de modal implementaba el patron WAI-ARIA de dialogo (foco inicial dentro del dialogo + Tab/Shift+Tab ciclando sin escapar al fondo) -- un usuario que navega solo con teclado podia, sin querer, tabular fuera del modal abierto hacia botones/enlaces de la pagina detras del overlay (visualmente oculta pero seguia siendo parte del DOM enfocable).",
+        "Nuevo sigab-frontend/src/hooks/useFocusTrap.js: hook que recibe un ref al contenedor del dialogo y un flag 'active'. Al activarse, si ningun elemento dentro del contenedor ya tiene el foco (respeta un autoFocus propio existente, ej. el buscador de equipo de EventoAdversoModal.jsx), mueve el foco al primer elemento enfocable. El listener de keydown se registra sobre el propio contenedor (no sobre document): en Tab desde el ultimo elemento enfocable vuelve al primero, y en Shift+Tab desde el primero vuelve al ultimo -- ambos con e.preventDefault() para anular el comportamiento nativo del navegador.",
+        "Conectado en los mismos 10 modales que ya tienen useEscapeClose (mismo criterio de alcance que v4.0.55, misma pareja de hooks en cada archivo): HistorialModal.jsx, ChangePasswordModal.jsx, EventoAdversoModal.jsx, NuevaOrdenModal.jsx, EventoDetalleModal.jsx, OCRScannerModal.jsx, HistorialEquipoModal.jsx, OrdenDetalleModal.jsx, OrdenServicioRapidaModal.jsx, TripleValidationModal.jsx. En cada uno se agrego un ref al div (o form, en NuevaOrdenModal.jsx) que ya envuelve el contenido del dialogo -- sin crear ningun nodo nuevo ni tocar clases/layout.",
+        "OrdenDetalleModal.jsx reusa el mismo criterio que ya aplicaba a Escape: el trap se desactiva mientras su modal hijo OCRScannerModal esta abierto (!showOCR), para que Tab quede atrapado en el scanner anidado (que tiene su propio trap activo) y no en el contenedor exterior -- mismo razonamiento ya documentado en v4.0.55 para evitar que dos listeners compitan sobre el mismo modal apilado.",
+        "Sin test dedicado (mismo motivo que useEscapeClose en v4.0.55): el proyecto no tiene jsdom/@testing-library/react instalado, y el hook reimplementa un patron de accesibilidad estandar (WAI-ARIA Authoring Practices, dialog pattern) sin logica de negocio propia que amerite una dependencia nueva solo para probarlo.",
+        "No se pudo verificar en navegador real (Playwright no esta en el allowlist de este nodo headless) -- verificado por build+vitest verdes (62 tests) y lectura linea por linea de cada uno de los 10 archivos editados; pendiente que un humano confirme con teclado real: abrir cada modal, presionar Tab repetidamente y confirmar que el foco nunca sale del dialogo, y Shift+Tab desde el primer campo vuelve al ultimo control (no a la pagina de fondo)."
+      ],
+      "verificar": [
+        "En cada uno de los 10 modales (Historial de traslados, Cambiar contrasena, Reportar evento adverso, Nueva orden de servicio, Detalle de evento adverso, Escanear OS con camara, Historial tecnico de equipo, Detalle de orden de servicio, Orden de servicio rapida desde el mapa, Poka-Yoke triple validacion): abrir el modal solo con teclado, presionar Tab varias veces seguidas y confirmar que el foco nunca visita un elemento de la pagina de fondo (detras del overlay oscuro).",
+        "Shift+Tab desde el primer control del modal debe saltar al ULTIMO control enfocable del mismo modal, no salir de el.",
+        "Caso especifico OrdenDetalleModal.jsx: con el modal abierto, hacer click en '📷 Escanear con IA' para abrir OCRScannerModal encima -- Tab debe quedar atrapado en el scanner (el modal mas interno), y al cerrarlo, Tab debe volver a quedar atrapado en el detalle de la orden.",
+        "Caso EventoAdversoModal.jsx: al abrir el modal, el buscador de equipo (que ya tenia autoFocus) debe conservar el foco -- el trap no debe robarselo ni moverlo al primer boton del header.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (62 tests, sin nuevos -- ver nota de arriba)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1, o volver a v4.0.56. Cambio acotado a 1 archivo nuevo (hooks/useFocusTrap.js) + 10 componentes de modal (solo import + 1 ref + 1 linea de hook cada uno, sin tocar clases/layout/logica de negocio) -- revert de bajo riesgo, no toca backend ni rutas."
+    },
     {
       "version": "4.0.56",
       "fecha": "2026-07-17",

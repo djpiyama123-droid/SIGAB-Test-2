@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Search, CheckCircle, XCircle, ShieldCheck, QrCode, ClipboardList, PenTool } from 'lucide-react';
 import { useToast } from './Toast';
 import useEscapeClose from '../hooks/useEscapeClose';
+import useFocusTrap from '../hooks/useFocusTrap';
 
 const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
   const toast = useToast();
@@ -38,13 +39,15 @@ const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
     }
   };
 
+  const dialogRef = useRef(null);
   useEscapeClose(onClose, isOpen);
+  useFocusTrap(dialogRef, isOpen);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-emerald-500/30 bg-[var(--content-bg)] shadow-2xl flex flex-col">
+      <div ref={dialogRef} className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-emerald-500/30 bg-[var(--content-bg)] shadow-2xl flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-6 text-white">
           <div className="flex items-center gap-4">

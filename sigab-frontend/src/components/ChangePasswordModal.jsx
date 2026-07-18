@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { api } from '../api/sigah';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from './Toast';
 import useEscapeClose from '../hooks/useEscapeClose';
+import useFocusTrap from '../hooks/useFocusTrap';
 
 export default function ChangePasswordModal({ isOpen, onClose, required }) {
   const { setUser, user } = useAuth();
@@ -12,10 +13,12 @@ export default function ChangePasswordModal({ isOpen, onClose, required }) {
   const [confirmar, setConfirmar] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const dialogRef = useRef(null);
 
   // required=true (cambio obligatorio) ya oculta el botón "Cancelar" a propósito
   // más abajo — Escape no debe abrir un atajo para saltarse ese flujo.
   useEscapeClose(onClose, isOpen && !required);
+  useFocusTrap(dialogRef, isOpen);
 
   if (!isOpen) return null;
 
@@ -56,7 +59,7 @@ export default function ChangePasswordModal({ isOpen, onClose, required }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-[var(--content-bg)]/75 transition-opacity backdrop-blur-sm" aria-hidden="true" />
 
-        <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-[var(--content-surface)] text-left shadow-xl border border-[var(--content-border)]">
+        <div ref={dialogRef} className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-[var(--content-surface)] text-left shadow-xl border border-[var(--content-border)]">
           <form onSubmit={handleSubmit}>
             <div className="bg-[var(--content-surface)] px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
               <div className="sm:flex sm:items-start">

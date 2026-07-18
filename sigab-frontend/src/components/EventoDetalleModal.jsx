@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api, getMediaUrl } from '../api/sigah';
 import { TV_ESTADO_COLORS, TV_SEVERIDAD_COLORS, TV_TIPO_LABELS, TV_ESTADO_LABELS } from '../utils/constants';
 import toast from '../lib/toast';
 import useEscapeClose from '../hooks/useEscapeClose';
+import useFocusTrap from '../hooks/useFocusTrap';
 
 const TIMELINE_STEPS = ['reportado', 'en_investigacion', 'documentado', 'escalado_cofepris', 'cerrado'];
 const TIPO_EVIDENCIA_OPTS = ['foto_dispositivo', 'reporte_clinico', 'bitacora', 'comunicacion_fabricante', 'otro'];
@@ -144,7 +145,9 @@ export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
     } catch { return String(f); }
   };
 
+  const dialogRef = useRef(null);
   useEscapeClose(onClose);
+  useFocusTrap(dialogRef);
 
   if (loading || !data) {
     return (
@@ -182,7 +185,7 @@ export default function EventoDetalleModal({ eventoId, onClose, onUpdated }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-      <div className="bg-[var(--content-surface)] rounded-xl w-full max-w-5xl max-h-[92vh] overflow-y-auto border border-[var(--content-border)] flex flex-col">
+      <div ref={dialogRef} className="bg-[var(--content-surface)] rounded-xl w-full max-w-5xl max-h-[92vh] overflow-y-auto border border-[var(--content-border)] flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-[var(--content-border)] sticky top-0 bg-[var(--content-surface)] z-10">
           <div className="flex items-center gap-3">

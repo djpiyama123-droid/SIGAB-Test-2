@@ -13,10 +13,11 @@
 //
 // Se invoca desde el botón "Abrir Orden de Servicio" en FichaTecnica
 // ============================================================
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { api } from '../api/sigah';
 import { useToast } from './Toast';
 import useEscapeClose from '../hooks/useEscapeClose';
+import useFocusTrap from '../hooks/useFocusTrap';
 
 export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) {
   const toast = useToast();
@@ -36,8 +37,10 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
     recibe_matricula: '',
   });
   const [guardando, setGuardando] = useState(false);
+  const dialogRef = useRef(null);
 
   useEscapeClose(onClose);
+  useFocusTrap(dialogRef, !!equipo);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -99,6 +102,7 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
         className="bg-[var(--content-surface)] border border-[var(--content-border)] rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
