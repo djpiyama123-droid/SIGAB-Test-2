@@ -1,6 +1,28 @@
 {
-  "actual": "4.0.60",
+  "actual": "4.0.61",
   "versiones": [
+    {
+      "version": "4.0.61",
+      "fecha": "2026-07-19",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "ddd90c8",
+      "resumen": "Octavo barrido de accesibilidad, continuacion: los 18 campos del modal de crear/editar equipo (EquipoForm.jsx) no tenian labels asociados via htmlFor/id -- corregido en un solo componente compartido en vez de sitio por sitio.",
+      "cambios": [
+        "Continuacion de v4.0.59 (Reservas) y v4.0.60 (Ordenes) en el mismo barrido de <label> sin htmlFor. Siguiente candidato explicito de la lista pendiente y parte directa de la meta de cierre v4.0 (pantalla Equipos/Inventario): components/EquipoForm.jsx, el modal de crear/editar equipo.",
+        "A diferencia de Reservas/Ordenes (labels sueltos editados uno por uno), EquipoForm.jsx canaliza sus 18 campos por un componente interno compartido Campo({ label, error, children }) donde el <label> es hermano de children (el input/select real), no su envoltorio. Se corrigio una sola vez en la fuente: Campo genera un id deterministico a partir del texto de label (helper slugify nuevo, sin acentos/simbolos, ej. 'N Serie *' -> equipo-form-n-serie), lo pasa como htmlFor al <label> y lo inyecta en el control hijo via cloneElement(children, { id }) -- resuelve los 18 campos (Nombre, Inventario/ID interno, N Serie, Marca, Modelo, Tipo de equipo, Estado, Criticidad, Clase COFEPRIS, Area, Piso, Ubicacion fisica, Zona del mapa, Tipo de adquisicion, Fecha de compra, Proximo mantenimiento, Proveedor de servicio, N Contrato de servicio) sin tocar ninguno de los 18 sitios de uso de <Campo>.",
+        "Se revisaron los otros 2 <label> del archivo, fuera de Campo: el de la galeria de fotos ya envuelve su <input type=\"file\"> (asociacion implicita, sin bug) -- no se toco. pages/Equipos.jsx tambien se reviso (otro candidato de la lista pendiente): su unico <label> envuelve el checkbox 'Fotos incompletas' (asociacion implicita, sin bug) -- no queda pendiente en ese archivo.",
+        "Cambio 100% aditivo (atributos id/htmlFor generados por codigo), sin tocar clases, layout, validacion ni el payload que se envia al backend -- cero riesgo visual o funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada (Reservas + Ordenes + Equipos) y lista de pendientes recortada -- quedan ~90 lineas en Copilot.jsx, Metrologia.jsx, ChecklistPage.jsx, Almacen.jsx, Trazabilidad.jsx, Capacitaciones.jsx, SuperAdmin.jsx, LandingPage.jsx y varios modales compartidos, candidato del proximo barrido."
+      ],
+      "verificar": [
+        "Equipos/Inventario: abrir 'Nuevo Equipo' o editar un equipo existente y, con un lector de pantalla (o el inspector de accesibilidad de DevTools), tabular por cada uno de los 18 campos -- debe anunciar el nombre del campo ('Nombre', 'N Serie', 'Marca', 'Tipo de equipo', etc.) en vez de solo el tipo de control.",
+        "Confirmar visualmente que el formulario no cambio de tamano/posicion/color -- el cambio es solo atributos id/htmlFor generados, sin efecto de layout.",
+        "Confirmar que guardar/crear un equipo (con y sin edicion) sigue funcionando igual -- el cambio no toca el estado del formulario ni el payload enviado al backend, solo el DOM.",
+        "npm run build y npx vitest run en sigab-frontend/ deben quedar verdes (62 tests, sin nuevos -- cambio de puro markup/DOM)."
+      ],
+      "rollback": "git revert del commit de esta version sobre v4.0/piloto-clinica-1, o volver a v4.0.60. Cambio acotado a 1 archivo (components/EquipoForm.jsx, helper slugify + 3 lineas en Campo) -- revert trivial, no toca backend ni rutas."
+    },
     {
       "version": "4.0.60",
       "fecha": "2026-07-18",
