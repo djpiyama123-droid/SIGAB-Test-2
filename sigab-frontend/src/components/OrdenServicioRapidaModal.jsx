@@ -171,8 +171,9 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
           <p className={sectionCls}>2. Tipo de Servicio y Prioridad</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Tipo de mantenimiento *</label>
+              <label htmlFor="os-rapida-tipo" className={labelCls}>Tipo de mantenimiento *</label>
               <select
+                id="os-rapida-tipo"
                 value={form.tipo_mantenimiento}
                 onChange={set('tipo_mantenimiento')}
                 className={inputCls}
@@ -185,8 +186,8 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
                 <option value="baja">Baja / Decomisión</option>
               </select>
             </div>
-            <div>
-              <label className={labelCls}>Prioridad *</label>
+            <fieldset className="border-0 p-0 m-0">
+              <legend className={labelCls}>Prioridad *</legend>
               <div className="flex gap-4 text-xs h-11 items-center">
                 <label className="flex items-center gap-1.5 cursor-pointer min-h-[44px]">
                   <input type="radio" name="prio" value="alta" checked={form.prioridad === 'alta'} onChange={set('prioridad')} className="w-4 h-4 accent-red-600" />
@@ -201,13 +202,14 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
                   <span className="text-emerald-600 font-semibold">BAJA</span>
                 </label>
               </div>
-            </div>
+            </fieldset>
           </div>
 
           {/* ── 3. LOCALIZACIÓN COMPLETA ── */}
           <div>
-            <label className={labelCls}>Localización completa del equipo o instalación</label>
+            <label htmlFor="os-rapida-localizacion" className={labelCls}>Localización completa del equipo o instalación</label>
             <input
+              id="os-rapida-localizacion"
               value={form.localizacion_completa}
               onChange={set('localizacion_completa')}
               placeholder={`${equipo.area || 'Área'}${equipo.piso ? `, Piso ${equipo.piso}` : ''} — detalle adicional...`}
@@ -217,8 +219,9 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
 
           {/* ── 4. FALLA REPORTADA ── */}
           <div>
-            <label className={labelCls}>Falla reportada / Motivo del servicio *</label>
+            <label htmlFor="os-rapida-falla" className={labelCls}>Falla reportada / Motivo del servicio *</label>
             <textarea
+              id="os-rapida-falla"
               required
               rows={3}
               value={form.falla_reportada}
@@ -232,8 +235,9 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
           <p className={sectionCls}>3. Horarios y Tiempos</p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Hora de inicio</label>
+              <label htmlFor="os-rapida-hora-inicio" className={labelCls}>Hora de inicio</label>
               <input
+                id="os-rapida-hora-inicio"
                 type="time"
                 value={form.hora_inicio}
                 onChange={set('hora_inicio')}
@@ -241,8 +245,9 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
               />
             </div>
             <div>
-              <label className={labelCls}>Hora de término</label>
+              <label htmlFor="os-rapida-hora-termino" className={labelCls}>Hora de término</label>
               <input
+                id="os-rapida-hora-termino"
                 type="time"
                 value={form.hora_termino}
                 onChange={set('hora_termino')}
@@ -250,8 +255,9 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
               />
             </div>
             <div>
-              <label className={labelCls}>T. estimado (hrs)</label>
+              <label htmlFor="os-rapida-tiempo-estimado" className={labelCls}>T. estimado (hrs)</label>
               <input
+                id="os-rapida-tiempo-estimado"
                 type="number"
                 min="0"
                 step="0.5"
@@ -262,8 +268,9 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
               />
             </div>
             <div>
-              <label className={labelCls}>T. real (hrs)</label>
+              <label htmlFor="os-rapida-tiempo-real" className={labelCls}>T. real (hrs)</label>
               <input
+                id="os-rapida-tiempo-real"
                 type="number"
                 min="0"
                 step="0.5"
@@ -279,8 +286,9 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
           <p className={sectionCls}>4. Técnico y Recibe de Conformidad</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Técnico asignado</label>
+              <label htmlFor="os-rapida-tecnico" className={labelCls}>Técnico asignado</label>
               <input
+                id="os-rapida-tecnico"
                 value={form.tecnico_nombre}
                 onChange={set('tecnico_nombre')}
                 placeholder="Nombre del Ing. Biomédico"
@@ -288,8 +296,9 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
               />
             </div>
             <div>
-              <label className={labelCls}>Recibe de conformidad (Nombre)</label>
+              <label htmlFor="os-rapida-recibe-nombre" className={labelCls}>Recibe de conformidad (Nombre)</label>
               <input
+                id="os-rapida-recibe-nombre"
                 value={form.recibe_conformidad_nombre}
                 onChange={set('recibe_conformidad_nombre')}
                 placeholder="Nombre de quien recibe"
@@ -297,8 +306,9 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
               />
             </div>
             <div className="sm:col-span-2 sm:w-1/2">
-              <label className={labelCls}>Matrícula (quien recibe)</label>
+              <label htmlFor="os-rapida-recibe-matricula" className={labelCls}>Matrícula (quien recibe)</label>
               <input
+                id="os-rapida-recibe-matricula"
                 value={form.recibe_matricula}
                 onChange={set('recibe_matricula')}
                 placeholder="Matrícula"
@@ -309,8 +319,9 @@ export default function OrdenServicioRapidaModal({ equipo, onClose, onCreada }) 
 
           {/* ── 7. NOTAS / DESCRIPCIÓN DEL TRABAJO ── */}
           <div>
-            <label className={labelCls}>Descripción del trabajo / Notas adicionales</label>
+            <label htmlFor="os-rapida-descripcion" className={labelCls}>Descripción del trabajo / Notas adicionales</label>
             <textarea
+              id="os-rapida-descripcion"
               rows={2}
               value={form.descripcion_servicio}
               onChange={set('descripcion_servicio')}

@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.61",
+  "actual": "4.0.62",
   "versiones": [
+    {
+      "version": "4.0.62",
+      "fecha": "2026-07-19",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Septimo barrido de accesibilidad, continuacion: los 15 <label> del modal 'Nueva Orden de Servicio' rapida (OrdenServicioRapidaModal.jsx) no tenian asociacion htmlFor/id con su input, y el grupo de radios 'Prioridad' usaba un label de texto plano en vez de fieldset/legend.",
+      "cambios": [
+        "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes) y v4.0.61 (EquipoForm) en el mismo barrido de <label> sin htmlFor. Siguiente candidato por volumen de la lista pendiente y del mismo modulo Ordenes de la meta de cierre v4.0: components/OrdenServicioRapidaModal.jsx (modal que se abre desde el mapa/ficha tecnica del equipo para crear una OS rapida).",
+        "Se agrego id/htmlFor a los 11 campos con label+input hermano: tipo de mantenimiento, localizacion completa, falla reportada, hora de inicio, hora de termino, tiempo estimado (hrs), tiempo real (hrs), tecnico asignado, recibe de conformidad (nombre), matricula (quien recibe) y descripcion del trabajo/notas.",
+        "El grupo de 3 radios 'Prioridad' (Alta/Media/Baja) es distinto de los demas campos: un <label> de texto plano no describe un grupo de opciones de forma correcta, asi que se reemplazo el <div>+<label> contenedor por <fieldset>+<legend> (con border-0 p-0 m-0 para no alterar el layout visual) -- primera vez que aparece este patron en el codigo, es el fix WCAG correcto para grupos de radio buttons. Los 3 <label> que ya envuelven cada <input type=\"radio\"> individual tenian asociacion implicita correcta y no se tocaron.",
+        "Cambio 100% aditivo (atributos id/htmlFor + 1 cambio de elemento semanticamente equivalente para el grupo de radios), sin tocar clases, layout, logica de negocio ni el payload que se envia al backend -- cero riesgo visual o funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada (Reservas + Ordenes + Equipos + OrdenServicioRapidaModal) y lista de pendientes reordenada por volumen -- NuevaOrdenModal.jsx (11, mismo modulo Ordenes) y EventoAdversoModal.jsx (13) quedan como los mayores candidatos del proximo barrido."
+      ],
+      "verificar": [
+        "Dashboard o Mapa de Activos: abrir el boton 'Abrir Orden de Servicio' de la ficha tecnica de un equipo (o el flujo equivalente que monta OrdenServicioRapidaModal) y, con un lector de pantalla o el inspector de accesibilidad de DevTools, tabular por cada campo -- debe anunciar el nombre del campo ('Tipo de mantenimiento', 'Hora de inicio', 'Tecnico asignado', etc.) en vez de solo el tipo de control.",
+        "Confirmar que el grupo 'Prioridad *' se sigue viendo identico (3 opciones Alta/Media/Baja en fila) -- el cambio a fieldset/legend no debe alterar el espaciado ni el tamano visual.",
+        "Crear una orden de servicio de prueba con este modal y confirmar que se guarda correctamente (build+tests ya lo cubren pero conviene una verificacion manual en el flujo real, formulario NOM-016)."
+      ],
+      "rollback": "4.0.61"
+    },
     {
       "version": "4.0.61",
       "fecha": "2026-07-19",
