@@ -6,7 +6,7 @@
       "fecha": "2026-07-19",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "3666f34",
       "resumen": "Septimo barrido de accesibilidad, continuacion: los 15 <label> del modal 'Nueva Orden de Servicio' rapida (OrdenServicioRapidaModal.jsx) no tenian asociacion htmlFor/id con su input, y el grupo de radios 'Prioridad' usaba un label de texto plano en vez de fieldset/legend.",
       "cambios": [
         "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes) y v4.0.61 (EquipoForm) en el mismo barrido de <label> sin htmlFor. Siguiente candidato por volumen de la lista pendiente y del mismo modulo Ordenes de la meta de cierre v4.0: components/OrdenServicioRapidaModal.jsx (modal que se abre desde el mapa/ficha tecnica del equipo para crear una OS rapida).",
