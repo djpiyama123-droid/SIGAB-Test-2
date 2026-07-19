@@ -6,7 +6,7 @@
       "fecha": "2026-07-19",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "601dcaa",
       "resumen": "Septimo barrido de accesibilidad, continuacion: los 11 <label> del modal reutilizable 'Nueva Orden de Servicio' (NuevaOrdenModal.jsx, usado desde Ordenes.jsx, el mapa y EquipoDetail.jsx) no tenian asociacion htmlFor/id con su input/select.",
       "cambios": [
         "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm) y v4.0.62 (OrdenServicioRapidaModal) en el mismo barrido de <label> sin htmlFor. Siguiente candidato por volumen del mismo modulo Ordenes: components/NuevaOrdenModal.jsx, modal reutilizable montado desde pages/Ordenes.jsx, la ficha tecnica del mapa y EquipoDetail.jsx.",
