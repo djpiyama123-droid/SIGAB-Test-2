@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.62",
+  "actual": "4.0.63",
   "versiones": [
+    {
+      "version": "4.0.63",
+      "fecha": "2026-07-19",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Septimo barrido de accesibilidad, continuacion: los 11 <label> del modal reutilizable 'Nueva Orden de Servicio' (NuevaOrdenModal.jsx, usado desde Ordenes.jsx, el mapa y EquipoDetail.jsx) no tenian asociacion htmlFor/id con su input/select.",
+      "cambios": [
+        "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm) y v4.0.62 (OrdenServicioRapidaModal) en el mismo barrido de <label> sin htmlFor. Siguiente candidato por volumen del mismo modulo Ordenes: components/NuevaOrdenModal.jsx, modal reutilizable montado desde pages/Ordenes.jsx, la ficha tecnica del mapa y EquipoDetail.jsx.",
+        "Se agrego id/htmlFor a los 11 campos: equipo (nombre), N de serie, tecnico, area, piso, tipo de mantenimiento, prioridad, localizacion completa, falla reportada, hora de inicio, hora de termino, tiempo estimado (hrs), tiempo real (hrs), recibe de conformidad (nombre) y matricula.",
+        "5 de esos campos se generan dinamicamente via .map() sobre un arreglo de [clave, etiqueta, tipo] -- el id se derivo de la clave del campo (nueva-orden-${k}) para que cada label quede unico sin duplicar codigo. Los 2 <select> (Tipo, Prioridad) recibieron el mismo tratamiento -- a diferencia de OrdenServicioRapidaModal.jsx (v4.0.62), este archivo usa un <select> simple para prioridad, no un grupo de radios, asi que no aplico el patron fieldset/legend.",
+        "Cambio 100% aditivo (solo atributos id/htmlFor), sin tocar clases, layout, logica de negocio ni el payload que se envia al backend -- cero riesgo visual o funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada (Reservas + Ordenes + Equipos + OrdenServicioRapidaModal + NuevaOrdenModal) -- EventoAdversoModal.jsx (13) queda como el mayor candidato del proximo barrido."
+      ],
+      "verificar": [
+        "Desde pages/Ordenes.jsx, la ficha tecnica de un equipo en el mapa, o el footer de EquipoDetail.jsx ('Nueva OS'): abrir el modal 'Nueva Orden de Servicio' y, con un lector de pantalla o el inspector de accesibilidad de DevTools, tabular por cada campo -- debe anunciar el nombre del campo ('Equipo (nombre)', 'Hora de inicio', 'Recibe de conformidad (Nombre)', etc.) en vez de solo el tipo de control.",
+        "Confirmar que el layout/espaciado del formulario se ve identico en los 3 puntos de entrada (Ordenes, mapa, EquipoDetail) -- el cambio es solo de atributos.",
+        "Crear una orden de servicio de prueba con este modal y confirmar que se guarda correctamente (build+tests ya lo cubren pero conviene una verificacion manual en el flujo real)."
+      ],
+      "rollback": "4.0.62"
+    },
     {
       "version": "4.0.62",
       "fecha": "2026-07-19",

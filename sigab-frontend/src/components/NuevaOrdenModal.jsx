@@ -106,8 +106,9 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
             ['piso', 'Piso', 'text'],
           ].map(([k, label]) => (
             <div key={k}>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">{label}</label>
+              <label htmlFor={`nueva-orden-${k}`} className="text-xs text-[var(--content-muted)] block mb-1">{label}</label>
               <input
+                id={`nueva-orden-${k}`}
                 value={form[k]}
                 onChange={set(k)}
                 className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]"
@@ -115,8 +116,9 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
             </div>
           ))}
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">Tipo</label>
+            <label htmlFor="nueva-orden-tipo" className="text-xs text-[var(--content-muted)] block mb-1">Tipo</label>
             <select
+              id="nueva-orden-tipo"
               value={form.tipo_mantenimiento}
               onChange={set('tipo_mantenimiento')}
               className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]"
@@ -127,8 +129,9 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
             </select>
           </div>
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">Prioridad</label>
+            <label htmlFor="nueva-orden-prioridad" className="text-xs text-[var(--content-muted)] block mb-1">Prioridad</label>
             <select
+              id="nueva-orden-prioridad"
               value={form.prioridad}
               onChange={set('prioridad')}
               className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]"
@@ -142,8 +145,9 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
 
         {/* Localización completa — v.3.2.0 */}
         <div>
-          <label className="text-xs text-[var(--content-muted)] block mb-1">Localización completa del equipo o instalación</label>
+          <label htmlFor="nueva-orden-localizacion" className="text-xs text-[var(--content-muted)] block mb-1">Localización completa del equipo o instalación</label>
           <input
+            id="nueva-orden-localizacion"
             value={form.localizacion_completa}
             onChange={set('localizacion_completa')}
             placeholder="Detalle adicional de ubicación..."
@@ -152,8 +156,9 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
         </div>
 
         <div>
-          <label className="text-xs text-[var(--content-muted)] block mb-1">Falla reportada *</label>
+          <label htmlFor="nueva-orden-falla" className="text-xs text-[var(--content-muted)] block mb-1">Falla reportada *</label>
           <textarea
+            id="nueva-orden-falla"
             required
             rows={3}
             value={form.falla_reportada}
@@ -165,23 +170,23 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
         {/* Horarios y tiempos — v.3.2.0 */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">Hora de inicio</label>
-            <input type="time" value={form.hora_inicio} onChange={set('hora_inicio')}
+            <label htmlFor="nueva-orden-hora-inicio" className="text-xs text-[var(--content-muted)] block mb-1">Hora de inicio</label>
+            <input id="nueva-orden-hora-inicio" type="time" value={form.hora_inicio} onChange={set('hora_inicio')}
               className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]" />
           </div>
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">Hora de término</label>
-            <input type="time" value={form.hora_termino} onChange={set('hora_termino')}
+            <label htmlFor="nueva-orden-hora-termino" className="text-xs text-[var(--content-muted)] block mb-1">Hora de término</label>
+            <input id="nueva-orden-hora-termino" type="time" value={form.hora_termino} onChange={set('hora_termino')}
               className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]" />
           </div>
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">T. estimado (hrs)</label>
-            <input type="number" min="0" step="0.5" value={form.tiempo_estimado_hrs} onChange={set('tiempo_estimado_hrs')} placeholder="1.0"
+            <label htmlFor="nueva-orden-tiempo-estimado" className="text-xs text-[var(--content-muted)] block mb-1">T. estimado (hrs)</label>
+            <input id="nueva-orden-tiempo-estimado" type="number" min="0" step="0.5" value={form.tiempo_estimado_hrs} onChange={set('tiempo_estimado_hrs')} placeholder="1.0"
               className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]" />
           </div>
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">T. real (hrs)</label>
-            <input type="number" min="0" step="0.5" value={form.tiempo_real_hrs} onChange={set('tiempo_real_hrs')} placeholder="(al cerrar)"
+            <label htmlFor="nueva-orden-tiempo-real" className="text-xs text-[var(--content-muted)] block mb-1">T. real (hrs)</label>
+            <input id="nueva-orden-tiempo-real" type="number" min="0" step="0.5" value={form.tiempo_real_hrs} onChange={set('tiempo_real_hrs')} placeholder="(al cerrar)"
               className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]" />
           </div>
         </div>
@@ -189,13 +194,13 @@ export default function NuevaOrdenModal({ open, onClose, onCreated, prefill = {}
         {/* Recibe de conformidad — v.3.2.0 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">Recibe de conformidad (Nombre)</label>
-            <input value={form.recibe_conformidad_nombre} onChange={set('recibe_conformidad_nombre')} placeholder="Nombre de quien recibe"
+            <label htmlFor="nueva-orden-recibe-nombre" className="text-xs text-[var(--content-muted)] block mb-1">Recibe de conformidad (Nombre)</label>
+            <input id="nueva-orden-recibe-nombre" value={form.recibe_conformidad_nombre} onChange={set('recibe_conformidad_nombre')} placeholder="Nombre de quien recibe"
               className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]" />
           </div>
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">Matrícula</label>
-            <input value={form.recibe_matricula} onChange={set('recibe_matricula')} placeholder="Matrícula"
+            <label htmlFor="nueva-orden-matricula" className="text-xs text-[var(--content-muted)] block mb-1">Matrícula</label>
+            <input id="nueva-orden-matricula" value={form.recibe_matricula} onChange={set('recibe_matricula')} placeholder="Matrícula"
               className="w-full min-h-[44px] bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-[var(--accent)]" />
           </div>
         </div>
