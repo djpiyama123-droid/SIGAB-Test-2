@@ -2,7 +2,7 @@
 // EquipoForm.jsx — Modal para crear o editar un equipo biomédico
 // Soporta upload de PNG/JPG y se conecta al backend SIGAH
 // ============================================================
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, cloneElement } from 'react';
 import { api, getMediaUrl } from '../api/sigah';
 import { useToast } from './Toast';
 import { TIPO_ADQ_OPTIONS } from '../utils/constants';
@@ -521,11 +521,25 @@ function inputCls(error) {
   }`;
 }
 
+// "Nombre *" -> "nombre", "N° Serie *" -> "n-serie" (sin acentos/símbolos, para usar como id).
+function slugify(texto) {
+  const sinAcentos = texto
+    .toLowerCase()
+    .replace(/[áàä]/g, 'a')
+    .replace(/[éèë]/g, 'e')
+    .replace(/[íìï]/g, 'i')
+    .replace(/[óòö]/g, 'o')
+    .replace(/[úùü]/g, 'u')
+    .replace(/ñ/g, 'n');
+  return sinAcentos.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
 function Campo({ label, error, children }) {
+  const id = `equipo-form-${slugify(label)}`;
   return (
     <div>
-      <label className="text-xs text-[var(--content-muted)] block mb-1">{label}</label>
-      {children}
+      <label htmlFor={id} className="text-xs text-[var(--content-muted)] block mb-1">{label}</label>
+      {cloneElement(children, { id })}
       {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
     </div>
   );
