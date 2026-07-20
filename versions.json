@@ -6,7 +6,7 @@
       "fecha": "2026-07-20",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "3aa47b6",
       "resumen": "Septimo barrido de accesibilidad, continuacion: los 6 <label> del modal 'Nueva Calibracion' de pages/Metrologia.jsx no tenian asociacion htmlFor/id.",
       "cambios": [
         "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm), v4.0.62 (OrdenServicioRapidaModal), v4.0.63 (NuevaOrdenModal), v4.0.64 (EventoAdversoModal) y v4.0.65 (Almacen) en el mismo barrido de <label> sin htmlFor. Metrologia.jsx empataba en volumen (6) con Copilot.jsx -- se eligio por no tener casos especiales (grupos de radio/boton, labels implicitos).",
