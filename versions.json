@@ -6,7 +6,7 @@
       "fecha": "2026-07-20",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "8d1b6dc",
       "resumen": "Septimo barrido de accesibilidad, cierre: los 9 <label>/grupo de botones de pages/Almacen.jsx (Nueva Refaccion + Ajustar Stock) no tenian asociacion htmlFor/id.",
       "cambios": [
         "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm), v4.0.62 (OrdenServicioRapidaModal), v4.0.63 (NuevaOrdenModal) y v4.0.64 (EventoAdversoModal) en el mismo barrido de <label> sin htmlFor. Siguiente candidato por volumen: pages/Almacen.jsx (9), modales 'Nueva Refaccion' y 'Ajustar Stock' del modulo de Almacen.",
