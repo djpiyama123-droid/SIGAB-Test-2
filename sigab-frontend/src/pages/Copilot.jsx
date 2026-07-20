@@ -135,8 +135,8 @@ function DiagnosticoPanel({ onClose }) {
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div className="col-span-2">
-          <label className="text-xs text-[var(--content-muted)] block mb-1">Equipo (opcional)</label>
-          <select value={equipoId} onChange={handleEquipoChange}
+          <label htmlFor="copilot-diagnostico-equipo" className="text-xs text-[var(--content-muted)] block mb-1">Equipo (opcional)</label>
+          <select id="copilot-diagnostico-equipo" value={equipoId} onChange={handleEquipoChange}
             className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]">
             <option value="">— Sin seleccionar —</option>
             {equipos.map(eq => (
@@ -145,18 +145,18 @@ function DiagnosticoPanel({ onClose }) {
           </select>
         </div>
         <div>
-          <label className="text-xs text-[var(--content-muted)] block mb-1">Marca</label>
-          <input value={marca} onChange={e => setMarca(e.target.value)} placeholder="GE, Philips..."
+          <label htmlFor="copilot-diagnostico-marca" className="text-xs text-[var(--content-muted)] block mb-1">Marca</label>
+          <input id="copilot-diagnostico-marca" value={marca} onChange={e => setMarca(e.target.value)} placeholder="GE, Philips..."
             className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]" />
         </div>
         <div>
-          <label className="text-xs text-[var(--content-muted)] block mb-1">Modelo</label>
-          <input value={modelo} onChange={e => setModelo(e.target.value)} placeholder="CARESCAPE B650..."
+          <label htmlFor="copilot-diagnostico-modelo" className="text-xs text-[var(--content-muted)] block mb-1">Modelo</label>
+          <input id="copilot-diagnostico-modelo" value={modelo} onChange={e => setModelo(e.target.value)} placeholder="CARESCAPE B650..."
             className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]" />
         </div>
         <div className="col-span-2">
-          <label className="text-xs text-[var(--content-muted)] block mb-1">Falla reportada *</label>
-          <textarea rows={2} value={falla} onChange={e => setFalla(e.target.value)}
+          <label htmlFor="copilot-diagnostico-falla" className="text-xs text-[var(--content-muted)] block mb-1">Falla reportada *</label>
+          <textarea id="copilot-diagnostico-falla" rows={2} value={falla} onChange={e => setFalla(e.target.value)}
             placeholder="Ej: El monitor no enciende, hace click al intentar prender..."
             className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)]" />
         </div>
@@ -220,8 +220,8 @@ function VisionPanel({ onClose }) {
       </div>
 
       <div>
-        <label className="text-xs text-[var(--content-muted)] block mb-1">Tipo de documento</label>
-        <select value={tipDoc} onChange={e => setTipDoc(e.target.value)}
+        <label htmlFor="copilot-vision-tipo-doc" className="text-xs text-[var(--content-muted)] block mb-1">Tipo de documento</label>
+        <select id="copilot-vision-tipo-doc" value={tipDoc} onChange={e => setTipDoc(e.target.value)}
           className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)]">
           <option value="etiqueta_equipo">Etiqueta / placa del equipo</option>
           <option value="reporte_servicio">Reporte de servicio externo</option>
