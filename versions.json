@@ -1,6 +1,26 @@
 {
-  "actual": "4.0.65",
+  "actual": "4.0.66",
   "versiones": [
+    {
+      "version": "4.0.66",
+      "fecha": "2026-07-20",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Septimo barrido de accesibilidad, continuacion: los 6 <label> del modal 'Nueva Calibracion' de pages/Metrologia.jsx no tenian asociacion htmlFor/id.",
+      "cambios": [
+        "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm), v4.0.62 (OrdenServicioRapidaModal), v4.0.63 (NuevaOrdenModal), v4.0.64 (EventoAdversoModal) y v4.0.65 (Almacen) en el mismo barrido de <label> sin htmlFor. Metrologia.jsx empataba en volumen (6) con Copilot.jsx -- se eligio por no tener casos especiales (grupos de radio/boton, labels implicitos).",
+        "Se agrego id/htmlFor a los 6 campos de NuevaCalibracionModal: equipo, tipo de medicion, fecha de calibracion, vigencia (meses), entidad calibradora y numero de certificado. Todos son <label>+control hermano simple (select/input), sin grupos que requieran fieldset/legend.",
+        "Cambio 100% aditivo (solo atributos id/htmlFor), sin tocar clases, layout, logica de negocio ni el payload enviado al backend -- cero riesgo visual o funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada -- pages/Copilot.jsx (6, con 1 label implicito ya correcto) queda como el mayor candidato del proximo barrido."
+      ],
+      "verificar": [
+        "Desde pages/Metrologia.jsx: abrir 'Nueva Calibracion' y, con un lector de pantalla o el inspector de accesibilidad de DevTools, tabular por cada campo -- debe anunciar el nombre del campo (Equipo, Tipo de medicion, Fecha de calibracion, Vigencia (meses), Entidad calibradora, Numero de certificado) en vez de solo el tipo de control.",
+        "Confirmar visualmente que el formulario no cambio de tamano/posicion/color -- el cambio es solo atributos id/htmlFor.",
+        "Registrar una calibracion de prueba y confirmar que se guarda correctamente."
+      ],
+      "rollback": "4.0.65"
+    },
     {
       "version": "4.0.65",
       "fecha": "2026-07-20",
