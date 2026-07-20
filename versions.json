@@ -6,7 +6,7 @@
       "fecha": "2026-07-19",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "ff4ee0c",
       "resumen": "Septimo barrido de accesibilidad, continuacion: los 12 <label> + 1 grupo de botones de Severidad de EventoAdversoModal.jsx (Reportar Evento Adverso NOM-240) no tenian asociacion htmlFor/id ni estado expuesto.",
       "cambios": [
         "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm), v4.0.62 (OrdenServicioRapidaModal) y v4.0.63 (NuevaOrdenModal) en el mismo barrido de <label> sin htmlFor. Siguiente candidato por volumen: components/EventoAdversoModal.jsx (13 labels), modal de Reportar Evento Adverso NOM-240-SSA1-2012.",
