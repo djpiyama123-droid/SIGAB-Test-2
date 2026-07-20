@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.66",
+  "actual": "4.0.67",
   "versiones": [
+    {
+      "version": "4.0.67",
+      "fecha": "2026-07-20",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "3383f62",
+      "resumen": "Septimo barrido de accesibilidad, continuacion: los 5 <label> explicitos de pages/Copilot.jsx (paneles Diagnostico de Falla y Vision con IA) no tenian asociacion htmlFor/id.",
+      "cambios": [
+        "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm), v4.0.62 (OrdenServicioRapidaModal), v4.0.63 (NuevaOrdenModal), v4.0.64 (EventoAdversoModal), v4.0.65 (Almacen) y v4.0.66 (Metrologia) en el mismo barrido de <label> sin htmlFor. pages/Copilot.jsx (6 <label> segun el grep original) era el siguiente candidato por volumen, empatado con Metrologia el ciclo pasado.",
+        "De los 6 <label> del archivo, 5 son explicitos con control hermano (equipo, marca, modelo y falla reportada en DiagnosticoPanel; tipo de documento en VisionPanel) y se les agrego id/htmlFor. El sexto (VisionPanel, 'Click para seleccionar imagen') envuelve directamente el <input type=\"file\">, asociacion implicita ya correcta -- no se toco.",
+        "Cambio 100% aditivo (solo atributos id/htmlFor), sin tocar clases, layout, logica de negocio ni las llamadas a api.copilotDiagnostico/api.copilotVision -- cero riesgo visual o funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada -- pages/Trazabilidad.jsx y pages/Capacitaciones.jsx (5 c/u) quedan como los mayores candidatos del proximo barrido."
+      ],
+      "verificar": [
+        "Desde pages/Copilot.jsx: abrir 'Diagnostico de Falla con IA' y, con un lector de pantalla o el inspector de accesibilidad de DevTools, tabular por los 4 campos (Equipo, Marca, Modelo, Falla reportada) -- debe anunciar el nombre del campo en vez de solo el tipo de control.",
+        "Abrir 'Analisis de Imagen (Gemma Vision)' y tabular hasta 'Tipo de documento' -- mismo chequeo.",
+        "Confirmar visualmente que ambos paneles se ven identicos a antes -- el cambio es solo atributos id/htmlFor.",
+        "Correr un diagnostico de falla y un analisis de imagen de prueba y confirmar que ambos siguen funcionando (llaman a Gemma via Ollama)."
+      ],
+      "rollback": "4.0.66"
+    },
     {
       "version": "4.0.66",
       "fecha": "2026-07-20",
