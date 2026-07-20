@@ -1,6 +1,28 @@
 {
-  "actual": "4.0.63",
+  "actual": "4.0.64",
   "versiones": [
+    {
+      "version": "4.0.64",
+      "fecha": "2026-07-19",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Septimo barrido de accesibilidad, continuacion: los 12 <label> + 1 grupo de botones de Severidad de EventoAdversoModal.jsx (Reportar Evento Adverso NOM-240) no tenian asociacion htmlFor/id ni estado expuesto.",
+      "cambios": [
+        "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm), v4.0.62 (OrdenServicioRapidaModal) y v4.0.63 (NuevaOrdenModal) en el mismo barrido de <label> sin htmlFor. Siguiente candidato por volumen: components/EventoAdversoModal.jsx (13 labels), modal de Reportar Evento Adverso NOM-240-SSA1-2012.",
+        "Se agrego id/htmlFor a los 12 campos con input/select/textarea hermano: buscar equipo, lote, registro sanitario, fecha y hora del evento, lugar del evento, tipo de evento, descripcion del evento, consecuencia clinica, accion correctiva inmediata, sexo del paciente, edad del paciente, estado del dispositivo post-evento.",
+        "El campo 'Severidad' es un grupo de 4 <button type=\"button\"> (no un input nativo), mismo caso que 'Prioridad' en OrdenServicioRapidaModal.jsx (v4.0.62) -- migrado al mismo patron fieldset/legend, mas aria-pressed en cada boton para exponer cual esta seleccionado.",
+        "Cambio 100% aditivo (atributos id/htmlFor/aria-pressed + wrapper fieldset/legend sin efecto visual, border-0 p-0 m-0 igual al precedente), sin tocar clases, layout, logica de negocio ni el payload enviado al backend -- cero riesgo visual o funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada -- pages/Almacen.jsx (9) queda como el mayor candidato del proximo barrido."
+      ],
+      "verificar": [
+        "Desde pages/Tecnovigilancia.jsx (boton 'Reportar evento'): abrir el modal 'Reportar Evento Adverso' y, con un lector de pantalla o el inspector de accesibilidad de DevTools, tabular por cada campo de los 3 pasos -- debe anunciar el nombre del campo ('Buscar equipo...', 'Fecha y hora del evento', 'Sexo del paciente', etc.) en vez de solo el tipo de control.",
+        "En el paso 2, tabular hasta los 4 botones de Severidad (Critica/Grave/Moderada/Leve) y confirmar que el lector de pantalla anuncia 'presionado' o equivalente en el que este seleccionado.",
+        "Confirmar visualmente que el grupo de botones de Severidad se ve identico a antes (mismo grid de 4 columnas, mismo resaltado del seleccionado) -- el fieldset/legend no debe alterar el layout.",
+        "Crear un reporte de evento adverso de prueba completo (3 pasos) y confirmar que se guarda correctamente."
+      ],
+      "rollback": "4.0.63"
+    },
     {
       "version": "4.0.63",
       "fecha": "2026-07-19",

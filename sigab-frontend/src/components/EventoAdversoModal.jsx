@@ -155,8 +155,9 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
               {/* Buscador de equipos */}
               {!eq ? (
                 <div className="space-y-2">
-                  <label className="text-xs text-[var(--content-muted)] block">Buscar equipo (nombre, serie o inventario)</label>
+                  <label htmlFor="evento-adverso-buscar-equipo" className="text-xs text-[var(--content-muted)] block">Buscar equipo (nombre, serie o inventario)</label>
                   <input
+                    id="evento-adverso-buscar-equipo"
                     type="text"
                     value={buscaEquipo}
                     onChange={(e) => setBuscaEquipo(e.target.value)}
@@ -202,13 +203,13 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
 
                   <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-[var(--content-border)]">
                     <div>
-                      <label className="text-xs text-[var(--content-muted)] block mb-1">Lote (opcional)</label>
-                      <input value={form.dispositivo_lote} onChange={set('dispositivo_lote')}
+                      <label htmlFor="evento-adverso-lote" className="text-xs text-[var(--content-muted)] block mb-1">Lote (opcional)</label>
+                      <input id="evento-adverso-lote" value={form.dispositivo_lote} onChange={set('dispositivo_lote')}
                         className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-red-500" />
                     </div>
                     <div>
-                      <label className="text-xs text-[var(--content-muted)] block mb-1">Registro sanitario (opcional)</label>
-                      <input value={form.dispositivo_registro_sanitario} onChange={set('dispositivo_registro_sanitario')}
+                      <label htmlFor="evento-adverso-registro-sanitario" className="text-xs text-[var(--content-muted)] block mb-1">Registro sanitario (opcional)</label>
+                      <input id="evento-adverso-registro-sanitario" value={form.dispositivo_registro_sanitario} onChange={set('dispositivo_registro_sanitario')}
                         className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-red-500" />
                     </div>
                   </div>
@@ -224,20 +225,20 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-[var(--content-muted)] block mb-1">Fecha y hora del evento *</label>
-                  <input type="datetime-local" value={form.fecha_evento} onChange={set('fecha_evento')}
+                  <label htmlFor="evento-adverso-fecha" className="text-xs text-[var(--content-muted)] block mb-1">Fecha y hora del evento *</label>
+                  <input id="evento-adverso-fecha" type="datetime-local" value={form.fecha_evento} onChange={set('fecha_evento')}
                     className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-red-500" />
                 </div>
                 <div>
-                  <label className="text-xs text-[var(--content-muted)] block mb-1">Lugar del evento</label>
-                  <input value={form.lugar_evento} onChange={set('lugar_evento')} placeholder="Ej: Piso 3, Sala de Cirugia"
+                  <label htmlFor="evento-adverso-lugar" className="text-xs text-[var(--content-muted)] block mb-1">Lugar del evento</label>
+                  <input id="evento-adverso-lugar" value={form.lugar_evento} onChange={set('lugar_evento')} placeholder="Ej: Piso 3, Sala de Cirugia"
                     className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-red-500" />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-[var(--content-muted)] block mb-1">Tipo de evento *</label>
-                <select value={form.tipo_evento} onChange={set('tipo_evento')}
+                <label htmlFor="evento-adverso-tipo" className="text-xs text-[var(--content-muted)] block mb-1">Tipo de evento *</label>
+                <select id="evento-adverso-tipo" value={form.tipo_evento} onChange={set('tipo_evento')}
                   className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-red-500">
                   <option value="">— Seleccionar —</option>
                   {TIPOS_EVENTO.map((t) => (
@@ -246,13 +247,14 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
                 </select>
               </div>
 
-              <div>
-                <label className="text-xs text-[var(--content-muted)] block mb-2">Severidad *</label>
+              <fieldset className="border-0 p-0 m-0">
+                <legend className="text-xs text-[var(--content-muted)] block mb-2">Severidad *</legend>
                 <div className="grid grid-cols-4 gap-2">
                   {SEVERIDADES.map((s) => (
                     <button key={s.value}
                       type="button"
                       onClick={() => setForm((f) => ({ ...f, severidad: s.value }))}
+                      aria-pressed={form.severidad === s.value}
                       className={`border rounded-lg py-2 text-xs font-bold text-center transition-all ${
                         form.severidad === s.value
                           ? s.color + ' ring-2 ring-offset-1 ring-offset-[var(--content-surface)]'
@@ -262,25 +264,25 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
                     </button>
                   ))}
                 </div>
-              </div>
+              </fieldset>
 
               <div>
-                <label className="text-xs text-[var(--content-muted)] block mb-1">Descripcion del evento *</label>
-                <textarea rows={3} value={form.descripcion_evento} onChange={set('descripcion_evento')}
+                <label htmlFor="evento-adverso-descripcion" className="text-xs text-[var(--content-muted)] block mb-1">Descripcion del evento *</label>
+                <textarea id="evento-adverso-descripcion" rows={3} value={form.descripcion_evento} onChange={set('descripcion_evento')}
                   placeholder="Describa que sucedio con el dispositivo medico..."
                   className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-red-500" />
               </div>
 
               <div>
-                <label className="text-xs text-[var(--content-muted)] block mb-1">Consecuencia clinica</label>
-                <textarea rows={2} value={form.consecuencia_clinica} onChange={set('consecuencia_clinica')}
+                <label htmlFor="evento-adverso-consecuencia" className="text-xs text-[var(--content-muted)] block mb-1">Consecuencia clinica</label>
+                <textarea id="evento-adverso-consecuencia" rows={2} value={form.consecuencia_clinica} onChange={set('consecuencia_clinica')}
                   placeholder="Describa las consecuencias clinicas si aplica..."
                   className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-red-500" />
               </div>
 
               <div>
-                <label className="text-xs text-[var(--content-muted)] block mb-1">Accion correctiva inmediata</label>
-                <textarea rows={2} value={form.accion_correctiva} onChange={set('accion_correctiva')}
+                <label htmlFor="evento-adverso-accion-correctiva" className="text-xs text-[var(--content-muted)] block mb-1">Accion correctiva inmediata</label>
+                <textarea id="evento-adverso-accion-correctiva" rows={2} value={form.accion_correctiva} onChange={set('accion_correctiva')}
                   placeholder="Que accion se tomo inmediatamente..."
                   className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] focus:outline-none focus:border-red-500" />
               </div>
@@ -303,8 +305,8 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-[var(--content-muted)] block mb-1">Sexo del paciente</label>
-                  <select value={form.paciente_sexo} onChange={set('paciente_sexo')}
+                  <label htmlFor="evento-adverso-sexo" className="text-xs text-[var(--content-muted)] block mb-1">Sexo del paciente</label>
+                  <select id="evento-adverso-sexo" value={form.paciente_sexo} onChange={set('paciente_sexo')}
                     className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-red-500">
                     <option value="no_aplica">No aplica</option>
                     <option value="M">Masculino</option>
@@ -313,16 +315,16 @@ export default function EventoAdversoModal({ onClose, onCreated }) {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-[var(--content-muted)] block mb-1">Edad del paciente</label>
-                  <input type="number" min="0" max="120" value={form.paciente_edad} onChange={set('paciente_edad')}
+                  <label htmlFor="evento-adverso-edad" className="text-xs text-[var(--content-muted)] block mb-1">Edad del paciente</label>
+                  <input id="evento-adverso-edad" type="number" min="0" max="120" value={form.paciente_edad} onChange={set('paciente_edad')}
                     placeholder="Opcional"
                     className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-red-500" />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-[var(--content-muted)] block mb-1">Estado del dispositivo post-evento</label>
-                <select value={form.dispositivo_estado_post} onChange={set('dispositivo_estado_post')}
+                <label htmlFor="evento-adverso-estado-post" className="text-xs text-[var(--content-muted)] block mb-1">Estado del dispositivo post-evento</label>
+                <select id="evento-adverso-estado-post" value={form.dispositivo_estado_post} onChange={set('dispositivo_estado_post')}
                   className="w-full bg-[var(--content-bg)] border border-[var(--content-border)] rounded-lg px-3 py-1.5 text-sm text-[var(--content-text)] focus:outline-none focus:border-red-500">
                   {ESTADO_POST.map((e) => (
                     <option key={e.value} value={e.value}>{e.label}</option>
