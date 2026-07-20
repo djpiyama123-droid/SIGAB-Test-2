@@ -50,42 +50,42 @@ function NuevaRefaccionModal({ onClose, onSaved }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Nombre *</label>
-              <input required minLength={3} value={form.nombre} onChange={e => set('nombre', e.target.value)}
+              <label htmlFor="refaccion-nombre" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Nombre *</label>
+              <input id="refaccion-nombre" required minLength={3} value={form.nombre} onChange={e => set('nombre', e.target.value)}
                 className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="Ej. Filtro HEPA Draeger" />
             </div>
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Código interno</label>
-              <input value={form.codigo_interno} onChange={e => set('codigo_interno', e.target.value)}
+              <label htmlFor="refaccion-codigo" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Código interno</label>
+              <input id="refaccion-codigo" value={form.codigo_interno} onChange={e => set('codigo_interno', e.target.value)}
                 className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="REF-001" />
             </div>
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Proveedor</label>
-              <input value={form.proveedor} onChange={e => set('proveedor', e.target.value)}
+              <label htmlFor="refaccion-proveedor" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Proveedor</label>
+              <input id="refaccion-proveedor" value={form.proveedor} onChange={e => set('proveedor', e.target.value)}
                 className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="Proveedor S.A. de C.V." />
             </div>
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Stock inicial</label>
-              <input type="number" min={0} value={form.cantidad_disponible} onChange={e => set('cantidad_disponible', e.target.value)}
+              <label htmlFor="refaccion-stock-inicial" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Stock inicial</label>
+              <input id="refaccion-stock-inicial" type="number" min={0} value={form.cantidad_disponible} onChange={e => set('cantidad_disponible', e.target.value)}
                 className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-colors" />
             </div>
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Stock mínimo</label>
-              <input type="number" min={0} value={form.cantidad_minima} onChange={e => set('cantidad_minima', e.target.value)}
+              <label htmlFor="refaccion-stock-minimo" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Stock mínimo</label>
+              <input id="refaccion-stock-minimo" type="number" min={0} value={form.cantidad_minima} onChange={e => set('cantidad_minima', e.target.value)}
                 className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-colors" />
             </div>
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Ubicación en almacén</label>
-              <input value={form.ubicacion_almacen} onChange={e => set('ubicacion_almacen', e.target.value)}
+              <label htmlFor="refaccion-ubicacion" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Ubicación en almacén</label>
+              <input id="refaccion-ubicacion" value={form.ubicacion_almacen} onChange={e => set('ubicacion_almacen', e.target.value)}
                 className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="Estante A-3" />
             </div>
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Compatible con</label>
-              <input value={form.compatible_con_modelo} onChange={e => set('compatible_con_modelo', e.target.value)}
+              <label htmlFor="refaccion-compatible" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Compatible con</label>
+              <input id="refaccion-compatible" value={form.compatible_con_modelo} onChange={e => set('compatible_con_modelo', e.target.value)}
                 className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="Modelo o familia de equipos" />
             </div>
@@ -144,11 +144,12 @@ function AjustarStockModal({ item, onClose, onSaved }) {
             <span className="font-bold text-white">{item.nombre}</span>{' '}
             — Stock actual: <span className="font-bold text-emerald-400">{item.cantidad_disponible}</span>
           </p>
-          <div>
-            <label className="text-xs text-slate-400 font-medium uppercase mb-2 block">Movimiento</label>
+          <fieldset className="border-0 p-0 m-0">
+            <legend className="text-xs text-slate-400 font-medium uppercase mb-2 block">Movimiento</legend>
             <div className="grid grid-cols-2 gap-2">
               {['entrada', 'salida'].map(t => (
                 <button key={t} type="button" onClick={() => setTipo(t)}
+                  aria-pressed={tipo === t}
                   className={`py-2 rounded-xl text-sm font-semibold border transition-all ${
                     tipo === t
                       ? t === 'entrada' ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400' : 'bg-red-600/20 border-red-500 text-red-400'
@@ -158,10 +159,10 @@ function AjustarStockModal({ item, onClose, onSaved }) {
                 </button>
               ))}
             </div>
-          </div>
+          </fieldset>
           <div>
-            <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Cantidad</label>
-            <input type="number" min={1} value={cantidad} onChange={e => setCantidad(e.target.value)}
+            <label htmlFor="ajuste-cantidad" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Cantidad</label>
+            <input id="ajuste-cantidad" type="number" min={1} value={cantidad} onChange={e => setCantidad(e.target.value)}
               className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-colors" />
           </div>
           <div className="flex gap-3 pt-2">

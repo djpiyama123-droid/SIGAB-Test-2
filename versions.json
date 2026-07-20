@@ -1,6 +1,28 @@
 {
-  "actual": "4.0.64",
+  "actual": "4.0.65",
   "versiones": [
+    {
+      "version": "4.0.65",
+      "fecha": "2026-07-20",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Septimo barrido de accesibilidad, cierre: los 9 <label>/grupo de botones de pages/Almacen.jsx (Nueva Refaccion + Ajustar Stock) no tenian asociacion htmlFor/id.",
+      "cambios": [
+        "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm), v4.0.62 (OrdenServicioRapidaModal), v4.0.63 (NuevaOrdenModal) y v4.0.64 (EventoAdversoModal) en el mismo barrido de <label> sin htmlFor. Siguiente candidato por volumen: pages/Almacen.jsx (9), modales 'Nueva Refaccion' y 'Ajustar Stock' del modulo de Almacen.",
+        "Se agrego id/htmlFor a los 7 campos de NuevaRefaccionModal (nombre, codigo interno, proveedor, stock inicial, stock minimo, ubicacion en almacen, compatible con) y al campo 'Cantidad' de AjustarStockModal.",
+        "El campo 'Movimiento' de AjustarStockModal es un grupo de 2 <button type=\"button\"> (Entrada/Salida), mismo caso que 'Prioridad' (OrdenServicioRapidaModal.jsx, v4.0.62) y 'Severidad' (EventoAdversoModal.jsx, v4.0.64) -- migrado al mismo patron fieldset/legend, mas aria-pressed en cada boton para exponer cual esta seleccionado.",
+        "Cambio 100% aditivo (atributos id/htmlFor/aria-pressed + wrapper fieldset/legend sin efecto visual, border-0 p-0 m-0 igual al precedente), sin tocar clases, layout, logica de negocio ni el payload enviado al backend -- cero riesgo visual o funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada -- pages/Metrologia.jsx/pages/Copilot.jsx (6 c/u) quedan como mayores candidatos del proximo barrido."
+      ],
+      "verificar": [
+        "Desde pages/Almacen.jsx: abrir 'Nueva Refaccion' y, con un lector de pantalla o el inspector de accesibilidad de DevTools, tabular por cada campo -- debe anunciar el nombre del campo (Nombre, Codigo interno, Proveedor, Stock inicial, Stock minimo, Ubicacion en almacen, Compatible con) en vez de solo el tipo de control.",
+        "Abrir 'Ajustar Stock' sobre una refaccion existente, tabular hasta los 2 botones de Movimiento (+ Entrada / - Salida) y confirmar que el lector de pantalla anuncia 'presionado' o equivalente en el que este seleccionado.",
+        "Confirmar visualmente que el grupo de botones de Movimiento se ve identico a antes (mismo grid de 2 columnas, mismo resaltado del seleccionado) -- el fieldset/legend no debe alterar el layout.",
+        "Crear una refaccion de prueba y ajustar su stock (entrada y salida) para confirmar que ambos formularios siguen guardando correctamente."
+      ],
+      "rollback": "4.0.64"
+    },
     {
       "version": "4.0.64",
       "fecha": "2026-07-19",
