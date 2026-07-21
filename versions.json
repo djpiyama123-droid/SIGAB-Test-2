@@ -6,7 +6,7 @@
       "fecha": "2026-07-21",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "2acc20d",
       "resumen": "Septimo barrido de accesibilidad, continuacion: los 4 <label> del modal 'Nuevo Preventivo' de components/PreventivoForm.jsx no tenian asociacion htmlFor/id.",
       "cambios": [
         "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm), v4.0.62 (OrdenServicioRapidaModal), v4.0.63 (NuevaOrdenModal), v4.0.64 (EventoAdversoModal), v4.0.65 (Almacen), v4.0.66 (Metrologia), v4.0.67 (Copilot), v4.0.68 (Trazabilidad) y v4.0.69 (Capacitaciones) en el mismo barrido de <label> sin htmlFor. components/PreventivoForm.jsx quedo apuntado explicitamente como candidato del proximo ciclo en la nota de v4.0.69 (empataba en volumen, 4, con components/OrdenCasillasForm.jsx; se eligio por no tener grupos de radio/boton).",
