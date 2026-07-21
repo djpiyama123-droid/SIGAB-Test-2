@@ -1,6 +1,26 @@
 {
-  "actual": "4.0.68",
+  "actual": "4.0.69",
   "versiones": [
+    {
+      "version": "4.0.69",
+      "fecha": "2026-07-21",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Septimo barrido de accesibilidad, continuacion: los 5 <label> del modal 'Nuevo Registro de Capacitacion' de pages/Capacitaciones.jsx no tenian asociacion htmlFor/id.",
+      "cambios": [
+        "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm), v4.0.62 (OrdenServicioRapidaModal), v4.0.63 (NuevaOrdenModal), v4.0.64 (EventoAdversoModal), v4.0.65 (Almacen), v4.0.66 (Metrologia), v4.0.67 (Copilot) y v4.0.68 (Trazabilidad) en el mismo barrido de <label> sin htmlFor. pages/Capacitaciones.jsx quedo apuntado explicitamente como el candidato del proximo ciclo en la nota de v4.0.68.",
+        "Se agrego id/htmlFor a los 5 campos de NuevoRegistroModal: equipo (select), tema de capacitacion, fecha e instructor (input) y personal capacitado (textarea).",
+        "Cambio 100% aditivo (solo atributos id/htmlFor), sin tocar clases, layout, logica de negocio ni el payload enviado al backend -- cero riesgo visual o funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada -- components/PreventivoForm.jsx y components/OrdenCasillasForm.jsx (4 c/u) quedan como los mayores candidatos del proximo barrido."
+      ],
+      "verificar": [
+        "Desde pages/Capacitaciones.jsx: abrir 'Nuevo Registro' y, con un lector de pantalla o el inspector de accesibilidad de DevTools, tabular por cada campo -- debe anunciar el nombre del campo (Equipo, Tema de capacitacion, Fecha, Instructor, Personal capacitado) en vez de solo el tipo de control.",
+        "Confirmar visualmente que el formulario no cambio de tamano/posicion/color -- el cambio es solo atributos id/htmlFor.",
+        "Registrar una capacitacion de prueba y confirmar que se guarda correctamente."
+      ],
+      "rollback": "4.0.68"
+    },
     {
       "version": "4.0.68",
       "fecha": "2026-07-20",

@@ -57,8 +57,8 @@ function NuevoRegistroModal({ onClose, onSaved }) {
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
-            <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Equipo *</label>
-            <select required value={form.equipo_id} onChange={e => set('equipo_id', e.target.value)}
+            <label htmlFor="capacitacion-equipo" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Equipo *</label>
+            <select id="capacitacion-equipo" required value={form.equipo_id} onChange={e => set('equipo_id', e.target.value)}
               className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-colors">
               <option value="">— Seleccionar equipo —</option>
               {equipos.map(eq => (
@@ -67,27 +67,27 @@ function NuevoRegistroModal({ onClose, onSaved }) {
             </select>
           </div>
           <div>
-            <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Tema de capacitación *</label>
-            <input required value={form.tema} onChange={e => set('tema', e.target.value)}
+            <label htmlFor="capacitacion-tema" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Tema de capacitación *</label>
+            <input id="capacitacion-tema" required value={form.tema} onChange={e => set('tema', e.target.value)}
               className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-650 focus:outline-none focus:border-emerald-500 transition-colors"
               placeholder="Ej. Uso seguro del ventilador mecánico" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Fecha *</label>
-              <input type="date" required value={form.fecha_capacitacion} onChange={e => set('fecha_capacitacion', e.target.value)}
+              <label htmlFor="capacitacion-fecha" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Fecha *</label>
+              <input id="capacitacion-fecha" type="date" required value={form.fecha_capacitacion} onChange={e => set('fecha_capacitacion', e.target.value)}
                 className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-colors" />
             </div>
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Instructor</label>
-              <input value={form.instructor} onChange={e => set('instructor', e.target.value)}
+              <label htmlFor="capacitacion-instructor" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Instructor</label>
+              <input id="capacitacion-instructor" value={form.instructor} onChange={e => set('instructor', e.target.value)}
                 className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-655 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="Nombre del instructor" />
             </div>
           </div>
           <div>
-            <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Personal capacitado *</label>
-            <textarea required rows={3} value={form.personal_capacitado} onChange={e => set('personal_capacitado', e.target.value)}
+            <label htmlFor="capacitacion-personal" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Personal capacitado *</label>
+            <textarea id="capacitacion-personal" required rows={3} value={form.personal_capacitado} onChange={e => set('personal_capacitado', e.target.value)}
               className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-655 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
               placeholder="Ej. Enf. García, Enf. López, Dr. Martínez (lista o descripción del grupo)" />
           </div>
