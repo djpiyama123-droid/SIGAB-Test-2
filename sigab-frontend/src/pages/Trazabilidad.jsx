@@ -57,8 +57,8 @@ function RegistrarTrasladoModal({ onClose, onSaved }) {
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
-            <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Equipo *</label>
-            <select required value={form.equipo_id} onChange={e => set('equipo_id', e.target.value)}
+            <label htmlFor="traslado-equipo" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Equipo *</label>
+            <select id="traslado-equipo" required value={form.equipo_id} onChange={e => set('equipo_id', e.target.value)}
               className="w-full bg-slate-900 border border-slate-850 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-colors">
               <option value="">— Seleccionar equipo —</option>
               {equipos.map(eq => (
@@ -68,27 +68,27 @@ function RegistrarTrasladoModal({ onClose, onSaved }) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Área de destino *</label>
-              <input required value={form.area_destino} onChange={e => set('area_destino', e.target.value)}
+              <label htmlFor="traslado-area-destino" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Área de destino *</label>
+              <input id="traslado-area-destino" required value={form.area_destino} onChange={e => set('area_destino', e.target.value)}
                 className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="Ej. UCI, Urgencias, Quirófano" />
             </div>
             <div>
-              <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Piso</label>
-              <input type="number" min={1} value={form.piso_destino} onChange={e => set('piso_destino', e.target.value)}
+              <label htmlFor="traslado-piso" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Piso</label>
+              <input id="traslado-piso" type="number" min={1} value={form.piso_destino} onChange={e => set('piso_destino', e.target.value)}
                 className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="1" />
             </div>
           </div>
           <div>
-            <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Motivo</label>
-            <input value={form.motivo} onChange={e => set('motivo', e.target.value)}
+            <label htmlFor="traslado-motivo" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Motivo</label>
+            <input id="traslado-motivo" value={form.motivo} onChange={e => set('motivo', e.target.value)}
               className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
               placeholder="Ej. Préstamo temporal, mantenimiento, reubicación" />
           </div>
           <div>
-            <label className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Notas adicionales</label>
-            <textarea rows={2} value={form.notas} onChange={e => set('notas', e.target.value)}
+            <label htmlFor="traslado-notas" className="text-xs text-slate-400 font-medium uppercase mb-1.5 block">Notas adicionales</label>
+            <textarea id="traslado-notas" rows={2} value={form.notas} onChange={e => set('notas', e.target.value)}
               className="w-full bg-slate-900 border border-slate-855 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-655 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
               placeholder="Observaciones del traslado..." />
           </div>
