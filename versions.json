@@ -6,7 +6,7 @@
       "fecha": "2026-07-20",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "08f6091",
       "resumen": "Septimo barrido de accesibilidad, continuacion: los 5 <label> del modal 'Registrar Traslado' de pages/Trazabilidad.jsx no tenian asociacion htmlFor/id.",
       "cambios": [
         "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm), v4.0.62 (OrdenServicioRapidaModal), v4.0.63 (NuevaOrdenModal), v4.0.64 (EventoAdversoModal), v4.0.65 (Almacen), v4.0.66 (Metrologia) y v4.0.67 (Copilot) en el mismo barrido de <label> sin htmlFor. pages/Trazabilidad.jsx empataba en volumen (5) con pages/Capacitaciones.jsx -- se eligio por no tener casos especiales (grupos de radio/boton, labels implicitos).",
