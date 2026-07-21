@@ -1,6 +1,26 @@
 {
-  "actual": "4.0.69",
+  "actual": "4.0.70",
   "versiones": [
+    {
+      "version": "4.0.70",
+      "fecha": "2026-07-21",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Septimo barrido de accesibilidad, continuacion: los 4 <label> del modal 'Nuevo Preventivo' de components/PreventivoForm.jsx no tenian asociacion htmlFor/id.",
+      "cambios": [
+        "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm), v4.0.62 (OrdenServicioRapidaModal), v4.0.63 (NuevaOrdenModal), v4.0.64 (EventoAdversoModal), v4.0.65 (Almacen), v4.0.66 (Metrologia), v4.0.67 (Copilot), v4.0.68 (Trazabilidad) y v4.0.69 (Capacitaciones) en el mismo barrido de <label> sin htmlFor. components/PreventivoForm.jsx quedo apuntado explicitamente como candidato del proximo ciclo en la nota de v4.0.69 (empataba en volumen, 4, con components/OrdenCasillasForm.jsx; se eligio por no tener grupos de radio/boton).",
+        "Se agrego id/htmlFor a los 4 campos de PreventivoForm: tipo de preventivo, proxima ejecucion y frecuencia en dias (input) y procedimiento (textarea).",
+        "Cambio 100% aditivo (solo atributos id/htmlFor), sin tocar clases, layout, logica de negocio ni el payload enviado a api.crearPreventivo -- cero riesgo visual o funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada -- components/OrdenCasillasForm.jsx queda como el mayor candidato del proximo barrido."
+      ],
+      "verificar": [
+        "Desde el mapa del hospital o Preventivos, abrir 'Nuevo Preventivo' y, con un lector de pantalla o el inspector de accesibilidad de DevTools, tabular por cada campo -- debe anunciar el nombre del campo (Tipo de preventivo, Proxima ejecucion, Frecuencia (dias), Procedimiento) en vez de solo el tipo de control.",
+        "Confirmar visualmente que el formulario no cambio de tamano/posicion/color -- el cambio es solo atributos id/htmlFor.",
+        "Programar un preventivo de prueba y confirmar que se guarda correctamente."
+      ],
+      "rollback": "4.0.69"
+    },
     {
       "version": "4.0.69",
       "fecha": "2026-07-21",

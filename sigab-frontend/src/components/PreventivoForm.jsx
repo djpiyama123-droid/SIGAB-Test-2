@@ -113,8 +113,9 @@ export default function PreventivoForm({ equipoId, open, onClose, onCreated }) {
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">Tipo de preventivo *</label>
+            <label htmlFor="preventivo-form-tipo" className="text-xs text-[var(--content-muted)] block mb-1">Tipo de preventivo *</label>
             <input
+              id="preventivo-form-tipo"
               type="text"
               value={form.tipo_preventivo}
               onChange={handleChange('tipo_preventivo')}
@@ -126,8 +127,9 @@ export default function PreventivoForm({ equipoId, open, onClose, onCreated }) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Próxima ejecución *</label>
+              <label htmlFor="preventivo-form-proxima" className="text-xs text-[var(--content-muted)] block mb-1">Próxima ejecución *</label>
               <input
+                id="preventivo-form-proxima"
                 type="date"
                 value={form.proxima_ejecucion}
                 onChange={handleChange('proxima_ejecucion')}
@@ -136,8 +138,9 @@ export default function PreventivoForm({ equipoId, open, onClose, onCreated }) {
               />
             </div>
             <div>
-              <label className="text-xs text-[var(--content-muted)] block mb-1">Frecuencia (días)</label>
+              <label htmlFor="preventivo-form-frecuencia" className="text-xs text-[var(--content-muted)] block mb-1">Frecuencia (días)</label>
               <input
+                id="preventivo-form-frecuencia"
                 type="number"
                 min="1"
                 value={form.frecuencia_dias}
@@ -148,8 +151,9 @@ export default function PreventivoForm({ equipoId, open, onClose, onCreated }) {
           </div>
 
           <div>
-            <label className="text-xs text-[var(--content-muted)] block mb-1">Procedimiento (opcional)</label>
+            <label htmlFor="preventivo-form-procedimiento" className="text-xs text-[var(--content-muted)] block mb-1">Procedimiento (opcional)</label>
             <textarea
+              id="preventivo-form-procedimiento"
               value={form.descripcion_procedimiento}
               onChange={handleChange('descripcion_procedimiento')}
               rows={3}
