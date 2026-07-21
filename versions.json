@@ -1,6 +1,26 @@
 {
-  "actual": "4.0.70",
+  "actual": "4.0.71",
   "versiones": [
+    {
+      "version": "4.0.71",
+      "fecha": "2026-07-21",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Septimo barrido de accesibilidad, cierre de la ronda inicial: los 2 <label> de texto libre de components/OrdenCasillasForm.jsx no tenian htmlFor/id; de paso se corrigio un bug real de -0 en utils/preventivos.js.",
+      "cambios": [
+        "components/OrdenCasillasForm.jsx era el candidato explicito dejado por v4.0.70. Los 2 <label> de :147,178 (dentro de RadioGroup/CheckboxGrid) se inspeccionaron y se confirmo que YA estaban bien asociados (wrapping label: el input vive como hijo directo del label, asociacion programatica valida sin htmlFor). Los 2 bugs reales eran los <label> simples de :478,490 ('Observaciones breves'/'Refacciones solicitadas', Bloque F 'Texto libre') -> se agrego id/htmlFor (oc-observaciones-breves, oc-refacciones-solicitadas).",
+        "Un grep -rn '<label' sigab-frontend/src | grep -v htmlFor ya no devuelve ninguna linea de OrdenCasillasForm.jsx.",
+        "Hallazgo incidental al correr npx vitest run: utils/preventivos.js diasRestantes() podia devolver -0 en vez de 0 para fecha de 'hoy' (Math.ceil de una fraccion de dia levemente negativa por el desfase de milisegundos entre el new Date(fecha) recibido y el new Date() interno evaluado un instante despues). No rompe comparaciones reales (-0 === 0 es true en JS) pero si el test estricto (Object.is) y era una inconsistencia de valor -> normalizado con diff === 0 ? 0 : diff.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada -- LandingPage.jsx/TripleValidationModal.jsx/ChangePasswordModal.jsx (3 c/u) quedan como los mayores candidatos del proximo barrido."
+      ],
+      "verificar": [
+        "Abrir una Orden de Servicio con formato de casillas (OrdenCasillasForm) y, con un lector de pantalla o el inspector de accesibilidad de DevTools, tabular hasta el Bloque F 'Texto libre' -- 'Observaciones breves' y 'Refacciones solicitadas' deben anunciar su nombre de campo.",
+        "Confirmar visualmente que el formulario no cambio de tamano/posicion/color -- el cambio es solo atributos id/htmlFor.",
+        "En Preventivos, verificar que un preventivo con vencimiento HOY siga mostrando '0 dias' (no '-0 dias' ni un signo raro) en cualquier tarjeta/badge que use diasRestantes."
+      ],
+      "rollback": "4.0.70"
+    },
     {
       "version": "4.0.70",
       "fecha": "2026-07-21",

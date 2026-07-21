@@ -475,8 +475,9 @@ export default function OrdenCasillasForm({ ordenId: ordenIdProp, equipoData = {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-[var(--content-muted)] mb-1.5">Observaciones breves</label>
+                  <label htmlFor="oc-observaciones-breves" className="block text-xs text-[var(--content-muted)] mb-1.5">Observaciones breves</label>
                   <textarea
+                    id="oc-observaciones-breves"
                     className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] placeholder-slate-500 focus:border-teal-500 focus:outline-none resize-none"
                     rows={3}
                     maxLength={140}
@@ -487,8 +488,9 @@ export default function OrdenCasillasForm({ ordenId: ordenIdProp, equipoData = {
                   <p className="text-xs text-[var(--content-muted)] text-right">{form.observaciones_breves.length}/140</p>
                 </div>
                 <div>
-                  <label className="block text-xs text-[var(--content-muted)] mb-1.5">Refacciones solicitadas</label>
+                  <label htmlFor="oc-refacciones-solicitadas" className="block text-xs text-[var(--content-muted)] mb-1.5">Refacciones solicitadas</label>
                   <textarea
+                    id="oc-refacciones-solicitadas"
                     className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-lg px-3 py-2 text-sm text-[var(--content-text)] placeholder-slate-500 focus:border-teal-500 focus:outline-none resize-none"
                     rows={3}
                     maxLength={255}

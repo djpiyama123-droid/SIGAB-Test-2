@@ -6,5 +6,5 @@
 export function diasRestantes(fecha) {
   if (!fecha) return null;
   const diff = Math.ceil((new Date(fecha) - new Date()) / 86400000);
-  return diff;
+  return diff === 0 ? 0 : diff; // evita -0 (Math.ceil de una fracción de día ligeramente negativa)
 }
