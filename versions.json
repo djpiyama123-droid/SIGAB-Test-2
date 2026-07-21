@@ -6,7 +6,7 @@
       "fecha": "2026-07-21",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "d08060c",
       "resumen": "Septimo barrido de accesibilidad, cierre de la ronda inicial: los 2 <label> de texto libre de components/OrdenCasillasForm.jsx no tenian htmlFor/id; de paso se corrigio un bug real de -0 en utils/preventivos.js.",
       "cambios": [
         "components/OrdenCasillasForm.jsx era el candidato explicito dejado por v4.0.70. Los 2 <label> de :147,178 (dentro de RadioGroup/CheckboxGrid) se inspeccionaron y se confirmo que YA estaban bien asociados (wrapping label: el input vive como hijo directo del label, asociacion programatica valida sin htmlFor). Los 2 bugs reales eran los <label> simples de :478,490 ('Observaciones breves'/'Refacciones solicitadas', Bloque F 'Texto libre') -> se agrego id/htmlFor (oc-observaciones-breves, oc-refacciones-solicitadas).",
