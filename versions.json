@@ -6,7 +6,7 @@
       "fecha": "2026-07-22",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "6502b5b",
       "resumen": "Septimo barrido de accesibilidad, continuacion: los 3 <label> de components/TripleValidationModal.jsx no tenian htmlFor/id.",
       "cambios": [
         "Continuacion de v4.0.59...v4.0.72 en el mismo barrido de <label> sin htmlFor. TripleValidationModal.jsx y ChangePasswordModal.jsx quedaron empatados (3 c/u) como los mayores candidatos al cierre de v4.0.72; este ciclo cierra el primero de los dos.",
