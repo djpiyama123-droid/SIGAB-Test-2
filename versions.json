@@ -6,7 +6,7 @@
       "fecha": "2026-07-22",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "54f9270",
       "resumen": "Septimo barrido de accesibilidad, continuacion: los 2 <label> de pages/SuperAdmin.jsx no tenian htmlFor/id.",
       "cambios": [
         "Continuacion de v4.0.59...v4.0.74 en el mismo barrido de <label> sin htmlFor. SuperAdmin.jsx era uno de los 3 candidatos explicitos que quedaron del cierre de v4.0.74 (junto con ChecklistPage.jsx y OCRScannerModal.jsx, 2 c/u); se eligio por ser el caso mas simple (2 inputs de texto planos, sin grupos de radio ni contenido dinamico).",
