@@ -1,6 +1,26 @@
 {
-  "actual": "4.0.71",
+  "actual": "4.0.72",
   "versiones": [
+    {
+      "version": "4.0.72",
+      "fecha": "2026-07-21",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Septimo barrido de accesibilidad, continuacion: los 3 <label> del formulario de auditoria gratuita de pages/LandingPage.jsx no tenian htmlFor/id.",
+      "cambios": [
+        "Continuacion de v4.0.59 (Reservas), v4.0.60 (Ordenes), v4.0.61 (EquipoForm), v4.0.62 (OrdenServicioRapidaModal), v4.0.63 (NuevaOrdenModal), v4.0.64 (EventoAdversoModal), v4.0.65 (Almacen), v4.0.66 (Metrologia), v4.0.67 (Copilot), v4.0.68 (Trazabilidad), v4.0.69 (Capacitaciones), v4.0.70 (PreventivoForm) y v4.0.71 (OrdenCasillasForm) en el mismo barrido de <label> sin htmlFor. pages/LandingPage.jsx quedo apuntado explicitamente como uno de los 3 candidatos del proximo barrido en la nota de v4.0.71 (empataba en volumen, 3, con TripleValidationModal.jsx y ChangePasswordModal.jsx).",
+        "Se agrego id/htmlFor a los 3 campos del formulario 'Agenda tu auditoria gratuita NOM-016' (seccion publica de captacion de leads, no requiere login): Nombre completo, Institucion medica y Correo corporativo (ids landing-nombre, landing-institucion, landing-correo).",
+        "Cambio 100% aditivo (solo atributos id/htmlFor), sin tocar clases, layout ni el comportamiento del submit (goLogin) -- cero riesgo visual o funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada -- TripleValidationModal.jsx y ChangePasswordModal.jsx (3 c/u) quedan como los mayores candidatos del proximo barrido."
+      ],
+      "verificar": [
+        "Abrir la LandingPage publica (sin sesion), bajar hasta 'Agenda tu auditoria gratuita NOM-016' y, con un lector de pantalla o el inspector de accesibilidad de DevTools, tabular por los 3 campos -- deben anunciar su nombre (Nombre completo, Institucion medica, Correo corporativo).",
+        "Confirmar visualmente que el formulario no cambio de tamano/posicion/color -- el cambio es solo atributos id/htmlFor.",
+        "Llenar el formulario y enviar -- debe seguir redirigiendo a login (goLogin) igual que antes."
+      ],
+      "rollback": "4.0.71"
+    },
     {
       "version": "4.0.71",
       "fecha": "2026-07-21",

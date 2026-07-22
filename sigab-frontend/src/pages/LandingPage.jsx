@@ -496,16 +496,18 @@ export default function LandingPage() {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs text-[#bbc9cd]">Nombre completo</label>
+                  <label htmlFor="landing-nombre" className="text-xs text-[#bbc9cd]">Nombre completo</label>
                   <input
+                    id="landing-nombre"
                     type="text"
                     placeholder="Dr. Juan Pérez"
                     className="bg-[#020617] border border-cyan-glow/20 rounded-lg p-3 text-white placeholder-[#859397] focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow focus:outline-none transition-colors"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs text-[#bbc9cd]">Institución médica</label>
+                  <label htmlFor="landing-institucion" className="text-xs text-[#bbc9cd]">Institución médica</label>
                   <input
+                    id="landing-institucion"
                     type="text"
                     placeholder="Hospital General"
                     className="bg-[#020617] border border-cyan-glow/20 rounded-lg p-3 text-white placeholder-[#859397] focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow focus:outline-none transition-colors"
@@ -513,8 +515,9 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-xs text-[#bbc9cd]">Correo corporativo</label>
+                <label htmlFor="landing-correo" className="text-xs text-[#bbc9cd]">Correo corporativo</label>
                 <input
+                  id="landing-correo"
                   type="email"
                   placeholder="juan.perez@hospital.com"
                   className="bg-[#020617] border border-cyan-glow/20 rounded-lg p-3 text-white placeholder-[#859397] focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow focus:outline-none transition-colors"
