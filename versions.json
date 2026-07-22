@@ -1,6 +1,26 @@
 {
-  "actual": "4.0.72",
+  "actual": "4.0.73",
   "versiones": [
+    {
+      "version": "4.0.73",
+      "fecha": "2026-07-22",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Septimo barrido de accesibilidad, continuacion: los 3 <label> de components/TripleValidationModal.jsx no tenian htmlFor/id.",
+      "cambios": [
+        "Continuacion de v4.0.59...v4.0.72 en el mismo barrido de <label> sin htmlFor. TripleValidationModal.jsx y ChangePasswordModal.jsx quedaron empatados (3 c/u) como los mayores candidatos al cierre de v4.0.72; este ciclo cierra el primero de los dos.",
+        "Se agrego id/htmlFor a los 3 campos del modal Poka-Yoke de triple validacion (QR/Inventario/Serie del equipo): triple-validation-qr-token, triple-validation-inventario, triple-validation-serie.",
+        "Cambio 100% aditivo (solo atributos id/htmlFor), sin tocar clases, layout ni la logica de validacion -- cero riesgo visual o funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada -- ChangePasswordModal.jsx (3) queda como el candidato explicito del proximo barrido."
+      ],
+      "verificar": [
+        "Abrir el flujo Poka-Yoke de Triple Validacion (escaneo/validacion de equipo) y, con un lector de pantalla o el inspector de accesibilidad de DevTools, tabular por los 3 campos -- deben anunciar su nombre (Token QR del Equipo, Inventario Institucional, Numero de Serie).",
+        "Confirmar visualmente que el modal no cambio de tamano/posicion/color -- el cambio es solo atributos id/htmlFor.",
+        "Completar los 3 campos y validar -- el resultado (ok/error) debe seguir funcionando igual que antes."
+      ],
+      "rollback": "4.0.72"
+    },
     {
       "version": "4.0.72",
       "fecha": "2026-07-21",

@@ -69,10 +69,11 @@ const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
           <div className="space-y-5">
             {/* Input QR */}
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--content-muted)]">
+              <label htmlFor="triple-validation-qr-token" className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--content-muted)]">
                 <QrCode className="h-4 w-4" /> 1. Token QR del Equipo
               </label>
               <input
+                id="triple-validation-qr-token"
                 type="text"
                 placeholder="Escanee o ingrese token..."
                 className="w-full rounded-xl border-2 border-[var(--content-border)] bg-[var(--content-surface)] p-4 text-[var(--content-text)] transition-all focus:border-emerald-500 focus:outline-none"
@@ -83,10 +84,11 @@ const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
 
             {/* Input Inventario */}
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--content-muted)]">
+              <label htmlFor="triple-validation-inventario" className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--content-muted)]">
                 <ClipboardList className="h-4 w-4" /> 2. Inventario Institucional
               </label>
               <input
+                id="triple-validation-inventario"
                 type="text"
                 placeholder="Número de inventario..."
                 className="w-full rounded-xl border-2 border-[var(--content-border)] bg-[var(--content-surface)] p-4 text-[var(--content-text)] transition-all focus:border-emerald-500 focus:outline-none"
@@ -97,10 +99,11 @@ const TripleValidationModal = ({ isOpen, onClose, onValidated }) => {
 
             {/* Input Serie */}
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--content-muted)]">
+              <label htmlFor="triple-validation-serie" className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--content-muted)]">
                 <PenTool className="h-4 w-4" /> 3. Número de Serie (Fabricante)
               </label>
               <input
+                id="triple-validation-serie"
                 type="text"
                 placeholder="S/N del fabricante..."
                 className="w-full rounded-xl border-2 border-[var(--content-border)] bg-[var(--content-surface)] p-4 text-[var(--content-text)] transition-all focus:border-emerald-500 focus:outline-none"
