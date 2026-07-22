@@ -81,10 +81,11 @@ export default function ChangePasswordModal({ isOpen, onClose, required }) {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-[var(--content-muted)] mb-1">
+                      <label htmlFor="change-password-actual" className="block text-sm font-medium text-[var(--content-muted)] mb-1">
                         Contraseña Actual
                       </label>
                       <input
+                        id="change-password-actual"
                         type="password"
                         required
                         value={actual}
@@ -93,10 +94,11 @@ export default function ChangePasswordModal({ isOpen, onClose, required }) {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-[var(--content-muted)] mb-1">
+                      <label htmlFor="change-password-nueva" className="block text-sm font-medium text-[var(--content-muted)] mb-1">
                         Nueva Contraseña (mínimo 6 caracteres)
                       </label>
                       <input
+                        id="change-password-nueva"
                         type="password"
                         required
                         value={nueva}
@@ -105,10 +107,11 @@ export default function ChangePasswordModal({ isOpen, onClose, required }) {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-[var(--content-muted)] mb-1">
+                      <label htmlFor="change-password-confirmar" className="block text-sm font-medium text-[var(--content-muted)] mb-1">
                         Confirmar Nueva Contraseña
                       </label>
                       <input
+                        id="change-password-confirmar"
                         type="password"
                         required
                         value={confirmar}
