@@ -1,6 +1,26 @@
 {
-  "actual": "4.0.74",
+  "actual": "4.0.75",
   "versiones": [
+    {
+      "version": "4.0.75",
+      "fecha": "2026-07-22",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Septimo barrido de accesibilidad, continuacion: los 2 <label> de pages/SuperAdmin.jsx no tenian htmlFor/id.",
+      "cambios": [
+        "Continuacion de v4.0.59...v4.0.74 en el mismo barrido de <label> sin htmlFor. SuperAdmin.jsx era uno de los 3 candidatos explicitos que quedaron del cierre de v4.0.74 (junto con ChecklistPage.jsx y OCRScannerModal.jsx, 2 c/u); se eligio por ser el caso mas simple (2 inputs de texto planos, sin grupos de radio ni contenido dinamico).",
+        "Se agrego id/htmlFor a los 2 campos del formulario 'Nuevo Registro' de tenants: admin-tenant-nombre (Nombre Completo), admin-tenant-slug (Slug/Identificador en URL).",
+        "Cambio 100% aditivo (solo atributos id/htmlFor), sin tocar clases, layout ni la logica del formulario -- cero riesgo visual o funcional.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de tabla de avance actualizada -- ChecklistPage.jsx (radio group SI/NO/N-A + 1 label simple) y OCRScannerModal.jsx (labels dinamicos por campo extraido) quedan como los candidatos explicitos del proximo barrido."
+      ],
+      "verificar": [
+        "Como SuperAdmin: abrir 'Nuevo Registro' de tenant en el panel y, con un lector de pantalla o el inspector de accesibilidad de DevTools, tabular por los 2 campos -- deben anunciar su nombre (Nombre Completo, Slug (Identificador en URL)).",
+        "Confirmar visualmente que el formulario no cambio de tamano/posicion/color -- el cambio es solo atributos id/htmlFor.",
+        "Completar el flujo de alta de un tenant nuevo y validar que sigue guardando igual que antes."
+      ],
+      "rollback": "4.0.74"
+    },
     {
       "version": "4.0.74",
       "fecha": "2026-07-22",

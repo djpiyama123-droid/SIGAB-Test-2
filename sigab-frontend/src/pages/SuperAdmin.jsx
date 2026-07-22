@@ -164,9 +164,10 @@ export default function SuperAdmin() {
                 <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Nuevo Registro</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre Completo</label>
-                    <input 
-                      type="text" 
+                    <label htmlFor="admin-tenant-nombre" className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre Completo</label>
+                    <input
+                      id="admin-tenant-nombre"
+                      type="text"
                       placeholder="Hospital de Especialidades No. 2"
                       value={newTenantName}
                       onChange={(e) => setNewTenantName(e.target.value)}
@@ -174,9 +175,10 @@ export default function SuperAdmin() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Slug (Identificador en URL)</label>
-                    <input 
-                      type="text" 
+                    <label htmlFor="admin-tenant-slug" className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Slug (Identificador en URL)</label>
+                    <input
+                      id="admin-tenant-slug"
+                      type="text"
                       placeholder="hgr-2-tijuana"
                       value={newTenantSlug}
                       onChange={(e) => setNewTenantSlug(e.target.value)}
