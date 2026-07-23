@@ -6,7 +6,7 @@
       "fecha": "2026-07-23",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "",
+      "commit": "4cf6eb9",
       "resumen": "Detalle de Equipo: el footer de acciones (Eliminar/Nueva OS/Historial/QR/Cerrar/Editar) ahora es una barra fija que ya no se va con el scroll del contenido del modal.",
       "cambios": [
         "Retomado el punto 3 del backlog de docs/DESIGN-SYSTEM-V4.md (aplicar el layout Stitch a Detalle de Equipo/Reservas, un modulo por ciclo). El screen ID movil de Stitch de Detalle de Equipo (`89c7d513601244398362c3c40a9ba86e`) describe explicitamente 'tabs expediente, timeline, CTA fija' -- la CTA (barra de acciones) NO era fija: `components/EquipoDetail.jsx` ponia header, contenido y footer dentro del MISMO contenedor con `overflow-auto`, asi que en un equipo con fotos/documentos/varias ordenes/traslados (contenido largo, comun en el piloto) el usuario tenia que hacer scroll hasta el final del modal para llegar a 'Nueva OS'/'Editar'/'Cerrar' -- friccion real en movil, donde los tecnicos usan el detalle de equipo para abrir ordenes rapido.",
