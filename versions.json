@@ -6,7 +6,7 @@
       "fecha": "2026-07-23",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "a5b7243",
       "resumen": "Detalle de Equipo: el contenido del modal ahora se organiza en 2 pestañas (Expediente / Historial) en vez de una sola columna larga.",
       "cambios": [
         "Continuación del punto 3 del backlog de docs/DESIGN-SYSTEM-V4.md (layout Stitch de Detalle de Equipo, un avance por ciclo). El screen ID móvil de Stitch (`89c7d513601244398362c3c40a9ba86e`) describe explícitamente 'tabs expediente, timeline' -- el cuerpo del modal en `components/EquipoDetail.jsx` era una sola columna con 7 secciones apiladas (info+QR, contrato, calendario de mantenimiento, galería, documentos, tickets/OS, traslados), obligando a scrollear todo el expediente para llegar al historial de órdenes de servicio.",
