@@ -58,6 +58,10 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
   const [historialAbierto, setHistorialAbierto] = useState(false);
   const [estadoActual, setEstadoActual] = useState(equipo?.estado);
   const [cambiandoEstado, setCambiandoEstado] = useState(false);
+  // Screen ID móvil de Stitch (89c7d513601244398362c3c40a9ba86e) pide
+  // "tabs expediente, timeline" — separa la info/contrato/galería/documentos
+  // (expediente) del histórico de órdenes y traslados (timeline).
+  const [tab, setTab] = useState('expediente'); // 'expediente' | 'historial'
 
   const recargarHistorial = () => {
     if (!equipo?.id) return;
@@ -189,7 +193,52 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
             </button>
           </div>
 
-          <div className="p-6 space-y-6 flex-1 overflow-y-auto">
+          {/* Tabs: Expediente / Historial (timeline) */}
+          <div role="tablist" aria-label="Secciones del equipo" className="flex border-b border-[var(--content-border)] flex-shrink-0">
+            <button
+              type="button"
+              role="tab"
+              id="equipo-tab-expediente"
+              aria-selected={tab === 'expediente'}
+              aria-controls="equipo-panel-expediente"
+              onClick={() => setTab('expediente')}
+              className={`flex-1 px-4 py-3 min-h-[44px] text-sm font-semibold border-b-2 transition-colors ${
+                tab === 'expediente'
+                  ? 'text-emerald-500 border-emerald-500'
+                  : 'text-[var(--content-muted)] border-transparent hover:text-[var(--content-text)]'
+              }`}
+            >
+              Expediente
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="equipo-tab-historial"
+              aria-selected={tab === 'historial'}
+              aria-controls="equipo-panel-historial"
+              onClick={() => setTab('historial')}
+              className={`flex-1 px-4 py-3 min-h-[44px] text-sm font-semibold border-b-2 transition-colors ${
+                tab === 'historial'
+                  ? 'text-emerald-500 border-emerald-500'
+                  : 'text-[var(--content-muted)] border-transparent hover:text-[var(--content-text)]'
+              }`}
+            >
+              Historial
+              {(historial.ordenes.length + historial.traslados.length) > 0 && (
+                <span className="ml-1.5 text-xs font-normal text-[var(--content-muted)]">
+                  ({historial.ordenes.length + historial.traslados.length})
+                </span>
+              )}
+            </button>
+          </div>
+
+          <div
+            role="tabpanel"
+            id="equipo-panel-expediente"
+            aria-labelledby="equipo-tab-expediente"
+            hidden={tab !== 'expediente'}
+            className="p-6 space-y-6 flex-1 overflow-y-auto"
+          >
             {/* Info grid & QR Code */}
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex-1 grid grid-cols-2 gap-4 text-sm w-full">
@@ -427,7 +476,15 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
                 </div>
               )}
             </div>
+          </div>
 
+          <div
+            role="tabpanel"
+            id="equipo-panel-historial"
+            aria-labelledby="equipo-tab-historial"
+            hidden={tab !== 'historial'}
+            className="p-6 space-y-6 flex-1 overflow-y-auto"
+          >
             {/* Tickets / Órdenes de Servicio */}
             <div>
               <div className="flex items-center justify-between mb-3">
