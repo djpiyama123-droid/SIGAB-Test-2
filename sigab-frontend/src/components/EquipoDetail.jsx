@@ -147,11 +147,11 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
         onClick={onClose}
       >
         <div
-          className="bg-[var(--content-surface)] rounded-2xl border border-[var(--content-border)] max-w-2xl w-full max-h-[85vh] overflow-auto"
+          className="bg-[var(--content-surface)] rounded-2xl border border-[var(--content-border)] max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="p-6 border-b border-[var(--content-border)] flex justify-between items-start">
+          <div className="p-6 border-b border-[var(--content-border)] flex justify-between items-start flex-shrink-0">
             <div className="flex gap-4">
               <div className="relative w-16 h-16 rounded-lg bg-[var(--content-bg)] flex-shrink-0 flex items-center justify-center overflow-hidden border border-[var(--content-border)]">
                 {/* Placeholder de fondo (visible si no hay imagen o si falla la carga) */}
@@ -189,7 +189,7 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
             </button>
           </div>
 
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 flex-1 overflow-y-auto">
             {/* Info grid & QR Code */}
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex-1 grid grid-cols-2 gap-4 text-sm w-full">
@@ -524,8 +524,8 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
             )}
           </div>
 
-          {/* Footer con acciones */}
-          <div className="p-4 border-t border-[var(--content-border)] flex justify-between items-center bg-[var(--content-bg)]/40 rounded-b-2xl">
+          {/* Footer con acciones — fijo (no se va con el scroll del contenido) */}
+          <div className="p-4 border-t border-[var(--content-border)] flex justify-between items-center bg-[var(--content-bg)]/40 rounded-b-2xl flex-shrink-0">
             <button
               type="button"
               onClick={() => setConfirmandoEliminar(true)}

@@ -1,6 +1,26 @@
 {
-  "actual": "4.0.76",
+  "actual": "4.0.77",
   "versiones": [
+    {
+      "version": "4.0.77",
+      "fecha": "2026-07-23",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "",
+      "resumen": "Detalle de Equipo: el footer de acciones (Eliminar/Nueva OS/Historial/QR/Cerrar/Editar) ahora es una barra fija que ya no se va con el scroll del contenido del modal.",
+      "cambios": [
+        "Retomado el punto 3 del backlog de docs/DESIGN-SYSTEM-V4.md (aplicar el layout Stitch a Detalle de Equipo/Reservas, un modulo por ciclo). El screen ID movil de Stitch de Detalle de Equipo (`89c7d513601244398362c3c40a9ba86e`) describe explicitamente 'tabs expediente, timeline, CTA fija' -- la CTA (barra de acciones) NO era fija: `components/EquipoDetail.jsx` ponia header, contenido y footer dentro del MISMO contenedor con `overflow-auto`, asi que en un equipo con fotos/documentos/varias ordenes/traslados (contenido largo, comun en el piloto) el usuario tenia que hacer scroll hasta el final del modal para llegar a 'Nueva OS'/'Editar'/'Cerrar' -- friccion real en movil, donde los tecnicos usan el detalle de equipo para abrir ordenes rapido.",
+        "Se reestructuro el contenedor del modal a `flex flex-col overflow-hidden` (antes `overflow-auto` a secas): el header y el footer ahora llevan `flex-shrink-0` (no se comprimen ni se scrollean) y el bloque de contenido intermedio (info, contrato, calendario, galeria, documentos, tickets, traslados) es el unico que scrollea (`flex-1 overflow-y-auto`). El footer de acciones queda siempre visible en la parte inferior del modal sin importar cuanto contenido tenga el equipo.",
+        "Cambio 100% de layout/CSS (clases Tailwind), sin tocar props, estado, llamadas a la API ni el comportamiento de cierre (click en el fondo / boton X / Escape via el patron ya establecido en el resto de la app siguen igual).",
+        "No se toco el heatmap de Reservas, los helpers de PDF iOS ni el login -- fuera del alcance de este componente."
+      ],
+      "verificar": [
+        "Abrir el detalle de un equipo con varias fotos/ordenes/traslados (contenido largo) en escritorio y en un viewport movil estrecho: el footer con los 6 botones (Eliminar, Nueva OS, Historial, QR, Cerrar, Editar) debe permanecer visible en la parte inferior del modal en todo momento, sin necesidad de hacer scroll para alcanzarlo.",
+        "Confirmar que el scroll ahora ocurre SOLO en el cuerpo del modal (entre el header con el nombre del equipo y el footer de acciones), y que el header con foto/nombre/boton de cerrar tambien permanece fijo arriba.",
+        "Confirmar que abrir/cerrar el modal (click en el fondo, boton X, boton Cerrar) sigue funcionando igual que antes, y que el resto de acciones del footer (Nueva OS, Historial, QR, Editar, Eliminar) siguen abriendo sus modales correctamente."
+      ],
+      "rollback": "4.0.76"
+    },
     {
       "version": "4.0.76",
       "fecha": "2026-07-22",
