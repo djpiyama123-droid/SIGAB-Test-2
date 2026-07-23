@@ -6,7 +6,7 @@
       "fecha": "2026-07-22",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "0fe78e7",
       "resumen": "Septimo barrido de accesibilidad, cierre: labels de ChecklistPage.jsx y OCRScannerModal.jsx sin htmlFor/id, ultimos 2 candidatos de la categoria.",
       "cambios": [
         "Cierre del barrido de <label> sin htmlFor iniciado en v4.0.59 (16 versiones previas, 1 archivo por ciclo). Los 2 candidatos que quedaban tras v4.0.75 (SuperAdmin.jsx) eran pages/ChecklistPage.jsx y components/OCRScannerModal.jsx.",
