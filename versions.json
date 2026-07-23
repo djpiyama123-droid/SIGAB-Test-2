@@ -6,7 +6,7 @@
       "fecha": "2026-07-23",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "1eb191a",
       "resumen": "Detalle de Equipo: la pestaña Historial (v4.0.78) ahora también incluye Preventivos programados, y se quitó el botón redundante '🕒 Historial' que abría un segundo modal encima del detalle con la misma información.",
       "cambios": [
         "Al leer el modal de `components/EquipoDetail.jsx` tras el cambio de v4.0.78 (tabs Expediente/Historial) se encontró una regresión de UX real: el footer de acciones seguía teniendo el botón '🕒 Historial', que abre `components/HistorialEquipoModal.jsx` -- un modal COMPLETO aparte, encima del detalle ya abierto (modal sobre modal). Ese modal duplicaba las mismas Órdenes de Servicio y Traslados que la pestaña 'Historial' nueva ya mostraba inline, y solo aportaba una tercera pestaña ('Preventivos') que la pestaña inline no tenía -- confuso para el usuario (dos UIs de 'historial' distintas apiladas) y contrario a la intención de la pestaña (evitar navegación extra, screen ID móvil `89c7d513601244398362c3c40a9ba86e`).",
