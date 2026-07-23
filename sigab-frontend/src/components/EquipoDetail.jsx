@@ -11,7 +11,6 @@ import ConfirmDialog from './ConfirmDialog';
 import QRPanel from './QRPanel';
 import OrdenDetalleModal from './OrdenDetalleModal';
 import OrdenServicioRapidaModal from './OrdenServicioRapidaModal';
-import HistorialEquipoModal from './HistorialEquipoModal';
 import CalendarioMantenimiento from './CalendarioMantenimiento';
 import Lightbox from './Lightbox';
 import { QRCodeSVG } from 'qrcode.react';
@@ -47,7 +46,7 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
 
   const allImages = fotosArr.length > 0 ? fotosArr : (equipo.imagen_url ? [equipo.imagen_url] : []);
   const toast = useToast();
-  const [historial, setHistorial] = useState({ ordenes: [], traslados: [] });
+  const [historial, setHistorial] = useState({ ordenes: [], traslados: [], preventivos: [] });
   const [documentos, setDocumentos] = useState([]);
   const [editando, setEditando] = useState(false);
   const [confirmandoEliminar, setConfirmandoEliminar] = useState(false);
@@ -55,12 +54,11 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
   const [showQR, setShowQR] = useState(false);
   const [ordenAbierta, setOrdenAbierta] = useState(null); // OS clickeada en la lista
   const [nuevaOrdenAbierta, setNuevaOrdenAbierta] = useState(false);
-  const [historialAbierto, setHistorialAbierto] = useState(false);
   const [estadoActual, setEstadoActual] = useState(equipo?.estado);
   const [cambiandoEstado, setCambiandoEstado] = useState(false);
   // Screen ID móvil de Stitch (89c7d513601244398362c3c40a9ba86e) pide
   // "tabs expediente, timeline" — separa la info/contrato/galería/documentos
-  // (expediente) del histórico de órdenes y traslados (timeline).
+  // (expediente) del histórico de órdenes, traslados y preventivos (timeline).
   const [tab, setTab] = useState('expediente'); // 'expediente' | 'historial'
 
   const recargarHistorial = () => {
@@ -69,6 +67,7 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
       .then((res) => setHistorial({
         ordenes: res.ordenes || [],
         traslados: res.traslados || [],
+        preventivos: res.preventivos || [],
       }))
       .catch((err) => {
         // Antes este catch era vacío: si /historial fallaba (401/500/red),
@@ -224,9 +223,9 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
               }`}
             >
               Historial
-              {(historial.ordenes.length + historial.traslados.length) > 0 && (
+              {(historial.ordenes.length + historial.traslados.length + historial.preventivos.length) > 0 && (
                 <span className="ml-1.5 text-xs font-normal text-[var(--content-muted)]">
-                  ({historial.ordenes.length + historial.traslados.length})
+                  ({historial.ordenes.length + historial.traslados.length + historial.preventivos.length})
                 </span>
               )}
             </button>
@@ -579,6 +578,27 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
                 </div>
               </div>
             )}
+
+            {/* Preventivos programados */}
+            {historial.preventivos.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-3">Preventivos Programados</h3>
+                <div className="space-y-2">
+                  {historial.preventivos.slice(0, 5).map((pp, i) => (
+                    <div key={pp.id ?? i} className="bg-[var(--content-bg)]/50 rounded-lg p-3 text-sm">
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="text-[var(--content-text)] font-medium">{pp.tipo_preventivo}</span>
+                        <span className="text-[var(--content-muted)] text-xs whitespace-nowrap flex-shrink-0">Cada {pp.frecuencia_dias}d</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-[var(--content-muted)] mt-1.5">
+                        <span>{pp.ultima_ejecucion ? `Última: ${pp.ultima_ejecucion}` : 'Sin ejecuciones previas'}</span>
+                        <span>Próx: {pp.proxima_ejecucion}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Footer con acciones — fijo (no se va con el scroll del contenido) */}
@@ -601,13 +621,6 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
                 className="px-4 py-2 min-h-[44px] bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-text)] text-sm rounded-lg transition-colors flex items-center gap-2"
               >
                 🎫 Nueva OS
-              </button>
-              <button
-                type="button"
-                onClick={() => setHistorialAbierto(true)}
-                className="px-4 py-2 min-h-[44px] bg-[var(--content-surface)] hover:bg-[var(--content-border)] text-[var(--content-text)] text-sm rounded-lg transition-colors flex items-center gap-2"
-              >
-                🕒 Historial
               </button>
               <button
                 type="button"
@@ -684,14 +697,6 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
             setNuevaOrdenAbierta(false);
             recargarHistorial();
           }}
-        />
-      )}
-
-      {/* Acción rápida: historial técnico completo (incluye preventivos, no visible en este resumen) */}
-      {historialAbierto && (
-        <HistorialEquipoModal
-          equipo={equipo}
-          onClose={() => setHistorialAbierto(false)}
         />
       )}
 

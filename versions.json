@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.78",
+  "actual": "4.0.79",
   "versiones": [
+    {
+      "version": "4.0.79",
+      "fecha": "2026-07-23",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Detalle de Equipo: la pestaña Historial (v4.0.78) ahora también incluye Preventivos programados, y se quitó el botón redundante '🕒 Historial' que abría un segundo modal encima del detalle con la misma información.",
+      "cambios": [
+        "Al leer el modal de `components/EquipoDetail.jsx` tras el cambio de v4.0.78 (tabs Expediente/Historial) se encontró una regresión de UX real: el footer de acciones seguía teniendo el botón '🕒 Historial', que abre `components/HistorialEquipoModal.jsx` -- un modal COMPLETO aparte, encima del detalle ya abierto (modal sobre modal). Ese modal duplicaba las mismas Órdenes de Servicio y Traslados que la pestaña 'Historial' nueva ya mostraba inline, y solo aportaba una tercera pestaña ('Preventivos') que la pestaña inline no tenía -- confuso para el usuario (dos UIs de 'historial' distintas apiladas) y contrario a la intención de la pestaña (evitar navegación extra, screen ID móvil `89c7d513601244398362c3c40a9ba86e`).",
+        "Se extendió el estado `historial` de `EquipoDetail.jsx` (y su `recargarHistorial()`, que ya consume `/equipos/{id}/historial`, el mismo endpoint que usaba `HistorialEquipoModal.jsx`) para incluir `preventivos: res.preventivos || []`, y se agregó una tercera sección 'Preventivos Programados' dentro de la pestaña Historial (mismo patrón visual de tarjeta que Tickets/Traslados: tipo, frecuencia, última/próxima ejecución). El contador `(N)` de la pestaña ahora suma órdenes + traslados + preventivos.",
+        "Se eliminó el botón '🕒 Historial' del footer, el estado `historialAbierto`, el uso de `<HistorialEquipoModal>` y su import en `EquipoDetail.jsx` -- la pestaña inline ya cubre el 100% de lo que ese modal mostraba. `HistorialEquipoModal.jsx` en sí NO se tocó ni se borró: sigue siendo un componente válido, usado de forma independiente (no anidado) desde `components/HospitalMap.jsx` (panel rápido del mapa de activos), fuera del alcance de este fix.",
+        "Cambio acotado a `EquipoDetail.jsx`: sin tocar el heatmap de Reservas, los helpers de PDF iOS, el login, ni `HospitalMap.jsx`/`HistorialEquipoModal.jsx`."
+      ],
+      "verificar": [
+        "Abrir el detalle de un equipo con órdenes/traslados/preventivos registrados: la pestaña 'Historial' debe mostrar 3 secciones cuando aplique (Tickets/Órdenes, Traslados Recientes, Preventivos Programados) y el contador junto a 'Historial' debe sumar las 3 categorías.",
+        "El footer de acciones ya NO debe tener un botón '🕒 Historial' -- deben quedar 5 botones (Eliminar, Nueva OS, QR, Cerrar, Editar).",
+        "Confirmar que NO se puede abrir un modal-sobre-modal desde el footer de Detalle de Equipo (ese flujo ya no existe).",
+        "Desde el Mapa de Activos (Dashboard), el botón de historial de un equipo debe seguir abriendo `HistorialEquipoModal` normalmente (flujo independiente, no tocado)."
+      ],
+      "rollback": "4.0.78"
+    },
     {
       "version": "4.0.78",
       "fecha": "2026-07-23",
