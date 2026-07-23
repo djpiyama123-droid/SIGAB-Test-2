@@ -378,19 +378,22 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
                   .map(([key, val]) => {
                     const label = FIELD_LABELS[key] || key.replace(/_/g, ' ');
                     const isLong = LONG_FIELDS.has(key);
+                    const fieldId = `ocr-field-${key}`;
                     return (
                       <div key={key}>
-                        <label className="block text-xs font-medium text-[var(--content-muted)] mb-1 uppercase tracking-wide">
+                        <label htmlFor={fieldId} className="block text-xs font-medium text-[var(--content-muted)] mb-1 uppercase tracking-wide">
                           {label}
                         </label>
                         {isLong ? (
                           <textarea
+                            id={fieldId}
                             value={val || ''}
                             onChange={(e) => updateField(key, e.target.value)}
                             className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] text-emerald-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 h-20 resize-none"
                           />
                         ) : (
                           <input
+                            id={fieldId}
                             type="text"
                             value={val ?? ''}
                             onChange={(e) => updateField(key, e.target.value)}
@@ -409,9 +412,9 @@ export default function OCRScannerModal({ onClose, onConfirm }) {
                 {/* Refacciones extraídas (si las hay) */}
                 {Array.isArray(scanResult.refacciones) && scanResult.refacciones.length > 0 && (
                   <div className="border-t border-[var(--content-border)] pt-2">
-                    <label className="block text-xs font-medium text-[var(--content-muted)] mb-2 uppercase tracking-wide">
+                    <p className="block text-xs font-medium text-[var(--content-muted)] mb-2 uppercase tracking-wide">
                       Refacciones detectadas ({scanResult.refacciones.length})
-                    </label>
+                    </p>
                     <ul className="space-y-1 text-xs">
                       {scanResult.refacciones.map((r, i) => (
                         <li key={i} className="bg-[var(--content-surface)] border border-[var(--content-border)] text-[var(--content-text)] rounded px-2 py-1">

@@ -131,8 +131,9 @@ const ChecklistPage = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-[var(--content-muted)] uppercase">Observaciones Adicionales</label>
+                <label htmlFor="checklist-observaciones" className="text-sm font-bold text-[var(--content-muted)] uppercase">Observaciones Adicionales</label>
                 <textarea
+                  id="checklist-observaciones"
                   className="w-full bg-[var(--content-surface)] border border-[var(--content-border)] rounded-xl p-3 text-[var(--content-text)] focus:ring-2 focus:ring-emerald-500 outline-none"
                   rows="3"
                   value={observaciones}

@@ -1,6 +1,28 @@
 {
-  "actual": "4.0.75",
+  "actual": "4.0.76",
   "versiones": [
+    {
+      "version": "4.0.76",
+      "fecha": "2026-07-22",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Septimo barrido de accesibilidad, cierre: labels de ChecklistPage.jsx y OCRScannerModal.jsx sin htmlFor/id, ultimos 2 candidatos de la categoria.",
+      "cambios": [
+        "Cierre del barrido de <label> sin htmlFor iniciado en v4.0.59 (16 versiones previas, 1 archivo por ciclo). Los 2 candidatos que quedaban tras v4.0.75 (SuperAdmin.jsx) eran pages/ChecklistPage.jsx y components/OCRScannerModal.jsx.",
+        "ChecklistPage.jsx: el radio group SI/NO/N-A por pregunta ya era un wrapping-label valido (el <input> vive dentro del <label>, asociacion implicita correcta) -- sin bug ahi. El unico hallazgo real era el <label> de 'Observaciones Adicionales' sin htmlFor -> se agrego id='checklist-observaciones' al textarea y htmlFor al label.",
+        "OCRScannerModal.jsx: se agrego id/htmlFor dinamico (ocr-field-${key}, la key es un nombre de campo fijo en snake_case de FIELD_LABELS) a los labels de los campos extraidos por OCR editables (input/textarea segun el campo). El tercer <label> 'Refacciones detectadas (N)' no envolvia ni apuntaba a ningun control -- es un encabezado de la lista de refacciones, mal etiquetado como <label> desde su creacion -> cambiado a <p> (mismas clases, cero cambio visual).",
+        "Se re-audito el resto de wrapping-labels que el grep original marcaba como pendientes de confirmar (Equipos.jsx, Copilot.jsx, OrdenCasillasForm.jsx x2, EquipoForm.jsx, OrdenServicioRapidaModal.jsx x3): los 8 ya envuelven su propio input/checkbox/radio -- confirmados sin bug, no se tocaron.",
+        "Con esto se cierra POR COMPLETO la categoria: grep -rn \"<label\" sigab-frontend/src ya no devuelve ningun <label> sin asociacion (ni htmlFor ni wrapping) a un control real.",
+        "docs/DESIGN-SYSTEM-V4.md: fila de la tabla de avance pasa de Parcial a Aplicado."
+      ],
+      "verificar": [
+        "Abrir un checklist NOM-016 (ChecklistPage), llenar el radio SI/NO/N-A de una pregunta y tabular hasta 'Observaciones Adicionales' con un lector de pantalla o el inspector de accesibilidad de DevTools -- debe anunciar el nombre del campo.",
+        "Abrir el escaner OCR de una Orden de Servicio (camara o archivo), confirmar que tras el escaneo cada campo editable (Folio, Fecha, Tecnico, etc.) sigue mostrando su etiqueta visual igual que antes y que 'Refacciones detectadas' se ve igual (ahora es <p>, mismo estilo).",
+        "Confirmar visualmente que ningun formulario cambio de tamano/posicion/color -- el cambio es solo atributos id/htmlFor y un cambio de tag label->p sin clases nuevas."
+      ],
+      "rollback": "4.0.75"
+    },
     {
       "version": "4.0.75",
       "fecha": "2026-07-22",
