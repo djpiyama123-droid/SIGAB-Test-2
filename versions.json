@@ -1,6 +1,25 @@
 {
-  "actual": "4.0.81",
+  "actual": "4.0.82",
   "versiones": [
+    {
+      "version": "4.0.82",
+      "fecha": "2026-07-24",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "670a115",
+      "resumen": "Fix de leak real en pages/QRScanner.jsx: el timeout de 300ms que reinicia la camara al cambiar de lente (boton \"voltear camara\") nunca se cancelaba, dejando un stream de camara vivo grabando en segundo plano si el usuario salia de la pantalla dentro de esa ventana.",
+      "cambios": [
+        "pages/QRScanner.jsx: `toggleCamera()` llama `stopCamera()` (detiene el stream y el loop de `requestAnimationFrame`) y programa un `setTimeout(() => startCamera(next), 300)` para reabrir la camara con la lente contraria 300ms despues -- ese id de timeout se descartaba (no vivia en ningun ref), a diferencia del patron ya establecido para timers de esta app (`reconnectTimeoutRef`/`hardRefreshTimeoutRef` de `hooks/useSSE.js`, arreglado en v4.0.81). El `useEffect` de montaje solo cancela camara/animacion al desmontar (`return stopCamera`), sin conocimiento de este timeout programado despues por una interaccion del usuario.",
+        "Escenario real: el usuario abre el escaner QR (camara activa), toca 'voltear camara' y de inmediato toca 'volver' (boton back o cualquier navegacion) antes de que pasen los 300ms -- el componente se desmonta, `stopCamera()` del cleanup corre una vez y no deja nada corriendo, pero el `setTimeout` huerfano sigue vivo y dispara `startCamera(next)` de todas formas: pide un stream NUEVO de camara (`getUserMedia`), lo guarda en `streamRef.current` (una ref sobrevive al desmontaje, solo dejo de ser observada) y arranca de nuevo el loop de escaneo con `requestAnimationFrame` -- nada vuelve a llamar `stopCamera()` porque el componente ya no existe. Resultado: la camara (y el indicador de grabacion del sistema operativo/navegador) queda encendida indefinidamente en segundo plano, consumiendo bateria y siendo un problema de privacidad (indicador de camara activa sin pantalla de escaneo visible).",
+        "Fix: nuevo `toggleTimeoutRef` (mismo patron que `useSSE.js`) guarda el id del timeout; se cancela con `clearTimeout` en 3 puntos: al iniciar un nuevo `toggleCamera()` (evita apilar timers si el usuario voltea la camara varias veces rapido), en el cleanup del `useEffect` de montaje, y en el `onClick` del boton 'volver' del header (que ya llamaba `stopCamera()` manualmente antes de `navigate(-1)`, mismo hueco). Cambio de 3 lineas, sin tocar el flujo normal de escaneo/navegacion tras un QR valido."
+      ],
+      "verificar": [
+        "No hay senal visual directa en el flujo normal (el bug solo aparece al salir de la pantalla durante la ventana de 300ms tras voltear camara) -- verificar en un celular real: abrir Escanear QR, tocar 'voltear camara' y de inmediato tocar 'volver', luego revisar que el indicador de camara del navegador/SO (punto verde/icono de camara activa) se apague de inmediato y no quede encendido.",
+        "Confirmar que voltear la camara varias veces seguidas (tap rapido y repetido en 'voltear camara') sigue funcionando con normalidad, sin quedarse trabada en una lente ni mostrar pantalla negra.",
+        "Confirmar que el flujo normal de escaneo (abrir escaner, apuntar a un QR de equipo, navegar al detalle) no cambio en nada."
+      ],
+      "rollback": "4.0.81"
+    },
     {
       "version": "4.0.81",
       "fecha": "2026-07-24",
