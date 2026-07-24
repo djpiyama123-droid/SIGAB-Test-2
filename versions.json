@@ -1,6 +1,27 @@
 {
-  "actual": "4.0.82",
+  "actual": "4.0.83",
   "versiones": [
+    {
+      "version": "4.0.83",
+      "fecha": "2026-07-24",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "8265e3c",
+      "resumen": "Fix de seguridad de datos en Reservas: la pagina sustituia silenciosamente la lista real de reservas por 160 reservas de muestra (medicos, cirugias y equipos ficticios) cuando la API devolvia 0 resultados o fallaba, con solo una pildora ambar diminuta como unico aviso.",
+      "cambios": [
+        "pages/Reservas.jsx: `cargarReservas()` llamaba a `generarReservasMock()` (utils/reservasMock.js, un generador de 160 reservas ficticias con nombres de doctores, areas y motivos inventados, comentado en el propio archivo como pensado 'para tunear el dashboard sin depender de la BD sembrada') en 2 casos: si `api.getReservas()` respondia con una lista vacia, o si la peticion fallaba (backend caido/red). En ambos casos la UI seguia funcionando con normalidad (heatmap, grafica de linea, tarjetas de estadisticas) mostrando datos 100% falsos, y el unico indicador de que no eran reales era una pildora `datos de muestra` de 11px insertada dentro de un parrafo de subtitulo -- facil de no ver, sobre todo en el flujo tactil de un celular en el piso del hospital.",
+        "Riesgo real: SIGAB es un piloto en produccion sobre un hospital real (HGR No.1 IMSS Tijuana, ~881 equipos), no una demo -- si la BD de reservas estaba vacia (instalacion nueva, o todas las reservas ya completadas/canceladas un dia dado) o si habia un problema de red/backend momentaneo, cualquier persona que abriera Reservas veia un calendario y una lista de 'reservas' de equipos biomedicos (quirofano, UCI, ventiladores, desfibriladores) que nunca ocurrieron, atribuidas a nombres de doctores inventados -- una fuente de confusion operativa real en un entorno clinico, no solo un detalle cosmetico.",
+        "Fix: se elimino por completo la rama de datos de muestra. Una lista vacia real ahora se muestra vacia (el heatmap, `agruparPorDia`/`statsReservas`/`serieDiaria` de `utils/fechas.js` ya soportan 0 reservas sin caerse -- cubierto por el test existente `statsReservas: lista vacia -> ceros` de `fechas.test.js`, no se toco esa logica). Un error real de red/backend ahora muestra un banner de reintento explicito en el cuerpo de la pagina (`AlertCircle` + boton 'Reintentar' que vuelve a llamar `cargarReservas()`), mismo patron ya validado en `HospitalMap.jsx` (spinner -> contenido -> error con reintento), con colores de tema (`text-red-600`/`bg-red-500/10`/`var(--content-text)`) en vez de los fijos que usa HospitalMap. Se removio el estado `usandoMock`, la pildora del header y el import de `generarReservasMock` -- la funcion en si (`utils/reservasMock.js`) quedo sin ningun consumidor (candidato a borrar en un ciclo futuro, misma limitacion de permisos de `rm`/`git rm` documentada para `DegradationChart.jsx`/`SigabUI.jsx` en `docs/DESIGN-SYSTEM-V4.md`).",
+        "Cambio acotado a `pages/Reservas.jsx` (12 lineas agregadas, 19 quitadas) -- no se toco el heatmap (`ActividadHeatmap`, `anim-cell-pop`), el modal de dia (`DiaReservasModal`), el formulario de nueva/editar reserva, ni ningun helper de `utils/fechas.js`."
+      ],
+      "verificar": [
+        "Con reservas reales sembradas: la pagina Reservas debe verse exactamente igual que antes (heatmap, grafica, stats) -- este fix solo cambia el comportamiento cuando la lista viene vacia o falla la peticion.",
+        "Simular lista vacia (o probar en un ambiente/tenant sin reservas sembradas): la pagina ya NO debe mostrar 160 reservas falsas ni la pildora 'datos de muestra' -- debe verse el heatmap y las tarjetas de estadisticas en cero, sin error.",
+        "Simular backend caido (detener el backend o cortar red brevemente) y entrar a Reservas: debe aparecer un banner rojo 'No se pudo cargar la actividad de reservas...' con boton 'Reintentar' -- al reconectar el backend y presionar 'Reintentar', debe cargar los datos reales con normalidad.",
+        "Confirmar que el heatmap semanal y el calendario de 'Nueva Reserva'/'Editar Reserva' (regla dura del proyecto, no se debe romper) siguen funcionando sin cambios."
+      ],
+      "rollback": "4.0.82"
+    },
     {
       "version": "4.0.82",
       "fecha": "2026-07-24",
