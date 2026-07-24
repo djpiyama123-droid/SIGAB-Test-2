@@ -25,7 +25,6 @@ import {
 import toast from '../lib/toast';
 import MiniAreaChart from '../components/charts/MiniAreaChart';
 import { ymd, etiquetaCorta, agruparPorDia, statsReservas, serieDiaria, reservasDelDia } from '../utils/fechas';
-import { generarReservasMock } from '../utils/reservasMock';
 
 // Cuenta animada de 0 → target (easeOutCubic). Respeta prefers-reduced-motion.
 function useCountUp(target, duration = 700) {
@@ -448,28 +447,19 @@ function StatCard({ icon, valor, label, delay = 0 }) {
 export default function Reservas() {
   const [reservas, setReservas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [usandoMock, setUsandoMock] = useState(false);
+  const [error, setError] = useState(null);
   const [modalNueva, setModalNueva] = useState(false);
   const [reservaEditar, setReservaEditar] = useState(null);
   const [diaSel, setDiaSel] = useState(null);
 
   const cargarReservas = async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await api.getReservas();
-      const lista = data.reservas ?? data ?? [];
-      if (lista.length === 0) {
-        // Sin reservas sembradas: datos de muestra para tunear el dashboard.
-        setReservas(generarReservasMock());
-        setUsandoMock(true);
-      } else {
-        setReservas(lista);
-        setUsandoMock(false);
-      }
+      setReservas(data.reservas ?? data ?? []);
     } catch {
-      // Backend no disponible (frontend-first): caemos a datos de muestra.
-      setReservas(generarReservasMock());
-      setUsandoMock(true);
+      setError('No se pudo cargar la actividad de reservas. Verifica tu conexión e intenta de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -504,11 +494,6 @@ export default function Reservas() {
           </h1>
           <p className="text-[var(--content-muted)] mt-1">
             Actividad de uso compartido de equipos biomédicos entre servicios.
-            {usandoMock && (
-              <span className="ml-2 text-[11px] font-semibold text-amber-600 bg-amber-500/10 border border-amber-500/30 rounded-full px-2 py-0.5">
-                datos de muestra
-              </span>
-            )}
           </p>
         </div>
         <button
@@ -524,6 +509,14 @@ export default function Reservas() {
         <div className="py-20 text-center text-[var(--content-muted)] text-sm">
           <Activity className="h-6 w-6 animate-pulse text-emerald-500 mx-auto mb-2" />
           Cargando actividad de reservas...
+        </div>
+      ) : error ? (
+        <div className="flex items-center gap-3 p-4 rounded-xl border border-red-500/40 bg-red-500/10 text-sm">
+          <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+          <span className="text-[var(--content-text)]">{error}</span>
+          <button onClick={cargarReservas} className="ml-auto text-xs font-semibold text-red-600 underline hover:no-underline">
+            Reintentar
+          </button>
         </div>
       ) : (
         <>
