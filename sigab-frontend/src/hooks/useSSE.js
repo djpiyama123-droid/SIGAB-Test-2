@@ -6,6 +6,7 @@ export function useSSE({ assetId = null, onEvent = null } = {}) {
   onEventRef.current = onEvent;
   const eventSourceRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
+  const hardRefreshTimeoutRef = useRef(null);
   const reconnectAttemptsRef = useRef(0);
   const [isConnected, setIsConnected] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -23,6 +24,10 @@ export function useSSE({ assetId = null, onEvent = null } = {}) {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
+    }
+    if (hardRefreshTimeoutRef.current) {
+      clearTimeout(hardRefreshTimeoutRef.current);
+      hardRefreshTimeoutRef.current = null;
     }
   }, []);
 
@@ -109,7 +114,7 @@ export function useSSE({ assetId = null, onEvent = null } = {}) {
     });
 
     // 5-min max connection timeout
-    setTimeout(() => {
+    hardRefreshTimeoutRef.current = setTimeout(() => {
       if (eventSourceRef.current === es) {
           console.log('[SSE] Hard refreshing connection (5min limit)');
           connect();

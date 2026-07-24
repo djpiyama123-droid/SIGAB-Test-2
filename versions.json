@@ -1,6 +1,24 @@
 {
-  "actual": "4.0.80",
+  "actual": "4.0.81",
   "versiones": [
+    {
+      "version": "4.0.81",
+      "fecha": "2026-07-24",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Fix de leak real en useSSE: el temporizador de \"hard refresh\" a los 5 minutos nunca se cancelaba en cleanup(), dejando timers huérfanos vivos en memoria tras cada desmontaje/reconexión.",
+      "cambios": [
+        "hooks/useSSE.js: el `setTimeout` de 5 minutos que fuerza una reconexión periódica del EventSource (líneas ~116-122) guardaba su ID solo en una variable local descartada, a diferencia del `setTimeout` gemelo de reconexión por error (`reconnectTimeoutRef`, 2 líneas arriba en el mismo archivo) que sí se trackea en un ref -- `cleanup()` (llamada al desmontar el componente, al reconectar por error, y al inicio de cada `connect()`) nunca podía cancelarlo. Resultado: cada llamada a `connect()` (montaje inicial, cada reconexión tras error de red, y cada auto-refresh de 5 min) dejaba un temporizador nuevo corriendo en segundo plano que ya no se podía cancelar, reteniendo el closure de `es`/`connect` en memoria incluso después de que el componente se desmontara. El guard `eventSourceRef.current === es` evita que dispare una reconexión duplicada visible en la mayoría de los casos, pero no evita el leak del propio temporizador.",
+        "Mayor impacto en `TVDashboard.jsx` (kiosco de sala, pantalla que queda encendida horas/días sin recargar): con reconexiones por red intermitente (backoff exponencial ya presente en el archivo) más el ciclo de 5 min, los timers huérfanos se acumulan indefinidamente en esa sesión de larga duración. En el Dashboard normal (recarga de página más frecuente) el impacto es menor pero el mismo patrón aplica en cada sesión.",
+        "Fix: se agregó `hardRefreshTimeoutRef` (mismo patrón que `reconnectTimeoutRef`), se guarda ahí el ID del `setTimeout` de 5 min, y `cleanup()` lo cancela (`clearTimeout` + reset a null) junto con el de reconexión. Cambio de 3 líneas, sin tocar lógica de negocio ni el comportamiento observable del hook (mismo backoff, mismo hard-refresh a los 5 min, mismas dependencias de `connect`)."
+      ],
+      "verificar": [
+        "No hay señal visual directa (es un fix de limpieza de memoria/temporizadores) -- verificar con DevTools > Performance/Memory: abrir el Dashboard, esperar un ciclo de reconexión (forzar desconectando la red brevemente) y confirmar que no queden más timers pendientes de los esperados tras navegar fuera de la pantalla.",
+        "Confirmar que el Dashboard y TVDashboard (kiosco) siguen recibiendo eventos SSE con normalidad (toasts de nueva orden/alerta) -- este fix no debe cambiar el comportamiento funcional, solo evitar el leak."
+      ],
+      "rollback": "4.0.80"
+    },
     {
       "version": "4.0.80",
       "fecha": "2026-07-23",
