@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 export function useSSE({ assetId = null, onEvent = null } = {}) {
-  const [lastEventId, setLastEventId] = useState(null);
+  const lastEventIdRef = useRef(null);
+  const onEventRef = useRef(onEvent);
+  onEventRef.current = onEvent;
   const eventSourceRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
   const reconnectAttemptsRef = useRef(0);
   const [isConnected, setIsConnected] = useState(false);
   const [hasError, setHasError] = useState(false);
-  
+
   // Exponential backoff parameters
   const baseTimeoutMs = 1000;
   const maxTimeoutMs = 30000; // Cap to 30 seconds
@@ -41,7 +43,7 @@ export function useSSE({ assetId = null, onEvent = null } = {}) {
     const params = new URLSearchParams();
     if (token) params.append('token', token);
     if (assetId) params.append('asset_id', assetId);
-    if (lastEventId) params.append('last_event_id', lastEventId);
+    if (lastEventIdRef.current) params.append('last_event_id', lastEventIdRef.current);
 
     const base = `${window.location.protocol}//${window.location.host}`;
     const url = `${base}/api/v1/events/subscribe?${params.toString()}`;
@@ -80,25 +82,25 @@ export function useSSE({ assetId = null, onEvent = null } = {}) {
     // You can handle standard messages here or bind specific event names
     es.onmessage = (e) => {
       try {
-        setLastEventId(e.lastEventId);
-        if (onEvent) {
+        lastEventIdRef.current = e.lastEventId;
+        if (onEventRef.current) {
           const parsed = JSON.parse(e.data);
-          onEvent('message', parsed);
+          onEventRef.current('message', parsed);
         }
       } catch (err) {
         console.error('[SSE] Failed to parse message', err);
       }
     };
-    
+
     // Support custom events if they happen
     const customTypes = ['status_change', 'equipo_update', 'nueva_orden', 'nueva_alerta'];
     customTypes.forEach(type => {
       es.addEventListener(type, (e) => {
         try {
-          setLastEventId(e.lastEventId);
-          if (onEvent) {
+          lastEventIdRef.current = e.lastEventId;
+          if (onEventRef.current) {
              const parsed = JSON.parse(e.data);
-             onEvent(type, parsed);
+             onEventRef.current(type, parsed);
           }
         } catch (err) {
           console.error('[SSE] Failed to parse custom event', err);
@@ -114,12 +116,16 @@ export function useSSE({ assetId = null, onEvent = null } = {}) {
       }
     }, maxConnectionTimeMs);
 
-  }, [assetId, lastEventId, cleanup, onEvent, maxConnectionTimeMs]);
+  }, [assetId, cleanup, maxConnectionTimeMs]);
 
   useEffect(() => {
     connect();
     return cleanup;
   }, [connect, cleanup]);
+
+  const setLastEventId = useCallback((id) => {
+    lastEventIdRef.current = id;
+  }, []);
 
   return { setLastEventId, isConnected, hasError };
 }

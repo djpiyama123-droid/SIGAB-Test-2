@@ -508,7 +508,7 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
                     const hasOsId = !!os.id;
                     return (
                       <div
-                        key={i}
+                        key={os.id ?? i}
                         onClick={hasOsId ? () => setOrdenAbierta(os.id) : undefined}
                         role={hasOsId ? 'button' : undefined}
                         tabIndex={hasOsId ? 0 : undefined}
@@ -568,7 +568,7 @@ export default function EquipoDetail({ equipo, onClose, onChange, onQuickUpdate 
                 <h3 className="text-sm font-semibold text-[var(--content-muted)] mb-3">Traslados Recientes</h3>
                 <div className="space-y-2">
                   {historial.traslados.slice(0, 5).map((t, i) => (
-                    <div key={i} className="bg-[var(--content-bg)]/50 rounded-lg p-3 text-sm flex justify-between">
+                    <div key={t.id ?? i} className="bg-[var(--content-bg)]/50 rounded-lg p-3 text-sm flex justify-between">
                       <span className="text-[var(--content-text)]">
                         {t.area_origen} → {t.area_destino}
                       </span>
