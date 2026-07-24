@@ -8,6 +8,7 @@ export default function QRScanner() {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const animRef = useRef(null);
+  const toggleTimeoutRef = useRef(null);
 
   const [error, setError] = useState(null);
   const [scanning, setScanning] = useState(false);
@@ -110,14 +111,18 @@ export default function QRScanner() {
 
   useEffect(() => {
     startCamera();
-    return stopCamera;
+    return () => {
+      clearTimeout(toggleTimeoutRef.current);
+      stopCamera();
+    };
   }, []); // eslint-disable-line
 
   const toggleCamera = () => {
     const next = facingMode === 'environment' ? 'user' : 'environment';
     setFacingMode(next);
     stopCamera();
-    setTimeout(() => startCamera(next), 300);
+    clearTimeout(toggleTimeoutRef.current);
+    toggleTimeoutRef.current = setTimeout(() => startCamera(next), 300);
   };
 
   const handleManual = (e) => {
@@ -132,7 +137,7 @@ export default function QRScanner() {
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 bg-slate-900 border-b border-slate-800">
         <button
-          onClick={() => { stopCamera(); navigate(-1); }}
+          onClick={() => { clearTimeout(toggleTimeoutRef.current); stopCamera(); navigate(-1); }}
           className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
