@@ -6,7 +6,7 @@
       "fecha": "2026-07-23",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "3d44cf8",
       "resumen": "Fix de bug real (no visual): el hook useSSE reconectaba el EventSource en CADA mensaje recibido en vez de mantener una conexión viva; de paso, keys de React basadas en índice en la pestaña Historial de Detalle de Equipo (órdenes/traslados) migradas a id estable.",
       "cambios": [
         "hooks/useSSE.js: `connect` (useCallback) listaba `lastEventId` como dependencia, pero `lastEventId` es un `useState` que el propio `onmessage`/los listeners de eventos custom (`status_change`/`equipo_update`/`nueva_orden`/`nueva_alerta`) actualizan dentro de ESE MISMO `connect` -- cada mensaje SSE recibido cambiaba la identidad de `connect`, lo que disparaba el `useEffect` que lo monta (`[connect, cleanup]`) y cerraba+reabría el `EventSource` acto seguido. Resultado real en producción: el Dashboard (único consumidor de `useDashboard`/`useSSE` junto con `TVDashboard.jsx`, el kiosko de sala) nunca sostenía una conexión SSE 'viva' mientras recibía eventos -- reconexión constante, carga innecesaria al backend, y riesgo de perder eventos entre el cierre y la reapertura del socket.",
