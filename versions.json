@@ -6,7 +6,7 @@
       "fecha": "2026-07-24",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "4719394",
       "resumen": "Fix de condicion de carrera en pages/Equipos.jsx: si dos peticiones de lista de equipos quedaban en vuelo a la vez (paginar/filtrar/ordenar rapido), la respuesta que llegaba primero pero era la mas reciente podia ser pisada por una respuesta vieja que llegaba despues, dejando en pantalla una pagina de equipos que ya no correspondia a los filtros/pagina seleccionados.",
       "cambios": [
         "pages/Equipos.jsx: `cargar()` (la unica funcion que trae la lista de equipos de `/api/equipos`, disparada por cambios en `filtros`/`offset`/`orden` via el `useEffect` de la linea 125) no tenia ninguna proteccion contra respuestas fuera de orden -- si el usuario cambiaba de pagina, tecleaba en el buscador (debounce 400ms) o cambiaba el orden varias veces seguidas antes de que la primera peticion terminara, cada `await api.getEquipos(params)` resolvia de forma independiente y el ultimo `setEquipos`/`setTotal` en ejecutar ganaba -- no necesariamente el de la peticion mas reciente. En una red real (WiFi de hospital, VPN Tailscale) donde el orden de llegada de respuestas HTTP no esta garantizado, esto podia dejar en pantalla equipos de la pagina/filtro anterior con el paginador ya mostrando la pagina nueva -- inconsistencia real entre lo que el usuario pidio y lo que ve, en el modulo de mayor uso de la app junto con Dashboard.",
