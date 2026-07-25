@@ -1,6 +1,26 @@
 {
-  "actual": "4.0.85",
+  "actual": "4.0.86",
   "versiones": [
+    {
+      "version": "4.0.86",
+      "fecha": "2026-07-25",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Mismo fix de condicion de carrera de v4.0.84/v4.0.85 (Equipos.jsx, Ordenes.jsx), ahora en pages/Tecnovigilancia.jsx: `cargar()` no protegia contra respuestas de red fuera de orden.",
+      "cambios": [
+        "pages/Tecnovigilancia.jsx: `cargar()` (lista de eventos de Tecnovigilancia NOM-240, envuelta en `useCallback` con deps `[estadoFiltro, severidadFiltro, busqueda]` y disparada por el `useEffect` de la linea 39) no tenia proteccion contra respuestas fuera de orden -- el mismo bug ya corregido en Equipos.jsx (v4.0.84) y Ordenes.jsx (v4.0.85), senalado en ambas notas de version como patron a revisar en el resto de la app. Este archivo era el candidato mas expuesto encontrado: el campo de busqueda no tiene debounce (`onChange` llama `setBusqueda` directo), asi que cada tecla escrita dispara una peticion nueva a `/api/tecnovigilancia` -- con red lenta o inestable (WiFi de hospital, VPN Tailscale), una respuesta vieja que llegaba tarde podia pisar el resultado de una busqueda o cambio de filtro (estado/severidad) mas reciente ya resuelto.",
+        "Fix: mismo patron ya validado en Equipos.jsx/Ordenes.jsx -- un ref contador de secuencia (`cargarSeqRef`), cada llamada a `cargar()` captura su propio numero (`seq`) al iniciar y, al resolver (exito o error), descarta el resultado si `seq` ya no coincide con el valor actual del ref (una peticion mas nueva se disparo mientras esta esperaba). La peticion mas reciente en vuelo siempre gana.",
+        "Cambio acotado a `pages/Tecnovigilancia.jsx` (1 ref nuevo + 1 captura de secuencia + 3 guardas de descarte, sobre `cargar()`). No se toco el resto del componente (modales de crear/detalle evento, filtros de tabla, formato PDF NOM-240). Se revisaron tambien `Almacen.jsx` (`cargar()` disparado por `filterStockBajo`/Enter en busqueda, mismo bug presente) y otras 8 paginas con `useEffect`+fetch (`Reservas.jsx`, `Metrologia.jsx`, `Trazabilidad.jsx`, etc.) -- todas cargan solo una vez al montar o via accion puntual (boton/Enter), sin el patron de refetch en cada tecla que hace a Tecnovigilancia el caso mas urgente; `Almacen.jsx` queda como candidato para un ciclo futuro."
+      ],
+      "verificar": [
+        "Flujo normal (red rapida): Tecnovigilancia debe verse y comportarse exactamente igual que antes -- filtrar por estado/severidad, buscar por texto, ver el listado de eventos.",
+        "Con DevTools > Network > throttling a 'Slow 3G' en Tecnovigilancia: escribir varias letras seguidas en el buscador -- la lista final debe corresponder siempre al ultimo texto escrito, sin parpadear a resultados de una busqueda anterior.",
+        "Mismo throttling: cambiar el filtro de Estado o Severidad 2-3 veces rapido -- el listado final debe corresponder al ultimo filtro seleccionado.",
+        "Confirmar que el spinner de carga no se queda pegado en `true` si una peticion vieja resuelve despues que la mas nueva."
+      ],
+      "rollback": "4.0.85"
+    },
     {
       "version": "4.0.85",
       "fecha": "2026-07-25",

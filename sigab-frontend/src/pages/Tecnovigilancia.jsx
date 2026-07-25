@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api/sigah';
 import { TV_ESTADO_COLORS, TV_SEVERIDAD_COLORS, TV_TIPO_LABELS, TV_ESTADO_LABELS } from '../utils/constants';
 import EventoAdversoModal from '../components/EventoAdversoModal';
@@ -18,7 +18,10 @@ export default function Tecnovigilancia() {
   const [showCrear, setShowCrear] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
+  const cargarSeqRef = useRef(0);
+
   const cargar = useCallback(async () => {
+    const seq = ++cargarSeqRef.current;
     setLoading(true);
     try {
       const res = await api.getEventos({
@@ -26,12 +29,14 @@ export default function Tecnovigilancia() {
         severidad: severidadFiltro || undefined,
         busqueda: busqueda || undefined,
       });
+      if (seq !== cargarSeqRef.current) return; // respuesta obsoleta, ya hay una petición más nueva en vuelo
       setEventos(res.eventos || []);
     } catch (err) {
+      if (seq !== cargarSeqRef.current) return;
       console.error(err);
       toast.error('No se pudieron cargar los eventos de tecnovigilancia');
     } finally {
-      setLoading(false);
+      if (seq === cargarSeqRef.current) setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estadoFiltro, severidadFiltro, busqueda]);
