@@ -1,6 +1,26 @@
 {
-  "actual": "4.0.83",
+  "actual": "4.0.84",
   "versiones": [
+    {
+      "version": "4.0.84",
+      "fecha": "2026-07-24",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Fix de condicion de carrera en pages/Equipos.jsx: si dos peticiones de lista de equipos quedaban en vuelo a la vez (paginar/filtrar/ordenar rapido), la respuesta que llegaba primero pero era la mas reciente podia ser pisada por una respuesta vieja que llegaba despues, dejando en pantalla una pagina de equipos que ya no correspondia a los filtros/pagina seleccionados.",
+      "cambios": [
+        "pages/Equipos.jsx: `cargar()` (la unica funcion que trae la lista de equipos de `/api/equipos`, disparada por cambios en `filtros`/`offset`/`orden` via el `useEffect` de la linea 125) no tenia ninguna proteccion contra respuestas fuera de orden -- si el usuario cambiaba de pagina, tecleaba en el buscador (debounce 400ms) o cambiaba el orden varias veces seguidas antes de que la primera peticion terminara, cada `await api.getEquipos(params)` resolvia de forma independiente y el ultimo `setEquipos`/`setTotal` en ejecutar ganaba -- no necesariamente el de la peticion mas reciente. En una red real (WiFi de hospital, VPN Tailscale) donde el orden de llegada de respuestas HTTP no esta garantizado, esto podia dejar en pantalla equipos de la pagina/filtro anterior con el paginador ya mostrando la pagina nueva -- inconsistencia real entre lo que el usuario pidio y lo que ve, en el modulo de mayor uso de la app junto con Dashboard.",
+        "Fix: nuevo `cargarSeqRef` (contador de peticiones en vuelo, patron ya usado en la app para timers via refs -- `reconnectTimeoutRef`/`hardRefreshTimeoutRef` de `hooks/useSSE.js`, v4.0.81). Cada llamada a `cargar()` incrementa el contador y captura su propio numero de secuencia (`seq`); al resolver (exito o error), si `seq` ya no coincide con el valor actual del ref significa que una peticion mas nueva se disparo mientras esta esperaba respuesta, y el resultado se descarta sin tocar el estado (`setEquipos`/`setTotal`/`setMarcas`/`setTipos`/`setLoading`/el toast de error). La peticion mas reciente en vuelo siempre gana, sin importar el orden real de llegada de las respuestas HTTP.",
+        "Cambio acotado a `pages/Equipos.jsx` (6 lineas): 1 ref nuevo + 1 captura de secuencia + 3 guardas de descarte. No se toco el resto del componente (filtros, paginacion, vistas tarjeta/tabla, `EquipoDetail`, `EquipoForm`, QR) ni ningun otro archivo -- Ordenes.jsx tiene el mismo patron sin esta proteccion (`cargar()`/`cargarArchivos()`), candidato para un ciclo futuro."
+      ],
+      "verificar": [
+        "Flujo normal (red rapida): Inventario debe verse y comportarse exactamente igual que antes -- filtrar, paginar, ordenar, buscar. Este fix solo cambia el comportamiento cuando hay 2+ peticiones simultaneas en vuelo.",
+        "Con DevTools > Network > throttling a 'Slow 3G' (o similar) en Inventario: cambiar de pagina 2-3 veces rapido (antes de que cada una termine de cargar) y confirmar que la lista final en pantalla siempre corresponde a la ULTIMA pagina clickeada, no a una intermedia.",
+        "Mismo throttling: escribir varias letras seguidas en el buscador y confirmar que la lista final corresponde al texto de busqueda actual, sin parpadear a resultados de un texto anterior.",
+        "Confirmar que el spinner de carga (`loading`) no se queda pegado en `true` si una peticion vieja resuelve despues que la nueva -- debe apagarse solo cuando la peticion mas reciente termina."
+      ],
+      "rollback": "4.0.83"
+    },
     {
       "version": "4.0.83",
       "fecha": "2026-07-24",

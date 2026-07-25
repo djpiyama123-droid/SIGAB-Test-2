@@ -87,6 +87,10 @@ export default function Equipos() {
   const [marcas, setMarcas] = useState([]);
   const [tipos, setTipos] = useState([]);
   const [buscarText, setBuscarText] = useState(() => searchParams.get('buscar') || '');
+  // Contador de peticiones en vuelo: si el usuario pagina/filtra rápido y una
+  // respuesta vieja llega después de una más nueva (orden de red no garantizado),
+  // descarta la vieja en vez de dejarla pisar la lista ya correcta en pantalla.
+  const cargarSeqRef = useRef(0);
 
   // Cargar catálogos al montar
   useEffect(() => {
@@ -99,6 +103,7 @@ export default function Equipos() {
   }, []);
 
   const cargar = useCallback(async () => {
+    const seq = ++cargarSeqRef.current;
     setLoading(true);
     try {
       const params = {
@@ -108,6 +113,7 @@ export default function Equipos() {
         orden,
       };
       const res = await api.getEquipos(params);
+      if (seq !== cargarSeqRef.current) return; // respuesta obsoleta, ya hay una petición más nueva en vuelo
       setEquipos(res.equipos || []);
       setTotal(res.total || 0);
       if (res.catalogos) {
@@ -115,10 +121,11 @@ export default function Equipos() {
         setTipos(res.catalogos.tipos || []);
       }
     } catch (err) {
+      if (seq !== cargarSeqRef.current) return;
       console.error(err);
       toast.error('No se pudieron cargar los equipos');
     } finally {
-      setLoading(false);
+      if (seq === cargarSeqRef.current) setLoading(false);
     }
   }, [filtros, offset, orden]); // eslint-disable-line
 
