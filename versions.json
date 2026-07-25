@@ -1,6 +1,25 @@
 {
-  "actual": "4.0.84",
+  "actual": "4.0.85",
   "versiones": [
+    {
+      "version": "4.0.85",
+      "fecha": "2026-07-25",
+      "tipo": "patch",
+      "autor": "loop-thinkcentre",
+      "commit": "PENDIENTE",
+      "resumen": "Fix de la misma condicion de carrera de v4.0.84 (Equipos.jsx), ahora en pages/Ordenes.jsx: `cargar()` y `cargarArchivos()` no protegian contra respuestas de red fuera de orden.",
+      "cambios": [
+        "pages/Ordenes.jsx: `cargar()` (lista de Ordenes de Servicio activas, disparada por cambios en `estadoFiltro`/`tipoFiltro`/`equipoIdFiltro`) y `cargarArchivos()` (paginador de la pestaña 'Historico' ORDENESIMSS, disparada por cambiar de pagina o buscar) no tenian proteccion contra respuestas fuera de orden -- exactamente el mismo bug corregido en v4.0.84 para pages/Equipos.jsx, senalado explicitamente en esa nota de version como candidato pendiente para este archivo. Si el usuario cambiaba de filtro de estado/tipo varias veces seguido, o paginaba/buscaba rapido en el historico, una respuesta vieja que llegaba tarde podia pisar el resultado de una peticion mas reciente ya resuelta.",
+        "Fix: mismo patron ya validado en Equipos.jsx -- un ref contador de secuencia por funcion (`cargarSeqRef`, `cargarArchivosSeqRef`), cada llamada captura su propio numero (`seq`) al iniciar y, al resolver (exito o error), descarta el resultado si `seq` ya no coincide con el valor actual del ref (una peticion mas nueva se disparo mientras esta esperaba). La peticion mas reciente en vuelo siempre gana.",
+        "Cambio acotado a `pages/Ordenes.jsx` (2 refs nuevos + 2 capturas de secuencia + 6 guardas de descarte, sobre `cargar()` y `cargarArchivos()`). No se toco el resto del componente (formulario de Nueva OS, modal de detalle, Casillas CENEVAL, escaneo IMSS)."
+      ],
+      "verificar": [
+        "Flujo normal (red rapida): Ordenes de Servicio debe verse y comportarse exactamente igual que antes -- filtrar por estado/tipo, ver el listado activo, cambiar a la pestana 'Historico' y paginar/buscar ahi.",
+        "Con DevTools > Network > throttling a 'Slow 3G' en Ordenes: cambiar el filtro de Estado o Tipo 2-3 veces rapido (antes de que la peticion anterior responda) -- la lista final debe corresponder siempre al ultimo filtro seleccionado, sin parpadeos con datos del filtro anterior.",
+        "Mismo throttling en la pestana 'Historico': buscar y cambiar de pagina rapido varias veces -- el listado final debe corresponder a la ultima busqueda/pagina pedida."
+      ],
+      "rollback": "4.0.84"
+    },
     {
       "version": "4.0.84",
       "fecha": "2026-07-24",

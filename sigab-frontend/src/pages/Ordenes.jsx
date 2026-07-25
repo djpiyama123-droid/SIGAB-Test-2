@@ -85,8 +85,11 @@ export default function Ordenes() {
   const [pisosOpts,  setPisosOpts]  = useState([]);
   const equipoRef  = useRef(null);
   const buscarTimer = useRef(null);
+  const cargarSeqRef = useRef(0);
+  const cargarArchivosSeqRef = useRef(0);
 
   const cargar = useCallback(async () => {
+    const seq = ++cargarSeqRef.current;
     setLoading(true);
     try {
       const res = await api.getOrdenes({
@@ -94,27 +97,32 @@ export default function Ordenes() {
         tipo: tipoFiltro || undefined,
         equipo_id: equipoIdFiltro || undefined,
       });
+      if (seq !== cargarSeqRef.current) return; // respuesta obsoleta, ya hay una petición más nueva en vuelo
       setOrdenes(res.ordenes || []);
     } catch (err) {
+      if (seq !== cargarSeqRef.current) return;
       console.error(err);
       toast.error('No se pudieron cargar las órdenes');
     } finally {
-      setLoading(false);
+      if (seq === cargarSeqRef.current) setLoading(false);
     }
   }, [estadoFiltro, tipoFiltro, equipoIdFiltro]); // eslint-disable-line
 
   const cargarArchivos = useCallback(async (pagina = 1, buscar = '') => {
+    const seq = ++cargarArchivosSeqRef.current;
     setArchivosLoading(true);
     try {
       const res = await api.getArchivosHistoricos({ page: pagina, buscar: buscar || undefined, limit: 30 });
+      if (seq !== cargarArchivosSeqRef.current) return; // respuesta obsoleta
       setArchivos(res.archivos || []);
       setArchivosTotal(res.total || 0);
       setArchivosPag(pagina);
     } catch (err) {
+      if (seq !== cargarArchivosSeqRef.current) return;
       console.error(err);
       toast.error('No se pudo cargar el archivo histórico');
     } finally {
-      setArchivosLoading(false);
+      if (seq === cargarArchivosSeqRef.current) setArchivosLoading(false);
     }
   }, []); // eslint-disable-line
 
