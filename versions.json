@@ -6,7 +6,7 @@
       "fecha": "2026-07-25",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "f4204aa",
       "resumen": "Mismo fix de condicion de carrera de v4.0.84/v4.0.85 (Equipos.jsx, Ordenes.jsx), ahora en pages/Tecnovigilancia.jsx: `cargar()` no protegia contra respuestas de red fuera de orden.",
       "cambios": [
         "pages/Tecnovigilancia.jsx: `cargar()` (lista de eventos de Tecnovigilancia NOM-240, envuelta en `useCallback` con deps `[estadoFiltro, severidadFiltro, busqueda]` y disparada por el `useEffect` de la linea 39) no tenia proteccion contra respuestas fuera de orden -- el mismo bug ya corregido en Equipos.jsx (v4.0.84) y Ordenes.jsx (v4.0.85), senalado en ambas notas de version como patron a revisar en el resto de la app. Este archivo era el candidato mas expuesto encontrado: el campo de busqueda no tiene debounce (`onChange` llama `setBusqueda` directo), asi que cada tecla escrita dispara una peticion nueva a `/api/tecnovigilancia` -- con red lenta o inestable (WiFi de hospital, VPN Tailscale), una respuesta vieja que llegaba tarde podia pisar el resultado de una busqueda o cambio de filtro (estado/severidad) mas reciente ya resuelto.",
