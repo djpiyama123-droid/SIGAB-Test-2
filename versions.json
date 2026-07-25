@@ -6,7 +6,7 @@
       "fecha": "2026-07-25",
       "tipo": "patch",
       "autor": "loop-thinkcentre",
-      "commit": "PENDIENTE",
+      "commit": "fdf5ec2",
       "resumen": "Fix de la misma condicion de carrera de v4.0.84 (Equipos.jsx), ahora en pages/Ordenes.jsx: `cargar()` y `cargarArchivos()` no protegian contra respuestas de red fuera de orden.",
       "cambios": [
         "pages/Ordenes.jsx: `cargar()` (lista de Ordenes de Servicio activas, disparada por cambios en `estadoFiltro`/`tipoFiltro`/`equipoIdFiltro`) y `cargarArchivos()` (paginador de la pestaña 'Historico' ORDENESIMSS, disparada por cambiar de pagina o buscar) no tenian proteccion contra respuestas fuera de orden -- exactamente el mismo bug corregido en v4.0.84 para pages/Equipos.jsx, senalado explicitamente en esa nota de version como candidato pendiente para este archivo. Si el usuario cambiaba de filtro de estado/tipo varias veces seguido, o paginaba/buscaba rapido en el historico, una respuesta vieja que llegaba tarde podia pisar el resultado de una peticion mas reciente ya resuelta.",
