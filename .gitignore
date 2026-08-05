@@ -109,3 +109,15 @@ graphify-out/
 # runtime del loop
 CICLO-RESULTADO.md
 .claude/settings.json
+
+# Credenciales y llaves — nunca commitear (hardening 2026-07-25)
+*.pem
+*.key
+*.p12
+*_rsa
+*_ed25519
+auth_sigah/
+credentials*.json
+*.credentials.json
+.env.local
+.env.*.local
