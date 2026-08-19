@@ -42,7 +42,7 @@ URLS PÚBLICAS
 
 DATOS REALES EN MySQL (DB `sigab`, ojo: con 'b')
 - 751 equipos, 50 órdenes de servicio, 49 zonas de mapa, 1 hospital, 1 usuario. NO inventar datos mock.
-- Acceso: docker exec -it sigah-mysql mysql -usigab_user -p7_ALvv_NEldMfImwdnA6sw sigab
+- Acceso: docker exec -it sigah-mysql mysql -usigab_user -p"$DB_PASS" sigab   (leer DB_PASS de /opt/sigab/.env; NUNCA pegar el valor real aqui — password anterior expuesta y rotada 2026-08-19)
 - Migraciones versionadas e idempotentes en database/migrations/00X_nombre.sql
 
 REGLA DE ORO (NO ROMPER PRODUCCIÓN)

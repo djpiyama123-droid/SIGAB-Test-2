@@ -135,12 +135,13 @@ SIGAH/  (este repo en GitHub: djpiyama123-droid/SIGAH)
 - **SOLUCIÓN**: Ejecutar `docker restart traefik` en el VPS. Esto recarga la conexión y restaura la resolución de rutas inmediatamente.
 
 ### 3. Credenciales de Base de Datos en Producción
-Para cualquier migración de base de datos directa o scripts de mantenimiento en la VPS, usar los datos reales del contenedor:
+**⚠️ Nunca escribir contraseñas reales en este archivo — es un repositorio público/compartido entre agentes.**
+Para cualquier migración de base de datos directa o scripts de mantenimiento en el VPS, usar los datos reales del contenedor:
 - **Base de Datos**: `sigab` (nota la 'b')
 - **Usuario**: `sigab_user`
-- **Contraseña**: `7_ALvv_NEldMfImwdnA6sw`
-- **Comando de acceso rápido**:
-  `docker exec -it sigah-mysql mysql -usigab_user -p7_ALvv_NEldMfImwdnA6sw sigab`
+- **Contraseña**: rotada 2026-08-19 tras exposición en este archivo — ver gestor de contraseñas / `.env` del VPS (`DB_PASS` en `/opt/sigab/.env`), nunca en texto plano en el repo.
+- **Comando de acceso rápido** (sustituir `$DB_PASS` por el valor real leído del `.env`, nunca pegarlo aquí):
+  `docker exec -it sigah-mysql mysql -usigab_user -p"$DB_PASS" sigab`
 
 ### 4. Sincronización Antigravity & Claude Code
 - Ambos agentes deben operar cooperativamente y mantener `CLAUDE.md` como la **fuente de verdad** y memoria compartida del proyecto.
