@@ -45,6 +45,9 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 # Forzar SSL deshabilitado para entornos de prueba ANTES de importar database.py
 os.environ.setdefault("SIGAH_SSL_DISABLED", "true")
+# El rate limiter (middleware/rate_limit.py, lee _ENABLED al importar) devuelve 429
+# a ráfagas del TestClient — en tests se prueba lógica de negocio, no el limiter.
+os.environ.setdefault("SIGAH_RL_ENABLED", "0")
 
 # Imports del backend (asumiendo pytest se corre desde sigah-backend/ con rootdir ahí)
 from main import app  # noqa: E402
@@ -87,6 +90,17 @@ def create_test_schema():
         _engine = _cae(TEST_DATABASE_URL, echo=False, future=True)
         async with _engine.begin() as conn:
             await conn.run_sync(SQLModel.metadata.create_all)
+            # Los fixtures crean equipos/usuarios con tenant_id=1 (FK NOT NULL →
+            # hospitales.id); sin esta fila todos revientan con IntegrityError 1452.
+            await conn.exec_driver_sql(
+                "INSERT INTO hospitales (id, slug, razon_social, nombre_corto, "
+                " color_primario, departamento, zona_horaria, estado_suscripcion, "
+                " created_at, updated_at) "
+                "VALUES (1, 'hgr1-test', 'Hospital de Prueba Tenant 1', 'HGR1-TEST', "
+                " '#006CB7', 'Departamento de Conservación', 'America/Tijuana', 'activo', "
+                " NOW(), NOW()) "
+                "ON DUPLICATE KEY UPDATE slug = slug"
+            )
         await _engine.dispose()
 
     _asyncio.run(_create())

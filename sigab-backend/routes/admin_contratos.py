@@ -222,6 +222,23 @@ async def importar_equipos(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="metadata.json 'contratos' must be a list",
             )
+        if not contratos:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="metadata.json must contain a non-empty 'contratos' list",
+            )
+
+        # Los nombres de archivo referidos en metadata también entran a rutas de
+        # disco (_maybe_save_pdf) — validarlos igual que los nombres del ZIP.
+        for entry in contratos:
+            if isinstance(entry, dict):
+                referenced = [entry.get("contrato_pdf_file")] + list(entry.get("hojas_servicio_files") or [])
+                for fname in referenced:
+                    if fname and not _is_safe_filename(fname):
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Unsafe filename in metadata.json: {fname}",
+                        )
 
         UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
