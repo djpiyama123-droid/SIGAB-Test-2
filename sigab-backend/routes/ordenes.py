@@ -220,10 +220,17 @@ async def crear_orden(
             await session.rollback()
             raise HTTPException(status_code=409, detail=f"No se pudo crear la orden: {e}")
 
-    # Agregar materiales
+    # Agregar materiales. Acepta tanto dicts ({"descripcion": ..., "cantidad": ...},
+    # como los envía el frontend web) como strings sueltos (formato usado por el
+    # bot de WhatsApp, ver routes/openclaw.py). Antes esto llamaba mat.get(...)
+    # incondicionalmente y tronaba con AttributeError si mat era un str.
     for mat in materiales_data:
-        desc = mat.get("descripcion", mat if isinstance(mat, str) else "")
-        cant = mat.get("cantidad", 1) if isinstance(mat, dict) else 1
+        if isinstance(mat, dict):
+            desc = mat.get("descripcion", "")
+            cant = mat.get("cantidad", 1)
+        else:
+            desc = str(mat) if mat else ""
+            cant = 1
         nuevo_mat = MATERIAL_OS(orden_id=orden.id, descripcion=desc, cantidad=cant)
         session.add(nuevo_mat)
 
