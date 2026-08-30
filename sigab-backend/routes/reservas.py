@@ -64,11 +64,15 @@ async def crear_reserva(
             raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
         # Verificar conflictos dentro del mismo tenant (el equipo ya está validado).
+        # Nota: si la reserva nueva es abierta (fecha_fin=None), "fecha_inicio < NULL"
+        # evalúa a NULL en SQL y la fila se excluye del WHERE — antes eso hacía que
+        # el chequeo de solapamiento se saltara por completo para reservas abiertas,
+        # permitiendo doble-reservar el equipo. Se trata NULL como "sin límite superior".
         await cur.execute(
             """SELECT id FROM reservas
                WHERE equipo_id = %s AND estado IN ('pendiente','activa')
-               AND fecha_inicio < %s AND (fecha_fin IS NULL OR fecha_fin > %s)""",
-            (data["equipo_id"], data.get("fecha_fin"), data["fecha_inicio"]),
+               AND (%s IS NULL OR fecha_inicio < %s) AND (fecha_fin IS NULL OR fecha_fin > %s)""",
+            (data["equipo_id"], data.get("fecha_fin"), data.get("fecha_fin"), data["fecha_inicio"]),
         )
         conflicto = await cur.fetchone()
 
@@ -167,11 +171,13 @@ async def editar_reserva(
             raise HTTPException(status_code=400, detail="La fecha de fin debe ser posterior al inicio")
 
         # Solapamiento con otra reserva activa del mismo equipo (excluye la propia).
+        # Mismo fix que en crear_reserva: fecha_fin=None (reserva abierta) no debe
+        # anular el chequeo de solapamiento.
         await cur.execute(
             """SELECT id FROM reservas
                WHERE equipo_id = %s AND id != %s AND estado IN ('pendiente','activa')
-               AND fecha_inicio < %s AND (fecha_fin IS NULL OR fecha_fin > %s)""",
-            (equipo_id, reserva_id, fecha_fin, fecha_inicio),
+               AND (%s IS NULL OR fecha_inicio < %s) AND (fecha_fin IS NULL OR fecha_fin > %s)""",
+            (equipo_id, reserva_id, fecha_fin, fecha_fin, fecha_inicio),
         )
         if await cur.fetchone():
             raise HTTPException(status_code=409, detail="Conflicto de reserva existente")
