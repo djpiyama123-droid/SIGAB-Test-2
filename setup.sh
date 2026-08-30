@@ -66,8 +66,8 @@ echo -e "${YELLOW}[5/9] Importando esquemas y datos...${NC}"
 cd "$SIGAH_DIR"
 
 # Esquema fresco de SIGAH
-if [ -f database/sigah_schema_fresh.sql ]; then
-    mysql -u sigah_user -psigah_pass_2026 sigah < database/sigah_schema_fresh.sql 2>/dev/null
+if [ -f database/sigab_schema_fresh.sql ]; then
+    mysql -u sigah_user -psigah_pass_2026 sigah < database/sigab_schema_fresh.sql 2>/dev/null
     echo "  OK: Esquema SIGAH importado"
 fi
 
@@ -102,7 +102,7 @@ echo "  OK: Node $(node -v), npm $(npm -v)"
 
 # ── 7. Instalar frontend ─────────────────────────────────────
 echo -e "${YELLOW}[7/9] Instalando dependencias del frontend...${NC}"
-cd "$SIGAH_DIR/sigah-frontend"
+cd "$SIGAH_DIR/sigab-frontend"
 npm install --loglevel=error 2>&1 | tail -3
 echo "  OK: Frontend listo"
 
@@ -110,7 +110,7 @@ echo "  OK: Frontend listo"
 echo -e "${YELLOW}[8/9] Instalando dependencias del backend...${NC}"
 sudo apt install -y -qq python3 python3-pip python3-venv > /dev/null 2>&1
 
-cd "$SIGAH_DIR/sigah-backend"
+cd "$SIGAH_DIR/sigab-backend"
 
 # Crear venv si no existe
 if [ ! -d venv ]; then
@@ -175,12 +175,12 @@ echo ""
 echo -e "Para arrancar SIGAH:"
 echo ""
 echo -e "  ${YELLOW}Terminal 1 (Backend):${NC}"
-echo -e "    cd $SIGAH_DIR/sigah-backend"
+echo -e "    cd $SIGAH_DIR/sigab-backend"
 echo -e "    source venv/bin/activate"
 echo -e "    uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
 echo ""
 echo -e "  ${YELLOW}Terminal 2 (Frontend):${NC}"
-echo -e "    cd $SIGAH_DIR/sigah-frontend"
+echo -e "    cd $SIGAH_DIR/sigab-frontend"
 echo -e "    npm run dev"
 echo ""
 echo -e "  ${GREEN}Abrir en el navegador:${NC} http://localhost:5173"

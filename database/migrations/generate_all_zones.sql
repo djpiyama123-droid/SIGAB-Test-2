@@ -1,4 +1,4 @@
-USE sigab;
+USE sigah;
 
 -- Primero borramos la llave foranea temporalmente o actualizamos equipos a NULL
 UPDATE equipos SET zona_id = NULL;
