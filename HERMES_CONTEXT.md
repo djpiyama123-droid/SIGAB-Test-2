@@ -1,3 +1,7 @@
+> **NOTA — 2026-08-28:** Este archivo está **archivado**. Su contenido útil (posición en el ecosistema, separación con OpenClaw) se fusionó en [`hermes_soul.md`](hermes_soul.md), que es el documento vigente. Se conserva como **registro histórico**. No editar este archivo como doc vivo.
+
+---
+
 # HERMES — Rol operativo en el ecosistema SIGAH
 
 > **Este archivo define cómo actúa Hermes Agent en la VPS de SIGAH.** Para hechos del proyecto (stack, módulos, BD, normativas) leer `/opt/sigah/AGENTS.md` (ya cargado por defecto desde el cwd).

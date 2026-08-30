@@ -1,15 +1,19 @@
 # Infraestructura SIGAH — 3 máquinas + 1 fuente de verdad
 
-> Última actualización: 2026-05-29
+> Última actualización: 2026-08-28
 > Decisiones confirmadas por Gustavo: **Tailscale** (acceso) · **Ubuntu nativo** (ThinkCentre) · **Syncthing** (sync no-git)
 
 ---
 
+## 0. Split código vs. estado de agentes (decisión 2026-08-28)
+
+El **código** sigue viviendo solo en GitHub (principio de la sección 1, sin cambios). Pero el **estado de los agentes** (memorias, skills, credenciales, bot de Telegram) tiene un master distinto: el **ThinkCentre** es ahora el único lugar vivo para eso — memorias de Hermes/Claude/Orca, skills instaladas, `.env`/credenciales de los agentes, y el bot `@pragma_aibot`. La ASUS es cliente/respaldo dormido de ese estado, no una réplica activa. No confundir los dos planos: código = GitHub (las 3 máquinas), estado de agentes = ThinkCentre (un solo lugar).
+
 ## 1. Principio de diseño
 
-**GitHub (repo `SIGAH`) es la ÚNICA fuente de verdad.**
-Las 3 máquinas son réplicas que se sincronizan con `git pull`. Ninguna máquina física
-es "el master" — eso evita el punto único de falla.
+**GitHub (repo `SIGAH`) es la ÚNICA fuente de verdad para el código.**
+Las máquinas son réplicas de código que se sincronizan con `git pull`. Ninguna máquina física
+es "el master" del código — eso evita el punto único de falla. (Para el estado de agentes, ver sección 0: ese master sí es el ThinkCentre.)
 
 ```
                   ┌──────────────────────────────┐
@@ -21,10 +25,10 @@ es "el master" — eso evita el punto único de falla.
         ▼                         ▼                         ▼
 ┌───────────────┐        ┌──────────────────┐      ┌──────────────────┐
 │  ASUS TUF A16 │        │ ThinkCentre M720q │      │  VPS Bluehost     │
-│  Windows+WSL2 │        │  Ubuntu 24.04     │      │  Ubuntu (prod)    │
-│               │        │  nativo, 24/7     │      │  129.121.100.147  │
-│ Sesiones      │        │ Claude Code 24/7  │      │  Docker stack     │
-│ largas / dev  │        │ Réplica + cómputo │      │  /opt/sigab       │
+│  Windows+WSL2 │        │  Ubuntu 25.10     │      │  CAÍDO desde      │
+│  cliente/     │        │  nativo, 24/7     │      │  jun-2026         │
+│ respaldo      │        │  master de estado │      │  (reactivar:      │
+│ dormido       │        │  de agentes       │      │   pendiente)      │
 └───────┬───────┘        └────────┬─────────┘      └────────┬─────────┘
         │                         │                         │
         └─────────────────────────┴─────────────────────────┘
@@ -50,24 +54,26 @@ es "el master" — eso evita el punto único de falla.
 ## 3. Roles de cada máquina
 
 ### ASUS TUF Gaming A16 (Windows 11 + WSL2 Ubuntu 24.04)
-- Estación de desarrollo principal para **sesiones largas e interactivas**.
+- Cliente / respaldo dormido. Ya no es el nodo de desarrollo principal ni réplica activa de estado de agentes (ver sección 0).
 - Ruta repo: `C:\Users\djpiy\Desktop\Bioingeneria\SIGAB`
 
-### ThinkCentre M720q (Ubuntu 24.04 nativo) — NUEVO nodo 24/7
-- Servidor de desarrollo siempre encendido con Claude Code.
+### ThinkCentre M720q (Ubuntu 25.10 nativo) — nodo 24/7 y master de estado de agentes
+- Servidor de desarrollo siempre encendido con Orca (Claude Code, OpenCode) y Hermes (`hermes-gateway.service`).
 - Se controla en remoto vía Tailscale SSH desde cualquier lugar.
-- Ruta repo sugerida: `~/sigah` (o `/opt/sigah` si se quiere paridad con el VPS).
+- Master del **estado de agentes** (memorias, skills, credenciales, bot `@pragma_aibot`) — ver sección 0.
 - Protegido por UPS APC (apagado seguro ante cortes).
 
-### VPS Bluehost (Ubuntu, producción)
-- Solo producción. Docker + Traefik. Ruta: `/opt/sigab`.
-- NO se desarrolla aquí; solo `git pull` + `docker compose up`.
+### VPS Bluehost (Ubuntu) — CAÍDO desde jun-2026
+- **Estado: caído por completo** (ni ICMP ni 22/80/443 responden). No es un nodo activo del stack actual.
+- Ruta cuando estaba en producción: `/opt/sigab`. Docker + Traefik.
+- Respaldo disponible solo hasta 10-jun-2026 (pre-piloto).
+- **Decisión pendiente de Gustavo:** si se reactiva o se da de baja definitivamente.
 
 ---
 
 ## 4. Runbook — Provisionar el ThinkCentre
 
-> Ejecutar EN el ThinkCentre tras instalar Ubuntu 24.04 Server/Desktop.
+> Ejecutar EN el ThinkCentre tras instalar Ubuntu 25.10 Server/Desktop. (Runbook histórico de aprovisionamiento — el ThinkCentre ya está provisionado; queda como referencia si hay que rehacerlo.)
 
 ### 4.1 Paquetes base
 ```bash
@@ -154,5 +160,5 @@ Así las 3 máquinas convergen al mismo estado vía GitHub.
 | Exponer SSH a internet | Tailscale (sin abrir puertos del router) |
 | Secretos filtrados a git | `.env` en `.gitignore`; sync por Syncthing carpeta privada |
 | Conflictos de merge entre máquinas | Pull antes de trabajar; ramas por sesión; `.claude/shared/` para coordinar |
-| Disco del ThinkCentre falla | El repo vive en GitHub + ASUS + VPS; pérdida = re-clonar |
+| Disco del ThinkCentre falla | El código vive en GitHub (+ réplica en ASUS); pérdida de código = re-clonar. El **estado de agentes** (memorias, credenciales) solo vive en el ThinkCentre — sin VPS activo como respaldo, evaluar backup propio |
 ```
