@@ -1,0 +1,91 @@
+# Reporte nocturno — Pitch SIGAB (Canva)
+
+**Fecha de ejecución:** 2026-09-05 · ~10:10 UTC / ~03:10 hora Tijuana (PDT)
+**Design de trabajo:** `DAHO0pWG4g0` — "Presentación - SIGAB"
+**Design canónico `DAHNT2nuHCw`:** no se editó; se leyó solo metadata (page_count) para contrastar el conteo de páginas — sigue en 13 páginas, sin cambios
+**Modo:** solo lectura (sin `start-editing-transaction`, sin cambios en Canva)
+
+---
+
+## 🚨 Resumen ejecutivo
+
+1. **Sin cambios de contenido respecto al reporte de 2026-09-04.** Mismo conteo de páginas, misma alerta activa, mismos pendientes. Este es el **13vo reporte consecutivo idéntico en sustancia** (2026-08-24 a 09-05).
+2. **El deck sigue en 31 páginas** — el contexto fijo de esta rutina asume 12. Discrepancia de fondo persistente, sin cambio desde 2026-08-20.
+3. **ALERTA persistente (sin cambios) — la línea del escáner en la slide 7 (página real 11) sigue con "elegir 1 de 2" + Creality Sermoon P1 $85,999**, en vez del texto congelado original ("Escáner 3D MIRACO Plus: $48,000."). Sigue sin corregirse ni confirmarse por Gustavo. Este es el **17vo reporte consecutivo** con esta misma alerta sin resolver (2026-08-20 a 09-05). **Hoy es el día 47** sin decisión (abierto desde 2026-07-20). No es hito de recordatorio (el próximo es el día 60 = 2026-09-18).
+4. **Las cifras base congeladas siguen intactas**: título "Inversión SIGAB: $72,000–$80,800 MXN" y recurrentes "$14,688 MXN/año". Confirmado por texto y por miniatura de las páginas 11, 13 y 15.
+5. **Confirmado por miniatura: las 3 tarjetas del antiguo pendiente (e) siguen presentes** en páginas 7, 14 y 16, con texto idéntico al solicitado. Se mantiene fuera de la lista de pendientes.
+6. Los 2 assets de imagen (`laser.png`, `miraco.png`) responden HTTP 200 / `image/png` correctamente.
+7. Byline de portada pequeño, verde del "90%" (página 10, tono muy oscuro/casi negro) visualmente distinto al verde institucional de los encabezados (página 7, verde forest medio), e imagen de GPU tipo render/producto (página 11, sin marca visible más allá del logo genérico) siguen pendientes, sin cambios visibles.
+8. Verificación informativa del precio MIRACO Plus en 3dmarket.mx: se intentó de nuevo esta noche vía `WebSearch` + `WebFetch` directo; ambos siguen sin dar una cifra confiable (ver sección 3). No bloqueante, no se modificó nada.
+
+**NO se envía notificación push esta noche.** Nada cambió respecto a 2026-09-04 y no se alcanzó ningún hito nuevo (el próximo hito programado sigue siendo el día 60 / 2026-09-18, según la cadencia adoptada el 2026-09-03).
+
+---
+
+## 1. Verificación de cifras exactas
+
+| Cifra fija de referencia | Estado | Página real | Detalle |
+|---|---|---|---|
+| Título slide 7: **"Inversión SIGAB: $72,000–$80,800 MXN"** | ✅ Intacta | Página 11 | Coincide carácter por carácter, incluyendo el en-dash. Confirmado por texto y por miniatura. |
+| Línea slide 7: *"Láser: WAINLUX $9,935 o PEKOKO $18,753 (elegir 1). **Escáner 3D MIRACO Plus: $48,000.** GPU IA local (24 GB VRAM, AirLLM, NOM-016): RTX 4060 Ti $14,000 o RTX 3090 $35,000."* | 🚨 **ALERTA — sigue distinta (persiste, 17va corrida consecutiva — día 47 sin decisión)** | Página 11 | Texto real: *"Láser: WAINLUX $9,935 o PEKOKO $18,753 (elegir 1). **Escáner 3D (elegir 1): MIRACO Plus $48,000 o Creality Sermoon P1 $85,999 premium.** GPU IA local (24 GB VRAM, AirLLM, NOM-016): RTX 4060 Ti $14,000 o RTX 3090 $35,000."* Confirmado por texto y por miniatura de la página 11. Existe además una página dedicada (**página 13**, "Inversión inicial — Escáner 3D: elegir 1 de 2") con tabla comparativa: Opción A (MIRACO Plus, $48,000, total $72,000–$80,800 MXN) vs. Opción B (Creality Sermoon P1, $85,999, total $109,934–$118,752 MXN), confirmada de nuevo por miniatura esta corrida sin cambios. El título de la página 11 ($72,000–$80,800) sigue siendo consistente solo con la Opción A. |
+| pág 9: **"$14,688"** MXN/año | ✅ Intacta | Página 15 (y repetida en el pie de la página 13) | *"MiniMax Max: $10,800/año · VPS Bluehost: $3,240/año · Dominio + extras: $648/año — total $14,688 MXN/año"* y *"Costo operativo anual aprox $14,688 MXN/año"*. Ambas menciones correctas. |
+
+No se detectaron cambios nuevos en las cifras respecto al reporte del 2026-09-04; el estado de la línea del escáner sigue igual (no ha sido corregida ni confirmada). No se hizo ninguna corrección automática — según las reglas de esta rutina, cualquier discrepancia se reporta, nunca se corrige.
+
+---
+
+## 2. Verificación de assets (GitHub raw)
+
+| URL | Resultado |
+|---|---|
+| `.../assets/pitch-2026-07-10/laser.png` | ✅ HTTP 200, `content-type: image/png` |
+| `.../assets/pitch-2026-07-10/miraco.png` | ✅ HTTP 200, `content-type: image/png` |
+
+Sin incidentes.
+
+---
+
+## 3. Verificación informativa — precio MIRACO Plus en revendedor MX (opcional, no bloqueante)
+
+Se intentó de nuevo esta noche (no se repetía desde el 2026-08-29):
+- `WebSearch` ("Revopoint MIRACO Plus precio MXN 3dmarket.mx") localizó la ficha correcta (`https://www.3dmarket.mx/p/escaner-3d-miraco-plus-revopoint/`) pero no devolvió el precio en el extracto de resultados.
+- `WebFetch` directo a esa misma URL fue rechazado por el proxy de salida del entorno: `EGRESS_BLOCKED — Access to www.3dmarket.mx is blocked by the network egress proxy.`
+
+**No se modificó nada en Canva ni en la cifra congelada de esta rutina.** Esto es solo informativo, tal como indican las reglas de esta rutina.
+
+Recomendación (sin cambios): si Gustavo quiere confirmar esta cifra, deberá revisar directamente `3dmarket.mx` desde su máquina (fuera de este entorno con proxy restringido), ya que el acceso automatizado sigue sin ser confiable. Dado el patrón repetido de bloqueo/datos no confiables, se sugiere no repetir este intento cada noche salvo pedido explícito de Gustavo.
+
+---
+
+## 4. Pendientes manuales de Gustavo
+
+### a. Unificar el verde del "90%" con el verde institucional
+**Pendiente.** Al comparar esta corrida las miniaturas de la página 10 ("90%") con el encabezado institucional de la página 7 ("La IA y los Agentes"), el "90%" se percibe en un tono oscuro (negro/verde muy oscuro) distinguible del verde forest medio de ese encabezado. Esta rutina no tiene acceso a valores de color exactos (hex) vía la API en modo de solo lectura (requeriría abrir una transacción de edición, prohibida por las reglas de esta rutina), por lo que la comparación es visual y a resolución de miniatura — se recomienda que Gustavo lo confirme en Canva a resolución completa antes de tacharlo de la lista.
+
+### b. Revisar tamaño del byline de la portada para proyector
+**Sigue pendiente.** El byline "Presentado por: Gustavo López, HGR No. 1 IMSS Tijuana" en la portada (página 1) se ve notablemente pequeño respecto al título. Sin cambios desde corridas anteriores.
+
+### c. Conseguir foto REAL de la GPU RTX 4060 Ti (no otra imagen IA)
+**Sigue pendiente.** En la página 11 (slide de inversión) la imagen de la GPU sigue teniendo apariencia de render/stock (fondo oscuro, iluminación dramática de producto, sin marcado de modelo claramente visible más allá del logo genérico). No se detectó sustitución por una foto real. Nota: esta rutina no tiene acceso a la carpeta local `~/sigab-pitch-assets/` en la ASUS de Gustavo, por lo que no puede confirmar si ya existe ahí una foto real pendiente de subir.
+
+### d. Decisión del escáner (slide 7 / página real 11): MIRACO Plus vs. "elegir 1 de 2" con Creality Sermoon P1
+**Sigue abierto — hoy es el día 47 sin decisión (desde 2026-07-20).** El deck sigue mostrando la línea "Escáner 3D (elegir 1): MIRACO Plus $48,000 o Creality Sermoon P1 $85,999 premium." en vez del texto original congelado, y ya existe una página comparativa completa (página 13) con ambas opciones y sus totales correctos ($72,000–$80,800 para MIRACO Plus vs. $109,934–$118,752 para Sermoon P1) — confirmada sin cambios esta corrida. Falta únicamente la decisión final de Gustavo: si esta comparación ya es la decisión final (mantener ambas opciones abiertas en el pitch), no requiere más trabajo de construcción — solo confirmar y, de ser el caso, actualizar la cifra de referencia fija de esta rutina para que la sección 1 deje de marcarla como ALERTA cada noche. Si no fue autorizada, requiere revisión y corrección en Canva.
+**No se envía notificación push esta noche** (sin cambios desde el 2026-09-04 y sin hito nuevo). Próximo recordatorio push programado para el **día 60 (2026-09-18)** si para entonces sigue sin decisión, o antes si hay un cambio real en el deck.
+
+### ~~e. Duplicar 3 tarjetas en el editor de Canva~~ — ✅ RESUELTO, ya no requiere acción
+Confirmado de nuevo por miniatura esta corrida — las 3 tarjetas siguen presentes con el texto exacto solicitado:
+- **Página 7** ("La IA y los Agentes"): tarjeta **"Atención Proactiva"** — *"Los asistentes envían alertas cuando un equipo crítico necesita atención, ayudando a evitar fallas y mejorando la confiabilidad de los activos en el hospital."*
+- **Página 14** ("¿Por qué MiniMax y no solo Claude o GPT-4?"): tarjeta **"Datos on-premise"** — *"Híbrido local + nube con frontera clara: los datos del IMSS no salen. Claude/GPT son solo nube. MiniMax suma visión, audio y video."*
+- **Página 16** ("El retorno de la inversión de SIGAB"): tarjeta **"Mantenimiento eficiente"** — *"La prevención de fallas mediante el mantenimiento programado mejora la disponibilidad de equipos, lo que se traduce en menos paros y un servicio de calidad en el hospital."*
+
+Este inciso se mantiene fuera de la lista de pendientes.
+
+---
+
+## Notas técnicas para próxima corrida
+
+- **Recordatorio importante (persiste desde 2026-08-20): el texto plano de `read-design` sin transacción abierta NO captura el texto de las 3 tarjetas** (Atención Proactiva, Datos on-premise, Mantenimiento eficiente) ni el de la tabla comparativa de la página 13, aunque están claramente visibles en miniaturas. Confirmado de nuevo esta corrida: la lectura de texto plano de las 31 páginas no incluyó ninguna de esas 3 frases, pero las miniaturas sí las muestran. Seguir verificando siempre por miniatura, no solo por texto.
+- Conteo de páginas estable en 31 (sin cambio desde 2026-08-20). Mapeo de páginas reales confirmado de nuevo esta corrida: Pág 1 = portada · Pág 7 = "La IA y los Agentes" (Atención Proactiva) · Pág 10 = "90%" · Pág 11 = "Inversión SIGAB" (slide 7 del contexto fijo) · Pág 13 = tabla comparativa "elegir 1 de 2" del escáner · Pág 14 = "¿Por qué MiniMax...?" (slide 8, Datos on-premise) · Pág 15 = "Costo operativo anual" (slide 9) · Pág 16 = "El retorno de la inversión" (slide 10, Mantenimiento eficiente).
+- Conector Canva: disponible y funcionando correctamente esta corrida (sin transacciones de edición abiertas, solo `read-design`, lectura de texto, metadata y miniaturas).
+- `WebFetch` directo hacia `www.3dmarket.mx` sigue sin ser confiable desde este entorno (`EGRESS_BLOCKED` del proxy). `WebSearch` tampoco devolvió el precio en el extracto — no vale la pena repetir ambos cada noche salvo pedido explícito de Gustavo.
+- Sin novedades sustanciales de contenido respecto a 2026-09-04: todas las demás alertas y pendientes de esta corrida son continuación de la noche anterior, sin deterioro ni mejora detectada en el deck.
